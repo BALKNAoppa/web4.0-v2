@@ -1,0 +1,47 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Next.js build
+.next
+out
+
+# Production
+build
+dist
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env*
+!.env.example
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# shadcn auto-generated
+src/components/ui
+
+# Coverage
+coverage
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc
+*.md
+!README.md

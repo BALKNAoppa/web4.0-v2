@@ -1,0 +1,489 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-manrope);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --animate-rainbow: rainbow var(--speed, 2s) infinite linear;
+  --color-color-5: var(--color-5);
+  --color-color-4: var(--color-4);
+  --color-color-3: var(--color-3);
+  --color-color-2: var(--color-2);
+  --color-color-1: var(--color-1);
+  --color-background-1: var(--background-1);
+  --color-background-2: var(--background-2);
+  --color-background-3: var(--background-3);
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  @keyframes rainbow {
+  0% {
+    background-position: 0%;
+    }
+  100% {
+    background-position: 200%;
+    }
+  }
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite
+;
+  @keyframes marquee {
+  from {
+    transform: translateX(0);}
+  to {
+    transform: translateX(calc(-100% - var(--gap)));}}
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);}
+  to {
+    transform: translateY(calc(-100% - var(--gap)));}}}
+
+/* ============================================
+   LIGHT MODE — White primary, Black text, Green CTA
+   WCAG 2.2 AA contrast tested
+   ============================================ */
+:root {
+  /* Web 4.0 — Light Mode background & text tokens */
+  --background-1: #E2E8EC;
+  --background-2: #F3F5F7;
+  --background-3: #F9FAFB;          /* input background */
+  --text-1: #161616;                /* primary text */
+  --text-2: #595959;                /* secondary text — WCAG AA 5.5:1 on bg-1 */
+
+  /* shadcn token-уудыг шинэ палет руу холбов */
+  --background: var(--background-1);
+  --foreground: var(--text-1);
+  --card: var(--background-2);
+  --card-foreground: var(--text-1);
+  --popover: var(--background-2);
+  --popover-foreground: var(--text-1);
+
+  /* Primary CTA — ногоон, харин contrast-ын төлөө бараан текст */
+  --primary: oklch(0.65 0.21 145);
+  --primary-foreground: #161616;
+
+  --secondary: var(--background-3);
+  --secondary-foreground: var(--text-1);
+  --muted: var(--background-3);
+  --muted-foreground: var(--text-2);
+  --accent: var(--background-3);
+  --accent-foreground: var(--text-1);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: rgba(122, 122, 122, 0.2);
+  --input: var(--background-3);
+  --ring: oklch(0.65 0.21 145);
+  --chart-1: oklch(0.65 0.21 145);
+  --chart-2: oklch(0.55 0.18 145);
+  --chart-3: oklch(0.45 0.15 145);
+  --chart-4: oklch(0.35 0.12 145);
+  --chart-5: oklch(0.25 0.1 145);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.15 0 0);
+  --sidebar-primary: oklch(0.65 0.21 145);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.96 0 0);
+  --sidebar-accent-foreground: oklch(0.15 0 0);
+  --sidebar-border: oklch(0.9 0 0);
+  --sidebar-ring: oklch(0.65 0.21 145);
+  --color-1: oklch(66.2% 0.225 25.9);
+  --color-2: oklch(60.4% 0.26 302);
+  --color-3: oklch(69.6% 0.165 251);
+  --color-4: oklch(80.2% 0.134 225);
+  --color-5: oklch(90.7% 0.231 133);
+}
+
+/* ============================================
+   DARK MODE — Black background, White text, Green CTA
+   Slide-тэй яг адил
+   WCAG 2.2 AA contrast tested
+   ============================================ */
+.dark {
+  /* Web 4.0 — Dark Mode background & text tokens */
+  --background-1: #10131B;
+  --background-2: #1C202D;
+  --background-3: #27203E;
+  --text-1: #FFFFFF;
+  --text-2: rgba(184, 184, 184, 0.6);
+
+  /* shadcn token-уудыг шинэ палет руу холбов */
+  --background: var(--background-1);
+  --foreground: var(--text-1);
+  --card: var(--background-2);
+  --card-foreground: var(--text-1);
+  --popover: var(--background-2);
+  --popover-foreground: var(--text-1);
+
+  /* Primary CTA — тод ногоон хэвээр */
+  --primary: oklch(0.78 0.22 145);
+  --primary-foreground: #000000;
+
+  --secondary: var(--background-3);
+  --secondary-foreground: var(--text-1);
+  --muted: var(--background-3);
+  --muted-foreground: var(--text-2);
+  --accent: var(--background-3);
+  --accent-foreground: var(--text-1);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: rgba(184, 184, 184, 0.18);
+  --input: var(--background-3);
+  --ring: oklch(0.78 0.22 145);
+  --chart-1: oklch(0.78 0.22 145);
+  --chart-2: oklch(0.68 0.18 145);
+  --chart-3: oklch(0.58 0.15 145);
+  --chart-4: oklch(0.48 0.12 145);
+  --chart-5: oklch(0.38 0.1 145);
+  --sidebar: oklch(0.15 0 0);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.78 0.22 145);
+  --sidebar-primary-foreground: oklch(0 0 0);
+  --sidebar-accent: oklch(0.2 0 0);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.78 0.22 145);
+  --color-1: oklch(66.2% 0.225 25.9);
+  --color-2: oklch(60.4% 0.26 302);
+  --color-3: oklch(69.6% 0.165 251);
+  --color-4: oklch(80.2% 0.134 225);
+  --color-5: oklch(90.7% 0.231 133);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    /* Хажуу тийш гэнэт гарч ирэх (sub-pixel/100vw) horizontal scroll-оос сэргийлнэ.
+       `clip` нь scroll container үүсгэхгүй тул sticky header / fixed panel-уудыг
+       эвдэхгүй (`hidden`-ээс ялгаатай). */
+    overflow-x: clip;
+  }
+
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+
+  /* Section snap-ыг CSS-ээр бус section-snap-scroller.tsx (JS) удирдана:
+     CSS proximity нь босгоо браузераас авдаг тул тогтворгүй, mandatory нь
+     хэт түрэмгий байсан. JS хувилбар нь зөвхөн scroll зогссон үед,
+     тохируулсан радиус дотор л зөөлөн тааруулна. */
+
+  *:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .skip-link {
+    @apply absolute left-4 top-4 z-50 -translate-y-20 rounded-md bg-primary px-4 py-2 text-primary-foreground transition-transform focus:translate-y-0;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100% !important;
+    margin-inline: auto !important;
+    max-width: 1200px !important;
+    padding-inline: 1rem !important;
+  }
+}
+@keyframes progress-fill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* TrustOrbit — icon-уудыг төв rond эргүүлэх анимаци */
+@keyframes orbit-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* TrustOrbit hub-аас цацрах radio дольгионы эффект — full screen хүрнэ */
+@keyframes hub-pulse {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(18); opacity: 0; }
+}
+
+/* Chat — bubble нэмэгдэх үед доороос дээш гулсаж гарах */
+@keyframes chat-msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-chat-msg-in {
+  animation: chat-msg-in 220ms ease-out both;
+}
+
+/* Chat — typing indicator-ийн цэгүүд */
+@keyframes chat-typing-dot {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30%           { opacity: 1;    transform: translateY(-3px); }
+}
+.animate-chat-typing-dot {
+  animation: chat-typing-dot 1.2s ease-in-out infinite;
+}
+
+/* Univision GO app — phone card-ын зөөлөн дээш доош float анимаци */
+@keyframes float-card {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-14px); }
+}
+.animate-float-card {
+  animation: float-card 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* ============================================
+   Custom scrollbar — Univision brand gradient
+   Chromium, Firefox-д ажиллана (Firefox solid fallback)
+   ============================================ */
+/* Firefox — gradient дэмжихгүй тул solid brand green */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #0FAA0A transparent;
+}
+
+/* Chromium / Safari */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  /* Тод олон өнгийн gradient — цайвар lime → brand ногоон → teal → цэнхэр */
+  background: linear-gradient(
+    180deg,
+    #a3e635 0%,
+    #0faa0a 40%,
+    #0d9488 75%,
+    #2563eb 100%
+  );
+  border-radius: 9999px;
+  border: 2px solid var(--background);
+  background-clip: padding-box;
+  transition: background 220ms ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    #bef264 0%,
+    #1ec918 40%,
+    #14b8a6 75%,
+    #3b82f6 100%
+  );
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Scrollbar-ын дээд/доод сум товчнуудыг бүх scroll container дээр нуух */
+*::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+/* Chat messages-ийн scrollbar — нимгэн, төв ойртсон, smooth transition */
+.chat-scroll {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-2) transparent;
+}
+.chat-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--text-2);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 220ms ease;
+}
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-1);
+}
+.chat-scroll::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+  /* Skip link зориулагдсан style */
+  .skip-link {
+    @apply absolute left-4 top-4 z-50 -translate-y-20 rounded-md bg-primary px-4 py-2 text-primary-foreground transition-transform focus:translate-y-0;
+  }
+
+/* ============================================
+   Accessibility (Хүртээмж) — runtime classes/vars
+   applied to <html> by AccessibilityProvider
+   ============================================ */
+:root {
+  --a11y-font-scale: 1;
+  --a11y-word-spacing: 0px;
+  --a11y-letter-spacing: 0px;
+  --a11y-screen-zoom: 1;
+}
+
+html {
+  font-size: calc(16px * var(--a11y-font-scale));
+}
+
+body {
+  word-spacing: var(--a11y-word-spacing);
+  letter-spacing: var(--a11y-letter-spacing);
+}
+
+html.a11y-grayscale body {
+  filter: grayscale(1);
+}
+
+html.a11y-high-contrast {
+  --background: #000000;
+  --background-1: #000000;
+  --background-2: #000000;
+  --background-3: #1a1a1a;
+  --foreground: #ffff00;
+  --text-1: #ffff00;
+  --text-2: #ffff00;
+  --card: #000000;
+  --card-foreground: #ffff00;
+  --popover: #000000;
+  --popover-foreground: #ffff00;
+  --primary: #ffff00;
+  --primary-foreground: #000000;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #ffff00;
+  --muted: #1a1a1a;
+  --muted-foreground: #ffff00;
+  --accent: #1a1a1a;
+  --accent-foreground: #ffff00;
+  --border: #ffff00;
+  --input: #1a1a1a;
+  --ring: #ffff00;
+}
+html.a11y-high-contrast body {
+  background: #000000 !important;
+  color: #ffff00 !important;
+}
+html.a11y-high-contrast a,
+html.a11y-high-contrast button {
+  color: #ffff00 !important;
+}
+
+html.a11y-low-saturation body {
+  filter: saturate(0.4);
+}
+
+html.a11y-highlight-links a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+  font-weight: 700 !important;
+  outline: 1px dashed currentColor;
+  outline-offset: 2px;
+}
+
+html.a11y-hide-images img,
+html.a11y-hide-images picture,
+html.a11y-hide-images video,
+html.a11y-hide-images svg:not([data-a11y-keep]) {
+  visibility: hidden !important;
+}
+
+html.a11y-big-cursor,
+html.a11y-big-cursor * {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='black' stroke='white' stroke-width='1.5'><path d='M3 3l7 17 2-7 7-2z'/></svg>") 0 0, auto !important;
+}
+html.a11y-cursor-white.a11y-big-cursor,
+html.a11y-cursor-white.a11y-big-cursor * {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='white' stroke='black' stroke-width='1.5'><path d='M3 3l7 17 2-7 7-2z'/></svg>") 0 0, auto !important;
+}
+html.a11y-cursor-yellow.a11y-big-cursor,
+html.a11y-cursor-yellow.a11y-big-cursor * {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='%23facc15' stroke='black' stroke-width='1.5'><path d='M3 3l7 17 2-7 7-2z'/></svg>") 0 0, auto !important;
+}
+
+html.a11y-text-boost p,
+html.a11y-text-boost li,
+html.a11y-text-boost span,
+html.a11y-text-boost a {
+  font-size: 1.15em !important;
+  line-height: 1.7 !important;
+}
+
+html[style*="--a11y-screen-zoom"] body {
+  zoom: var(--a11y-screen-zoom);
+}
+
+html[style*="--a11y-bg"] body {
+  background-color: var(--a11y-bg) !important;
+}
+html[style*="--a11y-heading"] h1,
+html[style*="--a11y-heading"] h2,
+html[style*="--a11y-heading"] h3,
+html[style*="--a11y-heading"] h4 {
+  color: var(--a11y-heading) !important;
+}
+html[style*="--a11y-content"] p,
+html[style*="--a11y-content"] li,
+html[style*="--a11y-content"] span {
+  color: var(--a11y-content) !important;
+}
