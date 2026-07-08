@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { Menu, Search, User, LogOut, ArrowUpRight } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
+import { Menu, Search, User, Globe, LogOut, ArrowUpRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -15,15 +15,95 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Navigation } from "@/components/layout/navigation";
+import { AudienceSwitchTabs, AudienceSwitchMobile } from "@/components/layout/audience-switch";
 import { useAuth } from "@/components/auth/auth-provider";
-import { ecosystemBrands } from "@/data/navigation";
+import { ecosystemBrands, mainNavLegacy } from "@/data/navigation";
+import { cn } from "@/lib/utils";
+
+// Шинэ header хувилбарууд — дээд toggle-оор солино:
+//   1 = Apple  (нэгдсэн эко-систем, ганц нимгэн nav)
+//   2 = Груп   (хуучин маягийн header + Mobile/Өрх/Байгууллага сегмент hover-card)
+type Variant = 1 | 2;
+const VARIANTS: { id: Variant; label: string }[] = [
+  { id: 1, label: "Хувилбар 1 · Apple" },
+  { id: 2, label: "Хувилбар 2 · Груп" },
+];
+
+const VARIANT_KEY = "uv-header-variant-new";
+const VARIANT_EVENT = "uv-header-variant-new-change";
+
+function subscribeVariant(cb: () => void) {
+  window.addEventListener(VARIANT_EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(VARIANT_EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
+const getVariantSnapshot = (): Variant =>
+  window.localStorage.getItem(VARIANT_KEY) === "2" ? 2 : 1;
+const getVariantServerSnapshot = (): Variant => 1;
+
+function setHeaderVariant(v: Variant) {
+  window.localStorage.setItem(VARIANT_KEY, String(v));
+  window.dispatchEvent(new Event(VARIANT_EVENT));
+}
+
+export function Header() {
+  const variant = useSyncExternalStore(
+    subscribeVariant,
+    getVariantSnapshot,
+    getVariantServerSnapshot,
+  );
+
+  return (
+    <>
+      <VariantToggle variant={variant} onChange={setHeaderVariant} />
+      {variant === 2 ? <GroupHeader /> : <AppleHeader />}
+    </>
+  );
+}
+
+/**
+ * Хувилбар сонгох toggle — дэлгэцийн дээд талд, хэвийн урсгалд (header дээр
+ * давхцахгүй). Шийдсэний дараа энэ toggle-ийг устгана.
+ */
+function VariantToggle({
+  variant,
+  onChange,
+}: {
+  variant: Variant;
+  onChange: (v: Variant) => void;
+}) {
+  return (
+    <div className="bg-foreground text-background flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 text-xs">
+      {VARIANTS.map((v) => (
+        <button
+          key={v.id}
+          type="button"
+          onClick={() => onChange(v.id)}
+          aria-pressed={variant === v.id}
+          className={cn(
+            "rounded-full px-3 py-0.5 font-medium transition-colors",
+            variant === v.id
+              ? "bg-background text-foreground"
+              : "text-background/80 hover:bg-background/15",
+          )}
+        >
+          {v.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 // =====================================================================
 // ХУВИЛБАР 1 — Apple-аас санаа авсан нэгдсэн эко-системийн nav.
-// "Header" гэж тусдаа байхгүй — ганц нимгэн navigation мөр.
 // Зүүн: жижиг лого · Төв: группын брэндүүд · Баруун: хайлт + профайл.
 // =====================================================================
-export function Header() {
+function AppleHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -31,7 +111,7 @@ export function Header() {
       className="bg-background/80 border-border sticky top-0 z-50 border-b backdrop-blur"
       role="banner"
     >
-      {/* ===== Desktop — зүүн лого · төв брэндүүд · баруун хайлт+профайл ===== */}
+      {/* Desktop */}
       <div className="mx-auto hidden h-11 max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
         <div className="flex items-center">
           <EcoLogo />
@@ -49,6 +129,12 @@ export function Header() {
               {brand.name}
             </a>
           ))}
+          <Link
+            href="/support"
+            className="text-foreground/75 hover:text-foreground text-[13px] font-medium transition-colors"
+          >
+            Тусламж
+          </Link>
         </nav>
 
         <div className="flex items-center justify-end gap-0.5">
@@ -59,7 +145,7 @@ export function Header() {
         </div>
       </div>
 
-      {/* ===== Mobile — лого + хайлт/профайл + hamburger ===== */}
+      {/* Mobile */}
       <div className="mx-auto flex h-11 max-w-[1200px] items-center justify-between px-4 lg:hidden">
         <EcoLogo />
 
@@ -99,7 +185,105 @@ export function Header() {
                     </a>
                   </li>
                 ))}
+                <li>
+                  <Link
+                    href="/support"
+                    onClick={() => setMobileOpen(false)}
+                    className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
+                  >
+                    <span>Тусламж</span>
+                  </Link>
+                </li>
               </ul>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// =====================================================================
+// ХУВИЛБАР 2 — Хуучин маягийн header (лого + бүтээгдэхүүний nav + icons),
+// дээд талд группын компаниуд Mobile / Өрх / Байгууллага сегментээр,
+// hover дээр гишүүн брэндийн товч мэдээлэлтэй картууд.
+// =====================================================================
+function GroupHeader() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
+      {/* Top bar — группын сегментүүд (hover дээр брэнд карт) */}
+      <div className="bg-muted/40 border-border hidden border-b lg:block">
+        <div className="mx-auto flex h-9 max-w-[1200px] items-center px-4">
+          <AudienceSwitchTabs />
+        </div>
+      </div>
+
+      {/* Main row — лого + бүтээгдэхүүний nav + icons */}
+      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-4 px-4 lg:h-16">
+        <UnivisionLogo />
+
+        <div className="hidden flex-1 justify-start lg:flex">
+          <Navigation variant="desktop" categories={mainNavLegacy} />
+        </div>
+
+        <div className="hidden items-center gap-1 lg:flex">
+          <IconButton label="Хайх">
+            <Search className="size-5" />
+          </IconButton>
+          <AccountMenu />
+          <ThemeToggle />
+          <IconButton label="Хэл солих">
+            <Globe className="size-5" />
+          </IconButton>
+        </div>
+
+        {/* Mobile */}
+        <div className="flex items-center gap-1 lg:hidden">
+          <IconButton label="Хайх">
+            <Search className="size-5" />
+          </IconButton>
+          <AccountMenu />
+
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Цэс нээх">
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+
+            <SheetContent side="right" className="w-75 p-6 sm:w-90">
+              <SheetHeader className="p-0">
+                <SheetTitle>Цэс</SheetTitle>
+              </SheetHeader>
+
+              {/* Группын сегментүүд */}
+              <div className="mt-4">
+                <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
+                  Групп
+                </p>
+                <AudienceSwitchMobile onItemClick={() => setMobileOpen(false)} />
+              </div>
+
+              {/* Бүтээгдэхүүний nav */}
+              <div className="border-border mt-4 border-t pt-4">
+                <Navigation
+                  variant="mobile"
+                  categories={mainNavLegacy}
+                  onItemClick={() => setMobileOpen(false)}
+                />
+              </div>
+
+              {/* Theme / Хэл */}
+              <div className="border-border mt-6 space-y-2 border-t pt-6">
+                <MobileToggleRow label="Theme">
+                  <ThemeToggle />
+                </MobileToggleRow>
+                <MobileToggleRow label="Хэл солих">
+                  <Globe className="size-5" />
+                </MobileToggleRow>
+              </div>
             </SheetContent>
           </Sheet>
         </div>
@@ -112,28 +296,49 @@ export function Header() {
 // Туслах компонентууд
 // =====================================================================
 
-/**
- * Эко-системийн жижиг лого (Apple шиг). Одоогоор univision лого-г placeholder
- * болгосон — жинхэнэ жижиг эко-логог өгмөгц энд (src) солино.
- */
+/** Эко-системийн жижиг icon-лого (Хувилбар 1). Light: хар, Dark: цагаан. */
 function EcoLogo() {
   return (
     <Link href="/" className="inline-flex items-center" aria-label="Нүүр">
       <Image
-        src="/univision-logo.svg"
+        src="/eco-logo.png"
         alt="Эко-систем"
-        width={120}
-        height={28}
+        width={24}
+        height={24}
         priority
-        className="h-5 w-auto dark:hidden"
+        className="h-6 w-6 dark:hidden"
+      />
+      <Image
+        src="/eco-logo-dark.png"
+        alt="Эко-систем"
+        width={24}
+        height={24}
+        priority
+        className="hidden h-6 w-6 dark:block"
+      />
+    </Link>
+  );
+}
+
+/** Univision wordmark лого (Хувилбар 2 — хуучин маяг). Light/dark хувилбартай. */
+function UnivisionLogo() {
+  return (
+    <Link href="/" className="inline-flex items-center" aria-label="Univision нүүр">
+      <Image
+        src="/univision-logo.svg"
+        alt="Univision"
+        width={140}
+        height={32}
+        priority
+        className="block h-6 w-auto lg:h-7 dark:hidden"
       />
       <Image
         src="/univision-logo-dark.svg"
-        alt="Эко-систем"
-        width={120}
-        height={28}
+        alt="Univision"
+        width={140}
+        height={32}
         priority
-        className="hidden h-5 w-auto dark:block"
+        className="hidden h-6 w-auto lg:h-7 dark:block"
       />
     </Link>
   );
@@ -189,5 +394,15 @@ function IconButton({ children, label }: { children: React.ReactNode; label: str
     <Button variant="ghost" size="icon" aria-label={label}>
       {children}
     </Button>
+  );
+}
+
+/** Mobile-ийн Sheet дотор тогтсон toggle мөр */
+function MobileToggleRow({ children, label }: { children: React.ReactNode; label: string }) {
+  return (
+    <div className="hover:bg-muted flex items-center justify-between rounded-md px-2 py-2 transition-colors">
+      <span className="text-sm font-medium">{label}</span>
+      {children}
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Building2, User, Info, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Building2, User, Info, Smartphone, Home, ArrowUpRight, ChevronDown } from "lucide-react";
 
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import {
@@ -27,7 +27,16 @@ import { cn } from "@/lib/utils";
  */
 
 function SegmentIcon({ icon, className }: { icon: AudienceSegment["icon"]; className?: string }) {
-  const Icon = icon === "building" ? Building2 : icon === "info" ? Info : User;
+  const Icon =
+    icon === "building"
+      ? Building2
+      : icon === "smartphone"
+        ? Smartphone
+        : icon === "home"
+          ? Home
+          : icon === "info"
+            ? Info
+            : User;
   return <Icon className={className} aria-hidden="true" />;
 }
 
@@ -220,7 +229,7 @@ function AudienceSwitch({
         onOpenAutoFocus={(e) => e.preventDefault()}
         onMouseEnter={hoverClear}
         onMouseLeave={closeSoon}
-        className="w-[calc(100vw-2rem)] max-w-250 overflow-hidden p-5"
+        className="w-[min(92vw,540px)] overflow-hidden p-5"
       >
         {/* key — сегмент солигдоход контент дахин mount хийгдэж swipe анимэйшн тоглоно */}
         {activeSeg && (
@@ -239,10 +248,10 @@ function AudienceSwitch({
   );
 }
 
-// ХУВИЛБАР 2 — top bar-ын баруун талд таб маягаар.
-// hover унтраасан (зөвхөн click), "Хувь хэрэглэгч" идэвхтэй (одоо байгаа сайт).
+// Группын сегментүүд (Mobile / Өрх / Байгууллага) — top bar-ын зүүн талд таб маягаар.
+// hover дээр гишүүн брэндийн картууд гарна.
 export function AudienceSwitchTabs() {
-  return <AudienceSwitch layout="tabs" align="end" hover={false} activeId="personal" />;
+  return <AudienceSwitch layout="tabs" align="start" />;
 }
 
 // ХУВИЛБАР 3 — лого хажууд segmented pill маягаар

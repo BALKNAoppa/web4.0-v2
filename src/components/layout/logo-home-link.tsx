@@ -3,11 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-/**
- * Logo-ны нүүр хуудас руу заах link:
- *  - Өөр хуудсан дээр: ердийн navigation (Next.js автоматаар дээрээс эхлүүлнэ)
- *  - Нүүр хуудсан дээр: navigation хийхгүй, зөөлөн дээш (top section руу) scroll хийнэ
- */
 export function LogoHomeLink({
   children,
   className,

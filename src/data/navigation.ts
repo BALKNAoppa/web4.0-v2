@@ -71,8 +71,9 @@ export const ecosystemBrands: EcosystemLink[] = [
 ];
 
 // =====================================================================
-// Audience segments — Хувь хэрэглэгч / Байгууллага / Бидний тухай
-// Дэлхийн группүүдийн (Vodafone, Singtel, Samsung) жишгээр үзэгчээр салгасан.
+// Группын сегментүүд — Mobile / Өрх / Байгууллага (Хувилбар 2 top bar).
+// Группын компаниудыг хэрэглээгээр бүлэглэж, hover дээр гишүүн брэндийн
+// картуудыг (товч мэдээлэл + домэйн линк) харуулна.
 // =====================================================================
 export type BrandCard = {
   name: string;
@@ -86,31 +87,45 @@ export type BrandCard = {
 };
 
 export type AudienceSegment = {
-  id: "personal" | "corporate" | "about";
+  id: string;
   label: string;
-  /** Сегментийн landing / "Бидний тухай"-н шууд линк */
+  /** Брэндгүй сегментийн шууд линк (одоогоор бүгд брэндтэй) */
   href: string;
   external?: boolean;
-  icon: "user" | "building" | "info";
-  /** Hover дээр гарах брэнд cards. "Бидний тухай"-д байхгүй (шууд линк). */
+  icon: "user" | "building" | "info" | "smartphone" | "home";
+  /** Hover дээр гарах гишүүн брэндийн cards. Байхгүй бол шууд линк. */
   brands?: BrandCard[];
 };
 
 export const audienceSegments: AudienceSegment[] = [
   {
-    id: "personal",
-    label: "Хувь хэрэглэгч",
-    href: "https://univision.mn/",
-    external: true,
-    icon: "user",
+    id: "mobile",
+    label: "Mobile",
+    href: "#",
+    icon: "smartphone",
     brands: [
       {
         name: "Unitel",
         badge: "UNT",
-        description: "Мобайл, гэрийн интернэт болон ярианы багцууд.",
+        description: "Мобайл, дата болон ярианы багцууд.",
         href: "https://unitel.mn/unitel/",
         external: true,
       },
+      {
+        name: "Toki",
+        badge: "TOKI",
+        description: "Супер-апп: төлбөр, мобайл болон дижитал үйлчилгээ.",
+        href: "https://toki.mn/",
+        external: true,
+      },
+    ],
+  },
+  {
+    id: "home",
+    label: "Өрх",
+    href: "#",
+    icon: "home",
+    brands: [
       {
         name: "Univision",
         badge: "UNV",
@@ -119,41 +134,20 @@ export const audienceSegments: AudienceSegment[] = [
         external: true,
       },
       {
-        name: "LookTV",
-        badge: "LOOK",
-        description: "Кино болон шууд дамжуулалт.",
-        href: "https://looktv.mn/#/setup",
+        name: "Гэр интернэт",
+        badge: "NET",
+        description: "Гэрийн шилэн кабелийн интернэт.",
+        href: "https://unitel.mn/",
         external: true,
       },
     ],
   },
   {
-    id: "corporate",
+    id: "business",
     label: "Байгууллага",
-    href: "https://unitel.mn/unitel/",
-    external: true,
+    href: "#",
     icon: "building",
     brands: [
-      {
-        name: "Unitel Corp",
-        badge: "UNT",
-        description: "Байгууллагын мобайл, интернэт болон нэгдсэн холболт.",
-        href: "https://unitel.mn/unitel/",
-        external: true,
-      },
-      {
-        name: "Univision Corp",
-        badge: "UNV",
-        description: "Байгууллагад зориулсан IPTV болон контентын шийдэл.",
-        href: "https://univision.mn/",
-        external: true,
-      },
-      {
-        name: "U-point",
-        badge: "UP",
-        description: "Дижитал төлбөр, лояалти платформ.",
-        href: "#",
-      },
       {
         name: "Nexmind",
         badge: "NEX",
@@ -161,15 +155,14 @@ export const audienceSegments: AudienceSegment[] = [
         href: "https://nexmind.mn/managednetwork",
         external: true,
       },
+      {
+        name: "U-point",
+        badge: "UP",
+        description: "Дижитал төлбөр, лояалти платформ.",
+        href: "https://u-point.mn/",
+        external: true,
+      },
     ],
-  },
-  {
-    id: "about",
-    label: "Бидний тухай",
-    href: "https://univision.mn/about/",
-    external: true,
-    icon: "info",
-    // brands байхгүй — группын сайт руу шилжих placeholder линк
   },
 ];
 
