@@ -40,6 +40,8 @@ export type NavCategory = {
   isDirectLink?: boolean;
   // Trigger / линкийн өмнө харагдах lucide icon-ы нэр
   icon?: "gift" | "tag" | "percent";
+  // Тооны badge (жишээ 36) — байвал улбар шар дугуйтай гарна
+  count?: number;
 };
 
 export type TopBarLink = {
@@ -67,7 +69,37 @@ export const ecosystemBrands: EcosystemLink[] = [
   { name: "Univision", href: "https://univision.mn/", external: true },
   { name: "Toki", href: "https://toki.mn/", external: true },
   { name: "Look TV", href: "https://look.tv/", external: true },
+  { name: "DDish TV", href: "#" }, // TODO: домэйн (ddishtv.mn?)
+  { name: "Nexmind", href: "https://nexmind.mn/", external: true },
+  { name: "OSS", href: "#" }, // TODO: домэйн
   { name: "U-point", href: "https://u-point.mn/", external: true },
+  { name: "PSN", href: "#" }, // TODO: домэйн
+  { name: "ESN", href: "#" }, // TODO: домэйн
+];
+
+// Хувилбар 3 (Unitel) — Unitel.mn домэйны мобайл үйлчилгээтэй холбоотой брэндүүд
+// (дээд bar-т байрлана)
+export const unitelDomains: EcosystemLink[] = [
+  { name: "Unitel", href: "https://unitel.mn/", external: true },
+  { name: "Toki", href: "https://toki.mn/", external: true },
+  { name: "Nexmind", href: "https://nexmind.mn/", external: true },
+];
+
+// Хувилбар 3 (Unitel) — үндсэн navigation ангилал (зурган дээрх шиг)
+export const unitelNav: NavCategory[] = [
+  { label: "Дараа төлбөрт", href: "#", isDirectLink: true },
+  { label: "Урьдчилсан төлбөрт", href: "#", isDirectLink: true },
+  { label: "Family үйлчилгээ", href: "#", isDirectLink: true },
+  { label: "Нэмэлт үйлчилгээ", href: "#", isDirectLink: true },
+  { label: "Гар утас", href: "#", isDirectLink: true },
+];
+
+// Хувилбар 4 (Univision) — Univision.mn домэйны холбоотой брэндүүд (дээд bar-т).
+// Үндсэн nav нь mainNavLegacy (Бүтээгдэхүүн / Энтертайнмент / Life-style / Урамшуулал).
+export const univisionDomains: EcosystemLink[] = [
+  { name: "Univision", href: "https://univision.mn/", external: true },
+  { name: "Гэр интернэт", href: "https://unitel.mn/unitel/product/ger", external: true },
+  { name: "DDish", href: "#" }, // TODO: домэйн (ddishtv.mn?)
 ];
 
 // =====================================================================

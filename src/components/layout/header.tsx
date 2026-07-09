@@ -19,16 +19,26 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Navigation } from "@/components/layout/navigation";
 import { AudienceSwitchTabs, AudienceSwitchMobile } from "@/components/layout/audience-switch";
 import { useAuth } from "@/components/auth/auth-provider";
-import { ecosystemBrands, mainNavLegacy } from "@/data/navigation";
+import {
+  ecosystemBrands,
+  mainNavLegacy,
+  unitelDomains,
+  unitelNav,
+  univisionDomains,
+} from "@/data/navigation";
 import { cn } from "@/lib/utils";
 
 // Шинэ header хувилбарууд — дээд toggle-оор солино:
 //   1 = Apple  (нэгдсэн эко-систем, ганц нимгэн nav)
 //   2 = Груп   (хуучин маягийн header + Mobile/Өрх/Байгууллага сегмент hover-card)
-type Variant = 1 | 2;
+//   3 = Unitel (Unitel.mn домэйны мобайл үйлчилгээний брэндүүд header дээр)
+//   4 = Univision (Univision.mn — V3-тэй ижил бүтэц, Univision-ий тал)
+type Variant = 1 | 2 | 3 | 4;
 const VARIANTS: { id: Variant; label: string }[] = [
   { id: 1, label: "Хувилбар 1 · Apple" },
   { id: 2, label: "Хувилбар 2 · Груп" },
+  { id: 3, label: "Хувилбар 3 · Unitel" },
+  { id: 4, label: "Хувилбар 4 · Univision" },
 ];
 
 const VARIANT_KEY = "uv-header-variant-new";
@@ -42,8 +52,10 @@ function subscribeVariant(cb: () => void) {
     window.removeEventListener("storage", cb);
   };
 }
-const getVariantSnapshot = (): Variant =>
-  window.localStorage.getItem(VARIANT_KEY) === "2" ? 2 : 1;
+const getVariantSnapshot = (): Variant => {
+  const v = window.localStorage.getItem(VARIANT_KEY);
+  return v === "2" ? 2 : v === "3" ? 3 : v === "4" ? 4 : 1;
+};
 const getVariantServerSnapshot = (): Variant => 1;
 
 function setHeaderVariant(v: Variant) {
@@ -61,7 +73,15 @@ export function Header() {
   return (
     <>
       <VariantToggle variant={variant} onChange={setHeaderVariant} />
-      {variant === 2 ? <GroupHeader /> : <AppleHeader />}
+      {variant === 2 ? (
+        <GroupHeader />
+      ) : variant === 3 ? (
+        <UnitelHeader />
+      ) : variant === 4 ? (
+        <UnivisionHeader />
+      ) : (
+        <AppleHeader />
+      )}
     </>
   );
 }
@@ -107,17 +127,14 @@ function AppleHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header
-      className="bg-background/80 border-border sticky top-0 z-50 border-b backdrop-blur"
-      role="banner"
-    >
+    <header className="bg-background/80 sticky top-0 z-50 backdrop-blur" role="banner">
       {/* Desktop */}
       <div className="mx-auto hidden h-11 max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
         <div className="flex items-center">
           <EcoLogo />
         </div>
 
-        <nav aria-label="Эко-систем" className="flex items-center justify-center gap-7">
+        <nav aria-label="Эко-систем" className="flex items-center justify-center gap-5">
           {ecosystemBrands.map((brand) => (
             <a
               key={brand.name}
@@ -142,6 +159,7 @@ function AppleHeader() {
             <Search className="size-4" />
           </IconButton>
           <AccountMenu />
+          <ThemeToggle />
         </div>
       </div>
 
@@ -154,6 +172,7 @@ function AppleHeader() {
             <Search className="size-5" />
           </IconButton>
           <AccountMenu />
+          <ThemeToggle />
 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
@@ -283,6 +302,242 @@ function GroupHeader() {
                 <MobileToggleRow label="Хэл солих">
                   <Globe className="size-5" />
                 </MobileToggleRow>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// =====================================================================
+// ХУВИЛБАР 3 — Unitel.mn домэйны мобайл үйлчилгээтэй холбоотой брэндүүд
+// (Unitel · Toki · Nexmind) header дээр шууд харагдана.
+// =====================================================================
+function UnitelHeader() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
+      {/* Top bar — Mobile-тэй холбоотой домэйнууд. Одоо байгаа сайт (Unitel) тодотгогдоно. */}
+      <div className="bg-muted/40 border-border hidden border-b lg:block">
+        <div className="mx-auto flex h-9 max-w-[1200px] items-center gap-1 px-4">
+          {unitelDomains.map((d) => {
+            const active = d.name === "Unitel";
+            return (
+              <a
+                key={d.name}
+                href={d.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "rounded-md px-2 py-1 text-xs font-medium transition-colors sm:text-sm",
+                  active
+                    ? "bg-foreground/10 text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5",
+                )}
+              >
+                {d.name}
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Main row — Unitel брэнд + бүтээгдэхүүний mega-menu + icons */}
+      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-4 px-4 lg:h-16">
+        <Link href="/" className="inline-flex items-center" aria-label="Unitel нүүр">
+          <Image
+            src="/unitel-logo.svg"
+            alt="Unitel"
+            width={135}
+            height={28}
+            priority
+            className="h-6 w-auto dark:hidden"
+          />
+          <Image
+            src="/unitel-logo-dark.svg"
+            alt="Unitel"
+            width={135}
+            height={28}
+            priority
+            className="hidden h-6 w-auto dark:block"
+          />
+        </Link>
+
+        <div className="hidden flex-1 justify-start lg:flex">
+          <Navigation variant="desktop" categories={unitelNav} />
+        </div>
+
+        <div className="hidden items-center gap-0.5 lg:flex">
+          <IconButton label="Хайх">
+            <Search className="size-5" />
+          </IconButton>
+          <AccountMenu />
+          <ThemeToggle />
+        </div>
+
+        {/* Mobile */}
+        <div className="flex items-center gap-0.5 lg:hidden">
+          <IconButton label="Хайх">
+            <Search className="size-5" />
+          </IconButton>
+          <AccountMenu />
+          <ThemeToggle />
+
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Цэс нээх">
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+
+            <SheetContent side="right" className="w-75 p-6 sm:w-90">
+              <SheetHeader className="p-0">
+                <SheetTitle>Unitel.mn</SheetTitle>
+              </SheetHeader>
+
+              {/* Бүтээгдэхүүний nav */}
+              <div className="mt-4">
+                <Navigation
+                  variant="mobile"
+                  categories={unitelNav}
+                  onItemClick={() => setMobileOpen(false)}
+                />
+              </div>
+
+              {/* Холбоотой домэйнууд */}
+              <div className="border-border mt-4 border-t pt-4">
+                <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
+                  Холбоотой
+                </p>
+                <ul className="space-y-1">
+                  {unitelDomains.map((d) => (
+                    <li key={d.name}>
+                      <a
+                        href={d.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
+                      >
+                        <span>{d.name}</span>
+                        <ArrowUpRight
+                          className="text-muted-foreground ml-auto size-4"
+                          aria-hidden="true"
+                        />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// =====================================================================
+// ХУВИЛБАР 4 — Univision.mn (V3-тэй ижил бүтэц). Дээд bar: Univision-тэй
+// холбоотой домэйнууд (Univision · Гэр интернэт · DDish); үндсэн nav нь
+// Univision-ий бүтээгдэхүүн (mainNavLegacy).
+// =====================================================================
+function UnivisionHeader() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
+      {/* Top bar — Univision-тэй холбоотой домэйнууд. Одоо байгаа сайт (Univision) тодотгогдоно. */}
+      <div className="bg-muted/40 border-border hidden border-b lg:block">
+        <div className="mx-auto flex h-9 max-w-[1200px] items-center gap-1 px-4">
+          {univisionDomains.map((d) => {
+            const active = d.name === "Univision";
+            return (
+              <a
+                key={d.name}
+                href={d.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "rounded-md px-2 py-1 text-xs font-medium transition-colors sm:text-sm",
+                  active
+                    ? "bg-foreground/10 text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/5",
+                )}
+              >
+                {d.name}
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Main row — Univision лого + бүтээгдэхүүний mega-menu + icons */}
+      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-4 px-4 lg:h-16">
+        <UnivisionLogo />
+
+        <div className="hidden flex-1 justify-start lg:flex">
+          <Navigation variant="desktop" categories={mainNavLegacy} />
+        </div>
+
+        <div className="hidden items-center gap-0.5 lg:flex">
+          <IconButton label="Хайх">
+            <Search className="size-5" />
+          </IconButton>
+          <AccountMenu />
+          <ThemeToggle />
+        </div>
+
+        {/* Mobile */}
+        <div className="flex items-center gap-0.5 lg:hidden">
+          <IconButton label="Хайх">
+            <Search className="size-5" />
+          </IconButton>
+          <AccountMenu />
+          <ThemeToggle />
+
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Цэс нээх">
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+
+            <SheetContent side="right" className="w-75 p-6 sm:w-90">
+              <SheetHeader className="p-0">
+                <SheetTitle>Univision.mn</SheetTitle>
+              </SheetHeader>
+
+              {/* Бүтээгдэхүүний nav */}
+              <div className="mt-4">
+                <Navigation
+                  variant="mobile"
+                  categories={mainNavLegacy}
+                  onItemClick={() => setMobileOpen(false)}
+                />
+              </div>
+
+              {/* Холбоотой домэйнууд */}
+              <div className="border-border mt-4 border-t pt-4">
+                <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
+                  Холбоотой
+                </p>
+                <ul className="space-y-1">
+                  {univisionDomains.map((d) => (
+                    <li key={d.name}>
+                      <a
+                        href={d.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
+                      >
+                        <span>{d.name}</span>
+                        <ArrowUpRight
+                          className="text-muted-foreground ml-auto size-4"
+                          aria-hidden="true"
+                        />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </SheetContent>
           </Sheet>

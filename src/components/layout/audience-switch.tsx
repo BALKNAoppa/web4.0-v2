@@ -47,8 +47,6 @@ function BrandCardItem({ brand }: { brand: BrandCard }) {
   return (
     <a
       href={brand.href}
-      target={brand.external ? "_blank" : undefined}
-      rel={brand.external ? "noopener noreferrer" : undefined}
       className="group/card border-border hover:border-primary/40 hover:bg-muted/50 flex flex-col rounded-lg border p-3 transition-colors"
     >
       <div className="flex items-center gap-2">
@@ -187,8 +185,6 @@ function AudienceSwitch({
                 <a
                   key={seg.id}
                   href={seg.href}
-                  target={seg.external ? "_blank" : undefined}
-                  rel={seg.external ? "noopener noreferrer" : undefined}
                   onMouseEnter={hoverCloseNow}
                   className={cn(triggerClass, "group", seg.id === activeId && activeCls)}
                 >
@@ -281,8 +277,6 @@ export function AudienceSwitchMobile({ onItemClick }: { onItemClick?: () => void
                   <li key={brand.name}>
                     <a
                       href={brand.href}
-                      target={brand.external ? "_blank" : undefined}
-                      rel={brand.external ? "noopener noreferrer" : undefined}
                       onClick={onItemClick}
                       className="text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2 text-sm no-underline transition-colors"
                     >
@@ -302,8 +296,6 @@ export function AudienceSwitchMobile({ onItemClick }: { onItemClick?: () => void
           <a
             key={seg.id}
             href={seg.href}
-            target={seg.external ? "_blank" : undefined}
-            rel={seg.external ? "noopener noreferrer" : undefined}
             onClick={onItemClick}
             className="flex items-center gap-2 py-4 text-sm font-medium"
           >

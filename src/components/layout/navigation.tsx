@@ -35,6 +35,15 @@ function getCategoryIcon(name?: NavCategory["icon"]) {
   }
 }
 
+/** Тооны badge (жишээ 36) — улбар шар дугуйтай */
+function CountBadge({ count }: { count: number }) {
+  return (
+    <span className="ml-1 inline-flex min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
+      {count}
+    </span>
+  );
+}
+
 type NavigationProps = {
   variant: "desktop" | "mobile";
   /** Аль ангиллыг харуулах — V1 нь mainNavLegacy, V2/V3 нь mainNav (default) */
@@ -70,6 +79,7 @@ function DesktopNav({ categories }: { categories: NavCategory[] }) {
                   >
                     {Icon && <Icon className="size-4" aria-hidden="true" />}
                     <span>{category.label}</span>
+                    {category.count != null && <CountBadge count={category.count} />}
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
@@ -81,6 +91,7 @@ function DesktopNav({ categories }: { categories: NavCategory[] }) {
             <NavigationMenuItem key={category.label}>
               <NavigationMenuTrigger className="text-base font-medium">
                 {category.label}
+                {category.count != null && <CountBadge count={category.count} />}
               </NavigationMenuTrigger>
               <NavigationMenuContent className="md:w-full">
                 <div className="mx-auto w-full max-w-[1200px] px-4 py-8">
@@ -237,13 +248,19 @@ function MobileNav({
             >
               {Icon && <Icon className="size-4" aria-hidden="true" />}
               <span>{category.label}</span>
+              {category.count != null && <CountBadge count={category.count} />}
             </Link>
           );
         }
 
         return (
           <AccordionItem key={category.label} value={category.label}>
-            <AccordionTrigger className="text-base font-medium">{category.label}</AccordionTrigger>
+            <AccordionTrigger className="text-base font-medium">
+              <span className="flex items-center">
+                {category.label}
+                {category.count != null && <CountBadge count={category.count} />}
+              </span>
+            </AccordionTrigger>
             <AccordionContent>
               {category.columns ? (
                 <MobileColumns category={category} onItemClick={onItemClick} />
