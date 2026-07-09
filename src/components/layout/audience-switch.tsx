@@ -106,6 +106,7 @@ function AudienceSwitch({
   align,
   hover = true,
   activeId,
+  segments = audienceSegments,
 }: {
   layout: "tabs" | "pills";
   align: "start" | "end";
@@ -113,6 +114,8 @@ function AudienceSwitch({
   hover?: boolean;
   /** идэвхтэй (одоо байгаа) сегмент — арын өнгөөр тодотгоно */
   activeId?: AudienceSegment["id"];
+  /** Харуулах сегментүүд (default: audienceSegments) */
+  segments?: AudienceSegment[];
 }) {
   const [openId, setOpenId] = useState<AudienceSegment["id"] | null>(null);
   // Сегмент хооронд шилжих чиглэл — swipe анимэйшнд: "r" = баруунаас, "l" = зүүнээс
@@ -132,8 +135,8 @@ function AudienceSwitch({
   const openSeg = (id: AudienceSegment["id"]) => {
     clearTimer();
     // Шинэ сегмент жагсаалтад баруун талд байвал баруунаас, эс бөгөөс зүүнээс гулсана
-    const prevIdx = audienceSegments.findIndex((s) => s.id === openId);
-    const nextIdx = audienceSegments.findIndex((s) => s.id === id);
+    const prevIdx = segments.findIndex((s) => s.id === openId);
+    const nextIdx = segments.findIndex((s) => s.id === id);
     if (prevIdx !== -1 && nextIdx !== -1) setDir(nextIdx >= prevIdx ? "r" : "l");
     setOpenId(id);
   };
@@ -148,10 +151,11 @@ function AudienceSwitch({
 
   const isTabs = layout === "tabs";
   const triggerClass = isTabs ? tabClass : pillClass;
-  const activeSeg = audienceSegments.find((s) => s.id === openId && s.brands?.length) ?? null;
+  const activeSeg = segments.find((s) => s.id === openId && s.brands?.length) ?? null;
 
-  // Идэвхтэй сегментийн (жишээ нь "Хувь хэрэглэгч") арын өнгө
-  const activeCls = "bg-primary/10 text-primary!";
+  // Идэвхтэй сегментийн (жишээ нь "Хувь хэрэглэгч") тодотгол — бусад top bar-т
+  // ашигладагтай ижил: хар текст + саарал дэвсгэр
+  const activeCls = "bg-foreground/10 text-foreground!";
   // hover=false үед hover-оор нээх/хаах бүх үйлдэл no-op болно (зөвхөн click)
   const hoverOpen = (id: AudienceSegment["id"]) => {
     if (hover) openSeg(id);
@@ -178,13 +182,15 @@ function AudienceSwitch({
             isTabs ? "gap-1" : "bg-muted/60 gap-0.5 rounded-full p-0.5",
           )}
         >
-          {audienceSegments.map((seg) => {
+          {segments.map((seg) => {
             // Бидний тухай — card-гүй, группын сайт руу шууд линк
             if (!seg.brands?.length) {
               return (
                 <a
                   key={seg.id}
                   href={seg.href}
+                  target={seg.external ? "_blank" : undefined}
+                  rel={seg.external ? "noopener noreferrer" : undefined}
                   onMouseEnter={hoverCloseNow}
                   className={cn(triggerClass, "group", seg.id === activeId && activeCls)}
                 >
@@ -244,10 +250,20 @@ function AudienceSwitch({
   );
 }
 
-// Группын сегментүүд (Mobile / Өрх / Байгууллага) — top bar-ын зүүн талд таб маягаар.
-// hover дээр гишүүн брэндийн картууд гарна.
-export function AudienceSwitchTabs() {
-  return <AudienceSwitch layout="tabs" align="start" />;
+// Группын сегментүүд — top bar-ын зүүн талд таб маягаар.
+// hover дээр гишүүн брэндийн картууд гарна. segments/activeId-аар өөр
+// жагсаалт (жишээ нь Хувилбар 6-ийн Хувь хэрэглэгч/Байгууллага) дамжуулж болно.
+export function AudienceSwitchTabs({
+  segments,
+  activeId,
+  align = "start",
+}: {
+  segments?: AudienceSegment[];
+  activeId?: AudienceSegment["id"];
+  /** Hover панелын зэрэгцэл — табууд top bar-ын баруун талд бол "end" */
+  align?: "start" | "end";
+} = {}) {
+  return <AudienceSwitch layout="tabs" align={align} segments={segments} activeId={activeId} />;
 }
 
 // ХУВИЛБАР 3 — лого хажууд segmented pill маягаар
@@ -259,10 +275,16 @@ export function AudienceSwitchPills() {
 // MOBILE — Sheet дотор: сегмент бүр dropdown (accordion) болж задарна.
 // Үндсэн "Бүтээгдэхүүн" nav-аас тусдаа, өөрийн dropdown-тойгоор.
 // =====================================================================
-export function AudienceSwitchMobile({ onItemClick }: { onItemClick?: () => void }) {
+export function AudienceSwitchMobile({
+  onItemClick,
+  segments = audienceSegments,
+}: {
+  onItemClick?: () => void;
+  segments?: AudienceSegment[];
+}) {
   return (
     <Accordion type="single" collapsible className="w-full">
-      {audienceSegments.map((seg) =>
+      {segments.map((seg) =>
         seg.brands?.length ? (
           <AccordionItem key={seg.id} value={seg.id}>
             <AccordionTrigger className="text-sm font-medium">
@@ -296,6 +318,8 @@ export function AudienceSwitchMobile({ onItemClick }: { onItemClick?: () => void
           <a
             key={seg.id}
             href={seg.href}
+            target={seg.external ? "_blank" : undefined}
+            rel={seg.external ? "noopener noreferrer" : undefined}
             onClick={onItemClick}
             className="flex items-center gap-2 py-4 text-sm font-medium"
           >

@@ -216,7 +216,7 @@ export const supportCategoryDetails: Record<string, CategoryDetail> = {
     frequentTopics: priorityFrequentTopics,
     otherTopics: [
       t("int-7", "Интернет холболт"),
-      t("int-8", "Шилэн кабелийн холболт"),
+      t("int-8", "Утасгүй интернэтийн үйчилгээ"),
       t("int-9", "Нэмэлт Mesh Wi-Fi холболт"),
       t("int-10", "Салаа төхөөрөмж холбох"),
       t("int-11", "Хаяг шилжүүлэх үйлчилгээ"),

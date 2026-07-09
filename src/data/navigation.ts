@@ -198,6 +198,78 @@ export const audienceSegments: AudienceSegment[] = [
   },
 ];
 
+// =====================================================================
+// Хувилбар 6 — Хувь хэрэглэгч / Байгууллага / Бидний тухай сегментүүд.
+// "Бидний тухай" нь brands-гүй тул группын сайт руу шууд линк болно.
+// =====================================================================
+export const customerSegments: AudienceSegment[] = [
+  {
+    id: "personal",
+    label: "Хувь хэрэглэгч",
+    href: "#",
+    icon: "user",
+    brands: [
+      {
+        name: "Unitel",
+        badge: "UNT",
+        description: "Мобайл, дата болон ярианы багцууд.",
+        href: "https://unitel.mn/unitel/",
+        external: true,
+      },
+      {
+        name: "Univision",
+        badge: "UNV",
+        description: "IPTV, телевиз болон контентын үйлчилгээ.",
+        href: "https://univision.mn/",
+        external: true,
+      },
+      {
+        name: "LookTV",
+        badge: "LOOK",
+        description: "Интернэт телевиз — хүссэн газраа, хүссэн үедээ.",
+        href: "https://looktv.mn/",
+        external: true,
+      },
+    ],
+  },
+  {
+    id: "business",
+    label: "Байгууллага",
+    href: "#",
+    icon: "building",
+    brands: [
+      {
+        name: "Unitel Business",
+        badge: "UNT",
+        description: "Байгууллагын мобайл болон интернэт шийдэл.",
+        href: "https://unitel.mn/",
+        external: true,
+      },
+      {
+        name: "Nexmind",
+        badge: "NEX",
+        description: "Managed network, дата төв, IT шийдэл.",
+        href: "https://nexmind.mn/managednetwork",
+        external: true,
+      },
+      {
+        name: "U-point",
+        badge: "UP",
+        description: "Дижитал төлбөр, лояалти платформ.",
+        href: "https://u-point.mn/",
+        external: true,
+      },
+    ],
+  },
+  {
+    id: "about",
+    label: "Бидний тухай",
+    href: "https://unitel.mn/",
+    external: true,
+    icon: "info",
+  },
+];
+
 // Main navigation — бүтээгдэхүүний төрлөөр ангилсан (Мобайл / Интернэт / Телевиз)
 export const mainNav: NavCategory[] = [
   {

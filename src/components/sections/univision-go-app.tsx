@@ -15,8 +15,7 @@ export function UnivisionGoApp() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 opacity-[0.08]"
         style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px)",
           backgroundSize: "22px 22px",
         }}
       />
@@ -60,7 +59,7 @@ export function UnivisionGoApp() {
                 marginSize={0}
               />
             </div>
-            <div className="max-w-[180px] text-sm leading-relaxed text-white/80">
+            <div className="max-w-45 text-sm leading-relaxed text-white/80">
               {univisionGoApp.qrCaption}
             </div>
           </div>
@@ -68,7 +67,7 @@ export function UnivisionGoApp() {
 
         {/* ============ RIGHT — phone card (float animation) ============ */}
         <div className="order-1 flex justify-center lg:order-2 lg:justify-end">
-          <div className="animate-float-card relative aspect-[3/2] w-full max-w-lg overflow-hidden rounded-3xl shadow-2xl shadow-black/60 ring-1 ring-white/5 sm:max-w-xl lg:max-w-2xl xl:max-w-3xl">
+          <div className="animate-float-card relative aspect-[3/2] w-full max-w-lg overflow-hidden rounded-3xl shadow-2xl ring-1 shadow-black/60 ring-white/5 sm:max-w-xl lg:max-w-2xl xl:max-w-3xl">
             <Image
               src={univisionGoApp.bannerImage}
               alt=""
@@ -119,9 +118,7 @@ function GooglePlayBadge({ href }: { href: string }) {
         <path d="M3.609 1.814 13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893 2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198 2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.119 12l2.579-2.491zM5.864 2.658 16.802 8.99l-2.303 2.303-8.635-8.635z" />
       </svg>
       <span className="text-left leading-tight">
-        <span className="block text-[10px] tracking-wide uppercase opacity-90">
-          GET IT ON
-        </span>
+        <span className="block text-[10px] tracking-wide uppercase opacity-90">GET IT ON</span>
         <span className="-mt-0.5 block text-lg font-semibold">Google Play</span>
       </span>
     </Link>
