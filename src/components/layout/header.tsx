@@ -44,8 +44,8 @@ type Variant = 1 | 2 | 3 | 4 | 5 | 6;
 const VARIANTS: { id: Variant; label: string }[] = [
   { id: 1, label: "Хувилбар 1 · Apple" },
   { id: 2, label: "Хувилбар 2 · Business line" },
-  { id: 3, label: "Хувилбар 3 · Unitel" },
-  { id: 4, label: "Хувилбар 4 · Univision" },
+  { id: 3, label: "Хувилбар 3.1 · Unitel" },
+  { id: 4, label: "Хувилбар 3.2 · Univision" },
   { id: 5, label: "Хувилбар 5 · Domain" },
   { id: 6, label: "Хувилбар 6 · Хэрэглэгч" },
 ];
@@ -551,9 +551,7 @@ function SwisscomHeader() {
 // ХУВИЛБАР 6 — V2-той ижил бүтэц; top bar-ын баруун талд Хувь хэрэглэгч /
 // Байгууллага / Бидний тухай сегмент. Одоо байгаа сегмент (Хувь хэрэглэгч) тодотгогдоно.
 function CustomerHeader() {
-  return (
-    <GroupHeader segments={customerSegments} activeSegmentId="personal" segmentsAlign="end" />
-  );
+  return <GroupHeader segments={customerSegments} activeSegmentId="personal" segmentsAlign="end" />;
 }
 
 // =====================================================================
