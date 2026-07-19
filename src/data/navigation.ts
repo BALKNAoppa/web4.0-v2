@@ -65,8 +65,9 @@ export const topBar: TopBarLink[] = [
 export type EcosystemLink = { name: string; href: string; external?: boolean };
 
 export const ecosystemBrands: EcosystemLink[] = [
-  { name: "Unitel", href: "https://unitel.mn/", external: true },
-  { name: "Univision", href: "https://univision.mn/", external: true },
+  // Unitel, Univision — Apple маягийн дотоод брэнд хуудсууд (/unitel, /univision)
+  { name: "Unitel", href: "/unitel" },
+  { name: "Univision", href: "/univision" },
   { name: "Toki", href: "https://toki.mn/", external: true },
   { name: "Look TV", href: "https://look.tv/", external: true },
   { name: "DDish TV", href: "#" }, // TODO: домэйн (ddishtv.mn?)

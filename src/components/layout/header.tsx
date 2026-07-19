@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { Menu, Search, User, Globe, LogOut, ArrowUpRight } from "lucide-react";
 
@@ -47,7 +48,7 @@ const VARIANTS: { id: Variant; label: string }[] = [
   { id: 3, label: "Хувилбар 3.1 · Unitel" },
   { id: 4, label: "Хувилбар 3.2 · Univision" },
   { id: 5, label: "Хувилбар 5 · Domain" },
-  { id: 6, label: "Хувилбар 6 · Хэрэглэгч" },
+  { id: 6, label: "Хувилбар 6 · Хэрэглэгчийн урсгал" },
 ];
 
 const VARIANT_KEY = "uv-header-variant-new";
@@ -144,8 +145,18 @@ function VariantToggle({
 // Одоо байгаа сайт — nav дээр тодотгож "хаана байгаагаа" мэдэгдэнэ
 const CURRENT_BRAND = "Univision";
 
+/** Дотоод брэнд хуудсан дээр (/unitel, /univision) тухайн брэндийг тодотгоно */
+function useActiveBrand() {
+  const pathname = usePathname();
+  const brand = ecosystemBrands.find(
+    (b) => !b.external && b.href !== "/" && pathname.startsWith(b.href),
+  );
+  return brand?.name ?? CURRENT_BRAND;
+}
+
 function AppleHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const activeBrand = useActiveBrand();
 
   return (
     <header className="bg-background/80 sticky top-0 z-50 backdrop-blur" role="banner">
@@ -157,23 +168,32 @@ function AppleHeader() {
 
         <nav aria-label="Эко-систем" className="flex items-center justify-center gap-5">
           {ecosystemBrands.map((brand) => {
-            const active = brand.name === CURRENT_BRAND;
-            return (
+            const active = brand.name === activeBrand;
+            const linkClass = cn(
+              "text-[13px] font-medium transition-colors",
+              active
+                ? "text-foreground font-semibold"
+                : "text-foreground/75 hover:text-foreground",
+            );
+            return brand.external ? (
               <a
                 key={brand.name}
                 href={brand.href}
-                target={brand.external ? "_blank" : undefined}
-                rel={brand.external ? "noopener noreferrer" : undefined}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "text-[13px] font-medium transition-colors",
-                  active
-                    ? "text-foreground font-semibold"
-                    : "text-foreground/75 hover:text-foreground",
-                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClass}
               >
                 {brand.name}
               </a>
+            ) : (
+              <Link
+                key={brand.name}
+                href={brand.href}
+                aria-current={active ? "page" : undefined}
+                className={linkClass}
+              >
+                {brand.name}
+              </Link>
             );
           })}
           <Link
@@ -218,26 +238,37 @@ function AppleHeader() {
 
               <ul className="mt-4 space-y-1">
                 {ecosystemBrands.map((brand) => {
-                  const active = brand.name === CURRENT_BRAND;
+                  const active = brand.name === activeBrand;
+                  const linkClass = cn(
+                    "hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors",
+                    active && "bg-muted",
+                  );
                   return (
                     <li key={brand.name}>
-                      <a
-                        href={brand.href}
-                        target={brand.external ? "_blank" : undefined}
-                        rel={brand.external ? "noopener noreferrer" : undefined}
-                        onClick={() => setMobileOpen(false)}
-                        aria-current={active ? "page" : undefined}
-                        className={cn(
-                          "hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors",
-                          active && "bg-muted",
-                        )}
-                      >
-                        <span>{brand.name}</span>
-                        <ArrowUpRight
-                          className="text-muted-foreground ml-auto size-4"
-                          aria-hidden="true"
-                        />
-                      </a>
+                      {brand.external ? (
+                        <a
+                          href={brand.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setMobileOpen(false)}
+                          className={linkClass}
+                        >
+                          <span>{brand.name}</span>
+                          <ArrowUpRight
+                            className="text-muted-foreground ml-auto size-4"
+                            aria-hidden="true"
+                          />
+                        </a>
+                      ) : (
+                        <Link
+                          href={brand.href}
+                          onClick={() => setMobileOpen(false)}
+                          aria-current={active ? "page" : undefined}
+                          className={linkClass}
+                        >
+                          <span>{brand.name}</span>
+                        </Link>
+                      )}
                     </li>
                   );
                 })}
