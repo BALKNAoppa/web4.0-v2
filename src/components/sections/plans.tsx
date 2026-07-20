@@ -39,15 +39,31 @@ export function Plans() {
   return (
     <section aria-labelledby="plans-title" className="bg-muted/30 py-7 lg:py-8">
       <div className="container mx-auto px-4">
-        {/* Section гарчиг */}
+        {/* Section гарчиг — Мобайл section-тэй ижил хэв маяг (голлосон + хос CTA) */}
         <div className="mb-12 text-center">
-          <h2 id="plans-title" className="text-3xl font-bold tracking-tight md:text-4xl">
-            Санал болгох багц or something trigger үг
+          <h2
+            id="plans-title"
+            className="text-foreground text-3xl font-extrabold tracking-tight md:text-5xl"
+          >
+            Univision · Үндсэн багц
           </h2>
-          <p className="text-muted-foreground mt-3 text-base md:text-lg">
-            Энд бас something trigger үг байж болно, жишээ нь{" "}
-            <span className="text-foreground font-semibold">Хамгийн алдартай</span> багц гэх мэт
+          <p className="text-muted-foreground mx-auto mt-3 max-w-xl text-sm md:text-base">
+            Интернэт, IPTV, суурин утас — нэг багцад багтаасан M+, L+, XL+.
           </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/univision"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-semibold transition-colors duration-700 ease-out"
+            >
+              Univision үзэх
+            </Link>
+            <Link
+              href="/main-packages"
+              className="border-primary text-primary hover:bg-primary/10 inline-flex h-11 items-center justify-center rounded-full border px-6 text-sm font-semibold transition-colors duration-700 ease-out"
+            >
+              Бүх багц харах
+            </Link>
+          </div>
         </div>
 
         {/* Desktop — 3 card зэрэг харагдана */}

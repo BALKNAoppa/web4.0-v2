@@ -282,6 +282,22 @@
 }
 
 /* ============================================
+   Web 4.0 концепцийн bubble deck (/web4)
+   ============================================ */
+@keyframes web4-drift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  50%  { transform: translate(6px, -14px) rotate(2deg); }
+  100% { transform: translate(-6px, 10px) rotate(-2deg); }
+}
+@keyframes web4-pulse {
+  0%, 100% { box-shadow: inset 0 0 60px rgba(255,255,255,.22), inset -14px -18px 46px rgba(0,0,0,.4), 0 30px 90px rgba(0,0,0,.55), 0 0 80px rgba(69,199,10,.3), 0 0 110px rgba(42,212,255,.25); }
+  50%      { box-shadow: inset 0 0 60px rgba(255,255,255,.28), inset -14px -18px 46px rgba(0,0,0,.4), 0 30px 90px rgba(0,0,0,.55), 0 0 120px rgba(69,199,10,.45), 0 0 150px rgba(42,212,255,.4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .web4-drift, .web4-pulse { animation: none !important; }
+}
+
+/* ============================================
    Custom scrollbar — Univision brand gradient
    Chromium, Firefox-д ажиллана (Firefox solid fallback)
    ============================================ */

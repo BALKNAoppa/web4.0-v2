@@ -20,6 +20,6 @@ export const footerLinks: FooterLink[] = [
 ];
 
 export const footerMeta = {
-  /** Зураг дээрх "© Юнивишн ХХК" хэлбэрээр харагдана */
-  copyrightOwner: "Юнивишн ХХК",
+  /** "© Юнител ХХК" хэлбэрээр харагдана */
+  copyrightOwner: "Юнител ХХК",
 };

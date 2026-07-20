@@ -45,17 +45,17 @@ function FooterDetailed() {
         <div className="flex flex-col gap-10 md:flex-row md:flex-wrap md:items-start md:gap-12">
           {/* Зүүн — Logo + tagline (үлдсэн зайг шингээнэ) */}
           <div className="flex flex-col gap-4 md:max-w-sm md:flex-1">
-            <LogoHomeLink className="inline-flex items-center" aria-label="Univision нүүр">
+            <LogoHomeLink className="inline-flex items-center" aria-label="Unitel нүүр">
               <Image
-                src="/univision-logo.svg"
-                alt="Univision"
+                src="/unitel-logo.svg"
+                alt="Unitel"
                 width={160}
                 height={36}
                 className="block h-7 w-auto dark:hidden"
               />
               <Image
-                src="/univision-logo-dark.svg"
-                alt="Univision"
+                src="/unitel-logo-dark.svg"
+                alt="Unitel"
                 width={160}
                 height={36}
                 className="hidden h-7 w-auto dark:block"

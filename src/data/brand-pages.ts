@@ -180,40 +180,34 @@ export const univisionPage: BrandPage = {
   },
   ribbon: [
     {
-      label: "Багцууд",
-      href: "#packages",
+      label: "Гурвалсан",
+      href: "#triple",
       icon: "package",
       tint: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
     },
     {
-      label: "Add-On",
+      label: "Single",
+      href: "#single",
+      icon: "tv",
+      tint: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+    },
+    {
+      label: "Нэмэлт үйлчилгээ",
       href: "#addons",
       icon: "zap",
       tint: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    },
+    {
+      label: "Энтертайнмент",
+      href: "#entertainment",
+      icon: "clapperboard",
+      tint: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
     },
     {
       label: "Шийдэл",
       href: "#solutions",
       icon: "router",
       tint: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
-    },
-    {
-      label: "Суваг",
-      href: "#channels",
-      icon: "tv",
-      tint: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
-    },
-    {
-      label: "Үзвэр",
-      href: "#vod",
-      icon: "clapperboard",
-      tint: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
-    },
-    {
-      label: "Апп",
-      href: "#apps",
-      icon: "monitor-play",
-      tint: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
     },
     {
       label: "Life-style",
@@ -231,21 +225,48 @@ export const univisionPage: BrandPage = {
   ],
   sections: [
     {
-      id: "packages",
-      title: "Багцууд",
-      description: "Гэрийн интернэт, телевизийн үндсэн багцууд.",
+      id: "triple",
+      title: "Гурвалсан",
+      description: "Интернэт, IPTV, суурин утас — нэг багцад.",
       items: [
-        { label: "Triple", href: "#" },
-        { label: "Single", href: "#" },
+        { label: "M+", href: "/main-packages" },
+        { label: "L+", href: "/main-packages" },
+        { label: "XL+", href: "/main-packages" },
+      ],
+    },
+    {
+      id: "single",
+      title: "Single",
+      description: "Ганц үйлчилгээний бие даасан багцууд.",
+      items: [
+        { label: "Дан интернэт", href: "#" },
+        { label: "Дан телевиз", href: "#" },
       ],
     },
     {
       id: "addons",
-      title: "Add-On",
+      title: "Нэмэлт үйлчилгээ",
+      description: "Багцаа сайжруулах нэмэлт эрх, үйлчилгээ.",
       items: [
         { label: "Net Boost", href: "#" },
         { label: "Data-Add-on", href: "#" },
         { label: "Univision Go", href: "/univision-go" },
+      ],
+    },
+    {
+      id: "entertainment",
+      title: "Энтертайнмент",
+      description: "Суваг, үзвэр, апп — бүх контент нэг дор.",
+      items: [
+        { label: "Linier TV", href: "#" },
+        { label: "PayTV packages", href: "#" },
+        { label: "UniLive", href: "#" },
+        { label: "TVOD", href: "/entertainment/main#tvod" },
+        { label: "SVOD", href: "#" },
+        { label: "HBO Max", href: "#" },
+        { label: "Sport App", href: "#" },
+        { label: "M Karaoke", href: "#" },
+        { label: "Traffic App", href: "#" },
       ],
     },
     {
@@ -260,34 +281,6 @@ export const univisionPage: BrandPage = {
       ],
     },
     {
-      id: "channels",
-      title: "Суваг",
-      items: [
-        { label: "Linier TV", href: "#" },
-        { label: "PayTV packages", href: "#" },
-        { label: "UniLive", href: "#" },
-      ],
-    },
-    {
-      id: "vod",
-      title: "Үзвэр",
-      description: "Хүссэн үедээ үзэх кино, контент.",
-      items: [
-        { label: "TVOD", href: "/entertainment/main#tvod" },
-        { label: "SVOD", href: "#" },
-      ],
-    },
-    {
-      id: "apps",
-      title: "Апп",
-      items: [
-        { label: "HBO Max", href: "#" },
-        { label: "Sport App", href: "#" },
-        { label: "M Karaoke", href: "#" },
-        { label: "Traffic App", href: "#" },
-      ],
-    },
-    {
       id: "lifestyle",
       title: "Life-style",
       items: [
@@ -297,4 +290,11 @@ export const univisionPage: BrandPage = {
       ],
     },
   ],
+};
+
+// Header-ийн эко-систем nav-д hover mega-menu гаргахад ашиглана.
+// Түлхүүр нь navigation.ts дахь ecosystemBrands-ын нэртэй таарна.
+export const brandPages: Record<string, BrandPage> = {
+  Unitel: unitelPage,
+  Univision: univisionPage,
 };

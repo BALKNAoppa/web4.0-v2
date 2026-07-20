@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { Menu, Search, User, Globe, LogOut, ArrowUpRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import {
   type EcosystemLink,
   type NavCategory,
 } from "@/data/navigation";
+import { brandPages, type BrandPage } from "@/data/brand-pages";
 import { cn } from "@/lib/utils";
 
 // Шинэ header хувилбарууд — дээд toggle-оор солино:
@@ -145,23 +146,39 @@ function VariantToggle({
 // Одоо байгаа сайт — nav дээр тодотгож "хаана байгаагаа" мэдэгдэнэ
 const CURRENT_BRAND = "Univision";
 
-/** Дотоод брэнд хуудсан дээр (/unitel, /univision) тухайн брэндийг тодотгоно */
-function useActiveBrand() {
+/**
+ * Дотоод брэнд хуудсан дээр (/unitel, /univision) л тухайн брэндийг тодотгоно —
+ * "тэнд нь байгаа" мэдрэмж өгнө. Бусад хуудсанд аль нь ч тодрохгүй.
+ */
+function useActiveBrand(): string | null {
   const pathname = usePathname();
   const brand = ecosystemBrands.find(
     (b) => !b.external && b.href !== "/" && pathname.startsWith(b.href),
   );
-  return brand?.name ?? CURRENT_BRAND;
+  return brand?.name ?? null;
 }
 
 function AppleHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const activeBrand = useActiveBrand();
 
+  // Эко-систем nav-ын hover mega-menu (зөвхөн desktop). Триггерээс панел руу
+  // хулгана шилжихэд хаагдахгүйгээр богино саатал (150ms) тавина.
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openBrandMenu = (name: string) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpenMenu(name);
+  };
+  const closeBrandMenu = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpenMenu(null), 150);
+  };
+
   return (
-    <header className="bg-background/80 sticky top-0 z-50 backdrop-blur" role="banner">
+    <header className="bg-background/80 sticky top-0 z-50 backdrop-blur relative" role="banner">
       {/* Desktop */}
-      <div className="mx-auto hidden h-11 max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
+      <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
         <div className="flex items-center">
           <EcoLogo />
         </div>
@@ -171,10 +188,31 @@ function AppleHeader() {
             const active = brand.name === activeBrand;
             const linkClass = cn(
               "text-[13px] font-medium transition-colors",
-              active
-                ? "text-foreground font-semibold"
-                : "text-foreground/75 hover:text-foreground",
+              active ? "text-foreground font-semibold" : "text-foreground/75 hover:text-foreground",
             );
+
+            // Дотоод брэнд + mega-menu дата байвал hover дээр панел нээнэ
+            const menu = !brand.external ? brandPages[brand.name] : undefined;
+            if (menu) {
+              return (
+                <div
+                  key={brand.name}
+                  className="flex items-center"
+                  onMouseEnter={() => openBrandMenu(brand.name)}
+                  onMouseLeave={closeBrandMenu}
+                >
+                  <Link
+                    href={brand.href}
+                    aria-current={active ? "page" : undefined}
+                    aria-expanded={openMenu === brand.name}
+                    className={cn(linkClass, openMenu === brand.name && "text-foreground")}
+                  >
+                    {brand.name}
+                  </Link>
+                </div>
+              );
+            }
+
             return brand.external ? (
               <a
                 key={brand.name}
@@ -214,7 +252,7 @@ function AppleHeader() {
       </div>
 
       {/* Mobile */}
-      <div className="mx-auto flex h-11 max-w-[1200px] items-center justify-between px-4 lg:hidden">
+      <div className="mx-auto flex h-11 max-w-300 items-center justify-between px-4 lg:hidden">
         <EcoLogo />
 
         <div className="flex items-center gap-0.5">
@@ -286,7 +324,81 @@ function AppleHeader() {
           </Sheet>
         </div>
       </div>
+
+      {/* Desktop hover mega-menu — эко-систем брэндийн доор бүтэн өргөнөөр */}
+      {openMenu && brandPages[openMenu] && (
+        <div
+          key={openMenu}
+          onMouseEnter={() => openBrandMenu(openMenu)}
+          onMouseLeave={closeBrandMenu}
+          className="border-border bg-background/95 animate-in fade-in slide-in-from-top-1 absolute inset-x-0 top-full hidden border-t shadow-lg backdrop-blur duration-300 ease-out lg:block"
+        >
+          <BrandMegaPanel page={brandPages[openMenu]} onNavigate={() => setOpenMenu(null)} />
+        </div>
+      )}
     </header>
+  );
+}
+
+/**
+ * Apple маягийн минимал brand mega-panel. Зүүн: үндсэн sub-menu — section-ийн
+ * гарчгууд (Дараа төлбөрт, Урьдчилсан төлбөрт г.м.) ТОМ, BOLD, anchor руу.
+ * Баруун: зөвхөн шаардлагатай холбоотой цөөн линк (дэлгэрэнгүй items хасагдсан).
+ */
+function BrandMegaPanel({ page, onNavigate }: { page: BrandPage; onNavigate: () => void }) {
+  const sections = page.sections.filter((s) => s.items.length > 0);
+
+  // Холбоотой цөөн линк — sample placeholder-ууд (дараа солино) + бодит линк
+  const relatedLinks = [
+    { label: "Sample цэс 1", href: "#" },
+    { label: "Sample цэс 2", href: "#" },
+    { label: "Sample цэс 3", href: "#" },
+    ...(page.promo ? [{ label: page.promo.ctaLabel, href: page.promo.href }] : []),
+    { label: "Урамшуулал", href: "/campaigns" },
+  ];
+
+  return (
+    <div className="mx-auto flex max-w-[1200px] gap-16 px-4 py-8">
+      {/* ── Зүүн: үндсэн sub-menu — section гарчгууд том, bold ── */}
+      <div>
+        <h3 className="text-muted-foreground mb-4 text-xs font-semibold tracking-wider uppercase">
+          {page.name}
+        </h3>
+        <ul className="space-y-3">
+          {sections.map((section) => (
+            <li key={section.id}>
+              <Link
+                href={`/${page.slug}#${section.id}`}
+                onClick={onNavigate}
+                className="text-foreground hover:text-primary block text-xl font-semibold tracking-tight transition-colors"
+              >
+                {section.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* ── Баруун: холбоотой цөөн линк ── */}
+      <div>
+        <h3 className="text-muted-foreground mb-4 text-xs font-semibold tracking-wider uppercase">
+          Холбоотой
+        </h3>
+        <ul className="space-y-2.5">
+          {relatedLinks.map((link) => (
+            <li key={link.label}>
+              <Link
+                href={link.href}
+                onClick={onNavigate}
+                className="text-foreground/80 hover:text-foreground text-sm transition-colors"
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
@@ -316,7 +428,7 @@ function GroupHeader({
       <div className="bg-muted/40 border-border hidden border-b lg:block">
         <div
           className={cn(
-            "mx-auto flex h-9 max-w-[1200px] items-center px-4",
+            "mx-auto flex h-9 max-w-300 items-center px-4",
             segmentsAlign === "end" && "justify-end",
           )}
         >
@@ -329,7 +441,7 @@ function GroupHeader({
       </div>
 
       {/* Main row — лого + бүтээгдэхүүний nav + icons */}
-      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-4 px-4 lg:h-16">
+      <div className="mx-auto flex h-14 max-w-300 items-center justify-between gap-4 px-4 lg:h-16">
         <UnivisionLogo />
 
         <div className="hidden flex-1 justify-start lg:flex">
@@ -435,7 +547,7 @@ function DomainHeader({
     <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
       {/* Top bar — холбоотой домэйнууд. Одоо байгаа сайт тодотгогдоно. */}
       <div className="bg-muted/40 border-border hidden border-b lg:block">
-        <div className="mx-auto flex h-9 max-w-[1200px] items-center gap-1 px-4">
+        <div className="mx-auto flex h-9 max-w-300 items-center gap-1 px-4">
           {domains.map((d) => {
             const active = d.name === activeDomain;
             return (
@@ -460,7 +572,7 @@ function DomainHeader({
       </div>
 
       {/* Main row — лого + бүтээгдэхүүний mega-menu + icons */}
-      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-4 px-4 lg:h-16">
+      <div className="mx-auto flex h-14 max-w-300 items-center justify-between gap-4 px-4 lg:h-16">
         {logo}
 
         <div className="hidden flex-1 justify-start lg:flex">

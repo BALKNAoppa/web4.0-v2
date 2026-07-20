@@ -52,7 +52,7 @@ export const appStores: AppStoreLink[] = [
 // SOCIAL — Линкийг өөрийн жинхэнэ хаягаар солих
 // ====================================================
 export const socialLinks: SocialLink[] = [
-  { id: "facebook", name: "Facebook", href: "https://www.facebook.com/UnivisionMN" },
-  { id: "instagram", name: "Instagram", href: "https://instagram.com/univisionmn" },
-  { id: "youtube", name: "YouTube", href: "https://www.youtube.com/@UnivisionMon" },
+  { id: "facebook", name: "Facebook", href: "https://www.facebook.com/UnitelMN" },
+  { id: "instagram", name: "Instagram", href: "https://instagram.com/unitelmn" },
+  { id: "youtube", name: "YouTube", href: "https://www.youtube.com/@UnitelMN" },
 ];
