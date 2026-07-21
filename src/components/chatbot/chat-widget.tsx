@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { BotMessageSquare, X, Send, Sparkles } from "lucide-react";
 
 import { TypingAnimation } from "@/components/ui/typing-animation";
@@ -48,6 +49,7 @@ function getBotReply(): string {
 }
 
 export function ChatWidget() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
@@ -162,6 +164,9 @@ export function ChatWidget() {
     // sendMessage нь state setter-үүд дээр суурилсан тогтвортой логик тул deps-гүй
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // /web4 — immersive концепцийн хуудас: chatbot харуулахгүй
+  if (pathname?.startsWith("/web4")) return null;
 
   return (
     <>

@@ -14,7 +14,7 @@ export function HomeHeroBanner() {
       aria-labelledby="home-hero-title"
       className="animate-in fade-in bg-muted/40 w-full text-center duration-1000 ease-out"
     >
-      <div className="mx-auto max-w-[1200px] px-4 pt-14 pb-6 md:pt-20 md:pb-8">
+      <div className="mx-auto max-w-300 px-4 pt-14 pb-6 md:pt-20 md:pb-8">
         <p className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
           {homeHero.eyebrow}
         </p>

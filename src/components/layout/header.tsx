@@ -48,8 +48,8 @@ const VARIANTS: { id: Variant; label: string }[] = [
   { id: 2, label: "Хувилбар 2 · Business line" },
   { id: 3, label: "Хувилбар 3.1 · Unitel" },
   { id: 4, label: "Хувилбар 3.2 · Univision" },
-  { id: 5, label: "Хувилбар 5 · Domain" },
-  { id: 6, label: "Хувилбар 6 · Хэрэглэгчийн урсгал" },
+  { id: 5, label: "Хувилбар 4 · Domain" },
+  { id: 6, label: "Хувилбар 5 · Хэрэглэгчийн урсгал" },
 ];
 
 const VARIANT_KEY = "uv-header-variant-new";
@@ -75,11 +75,15 @@ function setHeaderVariant(v: Variant) {
 }
 
 export function Header() {
+  const pathname = usePathname();
   const variant = useSyncExternalStore(
     subscribeVariant,
     getVariantSnapshot,
     getVariantServerSnapshot,
   );
+
+  // /web4 — immersive концепцийн хуудас: header харуулахгүй
+  if (pathname?.startsWith("/web4")) return null;
 
   return (
     <>
@@ -176,7 +180,7 @@ function AppleHeader() {
   };
 
   return (
-    <header className="bg-background/80 sticky top-0 z-50 backdrop-blur relative" role="banner">
+    <header className="bg-background/80 relative sticky top-0 z-50 backdrop-blur" role="banner">
       {/* Desktop */}
       <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
         <div className="flex items-center">
