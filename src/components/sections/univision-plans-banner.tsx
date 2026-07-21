@@ -16,7 +16,7 @@ export function UnivisionPlansBanner() {
   return (
     <section
       aria-labelledby="univision-plans-title"
-      className="bg-background relative w-full overflow-hidden"
+      className="bg-muted relative w-full overflow-hidden"
     >
       {/* Бусад section-уудтай ижил 1200px контентын хүрээнд тэгшилнэ */}
       <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-10 px-4 py-10 lg:grid-cols-2 lg:gap-16 lg:py-14">
