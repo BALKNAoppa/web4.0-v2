@@ -59,7 +59,7 @@ export function UnivisionPlansBanner() {
 
           <div className="mt-7 flex flex-wrap items-center gap-4">
             <Link
-              href="/main-packages"
+              href="/univision"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#0FAA0A] px-7 text-sm font-semibold text-white transition-opacity duration-700 ease-out hover:opacity-85"
             >
               Дэлгэрэнгүй үзэх

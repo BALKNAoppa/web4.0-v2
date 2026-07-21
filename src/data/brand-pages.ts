@@ -237,7 +237,7 @@ export const univisionPage: BrandPage = {
     {
       id: "single",
       title: "Single",
-      description: "Ганц үйлчилгээний бие даасан багцууд.",
+      description: "Бие даасан багцууд.",
       items: [
         { label: "Дан интернэт", href: "#" },
         { label: "Дан телевиз", href: "#" },
