@@ -298,6 +298,55 @@
 }
 
 /* ============================================
+   Web4 SCROLL presentation — reveal-on-scroll
+   ============================================ */
+.w4-reveal {
+  opacity: 0;
+  transform: translateY(34px);
+  transition:
+    opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.w4-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.w4-reveal-scale {
+  opacity: 0;
+  transform: scale(0.92);
+  transition:
+    opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.w4-reveal-scale.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@keyframes w4-float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .w4-reveal, .w4-reveal-scale {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Web4 deck — scrollbar-г нуух (scroll ажиллах хэвээр, зөвхөн зураас нь харагдахгүй) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* ============================================
    Custom scrollbar — Univision brand gradient
    Chromium, Firefox-д ажиллана (Firefox solid fallback)
    ============================================ */
