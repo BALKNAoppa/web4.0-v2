@@ -21,7 +21,7 @@ export function SampleWeb() {
       />
 
       <Reveal delay={100} variant="scale">
-        <div className="mx-auto mt-14 max-w-5xl overflow-hidden rounded-2xl border border-white/12 bg-black/40 shadow-2xl shadow-black/60">
+        <div className="mx-auto mt-8 max-w-5xl overflow-hidden rounded-2xl border border-white/12 bg-black/40 shadow-2xl shadow-black/60">
           <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/3 px-4 py-2.5">
             <span className="size-2.5 rounded-full bg-white/25" />
             <span className="size-2.5 rounded-full bg-white/25" />

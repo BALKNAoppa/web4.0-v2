@@ -20,8 +20,8 @@ export function DeckSection({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="relative w-full py-28 md:py-40">
-      <div className={cn("mx-auto max-w-6xl px-6", className)}>{children}</div>
+    <section id={id} className="relative w-full pt-[7vh] pb-20 md:pb-24">
+      <div className={cn("mx-auto max-w-[1400px] px-6", className)}>{children}</div>
     </section>
   );
 }
