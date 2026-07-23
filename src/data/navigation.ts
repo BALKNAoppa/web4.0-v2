@@ -78,6 +78,16 @@ export const ecosystemBrands: EcosystemLink[] = [
   { name: "ESN", href: "#" }, // TODO: домэйн
 ];
 
+// Хувилбар 1 (Apple) header — 5 үндсэн category. Dropdown доторх агуулгыг дараа тодорхойлно.
+// Unitel/Univision-д brandPages mega-menu байгаа; бусад нь одоогоор энгийн линк.
+export const appleNavCategories: EcosystemLink[] = [
+  { name: "Unitel", href: "/unitel" },
+  { name: "Univision", href: "/univision" },
+  { name: "Төхөөрөмж", href: "/devices" },
+  { name: "Entertainment", href: "/entertainment/main" },
+  { name: "Тусламж", href: "/support" },
+];
+
 // Хувилбар 3 (Unitel) — Unitel.mn домэйны мобайл үйлчилгээтэй холбоотой брэндүүд
 // (дээд bar-т байрлана)
 export const unitelDomains: EcosystemLink[] = [

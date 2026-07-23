@@ -3,8 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRef, useState } from "react";
-import { Menu, Search, User, Globe, LogOut, ArrowUpRight, ArrowRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Menu,
+  Search,
+  User,
+  Globe,
+  LogOut,
+  ArrowUpRight,
+  ArrowRight,
+  Layers,
+  ChevronDown,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -20,7 +30,12 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Navigation } from "@/components/layout/navigation";
 import { AudienceSwitchTabs, AudienceSwitchMobile } from "@/components/layout/audience-switch";
 import { useAuth } from "@/components/auth/auth-provider";
-import { ecosystemBrands, mainNavLegacy, type AudienceSegment } from "@/data/navigation";
+import {
+  appleNavCategories,
+  ecosystemBrands,
+  mainNavLegacy,
+  type AudienceSegment,
+} from "@/data/navigation";
 import { brandPages, type BrandPage } from "@/data/brand-pages";
 import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/header-variant";
 import { cn } from "@/lib/utils";
@@ -64,28 +79,73 @@ function VariantToggle({
   variant: Variant;
   onChange: (v: Variant) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = VARIANTS.find((v) => v.id === variant);
+
+  // Гадна дарахад хаах
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener("mousedown", onDown);
+    return () => window.removeEventListener("mousedown", onDown);
+  }, [open]);
+
   return (
     <div
       role="group"
       aria-label="Header хувилбар сонгох"
-      className="bg-foreground text-background flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 text-xs"
+      className="bg-foreground text-background flex items-center justify-end px-4 py-1.5 text-xs"
     >
-      {VARIANTS.map((v) => (
+      {/* Баруун талын жижиг товч — дарахад dropdown нээгдэж/хаагдана */}
+      <div ref={ref} className="relative">
         <button
-          key={v.id}
           type="button"
-          onClick={() => onChange(v.id)}
-          aria-pressed={variant === v.id}
-          className={cn(
-            "rounded-full px-3 py-0.5 font-medium transition-colors",
-            variant === v.id
-              ? "bg-background text-foreground"
-              : "text-background/80 hover:bg-background/15",
-          )}
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-haspopup="menu"
+          aria-label="Header хувилбар сонгох"
+          className="bg-background/15 hover:bg-background/25 inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 font-semibold transition-colors"
         >
-          {v.label}
+          <Layers className="size-3.5" aria-hidden="true" />
+          {current?.label ?? "Хувилбар"}
+          <ChevronDown
+            className={cn("size-3.5 transition-transform duration-200", open && "rotate-180")}
+            aria-hidden="true"
+          />
         </button>
-      ))}
+
+        {/* Dropdown — босоо жагсаалт, баруун ирмэгээс доош унжина */}
+        {open && (
+          <div
+            role="menu"
+            className="border-background/15 bg-foreground animate-in fade-in slide-in-from-top-1 absolute top-full right-0 z-[70] mt-1.5 flex min-w-52 flex-col gap-0.5 rounded-xl border p-1.5 shadow-2xl duration-150"
+          >
+            {VARIANTS.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                role="menuitemradio"
+                aria-checked={variant === v.id}
+                onClick={() => {
+                  onChange(v.id);
+                  setOpen(false);
+                }}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-left whitespace-nowrap transition-colors",
+                  variant === v.id
+                    ? "bg-background text-foreground font-semibold"
+                    : "text-background/80 hover:bg-background/15",
+                )}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -132,8 +192,8 @@ function AppleHeader() {
           <EcoLogo />
         </div>
 
-        <nav aria-label="Эко-систем" className="flex items-center justify-center gap-5">
-          {ecosystemBrands.map((brand) => {
+        <nav aria-label="Үндсэн цэс" className="flex items-center justify-center gap-5">
+          {appleNavCategories.map((brand) => {
             const active = brand.name === activeBrand;
             const linkClass = cn(
               "relative text-[13px] font-medium transition-colors",
@@ -188,12 +248,6 @@ function AppleHeader() {
               </Link>
             );
           })}
-          <Link
-            href="/support"
-            className="text-foreground/75 hover:text-foreground text-[13px] font-medium transition-colors"
-          >
-            Тусламж
-          </Link>
         </nav>
 
         <div className="flex items-center justify-end gap-0.5">
@@ -225,11 +279,11 @@ function AppleHeader() {
 
             <SheetContent side="right" className="w-75 p-6 sm:w-90">
               <SheetHeader className="p-0">
-                <SheetTitle>Эко-систем</SheetTitle>
+                <SheetTitle>Цэс</SheetTitle>
               </SheetHeader>
 
               <ul className="mt-4 space-y-1">
-                {ecosystemBrands.map((brand) => {
+                {appleNavCategories.map((brand) => {
                   const active = brand.name === activeBrand;
                   const linkClass = cn(
                     "hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors",
@@ -264,15 +318,6 @@ function AppleHeader() {
                     </li>
                   );
                 })}
-                <li>
-                  <Link
-                    href="/support"
-                    onClick={() => setMobileOpen(false)}
-                    className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
-                  >
-                    <span>Тусламж</span>
-                  </Link>
-                </li>
               </ul>
             </SheetContent>
           </Sheet>
@@ -400,7 +445,10 @@ function GroupHeader({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
+    <header
+      className="bg-background/80 border-border sticky top-0 z-50 border-b backdrop-blur"
+      role="banner"
+    >
       {/* Top bar — группын сегментүүд (hover дээр брэнд карт) */}
       <div className="bg-muted/40 border-border hidden border-b lg:block">
         <div
@@ -508,7 +556,10 @@ function HybridHeader() {
     .sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 
   return (
-    <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
+    <header
+      className="bg-background/80 border-border sticky top-0 z-50 border-b backdrop-blur"
+      role="banner"
+    >
       {/* Top bar — Хувилбар 2-той ижил сегмент switcher (hover-той) */}
       <div className="bg-muted/40 border-border hidden border-b lg:block">
         <div className="mx-auto flex h-9 max-w-300 items-center px-4">

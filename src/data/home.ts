@@ -30,11 +30,11 @@ export type HomeHero = {
 //   subtitle: "Төхөөрөмж 50% хямдралтай — эхний захиалгын хамт.",
 //   primaryCta: "Захиалах", secondaryCta: "Дэлгэрэнгүй"
 export const homeHero: HomeHero = {
-  eyebrow: "Eyebrow — урамшууллын төрөл",
-  title: "Hero section",
-  subtitle: "Цаг үеийн онцлох урамшуулалын мэдээлэл байршина",
-  primaryCta: { label: "CTA button", href: "/campaigns" },
-  secondaryCta: { label: "Текст линк", href: "/campaigns" },
+  eyebrow: "Цаг үеийн урамшуулал",
+  title: "Интернэт + ТВ — сард 39,900₮",
+  subtitle: "1 жилийн багц. Шинэ хэрэглэгчдэд үнэгүй суурилуулалттай.",
+  primaryCta: { label: "Багц авах", href: "/main-packages" },
+  secondaryCta: { label: "Бүх урамшуулал", href: "/campaigns" },
 };
 
 export type EntryTileIcon = "wifi" | "monitor-play" | "package" | "gift";
