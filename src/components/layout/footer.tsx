@@ -47,18 +47,18 @@ function FooterDetailed() {
           <div className="flex flex-col gap-4 md:max-w-sm md:flex-1">
             <LogoHomeLink className="inline-flex items-center" aria-label="Unitel нүүр">
               <Image
-                src="/unitel-logo.svg"
+                src="/eco-logo.png"
                 alt="Unitel"
-                width={160}
+                width={36}
                 height={36}
-                className="block h-7 w-auto dark:hidden"
+                className="block h-9 w-9 dark:hidden"
               />
               <Image
-                src="/unitel-logo-dark.svg"
+                src="/eco-logo-dark.png"
                 alt="Unitel"
-                width={160}
+                width={36}
                 height={36}
-                className="hidden h-7 w-auto dark:block"
+                className="hidden h-9 w-9 dark:block"
               />
             </LogoHomeLink>
             <p className="text-muted-foreground max-w-sm text-sm leading-relaxed">

@@ -257,13 +257,24 @@ export function AudienceSwitchTabs({
   segments,
   activeId,
   align = "start",
+  hover = true,
 }: {
   segments?: AudienceSegment[];
   activeId?: AudienceSegment["id"];
   /** Hover панелын зэрэгцэл — табууд top bar-ын баруун талд бол "end" */
   align?: "start" | "end";
+  /** false бол hover дээр биш зөвхөн click дээр нээгдэнэ */
+  hover?: boolean;
 } = {}) {
-  return <AudienceSwitch layout="tabs" align={align} segments={segments} activeId={activeId} />;
+  return (
+    <AudienceSwitch
+      layout="tabs"
+      align={align}
+      segments={segments}
+      activeId={activeId}
+      hover={hover}
+    />
+  );
 }
 
 // ХУВИЛБАР 3 — лого хажууд segmented pill маягаар

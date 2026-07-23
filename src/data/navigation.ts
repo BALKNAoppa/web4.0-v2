@@ -104,7 +104,7 @@ export const univisionDomains: EcosystemLink[] = [
 ];
 
 // =====================================================================
-// Группын сегментүүд — Mobile / Өрх / Байгууллага (Хувилбар 2 top bar).
+// Группын сегментүүд — Хувь хэрэглэгч / Өрх / Байгууллага (Хувилбар 2 top bar).
 // Группын компаниудыг хэрэглээгээр бүлэглэж, hover дээр гишүүн брэндийн
 // картуудыг (товч мэдээлэл + домэйн линк) харуулна.
 // =====================================================================
@@ -133,9 +133,9 @@ export type AudienceSegment = {
 export const audienceSegments: AudienceSegment[] = [
   {
     id: "mobile",
-    label: "Mobile",
+    label: "Хувь хэрэглэгч",
     href: "#",
-    icon: "smartphone",
+    icon: "user",
     brands: [
       {
         name: "Unitel",

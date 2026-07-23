@@ -18,8 +18,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Univision 4.0 - Sample",
-  description: "Univision Web 4.0 — The future of connectivity",
+  title: "Unitel 4.0 - Sample",
+  description: "Unitel Web 4.0 — The future of connectivity",
 };
 
 export default function RootLayout({
