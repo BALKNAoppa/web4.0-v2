@@ -83,7 +83,7 @@ export const ecosystemBrands: EcosystemLink[] = [
 export const appleNavCategories: EcosystemLink[] = [
   { name: "Unitel", href: "/unitel" },
   { name: "Univision", href: "/univision" },
-  { name: "Төхөөрөмж", href: "/devices" },
+  { name: "Дэлгүүр", href: "/devices" },
   { name: "Entertainment", href: "/entertainment/main" },
   { name: "Тусламж", href: "/support" },
 ];
@@ -326,7 +326,7 @@ export const mainNav: NavCategory[] = [
     label: "Интернэт",
     columns: [
       {
-        title: "Гэрийн интернэт",
+        title: "Гэр интернэт",
         items: [
           { label: "Triple", href: "#" },
           { label: "Single", href: "#" },

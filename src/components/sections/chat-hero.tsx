@@ -1,82 +1,114 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUp, Headphones, Smartphone, Sparkles, Tv, Wifi, type LucideIcon } from "lucide-react";
+import { ArrowUp, Sparkles, SquareDashed } from "lucide-react";
 
-/** Hero доорх шаардлагатай quick action товчнууд */
-const QUICK_ACTIONS: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/main-packages", label: "Гэр интернэт", icon: Wifi },
-  { href: "/unitel", label: "Дараа төлбөрт", icon: Smartphone },
-  { href: "/entertainment/main", label: "Кино & ТВ", icon: Tv },
-  { href: "/support", label: "Тусламж", icon: Headphones },
+import { GlowRing } from "@/components/ui/glow-ring";
+
+// Hero доорх quick action карт — placeholder ("Sample"). Хэрэглэгчийн хандалтаас
+// хамааран бодит topic/action-оор солигдоно. Icon бүгд нэг default (SquareDashed).
+const QUICK_ACTIONS: { href: string; label: string }[] = [
+  { href: "/main-packages", label: "Sample 1" },
+  { href: "/unitel", label: "Sample 2" },
+  { href: "/entertainment/main", label: "Sample 3" },
+  { href: "/univision-go", label: "Sample 4" },
+  { href: "/devices", label: "Sample 5" },
+  { href: "/campaigns", label: "Sample 6" },
+  { href: "/univision", label: "Sample 7" },
+  { href: "/support", label: "Sample 8" },
 ];
+
+/** Neon gradient (input-ийн хүрээ/гэрэлд) — брэнд ногоон → cyan → violet */
+const NEON = "linear-gradient(90deg,#45c700,#2ad4ff,#a855f7,#45c700)";
 
 /**
  * Хувилбар 4 — Google маягийн chat-hero (visual mockup).
- * Төвлөрсөн том input + доор нь quick action товчнууд. Одоогоор зөвхөн
- * харагдац — submit үйлдэлгүй (бодит AI хойшлуулсан).
+ * Бараан дэвсгэр + эргэлддэг гэрэлт цагираг (GlowRing) + neon input. Submit
+ * үйлдэлгүй (бодит AI хойшлуулсан).
  */
 export function ChatHero() {
   return (
     <section
       aria-label="Ухаалаг туслах"
-      className="animate-in fade-in bg-muted/40 w-full duration-1000 ease-out"
+      className="animate-in fade-in relative w-full overflow-hidden bg-[#05070d] duration-1000 ease-out"
     >
-      <div className="mx-auto flex min-h-[68vh] max-w-3xl flex-col items-center justify-center px-4 py-16 text-center md:py-24">
-        <span className="border-border bg-background text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold">
-          <Sparkles className="text-primary size-3.5" aria-hidden="true" />
+      {/* Эргэлддэг гэрэлт цагираг (eclipse) */}
+      <GlowRing />
+
+      <div className="relative z-10 mx-auto flex min-h-[68vh] max-w-3xl flex-col items-center justify-center px-4 py-16 text-center md:py-24">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70 backdrop-blur">
+          <Sparkles className="size-3.5 text-[#7dfa5a]" aria-hidden="true" />
           Ухаалаг туслах
         </span>
 
-        <h1 className="text-foreground mt-6 text-4xl font-extrabold tracking-tight text-balance md:text-6xl">
+        <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-balance text-white md:text-6xl">
           Юугаар{" "}
           <span className="from-primary bg-linear-to-r to-[#2ad4ff] bg-clip-text text-transparent">
             туслах вэ?
           </span>
         </h1>
-        <p className="text-muted-foreground mt-4 max-w-xl text-base text-pretty md:text-lg">
-          Асуултаа бичихэд л болно — багц, интернэт, ТВ, төлбөр бүх зүйл нэг дороос.
+        <p className="mt-4 max-w-xl text-base text-pretty text-white/60 md:text-lg">
+          Та асуултаа бичихэд л хангалттай — багц, интернэт, ТВ, төлбөр гээд бүгд нэг дор гэх мэт
+          text байна.
         </p>
 
-        {/* Chat input — visual mockup (submit үйлдэлгүй) */}
-        <form
-          onSubmit={(e) => e.preventDefault()}
-          className="border-border bg-background focus-within:border-primary focus-within:ring-primary/20 mt-8 flex w-full items-center gap-3 rounded-2xl border px-4 py-3 shadow-sm transition-all focus-within:ring-4"
-        >
-          <Sparkles className="text-primary size-5 shrink-0" aria-hidden="true" />
-          <label htmlFor="chat-hero-input" className="sr-only">
-            Асуултаа бичнэ үү
-          </label>
-          <input
-            id="chat-hero-input"
-            type="text"
-            placeholder="Жишээ: гэрийн интернэт + ТВ хамгийн хямд багц"
-            className="text-foreground placeholder:text-muted-foreground h-8 flex-1 bg-transparent text-sm outline-none md:text-base"
+        {/* Chat input — neon gradient хүрээ + гэрэл */}
+        <div className="relative mt-8 w-full">
+          {/* Ард талын бүдэг гэрэл (glow) */}
+          <div
+            aria-hidden
+            className="animate-neon-pan pointer-events-none absolute -inset-1 rounded-[1.4rem] opacity-60 blur-xl"
+            style={{ background: NEON, backgroundSize: "200% 100%" }}
           />
-          <button
-            type="submit"
-            aria-label="Илгээх"
-            className="bg-primary text-primary-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-105"
+          {/* Gradient хүрээ */}
+          <div
+            className="animate-neon-pan relative rounded-2xl p-[2px] shadow-lg"
+            style={{ background: NEON, backgroundSize: "200% 100%" }}
           >
-            <ArrowUp className="size-5" aria-hidden="true" />
-          </button>
-        </form>
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="flex w-full items-center gap-3 rounded-[calc(1rem-2px)] bg-[#0b0e16]/85 px-4 py-3 backdrop-blur"
+            >
+              <Sparkles className="size-5 shrink-0 text-[#7dfa5a]" aria-hidden="true" />
+              <label htmlFor="chat-hero-input" className="sr-only">
+                Асуултаа бичнэ үү
+              </label>
+              <input
+                id="chat-hero-input"
+                type="text"
+                placeholder="Жишээ: гэрийн интернэт + ТВ хамгийн хямд багц"
+                className="h-8 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/40 md:text-base"
+              />
+              <button
+                type="submit"
+                aria-label="Илгээх"
+                className="bg-primary text-primary-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 hover:scale-105"
+              >
+                <ArrowUp className="size-5" aria-hidden="true" />
+              </button>
+            </form>
+          </div>
+        </div>
 
-        {/* Quick actions */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
-          {QUICK_ACTIONS.map((action) => {
-            const Icon = action.icon;
-            return (
+        {/* Quick actions — жижиг дөрвөлжин dark-glass карт (хандалтаас хамааран солигдоно) */}
+        <div className="mt-8 w-full">
+          <p className="mb-3 flex items-center justify-center gap-1.5 text-sm font-medium text-white/45">
+            Хэрэглэгчийн их ашигласан topic болон action button харагдана
+          </p>
+          <div className="grid grid-cols-4 gap-2.5 md:grid-cols-8">
+            {QUICK_ACTIONS.map((action) => (
               <Link
                 key={action.label}
                 href={action.href}
-                className="border-border bg-background hover:border-primary/40 hover:bg-muted text-foreground/80 hover:text-foreground inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors"
+                className="group flex aspect-square flex-col items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/5 p-1.5 text-center transition-colors hover:border-white/25 hover:bg-white/10"
               >
-                <Icon className="text-primary size-4" aria-hidden="true" />
-                {action.label}
+                <SquareDashed className="size-5 text-[#7dfa5a]" aria-hidden="true" />
+                <span className="text-[11px] leading-tight font-medium text-white/70 group-hover:text-white">
+                  {action.label}
+                </span>
               </Link>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </div>
     </section>

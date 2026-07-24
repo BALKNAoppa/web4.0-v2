@@ -174,168 +174,207 @@ function AppleHeader() {
   // Эко-систем nav-ын hover mega-menu (зөвхөн desktop). Триггерээс панел руу
   // хулгана шилжихэд хаагдахгүйгээр богино саатал (150ms) тавина.
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  // Зөөлөн нээх/хаах — CSS transition (keyframe биш → тасрахгүй, тасалдвал эргэдэг).
+  // panelBrand = DOM-д харагдах брэнд; shown = харагдах төлөв (opacity/translate).
+  const [panelBrand, setPanelBrand] = useState<string | null>(null);
+  const [shown, setShown] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rafRef = useRef(0);
+
   const openBrandMenu = (name: string) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
+    if (exitTimer.current) clearTimeout(exitTimer.current);
+    setPanelBrand(name);
     setOpenMenu(name);
+    // mount → дараагийн frame-д shown=true болгож enter transition эхлүүлнэ
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => setShown(true));
   };
+  // Шууд хаах — shown=false (exit transition), дуусахаар panelBrand-г DOM-оос авна
+  const closeNow = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpenMenu(null);
+    setShown(false);
+    if (exitTimer.current) clearTimeout(exitTimer.current);
+    exitTimer.current = setTimeout(() => setPanelBrand(null), 500);
+  };
+  // Hover intent — 150ms саатлаар хаана (панел руу шилжих зай өгнө)
   const closeBrandMenu = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOpenMenu(null), 150);
+    closeTimer.current = setTimeout(closeNow, 150);
   };
 
   return (
-    <header className="bg-background/80 relative sticky top-0 z-50 backdrop-blur" role="banner">
-      {/* Desktop */}
-      <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
-        <div className="flex items-center">
-          <EcoLogo />
-        </div>
-
-        <nav aria-label="Үндсэн цэс" className="flex items-center justify-center gap-5">
-          {appleNavCategories.map((brand) => {
-            const active = brand.name === activeBrand;
-            const linkClass = cn(
-              "relative text-[13px] font-medium transition-colors",
-              // Apple маягийн зөөлөн доогуур зураас — hover дээр төвөөс тэлнэ
-              "after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-full after:origin-center after:scale-x-0 after:rounded-full after:bg-current after:transition-transform after:duration-300 hover:after:scale-x-100",
-              active ? "text-foreground font-semibold" : "text-foreground/75 hover:text-foreground",
-            );
-
-            // Дотоод брэнд + mega-menu дата байвал hover дээр панел нээнэ
-            const menu = !brand.external ? brandPages[brand.name] : undefined;
-            if (menu) {
-              return (
-                <div
-                  key={brand.name}
-                  className="flex items-center"
-                  onMouseEnter={() => openBrandMenu(brand.name)}
-                  onMouseLeave={closeBrandMenu}
-                >
-                  <Link
-                    href={brand.href}
-                    aria-current={active ? "page" : undefined}
-                    aria-expanded={openMenu === brand.name}
-                    className={cn(
-                      linkClass,
-                      openMenu === brand.name && "text-foreground after:scale-x-100",
-                    )}
-                  >
-                    {brand.name}
-                  </Link>
-                </div>
-              );
-            }
-
-            return brand.external ? (
-              <a
-                key={brand.name}
-                href={brand.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={linkClass}
-              >
-                {brand.name}
-              </a>
-            ) : (
-              <Link
-                key={brand.name}
-                href={brand.href}
-                aria-current={active ? "page" : undefined}
-                className={linkClass}
-              >
-                {brand.name}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center justify-end gap-0.5">
-          <IconButton label="Хайх">
-            <Search className="size-4" />
-          </IconButton>
-          <AccountMenu />
-          <ThemeToggle />
-        </div>
-      </div>
-
-      {/* Mobile */}
-      <div className="mx-auto flex h-11 max-w-300 items-center justify-between px-4 lg:hidden">
-        <EcoLogo />
-
-        <div className="flex items-center gap-0.5">
-          <IconButton label="Хайх">
-            <Search className="size-5" />
-          </IconButton>
-          <AccountMenu />
-          <ThemeToggle />
-
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Цэс нээх">
-                <Menu className="size-5" />
-              </Button>
-            </SheetTrigger>
-
-            <SheetContent side="right" className="w-75 p-6 sm:w-90">
-              <SheetHeader className="p-0">
-                <SheetTitle>Цэс</SheetTitle>
-              </SheetHeader>
-
-              <ul className="mt-4 space-y-1">
-                {appleNavCategories.map((brand) => {
-                  const active = brand.name === activeBrand;
-                  const linkClass = cn(
-                    "hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors",
-                    active && "bg-muted",
-                  );
-                  return (
-                    <li key={brand.name}>
-                      {brand.external ? (
-                        <a
-                          href={brand.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => setMobileOpen(false)}
-                          className={linkClass}
-                        >
-                          <span>{brand.name}</span>
-                          <ArrowUpRight
-                            className="text-muted-foreground ml-auto size-4"
-                            aria-hidden="true"
-                          />
-                        </a>
-                      ) : (
-                        <Link
-                          href={brand.href}
-                          onClick={() => setMobileOpen(false)}
-                          aria-current={active ? "page" : undefined}
-                          className={linkClass}
-                        >
-                          <span>{brand.name}</span>
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
-
-      {/* Desktop hover mega-menu — эко-систем брэндийн доор бүтэн өргөнөөр */}
-      {openMenu && brandPages[openMenu] && (
+    <>
+      {/* Apple шиг scrim — mega-menu нээгдэхэд body бүдгэрнэ (зөөлөн opacity transition) */}
+      {panelBrand && brandPages[panelBrand] && (
         <div
-          key={openMenu}
-          onMouseEnter={() => openBrandMenu(openMenu)}
-          onMouseLeave={closeBrandMenu}
-          className="border-border bg-background/95 animate-in fade-in slide-in-from-top-1 absolute inset-x-0 top-full hidden border-t shadow-lg backdrop-blur duration-300 ease-out lg:block"
-        >
-          <BrandMegaPanel page={brandPages[openMenu]} onNavigate={() => setOpenMenu(null)} />
-        </div>
+          aria-hidden
+          onClick={closeNow}
+          className={cn(
+            "bg-foreground/10 fixed inset-0 z-40 hidden backdrop-blur-sm transition-opacity duration-500 ease-out lg:block",
+            shown ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+        />
       )}
-    </header>
+      <header className="bg-background/80 relative sticky top-0 z-50 backdrop-blur" role="banner">
+        {/* Desktop */}
+        <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
+          <div className="flex items-center">
+            <EcoLogo />
+          </div>
+
+          <nav aria-label="Үндсэн цэс" className="flex items-center justify-center gap-5">
+            {appleNavCategories.map((brand) => {
+              const active = brand.name === activeBrand;
+              const linkClass = cn(
+                "relative text-[13px] font-medium transition-colors",
+                // Apple маягийн зөөлөн доогуур зураас — hover дээр төвөөс тэлнэ
+                "after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-full after:origin-center after:scale-x-0 after:rounded-full after:bg-current after:transition-transform after:duration-300 hover:after:scale-x-100",
+                active
+                  ? "text-foreground font-semibold"
+                  : "text-foreground/75 hover:text-foreground",
+              );
+
+              // Дотоод брэнд + mega-menu дата байвал hover дээр панел нээнэ
+              const menu = !brand.external ? brandPages[brand.name] : undefined;
+              if (menu) {
+                return (
+                  <div
+                    key={brand.name}
+                    className="flex items-center"
+                    onMouseEnter={() => openBrandMenu(brand.name)}
+                    onMouseLeave={closeBrandMenu}
+                  >
+                    <Link
+                      href={brand.href}
+                      aria-current={active ? "page" : undefined}
+                      aria-expanded={openMenu === brand.name}
+                      className={cn(
+                        linkClass,
+                        openMenu === brand.name && "text-foreground after:scale-x-100",
+                      )}
+                    >
+                      {brand.name}
+                    </Link>
+                  </div>
+                );
+              }
+
+              return brand.external ? (
+                <a
+                  key={brand.name}
+                  href={brand.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkClass}
+                >
+                  {brand.name}
+                </a>
+              ) : (
+                <Link
+                  key={brand.name}
+                  href={brand.href}
+                  aria-current={active ? "page" : undefined}
+                  className={linkClass}
+                >
+                  {brand.name}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center justify-end gap-0.5">
+            <IconButton label="Хайх">
+              <Search className="size-4" />
+            </IconButton>
+            <AccountMenu />
+            <ThemeToggle />
+          </div>
+        </div>
+
+        {/* Mobile */}
+        <div className="mx-auto flex h-11 max-w-300 items-center justify-between px-4 lg:hidden">
+          <EcoLogo />
+
+          <div className="flex items-center gap-0.5">
+            <IconButton label="Хайх">
+              <Search className="size-5" />
+            </IconButton>
+            <AccountMenu />
+            <ThemeToggle />
+
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Цэс нээх">
+                  <Menu className="size-5" />
+                </Button>
+              </SheetTrigger>
+
+              <SheetContent side="right" className="w-75 p-6 sm:w-90">
+                <SheetHeader className="p-0">
+                  <SheetTitle>Цэс</SheetTitle>
+                </SheetHeader>
+
+                <ul className="mt-4 space-y-1">
+                  {appleNavCategories.map((brand) => {
+                    const active = brand.name === activeBrand;
+                    const linkClass = cn(
+                      "hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors",
+                      active && "bg-muted",
+                    );
+                    return (
+                      <li key={brand.name}>
+                        {brand.external ? (
+                          <a
+                            href={brand.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setMobileOpen(false)}
+                            className={linkClass}
+                          >
+                            <span>{brand.name}</span>
+                            <ArrowUpRight
+                              className="text-muted-foreground ml-auto size-4"
+                              aria-hidden="true"
+                            />
+                          </a>
+                        ) : (
+                          <Link
+                            href={brand.href}
+                            onClick={() => setMobileOpen(false)}
+                            aria-current={active ? "page" : undefined}
+                            className={linkClass}
+                          >
+                            <span>{brand.name}</span>
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+
+        {/* Desktop hover mega-menu — зөөлөн нээх/хаах (CSS transition, тасрахгүй).
+            Брэнд солигдоход панель байрандаа үлдэж, зөвхөн контент шууд солигдоно. */}
+        {panelBrand && brandPages[panelBrand] && (
+          <div
+            onMouseEnter={() => openBrandMenu(panelBrand)}
+            onMouseLeave={closeBrandMenu}
+            className={cn(
+              "border-border bg-background absolute inset-x-0 top-full z-50 hidden border-t shadow-xl transition-[opacity,transform] duration-500 ease-out lg:block",
+              shown ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
+            )}
+          >
+            <BrandMegaPanel page={brandPages[panelBrand]} onNavigate={closeNow} />
+          </div>
+        )}
+      </header>
+    </>
   );
 }
 
@@ -445,10 +484,7 @@ function GroupHeader({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header
-      className="bg-background/80 border-border sticky top-0 z-50 border-b backdrop-blur"
-      role="banner"
-    >
+    <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
       {/* Top bar — группын сегментүүд (hover дээр брэнд карт) */}
       <div className="bg-muted/40 border-border hidden border-b lg:block">
         <div
@@ -556,10 +592,7 @@ function HybridHeader() {
     .sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 
   return (
-    <header
-      className="bg-background/80 border-border sticky top-0 z-50 border-b backdrop-blur"
-      role="banner"
-    >
+    <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
       {/* Top bar — Хувилбар 2-той ижил сегмент switcher (hover-той) */}
       <div className="bg-muted/40 border-border hidden border-b lg:block">
         <div className="mx-auto flex h-9 max-w-300 items-center px-4">

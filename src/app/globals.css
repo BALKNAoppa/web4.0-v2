@@ -53,26 +53,32 @@
   --color-text-1: var(--text-1);
   --color-text-2: var(--text-2);
   @keyframes rainbow {
-  0% {
-    background-position: 0%;
+    0% {
+      background-position: 0%;
     }
-  100% {
-    background-position: 200%;
+    100% {
+      background-position: 200%;
     }
   }
   --animate-marquee: marquee var(--duration) infinite linear;
-  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite
-;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
   @keyframes marquee {
-  from {
-    transform: translateX(0);}
-  to {
-    transform: translateX(calc(-100% - var(--gap)));}}
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
   @keyframes marquee-vertical {
-  from {
-    transform: translateY(0);}
-  to {
-    transform: translateY(calc(-100% - var(--gap)));}}}
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
+}
 
 /* ============================================
    LIGHT MODE — White primary, Black text, Green CTA
@@ -80,11 +86,11 @@
    ============================================ */
 :root {
   /* Web 4.0 — Light Mode background & text tokens */
-  --background-1: #E2E8EC;
-  --background-2: #F3F5F7;
-  --background-3: #F9FAFB;          /* input background */
-  --text-1: #161616;                /* primary text */
-  --text-2: #595959;                /* secondary text — WCAG AA 5.5:1 on bg-1 */
+  --background-1: #e2e8ec;
+  --background-2: #f3f5f7;
+  --background-3: #f9fafb; /* input background */
+  --text-1: #161616; /* primary text */
+  --text-2: #595959; /* secondary text — WCAG AA 5.5:1 on bg-1 */
 
   /* shadcn token-уудыг шинэ палет руу холбов */
   --background: var(--background-1);
@@ -136,10 +142,10 @@
    ============================================ */
 .dark {
   /* Web 4.0 — Dark Mode background & text tokens */
-  --background-1: #10131B;
-  --background-2: #1C202D;
-  --background-3: #27203E;
-  --text-1: #FFFFFF;
+  --background-1: #10131b;
+  --background-2: #1c202d;
+  --background-3: #27203e;
+  --text-1: #ffffff;
   --text-2: rgba(184, 184, 184, 0.6);
 
   /* shadcn token-уудыг шинэ палет руу холбов */
@@ -224,7 +230,7 @@
   }
 
   .skip-link {
-    @apply absolute left-4 top-4 z-50 -translate-y-20 rounded-md bg-primary px-4 py-2 text-primary-foreground transition-transform focus:translate-y-0;
+    @apply bg-primary text-primary-foreground absolute top-4 left-4 z-50 -translate-y-20 rounded-md px-4 py-2 transition-transform focus:translate-y-0;
   }
 }
 
@@ -237,26 +243,46 @@
   }
 }
 @keyframes progress-fill {
-  from { width: 0%; }
-  to { width: 100%; }
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 /* TrustOrbit — icon-уудыг төв rond эргүүлэх анимаци */
 @keyframes orbit-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* TrustOrbit hub-аас цацрах radio дольгионы эффект — full screen хүрнэ */
 @keyframes hub-pulse {
-  0% { transform: scale(1); opacity: 0.55; }
-  100% { transform: scale(18); opacity: 0; }
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(18);
+    opacity: 0;
+  }
 }
 
 /* Chat — bubble нэмэгдэх үед доороос дээш гулсаж гарах */
 @keyframes chat-msg-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .animate-chat-msg-in {
   animation: chat-msg-in 220ms ease-out both;
@@ -264,8 +290,16 @@
 
 /* Chat — typing indicator-ийн цэгүүд */
 @keyframes chat-typing-dot {
-  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
-  30%           { opacity: 1;    transform: translateY(-3px); }
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
 }
 .animate-chat-typing-dot {
   animation: chat-typing-dot 1.2s ease-in-out infinite;
@@ -273,11 +307,87 @@
 
 /* Univision GO app — phone card-ын зөөлөн дээш доош float анимаци */
 @keyframes float-card {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-14px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
 }
 .animate-float-card {
   animation: float-card 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Neon gradient — input-ийн ард гүйдэг өнгөт хүрээ/гэрэл (chat-hero, MagicUI-маягийн) */
+@keyframes neon-pan {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 200% 50%;
+  }
+}
+.animate-neon-pan {
+  animation: neon-pan 5s linear infinite;
+  will-change: background-position;
+}
+
+/* Aurora — хязгааргүй хөвөгч өнгөт манан (chat-hero background). Толбо бүр өөр
+   замаар удаан хөвж, уусна. */
+@keyframes aurora-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(10%, 12%) scale(1.2);
+  }
+}
+@keyframes aurora-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-12%, -8%) scale(1.15);
+  }
+}
+@keyframes aurora-c {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(8%, -12%) scale(1.25);
+  }
+}
+.aurora-a {
+  animation: aurora-a 22s ease-in-out infinite;
+  will-change: transform;
+}
+.aurora-b {
+  animation: aurora-b 28s ease-in-out infinite;
+  will-change: transform;
+}
+.aurora-c {
+  animation: aurora-c 25s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Glow ring — input-ийн ард эргэлддэг гэрэлт цагираг (eclipse маягийн, chat-hero) */
+@keyframes ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ring-spin {
+  animation: ring-spin 14s linear infinite;
+  will-change: transform;
+}
+.ring-spin-rev {
+  animation: ring-spin 20s linear infinite reverse;
   will-change: transform;
 }
 
@@ -285,16 +395,40 @@
    Web 4.0 концепцийн bubble deck (/web4)
    ============================================ */
 @keyframes web4-drift {
-  0%   { transform: translate(0, 0) rotate(0deg); }
-  50%  { transform: translate(6px, -14px) rotate(2deg); }
-  100% { transform: translate(-6px, 10px) rotate(-2deg); }
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(6px, -14px) rotate(2deg);
+  }
+  100% {
+    transform: translate(-6px, 10px) rotate(-2deg);
+  }
 }
 @keyframes web4-pulse {
-  0%, 100% { box-shadow: inset 0 0 60px rgba(255,255,255,.22), inset -14px -18px 46px rgba(0,0,0,.4), 0 30px 90px rgba(0,0,0,.55), 0 0 80px rgba(69,199,10,.3), 0 0 110px rgba(42,212,255,.25); }
-  50%      { box-shadow: inset 0 0 60px rgba(255,255,255,.28), inset -14px -18px 46px rgba(0,0,0,.4), 0 30px 90px rgba(0,0,0,.55), 0 0 120px rgba(69,199,10,.45), 0 0 150px rgba(42,212,255,.4); }
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 60px rgba(255, 255, 255, 0.22),
+      inset -14px -18px 46px rgba(0, 0, 0, 0.4),
+      0 30px 90px rgba(0, 0, 0, 0.55),
+      0 0 80px rgba(69, 199, 10, 0.3),
+      0 0 110px rgba(42, 212, 255, 0.25);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 60px rgba(255, 255, 255, 0.28),
+      inset -14px -18px 46px rgba(0, 0, 0, 0.4),
+      0 30px 90px rgba(0, 0, 0, 0.55),
+      0 0 120px rgba(69, 199, 10, 0.45),
+      0 0 150px rgba(42, 212, 255, 0.4);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .web4-drift, .web4-pulse { animation: none !important; }
+  .web4-drift,
+  .web4-pulse {
+    animation: none !important;
+  }
 }
 
 /* ============================================
@@ -324,11 +458,17 @@
   transform: none;
 }
 @keyframes w4-float-y {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-12px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .w4-reveal, .w4-reveal-scale {
+  .w4-reveal,
+  .w4-reveal-scale {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
@@ -353,7 +493,7 @@
 /* Firefox — gradient дэмжихгүй тул solid brand green */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #0FAA0A transparent;
+  scrollbar-color: #0faa0a transparent;
 }
 
 /* Chromium / Safari */
@@ -368,13 +508,7 @@
 
 *::-webkit-scrollbar-thumb {
   /* Тод олон өнгийн gradient — цайвар lime → brand ногоон → teal → цэнхэр */
-  background: linear-gradient(
-    180deg,
-    #a3e635 0%,
-    #0faa0a 40%,
-    #0d9488 75%,
-    #2563eb 100%
-  );
+  background: linear-gradient(180deg, #a3e635 0%, #0faa0a 40%, #0d9488 75%, #2563eb 100%);
   border-radius: 9999px;
   border: 2px solid var(--background);
   background-clip: padding-box;
@@ -382,13 +516,7 @@
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    180deg,
-    #bef264 0%,
-    #1ec918 40%,
-    #14b8a6 75%,
-    #3b82f6 100%
-  );
+  background: linear-gradient(180deg, #bef264 0%, #1ec918 40%, #14b8a6 75%, #3b82f6 100%);
   background-clip: padding-box;
 }
 
@@ -431,10 +559,10 @@
   width: 0;
 }
 
-  /* Skip link зориулагдсан style */
-  .skip-link {
-    @apply absolute left-4 top-4 z-50 -translate-y-20 rounded-md bg-primary px-4 py-2 text-primary-foreground transition-transform focus:translate-y-0;
-  }
+/* Skip link зориулагдсан style */
+.skip-link {
+  @apply bg-primary text-primary-foreground absolute top-4 left-4 z-50 -translate-y-20 rounded-md px-4 py-2 transition-transform focus:translate-y-0;
+}
 
 /* ============================================
    Accessibility (Хүртээмж) — runtime classes/vars
@@ -515,15 +643,24 @@ html.a11y-hide-images svg:not([data-a11y-keep]) {
 
 html.a11y-big-cursor,
 html.a11y-big-cursor * {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='black' stroke='white' stroke-width='1.5'><path d='M3 3l7 17 2-7 7-2z'/></svg>") 0 0, auto !important;
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='black' stroke='white' stroke-width='1.5'><path d='M3 3l7 17 2-7 7-2z'/></svg>")
+      0 0,
+    auto !important;
 }
 html.a11y-cursor-white.a11y-big-cursor,
 html.a11y-cursor-white.a11y-big-cursor * {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='white' stroke='black' stroke-width='1.5'><path d='M3 3l7 17 2-7 7-2z'/></svg>") 0 0, auto !important;
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='white' stroke='black' stroke-width='1.5'><path d='M3 3l7 17 2-7 7-2z'/></svg>")
+      0 0,
+    auto !important;
 }
 html.a11y-cursor-yellow.a11y-big-cursor,
 html.a11y-cursor-yellow.a11y-big-cursor * {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='%23facc15' stroke='black' stroke-width='1.5'><path d='M3 3l7 17 2-7 7-2z'/></svg>") 0 0, auto !important;
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='%23facc15' stroke='black' stroke-width='1.5'><path d='M3 3l7 17 2-7 7-2z'/></svg>")
+      0 0,
+    auto !important;
 }
 
 html.a11y-text-boost p,
