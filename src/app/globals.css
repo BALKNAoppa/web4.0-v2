@@ -133,6 +133,24 @@
   --color-3: oklch(69.6% 0.165 251);
   --color-4: oklch(80.2% 0.134 225);
   --color-5: oklch(90.7% 0.231 133);
+
+  /* chat-hero — минимал theme-aware гэрэлт цагираг (GlowRing).
+     Light theme: брэнд ногоон → cyan → violet, бага alpha (цайвар дэвсгэр дээр
+     харагдахуйц ч гентле). */
+  --hero-ring-base: conic-gradient(
+    from 0deg,
+    rgba(69, 199, 10, 0.12),
+    rgba(42, 212, 255, 0.22) 50%,
+    rgba(168, 85, 247, 0.14),
+    rgba(69, 199, 10, 0.12)
+  );
+  --hero-ring-hotspot: conic-gradient(
+    from 0deg,
+    transparent 0deg 290deg,
+    rgba(42, 212, 255, 0.5) 335deg,
+    rgba(69, 199, 10, 0.85) 356deg,
+    transparent 360deg
+  );
 }
 
 /* ============================================
@@ -188,6 +206,22 @@
   --color-3: oklch(69.6% 0.165 251);
   --color-4: oklch(80.2% 0.134 225);
   --color-5: oklch(90.7% 0.231 133);
+
+  /* chat-hero — GlowRing (dark theme): хүйтэн цагаан/цэнхэр туяа, бараан
+     дэвсгэр дээр хамгийн гоё (өмнөх дизайны өнгө). */
+  --hero-ring-base: conic-gradient(
+    from 0deg,
+    rgba(150, 190, 255, 0.14),
+    rgba(190, 215, 255, 0.28) 50%,
+    rgba(150, 190, 255, 0.14)
+  );
+  --hero-ring-hotspot: conic-gradient(
+    from 0deg,
+    transparent 0deg 290deg,
+    rgba(200, 225, 255, 0.85) 335deg,
+    #ffffff 356deg,
+    transparent 360deg
+  );
 }
 
 @layer base {
@@ -388,6 +422,34 @@
 }
 .ring-spin-rev {
   animation: ring-spin 20s linear infinite reverse;
+  will-change: transform;
+}
+
+/* Iridescent bubble (chat-hero) — зөөлөн хөвөх + дотоод солонгон эргэлт */
+@keyframes bubble-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-18px);
+  }
+}
+@keyframes bubble-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.bubble-float {
+  animation: bubble-float 9s ease-in-out infinite;
+  will-change: transform;
+}
+.bubble-spin {
+  animation: bubble-spin 38s linear infinite;
+  will-change: transform;
+}
+.bubble-spin-rev {
+  animation: bubble-spin 30s linear infinite reverse;
   will-change: transform;
 }
 

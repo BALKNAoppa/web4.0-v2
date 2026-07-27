@@ -85,6 +85,7 @@ export const appleNavCategories: EcosystemLink[] = [
   { name: "Univision", href: "/univision" },
   { name: "Дэлгүүр", href: "/devices" },
   { name: "Entertainment", href: "/entertainment/main" },
+  { name: "Урамшуулал", href: "/campaigns" },
   { name: "Тусламж", href: "/support" },
 ];
 
@@ -422,6 +423,170 @@ export const mainNav: NavCategory[] = [
     isDirectLink: true,
     icon: "gift",
   },
+];
+
+// Mega menu-ийн баруун талд (хоосон талбарт) харуулах "цаг үеийн" урамшуулал
+// (1-2 ширхэг). PromoCard-аар гарна: title = нэр (CTA) · description = богино тайлбар.
+const currentPromos: NavPromo[] = [
+  {
+    title: "Sample 1",
+    description: "Цаг үеийн урамшууллын мэдээлэл байрлана",
+    ctaLabel: "Дэлгэрэнгүй",
+    href: "/campaigns",
+    badgeClass: "bg-primary text-primary-foreground",
+    badgeText: "SAMPLE",
+  },
+  {
+    title: "Sample 2",
+    description: "Цаг үеийн урамшууллын мэдээлэл байрлана",
+    ctaLabel: "Дэлгэрэнгүй",
+    href: "/campaigns",
+    badgeClass: "bg-primary text-primary-foreground",
+    badgeText: "SAMPLE",
+  },
+];
+
+// =====================================================================
+// Хувилбар 2 (сайжруулсан) — Mobile / Internet / Entertainment (Life-style
+// дотор нь) / Төхөөрөмж / Family үйлчилгээ / Урамшуулал / Тусламж.
+// Дэд цэс (баганат mega-menu) агуулга — 2 скриншотоос буулгав. Family
+// үйлчилгээ, Урамшуулал, Тусламж нь dropdown-гүй шууд линк. mega-menu-ийн
+// баруун талд currentPromos (цаг үеийн урамшуулал) харагдана.
+// =====================================================================
+export const groupNavV2: NavCategory[] = [
+  {
+    label: "Mobile",
+    columns: [
+      {
+        title: "Дараа төлбөрт",
+        items: [
+          { label: "Premium багц", href: "#" },
+          { label: "Priority багц", href: "#" },
+          { label: "Plus багц", href: "#" },
+        ],
+      },
+      {
+        title: "Урьдчилсан төлбөрт",
+        items: [
+          { label: "Smart Data", href: "#" },
+          { label: "Smart Talk", href: "#" },
+          { label: "Smart Days", href: "#" },
+        ],
+      },
+      {
+        title: "Нэмэлт үйлчилгээ",
+        items: [
+          { label: "Нэмэлт дата багц", href: "#" },
+          { label: "Нэмэлт үйлчилгээ", href: "#" },
+          { label: "Олон улсын дуудлага", href: "#" },
+          { label: "Олон улсын роуминг", href: "#" },
+        ],
+      },
+      {
+        title: "For Foreigners",
+        items: [
+          { label: "Tour SIM", href: "#" },
+          { label: "Expat", href: "#" },
+        ],
+      },
+    ],
+    promos: currentPromos,
+  },
+  {
+    label: "Internet",
+    columns: [
+      {
+        title: "Main packages",
+        items: [
+          { label: "Triple", href: "#" },
+          { label: "Single", href: "#" },
+        ],
+      },
+      {
+        title: "Add-On",
+        items: [
+          { label: "Net Boost", href: "#" },
+          { label: "Data-Add-on", href: "#" },
+          { label: "2nd screen", href: "#" },
+        ],
+      },
+      {
+        title: "Solutions",
+        items: [
+          { label: "FTTH", href: "#" },
+          { label: "STB, Dongle", href: "#" },
+          { label: "FTTR, Mesh", href: "#" },
+          { label: "Wi-Fi 6 | HGW, ONT", href: "#" },
+        ],
+      },
+    ],
+    promos: currentPromos,
+  },
+  {
+    label: "Entertainment",
+    columns: [
+      {
+        title: "Main",
+        items: [
+          { label: "VOD library", href: "#" },
+          { label: "SVOD", href: "#" },
+        ],
+      },
+      {
+        title: "Channels",
+        items: [
+          { label: "Linier TV", href: "#" },
+          { label: "Pay TV packages", href: "#" },
+          { label: "UniLive", href: "#" },
+        ],
+      },
+      {
+        title: "Apps",
+        items: [
+          { label: "HBO Max", href: "#" },
+          { label: "Sport App", href: "#" },
+          { label: "Adult App", href: "#" },
+          { label: "M Karaoke", href: "#" },
+          { label: "Traffic App", href: "#" },
+        ],
+      },
+      {
+        title: "Life-style",
+        items: [
+          { label: "Smart Home", href: "#", badge: "in future" },
+          { label: "Security", href: "#", badge: "in future" },
+          { label: "Gaming", href: "#", badge: "in future" },
+        ],
+      },
+    ],
+    promos: currentPromos,
+  },
+  {
+    label: "Төхөөрөмж",
+    items: [
+      { label: "Гар утас", href: "#" },
+      { label: "SIM | eSIM", href: "#" },
+      { label: "Гэр интернэт төхөөрөмж", href: "#" },
+      { label: "Дагалдах хэрэгсэл", href: "#" },
+    ],
+  },
+  {
+    label: "Family үйлчилгээ",
+    href: "https://www.toki.mn/family-%D2%AF%D0%B9%D0%BB%D1%87%D0%B8%D0%BB%D0%B3%D1%8D%D1%8D-%D1%88%D0%B8%D0%BD%D1%8D%D1%87%D0%BB%D1%8D%D0%B3%D0%B4%D0%BB%D1%8D%D1%8D/",
+    isDirectLink: true,
+  },
+  { label: "Урамшуулал", href: "/campaigns", isDirectLink: true, icon: "gift" },
+  { label: "Тусламж", href: "/support", isDirectLink: true },
+];
+
+// Хувилбар 4 (Apple mega panel) — panel-ийн баруун талын "Бизнес эрхлэгч бол"
+// хэсгийн жижиг quick link-үүд (Хувь хэрэглэгчийн үндсэн жагсаалтын ард).
+// Агуулга нь placeholder — бодит бизнес линкээр солино.
+export const businessQuickLinks: NavItem[] = [
+  { label: "Байгууллагын багц", href: "#" },
+  { label: "Corporate үйлчилгээ", href: "#" },
+  { label: "Nexmind — Managed network", href: "https://nexmind.mn/managednetwork" },
+  { label: "Борлуулалттай холбогдох", href: "#" },
 ];
 
 // =====================================================================

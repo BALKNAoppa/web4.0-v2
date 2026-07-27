@@ -32,9 +32,11 @@ import { AudienceSwitchTabs, AudienceSwitchMobile } from "@/components/layout/au
 import { useAuth } from "@/components/auth/auth-provider";
 import {
   appleNavCategories,
+  customerSegments,
   ecosystemBrands,
-  mainNavLegacy,
+  groupNavV2,
   type AudienceSegment,
+  type EcosystemLink,
 } from "@/data/navigation";
 import { brandPages, type BrandPage } from "@/data/brand-pages";
 import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/header-variant";
@@ -44,13 +46,29 @@ import { cn } from "@/lib/utils";
 //   1 = Apple  (нэгдсэн эко-систем, ганц нимгэн nav)
 //   2 = Business line (хуучин маягийн header + Хувь хэрэглэгч/Өрх/Байгууллага сегмент)
 //   3 = Hybrid (1 + 2): дээд bar = сегмент switcher, үндсэн nav = эко брэндийн нэрс
-//   4 = Chat (header нь Хувилбар 1 шиг Apple; нүүр нь chat-hero — page.tsx удирдана)
+//   4 = Chat (Apple маягийн header + V2 ангилал, Apple mega panel; нүүр нь chat-hero)
 type Variant = HeaderVariant;
 const VARIANTS: { id: Variant; label: string }[] = [
-  { id: 1, label: "Хувилбар 1 · Apple" },
-  { id: 2, label: "Хувилбар 2 · Business line" },
-  { id: 3, label: "Хувилбар 3 · Hybrid" },
-  { id: 4, label: "Хувилбар 4 · Chat" },
+  { id: 1, label: "Хувилбар 1 · Company 1st" },
+  { id: 2, label: "Хувилбар 2 · Comsumer & Company" },
+  { id: 3, label: "Хувилбар 3 · Company & Consumer" },
+  { id: 4, label: "Хувилбар 4 · Hybrid" },
+];
+
+/**
+ * Хувь хэрэглэгч / Байгууллага ангилагч — Хувилбар 2 ба 3 хуваалцана.
+ *  · Хувь хэрэглэгч — customerSegments-ийн brands (Unitel/Univision/LookTV), дарахад задарна.
+ *  · Байгууллага   — dropdown-гүй, дарахад шууд Nexmind руу шилжинэ.
+ */
+const classifierSegments: AudienceSegment[] = [
+  ...customerSegments.filter((s) => s.id === "personal"),
+  {
+    id: "business",
+    label: "Байгууллага",
+    href: "https://nexmind.mn/",
+    external: true,
+    icon: "building",
+  },
 ];
 
 export function Header() {
@@ -63,7 +81,15 @@ export function Header() {
   return (
     <>
       <VariantToggle variant={variant} onChange={setHeaderVariant} />
-      {variant === 2 ? <GroupHeader /> : variant === 3 ? <HybridHeader /> : <AppleHeader />}
+      {variant === 2 ? (
+        <GroupHeader />
+      ) : variant === 3 ? (
+        <HybridHeader />
+      ) : variant === 4 ? (
+        <ChatHeader />
+      ) : (
+        <AppleHeader />
+      )}
     </>
   );
 }
@@ -465,48 +491,34 @@ function BrandMegaPanel({ page, onNavigate }: { page: BrandPage; onNavigate: () 
 }
 
 // =====================================================================
-// ХУВИЛБАР 2 — Хуучин маягийн header (лого + бүтээгдэхүүний nav + icons),
-// дээд талд группын компаниуд сегментээр (Хувь хэрэглэгч/Өрх/Байгууллага), hover дээр
-// гишүүн брэндийн товч мэдээлэлтэй картууд.
+// ХУВИЛБАР 2 (сайжруулсан) — дээд bar-т Хувь хэрэглэгч / Байгууллага сегмент
+// (Хувилбар 3-тай ижил, Хувь хэрэглэгч идэвхтэй) + лого + бүтээгдэхүүний
+// mega-menu nav (Mobile / Internet / Entertainment / Life-style / Урамшуулал /
+// Тусламж, агуулга нь "Sample") + icons. Layer-ийн өндөр ба фонтыг багасгасан.
 // =====================================================================
-function GroupHeader({
-  segments,
-  activeSegmentId,
-  segmentsAlign = "start",
-}: {
-  /** Top bar-ын сегментүүд (default: audienceSegments) */
-  segments?: AudienceSegment[];
-  /** Идэвхтэй сегмент — саарал дэвсгэрээр тодотгогдоно */
-  activeSegmentId?: AudienceSegment["id"];
-  /** Сегмент табуудын байрлал — top bar-ын зүүн ("start") эсвэл баруун ("end") тал */
-  segmentsAlign?: "start" | "end";
-} = {}) {
+function GroupHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
-      {/* Top bar — группын сегментүүд (hover дээр брэнд карт) */}
+      {/* Top bar — Хувь хэрэглэгч / Байгууллага сегмент (h-8, багассан) */}
       <div className="bg-muted/40 border-border hidden border-b lg:block">
-        <div
-          className={cn(
-            "mx-auto flex h-9 max-w-300 items-center px-4",
-            segmentsAlign === "end" && "justify-end",
-          )}
-        >
+        <div className="mx-auto flex h-8 max-w-300 items-center px-4">
           <AudienceSwitchTabs
-            segments={segments}
-            activeId={activeSegmentId}
-            align={segmentsAlign}
+            segments={classifierSegments}
+            activeId="personal"
+            hover={false}
+            triggerClassName="text-[13px] sm:text-[13px]"
           />
         </div>
       </div>
 
-      {/* Main row — лого + бүтээгдэхүүний nav + icons */}
-      <div className="mx-auto flex h-14 max-w-300 items-center justify-between gap-4 px-4 lg:h-16">
+      {/* Main row — лого + mega-menu nav + icons (h-12, багассан) */}
+      <div className="mx-auto flex h-12 max-w-300 items-center justify-between gap-4 px-4">
         <EcoLogo />
 
         <div className="hidden flex-1 justify-start lg:flex">
-          <Navigation variant="desktop" categories={mainNavLegacy} />
+          <Navigation variant="desktop" categories={groupNavV2} />
         </div>
 
         <div className="hidden items-center gap-1 lg:flex">
@@ -539,13 +551,13 @@ function GroupHeader({
                 <SheetTitle>Цэс</SheetTitle>
               </SheetHeader>
 
-              {/* Группын сегментүүд */}
+              {/* Хувь хэрэглэгч / Байгууллага сегмент */}
               <div className="mt-4">
                 <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
-                  Групп
+                  Ангилал
                 </p>
                 <AudienceSwitchMobile
-                  segments={segments}
+                  segments={classifierSegments}
                   onItemClick={() => setMobileOpen(false)}
                 />
               </div>
@@ -554,7 +566,7 @@ function GroupHeader({
               <div className="border-border mt-4 border-t pt-4">
                 <Navigation
                   variant="mobile"
-                  categories={mainNavLegacy}
+                  categories={groupNavV2}
                   onItemClick={() => setMobileOpen(false)}
                 />
               </div>
@@ -577,42 +589,40 @@ function GroupHeader({
 }
 
 // =====================================================================
-// ХУВИЛБАР 3 — Hybrid (Хувилбар 1 + 2):
-//   Дээд bar   = Хувилбар 2-той ИЖИЛ сегмент switcher (audienceSegments, hover-той).
-//   Үндсэн мөр = эко-системийн брэндийн нэрс (Хувилбар 1 шиг, энгийн линк) + icons.
+// ХУВИЛБАР 3 — Single-row (whiteboard sketch-ийн дагуу):
+//   Ганц мөр (нэг layer). Зүүн: эко брэнд + Mobile + Тусламж nav.
+//   Төв (гол): Unitel үгэн лого.
+//   Баруун: Хувь хэрэглэгч / Байгууллага ангилагч + профайл (бусад icon-гүй).
 // =====================================================================
 function HybridHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const activeBrand = useActiveBrand();
 
-  // Хувилбар 3-т зөвхөн эдгээр брэнд — бусдыг (DDish, Nexmind, OSS, U-point, PSN, ESN) хассан
-  const order = ["Unitel", "Univision", "Look TV", "Toki"];
-  const hybridBrands = ecosystemBrands
-    .filter((b) => order.includes(b.name))
-    .sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+  // Ганц эгнээний nav — эко брэнд + Mobile + Тусламж
+  const v3Nav: EcosystemLink[] = [
+    { name: "Unitel", href: "/unitel" },
+    { name: "Univision", href: "/univision" },
+    { name: "Toki", href: "https://toki.mn/", external: true },
+    { name: "Mobile", href: "/main-packages" },
+    { name: "LookTV", href: "https://looktv.mn/", external: true },
+    { name: "Тусламж", href: "/support" },
+  ];
+  // Баруун талын ангилагч (Хувь хэрэглэгч / Байгууллага) — module-level
+  // classifierSegments-ийг Хувилбар 2-той хуваалцана.
 
   return (
-    <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
-      {/* Top bar — Хувилбар 2-той ижил сегмент switcher (hover-той) */}
-      <div className="bg-muted/40 border-border hidden border-b lg:block">
-        <div className="mx-auto flex h-9 max-w-300 items-center px-4">
-          <AudienceSwitchTabs />
-        </div>
-      </div>
-
-      {/* Main row — лого + эко-системийн брэндийн нэрс + icons */}
-      <div className="mx-auto flex h-14 max-w-300 items-center justify-between gap-4 px-4 lg:h-16">
-        <EcoLogo />
-
-        {/* Эко-систем брэндийн нэрс — Хувилбар 1 шиг, mega-menu-гүй (hover унтраасан) */}
-        <nav
-          aria-label="Эко-систем"
-          className="hidden flex-1 items-center justify-center gap-5 lg:flex"
-        >
-          {hybridBrands.map((brand) => {
-            const active = brand.name === activeBrand;
+    <header
+      className="bg-background/80 border-border sticky top-0 z-50 border-b backdrop-blur"
+      role="banner"
+    >
+      {/* Desktop — ганц мөр: зүүн nav · төв Unitel лого · баруун ангилагч + профайл */}
+      <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
+        {/* Зүүн — эко брэнд nav */}
+        <nav aria-label="Үндсэн цэс" className="flex items-center gap-5">
+          {v3Nav.map((brand) => {
+            const active = !brand.external && brand.name === activeBrand;
             const linkClass = cn(
-              "text-[13px] font-medium transition-colors",
+              "text-[13px] font-medium whitespace-nowrap transition-colors",
               active ? "text-foreground font-semibold" : "text-foreground/75 hover:text-foreground",
             );
             return brand.external ? (
@@ -636,96 +646,148 @@ function HybridHeader() {
               </Link>
             );
           })}
-          <Link
-            href="/support"
-            className="text-foreground/75 hover:text-foreground text-[13px] font-medium transition-colors"
-          >
-            Тусламж
-          </Link>
         </nav>
 
-        {/* Desktop icons */}
-        <div className="hidden items-center gap-0.5 lg:flex">
+        {/* Төв (гол) — Unitel үгэн лого */}
+        <div className="flex justify-center">
+          <UnitelLogo />
+        </div>
+
+        {/* Баруун — Хувь хэрэглэгч / Байгууллага ангилагч + профайл */}
+        <div className="flex items-center justify-end gap-2">
+          <AudienceSwitchTabs
+            segments={classifierSegments}
+            activeId="personal"
+            align="end"
+            hover={false}
+            triggerClassName="text-[13px] sm:text-[13px]"
+          />
+          <AccountMenu />
+        </div>
+      </div>
+
+      {/* Mobile — цэс · лого · профайл */}
+      <div className="mx-auto flex h-11 max-w-300 items-center justify-between px-4 lg:hidden">
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Цэс нээх">
+              <Menu className="size-5" />
+            </Button>
+          </SheetTrigger>
+
+          <SheetContent side="left" className="w-75 p-6 sm:w-90">
+            <SheetHeader className="p-0">
+              <SheetTitle>Цэс</SheetTitle>
+            </SheetHeader>
+
+            {/* Nav линкүүд */}
+            <ul className="mt-4 space-y-1">
+              {v3Nav.map((brand) => (
+                <li key={brand.name}>
+                  {brand.external ? (
+                    <a
+                      href={brand.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setMobileOpen(false)}
+                      className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
+                    >
+                      <span>{brand.name}</span>
+                      <ArrowUpRight
+                        className="text-muted-foreground ml-auto size-4"
+                        aria-hidden="true"
+                      />
+                    </a>
+                  ) : (
+                    <Link
+                      href={brand.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
+                    >
+                      <span>{brand.name}</span>
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            {/* Ангилагч — Хувь хэрэглэгч / Байгууллага */}
+            <div className="border-border mt-4 border-t pt-4">
+              <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
+                Ангилал
+              </p>
+              <AudienceSwitchMobile
+                segments={classifierSegments}
+                onItemClick={() => setMobileOpen(false)}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        <UnitelLogo />
+
+        <AccountMenu />
+      </div>
+    </header>
+  );
+}
+
+// =====================================================================
+// ХУВИЛБАР 4 (Chat) — Apple маягийн цэвэр header (Хувилбар 1 шиг: лого · төв nav ·
+// icons) + Хувилбар 2-ийн ангилал (groupNavV2). Mega menu задрахад Apple-style
+// panel (navigation.tsx): зүүн "Хувь хэрэглэгч" тод жагсаалт, баруун "Бизнес
+// эрхлэгч бол" quick links. Нүүр хуудас нь chat-hero (page.tsx).
+// =====================================================================
+function ChatHeader() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <header
+      className="bg-background/80 border-border sticky top-0 z-50 border-b backdrop-blur"
+      role="banner"
+    >
+      {/* Desktop — лого · төв mega-menu nav · icons (Хувилбар 1 шиг) */}
+      <div className="mx-auto hidden h-12 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
+        <div className="flex items-center">
+          <EcoLogo />
+        </div>
+        <div className="flex justify-center">
+          <Navigation variant="desktop" categories={groupNavV2} panel="apple" />
+        </div>
+        <div className="flex items-center justify-end gap-0.5">
           <IconButton label="Хайх">
             <Search className="size-5" />
           </IconButton>
           <AccountMenu />
           <ThemeToggle />
         </div>
+      </div>
 
-        {/* Mobile */}
-        <div className="flex items-center gap-0.5 lg:hidden">
+      {/* Mobile — лого · icons + цэс */}
+      <div className="mx-auto flex h-12 max-w-300 items-center justify-between px-4 lg:hidden">
+        <EcoLogo />
+        <div className="flex items-center gap-0.5">
           <IconButton label="Хайх">
             <Search className="size-5" />
           </IconButton>
           <AccountMenu />
-
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" aria-label="Цэс нээх">
                 <Menu className="size-5" />
               </Button>
             </SheetTrigger>
-
             <SheetContent side="right" className="w-75 p-6 sm:w-90">
               <SheetHeader className="p-0">
                 <SheetTitle>Цэс</SheetTitle>
               </SheetHeader>
-
-              {/* Группын сегментүүд — Хувилбар 2-той ижил */}
               <div className="mt-4">
-                <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
-                  Групп
-                </p>
-                <AudienceSwitchMobile onItemClick={() => setMobileOpen(false)} />
+                <Navigation
+                  variant="mobile"
+                  categories={groupNavV2}
+                  onItemClick={() => setMobileOpen(false)}
+                />
               </div>
-
-              {/* Эко-систем брэндүүд */}
-              <div className="border-border mt-4 border-t pt-4">
-                <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
-                  Эко-систем
-                </p>
-                <ul className="space-y-1">
-                  {hybridBrands.map((brand) => (
-                    <li key={brand.name}>
-                      {brand.external ? (
-                        <a
-                          href={brand.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => setMobileOpen(false)}
-                          className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
-                        >
-                          <span>{brand.name}</span>
-                          <ArrowUpRight
-                            className="text-muted-foreground ml-auto size-4"
-                            aria-hidden="true"
-                          />
-                        </a>
-                      ) : (
-                        <Link
-                          href={brand.href}
-                          onClick={() => setMobileOpen(false)}
-                          className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
-                        >
-                          <span>{brand.name}</span>
-                        </Link>
-                      )}
-                    </li>
-                  ))}
-                  <li>
-                    <Link
-                      href="/support"
-                      onClick={() => setMobileOpen(false)}
-                      className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
-                    >
-                      <span>Тусламж</span>
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Theme / Хэл */}
               <div className="border-border mt-6 space-y-2 border-t pt-6">
                 <MobileToggleRow label="Theme">
                   <ThemeToggle />
@@ -765,6 +827,33 @@ function EcoLogo() {
         height={28}
         preload
         className="hidden h-7 w-7 dark:block"
+      />
+    </Link>
+  );
+}
+
+/**
+ * Unitel үгэн лого (wordmark) — Хувилбар 3-ын төвд (гол). viewBox 2470×510.
+ * Light: хар + ногоон · Dark: цагаан + ногоон (EcoLogo-той ижил зарчим).
+ */
+function UnitelLogo() {
+  return (
+    <Link href="/" className="inline-flex items-center" aria-label="Unitel — Нүүр">
+      <Image
+        src="/unitel-logo.svg"
+        alt="Unitel"
+        width={116}
+        height={24}
+        preload
+        className="h-6 w-auto dark:hidden"
+      />
+      <Image
+        src="/unitel-logo-dark.svg"
+        alt="Unitel"
+        width={116}
+        height={24}
+        preload
+        className="hidden h-6 w-auto dark:block"
       />
     </Link>
   );

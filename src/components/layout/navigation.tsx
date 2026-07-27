@@ -15,9 +15,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { mainNav, type NavCategory, type NavItem, type NavPromo } from "@/data/navigation";
-import * as React from "react";
-import { Separator } from "@/components/ui/separator";
+import {
+  mainNav,
+  businessQuickLinks,
+  type NavCategory,
+  type NavItem,
+  type NavPromo,
+} from "@/data/navigation";
 import { ArrowRight, Gift, Tag, Percent } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -50,11 +54,18 @@ type NavigationProps = {
   categories?: NavCategory[];
   /** Mobile дээр item дарахад Sheet-ыг хаахын тулд */
   onItemClick?: () => void;
+  /** Desktop mega panel-ийн загвар: "columns" (V2) эсвэл "apple" (V4) */
+  panel?: "columns" | "apple";
 };
 
-export function Navigation({ variant, categories = mainNav, onItemClick }: NavigationProps) {
+export function Navigation({
+  variant,
+  categories = mainNav,
+  onItemClick,
+  panel = "columns",
+}: NavigationProps) {
   if (variant === "desktop") {
-    return <DesktopNav categories={categories} />;
+    return <DesktopNav categories={categories} panel={panel} />;
   }
   return <MobileNav categories={categories} onItemClick={onItemClick} />;
 }
@@ -62,7 +73,13 @@ export function Navigation({ variant, categories = mainNav, onItemClick }: Navig
 // =====================================================================
 // DESKTOP — Horizontal mega-menu (hover тренд)
 // =====================================================================
-function DesktopNav({ categories }: { categories: NavCategory[] }) {
+function DesktopNav({
+  categories,
+  panel = "columns",
+}: {
+  categories: NavCategory[];
+  panel?: "columns" | "apple";
+}) {
   return (
     <NavigationMenu>
       <NavigationMenuList>
@@ -75,7 +92,7 @@ function DesktopNav({ categories }: { categories: NavCategory[] }) {
                 <NavigationMenuLink asChild>
                   <Link
                     href={category.href}
-                    className="hover:bg-muted focus-visible:ring-ring/50 inline-flex h-9 items-center gap-1.5 rounded-md px-4 py-2 text-base font-medium transition-all outline-none focus-visible:ring-3 focus-visible:outline-1"
+                    className="hover:bg-muted focus-visible:ring-ring/50 inline-flex h-8 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all outline-none focus-visible:ring-3 focus-visible:outline-1"
                   >
                     {Icon && <Icon className="size-4" aria-hidden="true" />}
                     <span>{category.label}</span>
@@ -89,13 +106,15 @@ function DesktopNav({ categories }: { categories: NavCategory[] }) {
           // Default — dropdown mega-menu
           return (
             <NavigationMenuItem key={category.label}>
-              <NavigationMenuTrigger className="text-base font-medium">
+              <NavigationMenuTrigger className="h-8 px-3 py-1.5 text-sm font-medium">
                 {category.label}
                 {category.count != null && <CountBadge count={category.count} />}
               </NavigationMenuTrigger>
               <NavigationMenuContent className="md:w-full">
                 <div className="mx-auto w-full max-w-[1200px] px-4 py-8">
-                  {category.columns ? (
+                  {panel === "apple" ? (
+                    <AppleMegaPanel category={category} />
+                  ) : category.columns ? (
                     <MegaMenuColumns category={category} />
                   ) : (
                     <SimpleList category={category} />
@@ -109,48 +128,104 @@ function DesktopNav({ categories }: { categories: NavCategory[] }) {
     </NavigationMenu>
   );
 }
-/** Multi-column layout — Бүтээгдэхүүн, Энтертайнмент-д ашиглана */
+/** Multi-column layout — Apple маягийн цэвэр багана (тусгаарлах зураасгүй) */
 function MegaMenuColumns({ category }: { category: NavCategory }) {
   const columns = category.columns ?? [];
   const promos = category.promos ?? [];
   const hasPromos = promos.length > 0;
 
   return (
-    <div className="flex items-stretch gap-8">
-      {/* Links section — 2/3 of width when promos exist, full when not */}
-      <div className={cn("flex items-stretch gap-8", hasPromos ? "flex-1" : "w-full")}>
-        {columns.map((column, index) => (
-          <React.Fragment key={column.title}>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-muted-foreground mb-3 text-xs font-extrabold tracking-wider uppercase">
-                {column.title}
-              </h3>
-              <ul className="space-y-2">
-                {column.items.map((item) => (
+    <div className="flex items-start gap-12">
+      {/* Links section — багана бүр цэвэр жагсаалт (Apple.com шиг) */}
+      <div className={cn("flex items-start gap-12", hasPromos ? "flex-1" : "w-full")}>
+        {columns.map((column) => (
+          <div key={column.title} className="min-w-0 flex-1">
+            <h3 className="text-muted-foreground mb-3.5 text-xs font-semibold tracking-wider uppercase">
+              {column.title}
+            </h3>
+            <ul className="space-y-2.5">
+              {column.items.map((item) => (
+                <li key={item.label}>
+                  <NavLink item={item} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {/* Promo section — байвал баруун талд (одоогоор groupNavV2-д promo байхгүй) */}
+      {hasPromos && (
+        <div className="w-72 shrink-0 space-y-4">
+          {promos.map((promo) => (
+            <PromoCard key={promo.title} promo={promo} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Apple маягийн mega panel (Хувилбар 4) — зүүн: "Хувь хэрэглэгч" тод жагсаалт
+ * (screenshot шиг), баруун: "Бизнес эрхлэгч бол" жижиг quick link-үүд.
+ */
+function AppleMegaPanel({ category }: { category: NavCategory }) {
+  const columns =
+    category.columns ?? (category.items ? [{ title: category.label, items: category.items }] : []);
+
+  return (
+    <div className="flex items-start gap-10">
+      {/* Хувь хэрэглэгч — үндсэн (тод) жагсаалт */}
+      <div className="flex-1">
+        <h3 className="text-muted-foreground mb-5 text-[11px] font-semibold tracking-[0.14em] uppercase">
+          Хувь хэрэглэгч
+        </h3>
+        <div className="flex items-start gap-10">
+          {columns.map((col) => (
+            <div key={col.title} className="min-w-0">
+              <p className="text-muted-foreground/80 mb-2.5 text-[11px] font-medium tracking-wide">
+                {col.title}
+              </p>
+              <ul className="space-y-2.5">
+                {col.items.map((item) => (
                   <li key={item.label}>
-                    <NavLink item={item} />
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href={item.href}
+                        className="text-foreground hover:text-primary text-[15px] font-medium tracking-tight transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    </NavigationMenuLink>
                   </li>
                 ))}
               </ul>
             </div>
-            {index < columns.length - 1 && (
-              <Separator orientation="vertical" className="bg-border w-px" />
-            )}
-          </React.Fragment>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* Promo section — right side */}
-      {hasPromos && (
-        <>
-          <Separator orientation="vertical" className="bg-border w-px" />
-          <div className="w-72 shrink-0 space-y-4">
-            {promos.map((promo) => (
-              <PromoCard key={promo.title} promo={promo} />
-            ))}
-          </div>
-        </>
-      )}
+      {/* Бизнес эрхлэгч бол — жижиг quick link-үүд (ард нь) */}
+      <div className="border-border w-60 shrink-0 border-l pl-10">
+        <h3 className="text-muted-foreground mb-4 text-[11px] font-semibold tracking-[0.14em] uppercase">
+          Бизнес эрхлэгч бол
+        </h3>
+        <ul className="space-y-2.5">
+          {businessQuickLinks.map((item) => (
+            <li key={item.label}>
+              <NavigationMenuLink asChild>
+                <Link
+                  href={item.href}
+                  className="text-muted-foreground hover:text-foreground text-[13px] transition-colors"
+                >
+                  {item.label}
+                </Link>
+              </NavigationMenuLink>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

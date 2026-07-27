@@ -107,6 +107,7 @@ function AudienceSwitch({
   hover = true,
   activeId,
   segments = audienceSegments,
+  triggerClassName,
 }: {
   layout: "tabs" | "pills";
   align: "start" | "end";
@@ -116,6 +117,8 @@ function AudienceSwitch({
   activeId?: AudienceSegment["id"];
   /** Харуулах сегментүүд (default: audienceSegments) */
   segments?: AudienceSegment[];
+  /** Trigger товч бүрд нэмэх нэмэлт класс (жишээ: текстийн хэмжээ тааруулах) */
+  triggerClassName?: string;
 }) {
   const [openId, setOpenId] = useState<AudienceSegment["id"] | null>(null);
   // Сегмент хооронд шилжих чиглэл — swipe анимэйшнд: "r" = баруунаас, "l" = зүүнээс
@@ -192,7 +195,7 @@ function AudienceSwitch({
                   target={seg.external ? "_blank" : undefined}
                   rel={seg.external ? "noopener noreferrer" : undefined}
                   onMouseEnter={hoverCloseNow}
-                  className={cn(triggerClass, "group", seg.id === activeId && activeCls)}
+                  className={cn(triggerClass, "group", seg.id === activeId && activeCls, triggerClassName)}
                 >
                   <SegmentIcon icon={seg.icon} className="size-4" />
                   <span>{seg.label}</span>
@@ -210,7 +213,7 @@ function AudienceSwitch({
                 aria-expanded={isOpen}
                 onMouseEnter={() => hoverOpen(seg.id)}
                 onClick={() => (isOpen ? closeNow() : openSeg(seg.id))}
-                className={cn(triggerClass, "group", seg.id === activeId && activeCls)}
+                className={cn(triggerClass, "group", seg.id === activeId && activeCls, triggerClassName)}
               >
                 <SegmentIcon icon={seg.icon} className="size-4" />
                 <span>{seg.label}</span>
@@ -258,6 +261,7 @@ export function AudienceSwitchTabs({
   activeId,
   align = "start",
   hover = true,
+  triggerClassName,
 }: {
   segments?: AudienceSegment[];
   activeId?: AudienceSegment["id"];
@@ -265,6 +269,8 @@ export function AudienceSwitchTabs({
   align?: "start" | "end";
   /** false бол hover дээр биш зөвхөн click дээр нээгдэнэ */
   hover?: boolean;
+  /** Trigger товчны нэмэлт класс (текстийн хэмжээ г.м.) */
+  triggerClassName?: string;
 } = {}) {
   return (
     <AudienceSwitch
@@ -273,6 +279,7 @@ export function AudienceSwitchTabs({
       segments={segments}
       activeId={activeId}
       hover={hover}
+      triggerClassName={triggerClassName}
     />
   );
 }
