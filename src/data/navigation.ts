@@ -89,6 +89,91 @@ export const appleNavCategories: EcosystemLink[] = [
   { name: "Тусламж", href: "/support" },
 ];
 
+// =====================================================================
+// Хувилбар 1 (Apple) header-ийн mega menu — brandPages-ээс ТУСДАА (тэр нь
+// /unitel, /univision хуудсыг удирддаг тул хөндөхгүй). groupNavV2 ангилалд
+// нийцүүлэв:
+//   Unitel    = Mobile + Family
+//   Univision = Internet + Entertainment (төхөөрөмжийг Дэлгүүр рүү зөөв)
+//   Дэлгүүр   = Unitel/Univision-ийн төхөөрөмжтэй холбоотой хэсгүүд
+// Section title = том тод линк (section.href рүү; http бол шинэ таб).
+// =====================================================================
+export type MegaMenuSection = { id: string; title: string; href: string };
+export type MegaMenu = {
+  name: string;
+  sections: MegaMenuSection[];
+  promo?: { text: string; ctaLabel: string; href: string };
+};
+
+const TOKI_FAMILY_HREF =
+  "https://www.toki.mn/family-%D2%AF%D0%B9%D0%BB%D1%87%D0%B8%D0%BB%D0%B3%D1%8D%D1%8D-%D1%88%D0%B8%D0%BD%D1%8D%D1%87%D0%BB%D1%8D%D0%B3%D0%B4%D0%BB%D1%8D%D1%8D/";
+
+export const appleMegaMenus: Record<string, MegaMenu> = {
+  Unitel: {
+    name: "Unitel",
+    sections: [
+      { id: "postpaid", title: "Дараа төлбөрт", href: "/main-packages" },
+      { id: "prepaid", title: "Урьдчилсан төлбөрт", href: "#" },
+      { id: "sim", title: "SIM | eSIM", href: "/devices" },
+      { id: "family", title: "Family үйлчилгээ", href: TOKI_FAMILY_HREF },
+      { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
+      { id: "foreigners", title: "For Foreigners", href: "#" },
+    ],
+    promo: {
+      text: "Цаг үеийн урамшууллын талаарх мэдээлэл энд байрлана.",
+      ctaLabel: "Дэлгэрэнгүй",
+      href: "/campaigns",
+    },
+  },
+  Univision: {
+    name: "Univision",
+    // Гэр интернэт + ТВ үйлчилгээ. On-demand контент (Univision Go/SVOD/TVOD/апп)
+    // нь тусдаа "Entertainment" nav-д шилжсэн.
+    sections: [
+      { id: "triple_packages", title: "Гурвалсан багц", href: "/main-packages" },
+      { id: "single_packages", title: "Single багц ", href: "/main-packages" },
+      { id: "solutions", title: "Өрхийн хэрэглээний шийдлүүд", href: "#" },
+      { id: "lifestyle", title: "Life-style", href: "#" },
+      { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
+    ],
+    promo: {
+      text: "HBO Max — 1 сар үнэгүй. Шинэ хэрэглэгчдэд.",
+      ctaLabel: "Дэлгэрэнгүй",
+      href: "/campaigns",
+    },
+  },
+  "Дэлгүүр": {
+    name: "Дэлгүүр",
+    sections: [
+      { id: "phones", title: "Гар утас", href: "/devices" },
+      { id: "accessories", title: "Дагалдах хэрэгсэл", href: "/devices" },
+      { id: "wifi", title: "Интернэтийн төхөөрөмж", href: "/devices" },
+      { id: "stb", title: "ТВ-н төхөөрөмж", href: "/devices" },
+      { id: "fttr", title: "Нэмэлт төхөөрөмж", href: "/devices" },
+    ],
+    promo: {
+      text: "Хуучин төхөөрөмжөө сольж, шинийг хөнгөлөлттэй үнээр.",
+      ctaLabel: "Дэлгэрэнгүй",
+      href: "/campaigns",
+    },
+  },
+  Entertainment: {
+    name: "Entertainment",
+    sections: [
+      { id: "univision-go", title: "Univision Go", href: "/univision-go" },
+      { id: "svod", title: "Кино сан", href: "/entertainment/main" },
+      { id: "tvod", title: "Кино багц", href: "/entertainment/main#tvod" },
+      { id: "apps", title: "Look TV", href: "#" },
+      { id: "channels", title: "Бүх суваг", href: "#" },
+    ],
+    promo: {
+      text: "HBO Max — 1 сар үнэгүй. Шинэ хэрэглэгчдэд.",
+      ctaLabel: "Дэлгэрэнгүй",
+      href: "/campaigns",
+    },
+  },
+};
+
 // Хувилбар 3 (Unitel) — Unitel.mn домэйны мобайл үйлчилгээтэй холбоотой брэндүүд
 // (дээд bar-т байрлана)
 export const unitelDomains: EcosystemLink[] = [

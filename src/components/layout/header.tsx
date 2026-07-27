@@ -31,14 +31,15 @@ import { Navigation } from "@/components/layout/navigation";
 import { AudienceSwitchTabs, AudienceSwitchMobile } from "@/components/layout/audience-switch";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
+  appleMegaMenus,
   appleNavCategories,
   customerSegments,
   ecosystemBrands,
   groupNavV2,
   type AudienceSegment,
   type EcosystemLink,
+  type MegaMenu,
 } from "@/data/navigation";
-import { brandPages, type BrandPage } from "@/data/brand-pages";
 import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/header-variant";
 import { cn } from "@/lib/utils";
 
@@ -234,7 +235,7 @@ function AppleHeader() {
   return (
     <>
       {/* Apple шиг scrim — mega-menu нээгдэхэд body бүдгэрнэ (зөөлөн opacity transition) */}
-      {panelBrand && brandPages[panelBrand] && (
+      {panelBrand && appleMegaMenus[panelBrand] && (
         <div
           aria-hidden
           onClick={closeNow}
@@ -264,7 +265,7 @@ function AppleHeader() {
               );
 
               // Дотоод брэнд + mega-menu дата байвал hover дээр панел нээнэ
-              const menu = !brand.external ? brandPages[brand.name] : undefined;
+              const menu = !brand.external ? appleMegaMenus[brand.name] : undefined;
               if (menu) {
                 return (
                   <div
@@ -387,7 +388,7 @@ function AppleHeader() {
 
         {/* Desktop hover mega-menu — зөөлөн нээх/хаах (CSS transition, тасрахгүй).
             Брэнд солигдоход панель байрандаа үлдэж, зөвхөн контент шууд солигдоно. */}
-        {panelBrand && brandPages[panelBrand] && (
+        {panelBrand && appleMegaMenus[panelBrand] && (
           <div
             onMouseEnter={() => openBrandMenu(panelBrand)}
             onMouseLeave={closeBrandMenu}
@@ -396,7 +397,7 @@ function AppleHeader() {
               shown ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
             )}
           >
-            <BrandMegaPanel page={brandPages[panelBrand]} onNavigate={closeNow} />
+            <BrandMegaPanel menu={appleMegaMenus[panelBrand]} onNavigate={closeNow} />
           </div>
         )}
       </header>
@@ -417,43 +418,40 @@ const MEGA_RELATED_LINKS = [
   { label: "Бүх урамшуулал", href: "/campaigns" },
 ];
 
-function BrandMegaPanel({ page, onNavigate }: { page: BrandPage; onNavigate: () => void }) {
-  const sections = page.sections.filter((s) => s.items.length > 0);
+function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () => void }) {
+  const linkCls =
+    "text-foreground hover:text-primary block text-2xl font-semibold tracking-tight transition-colors";
 
   return (
-    <div className="mx-auto flex max-w-[1200px] gap-12 px-4 py-8">
-      {/* ── Зүүн: section гарчгууд (2 багана) + tagline ── */}
-      <div className="flex-1">
-        <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-          {page.name}
-        </h3>
-        <p className="text-muted-foreground/80 mt-1 text-sm">{page.tagline}</p>
-        <ul className="mt-5 grid grid-cols-2 gap-x-10 gap-y-4">
-          {sections.map((section) => (
-            <li key={section.id}>
-              <Link
-                href={`/${page.slug}#${section.id}`}
-                onClick={onNavigate}
-                className="text-foreground hover:text-primary block text-lg font-semibold tracking-tight transition-colors"
-              >
-                {section.title}
-              </Link>
-              {section.description && (
-                <p className="text-muted-foreground mt-0.5 text-xs leading-snug">
-                  {section.description}
-                </p>
-              )}
-            </li>
-          ))}
+    <div className="mx-auto flex max-w-[1200px] items-start gap-16 px-4 py-10">
+      {/* ── Үндсэн цэс — Apple шиг том, тод (урд нь) ── */}
+      <div>
+        <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide">{menu.name}</h3>
+        <ul className="space-y-3">
+          {menu.sections.map((section) =>
+            section.href.startsWith("http") ? (
+              <li key={section.id}>
+                <a href={section.href} target="_blank" rel="noopener noreferrer" className={linkCls}>
+                  {section.title}
+                </a>
+              </li>
+            ) : (
+              <li key={section.id}>
+                <Link href={section.href} onClick={onNavigate} className={linkCls}>
+                  {section.title}
+                </Link>
+              </li>
+            ),
+          )}
         </ul>
       </div>
 
-      {/* ── Баруун: холбоотой линкүүд + урамшууллын карт ── */}
-      <div className="w-64 shrink-0">
-        <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+      {/* ── Холбоотой (Quick Links) — жижиг, ард нь ── */}
+      <div className="w-52 shrink-0">
+        <h3 className="text-muted-foreground mb-4 text-xs font-semibold tracking-wider uppercase">
           Холбоотой
         </h3>
-        <ul className="mt-4 space-y-2.5">
+        <ul className="space-y-2.5">
           {MEGA_RELATED_LINKS.map((link) => (
             <li key={link.label}>
               <Link
@@ -466,26 +464,25 @@ function BrandMegaPanel({ page, onNavigate }: { page: BrandPage; onNavigate: () 
             </li>
           ))}
         </ul>
-
-        {page.promo && (
-          <Link
-            href={page.promo.href}
-            onClick={onNavigate}
-            className="border-border bg-muted/50 hover:bg-muted group mt-5 block rounded-xl border p-4 transition-colors"
-          >
-            <span className="text-primary text-[11px] font-bold tracking-wider uppercase">
-              Урамшуулал
-            </span>
-            <p className="text-foreground mt-1 text-sm leading-snug font-medium">
-              {page.promo.text}
-            </p>
-            <span className="text-primary mt-2 inline-flex items-center gap-1 text-xs font-semibold">
-              {page.promo.ctaLabel}
-              <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-            </span>
-          </Link>
-        )}
       </div>
+
+      {/* ── Урамшууллын карт — баруун захад ── */}
+      {menu.promo && (
+        <Link
+          href={menu.promo.href}
+          onClick={onNavigate}
+          className="border-border bg-muted/50 hover:bg-muted group ml-auto block w-72 shrink-0 rounded-xl border p-4 transition-colors"
+        >
+          <span className="text-primary text-[11px] font-bold tracking-wider uppercase">
+            Урамшуулал
+          </span>
+          <p className="text-foreground mt-1 text-sm leading-snug font-medium">{menu.promo.text}</p>
+          <span className="text-primary mt-2 inline-flex items-center gap-1 text-xs font-semibold">
+            {menu.promo.ctaLabel}
+            <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+          </span>
+        </Link>
+      )}
     </div>
   );
 }
