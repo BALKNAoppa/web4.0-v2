@@ -426,12 +426,19 @@ function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () =
     <div className="mx-auto flex max-w-[1200px] items-start gap-16 px-4 py-10">
       {/* ── Үндсэн цэс — Apple шиг том, тод (урд нь) ── */}
       <div>
-        <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide">{menu.name}</h3>
+        <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide">
+          {menu.name}
+        </h3>
         <ul className="space-y-3">
           {menu.sections.map((section) =>
             section.href.startsWith("http") ? (
               <li key={section.id}>
-                <a href={section.href} target="_blank" rel="noopener noreferrer" className={linkCls}>
+                <a
+                  href={section.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkCls}
+                >
                   {section.title}
                 </a>
               </li>
@@ -551,7 +558,7 @@ function GroupHeader() {
               {/* Хувь хэрэглэгч / Байгууллага сегмент */}
               <div className="mt-4">
                 <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
-                  Ангилал
+                  Хэрэглэгчийн төрөл something like that hha
                 </p>
                 <AudienceSwitchMobile
                   segments={classifierSegments}
@@ -711,7 +718,7 @@ function HybridHeader() {
             {/* Ангилагч — Хувь хэрэглэгч / Байгууллага */}
             <div className="border-border mt-4 border-t pt-4">
               <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
-                Ангилал
+                Хэрэглэгчийн төрөл somthing like that hha
               </p>
               <AudienceSwitchMobile
                 segments={classifierSegments}
