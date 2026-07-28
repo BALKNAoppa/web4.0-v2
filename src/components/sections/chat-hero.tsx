@@ -70,7 +70,7 @@ export function ChatHero() {
           >
             <form
               onSubmit={(e) => e.preventDefault()}
-              className="bg-card/85 flex w-full items-center gap-3 rounded-[calc(1.75rem-2px)] px-4 py-3 backdrop-blur"
+              className="bg-card/85 flex w-full items-center gap-3 rounded-[calc(1.75rem-2px)] px-4 py-2.5 backdrop-blur"
             >
               <Sparkles className="text-primary size-5 shrink-0" aria-hidden="true" />
               <label htmlFor="chat-hero-input" className="sr-only">

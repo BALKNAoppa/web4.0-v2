@@ -4,7 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Menu, Search, User, Globe, LogOut, ArrowUpRight, Layers, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  Search,
+  User,
+  Globe,
+  LogOut,
+  ArrowUpRight,
+  Layers,
+  ChevronDown,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -44,7 +54,7 @@ import { cn } from "@/lib/utils";
 type Variant = HeaderVariant;
 const VARIANTS: { id: Variant; label: string }[] = [
   { id: 1, label: "Хувилбар 1 · Company 1st" },
-  { id: 2, label: "Хувилбар 2 · Comsumer & Company" },
+  { id: 2, label: "Хувилбар 2 · Consumer & Company" },
   { id: 3, label: "Хувилбар 3 · Company & Consumer" },
   { id: 4, label: "Хувилбар 4 · Hybrid" },
 ];
@@ -91,6 +101,10 @@ export function Header() {
 /**
  * Хувилбар сонгох toggle — дэлгэцийн дээд талд, хэвийн урсгалд (header дээр
  * давхцахгүй). Шийдсэний дараа энэ toggle-ийг устгана.
+ *
+ * Энэ layer-ийг БҮХЭЛД НЬ хааж болно (X товч) — stakeholder-т үзүүлэхэд дэлгэц
+ * цэвэрхэн харагдана. Хаагдсан үед зөвхөн баруун дээд булангийн үл мэдэгдэх
+ * бариул үлдэнэ: hover хийхэд л гарч ирнэ, дарахад bar буцаж задарна.
  */
 function VariantToggle({
   variant,
@@ -100,6 +114,7 @@ function VariantToggle({
   onChange: (v: Variant) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [barOpen, setBarOpen] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
   const current = VARIANTS.find((v) => v.id === variant);
 
@@ -113,11 +128,26 @@ function VariantToggle({
     return () => window.removeEventListener("mousedown", onDown);
   }, [open]);
 
+  // Хаагдсан төлөв — урсгалаас бүрэн гарна (header дээшээ шахагдана). Үлдэх
+  // цорын ганц ул мөр нь баруун дээд булангийн ил бус бариул.
+  if (!barOpen) {
+    return (
+      <button
+        type="button"
+        onClick={() => setBarOpen(true)}
+        aria-label="Хувилбар сонгох мөрийг нээх"
+        className="bg-foreground text-background focus-visible:ring-foreground/40 fixed top-0 right-0 z-80 inline-flex size-6 items-center justify-center rounded-bl-lg opacity-0 transition-opacity duration-200 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none"
+      >
+        <ChevronDown className="size-3.5" aria-hidden="true" />
+      </button>
+    );
+  }
+
   return (
     <div
       role="group"
       aria-label="Header хувилбар сонгох"
-      className="bg-foreground text-background flex items-center justify-end px-4 py-1.5 text-xs"
+      className="bg-foreground text-background flex items-center justify-end gap-1 px-4 py-1.5 text-xs"
     >
       {/* Баруун талын жижиг товч — дарахад dropdown нээгдэж/хаагдана */}
       <div ref={ref} className="relative">
@@ -141,7 +171,7 @@ function VariantToggle({
         {open && (
           <div
             role="menu"
-            className="border-background/15 bg-foreground animate-in fade-in slide-in-from-top-1 absolute top-full right-0 z-[70] mt-1.5 flex min-w-52 flex-col gap-0.5 rounded-xl border p-1.5 shadow-2xl duration-150"
+            className="border-background/15 bg-foreground animate-in fade-in slide-in-from-top-1 absolute top-full right-0 z-70 mt-1.5 flex min-w-52 flex-col gap-0.5 rounded-xl border p-1.5 shadow-2xl duration-150"
           >
             {VARIANTS.map((v) => (
               <button
@@ -166,6 +196,19 @@ function VariantToggle({
           </div>
         )}
       </div>
+
+      {/* Энэ layer-ийг бүхэлд нь хаах — танилцуулгын үед дэлгэц цэвэрхэн болно */}
+      <button
+        type="button"
+        onClick={() => {
+          setOpen(false);
+          setBarOpen(false);
+        }}
+        aria-label="Хувилбар сонгох мөрийг хаах"
+        className="hover:bg-background/20 focus-visible:ring-background/40 inline-flex size-5 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none"
+      >
+        <X className="size-3.5" aria-hidden="true" />
+      </button>
     </div>
   );
 }
@@ -249,7 +292,7 @@ function AppleHeader() {
         />
       )}
       {/* Header background — бүх хувилбарт Хувилбар 2-ын өнгө (тунгалаг биш bg-background) */}
-      <header className="bg-background relative sticky top-0 z-50" role="banner">
+      <header className="bg-background relative top-0 z-50" role="banner">
         {/* Desktop */}
         <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
           <div className="flex items-center">
@@ -433,7 +476,7 @@ function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () =
   );
 
   return (
-    <div className="mx-auto flex max-w-[1200px] items-start gap-16 px-4 py-10">
+    <div className="mx-auto flex max-w-300 items-start gap-16 px-4 py-10">
       {/* ── Үндсэн цэс — Apple шиг том, тод (урд нь) ── */}
       <div>
         <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.name}</h3>
@@ -631,10 +674,7 @@ function HybridHeader() {
           )}
         />
       )}
-      <header
-        className="bg-background border-border relative sticky top-0 z-50 border-b"
-        role="banner"
-      >
+      <header className="bg-background border-border relative top-0 z-50 border-b" role="banner">
         {/* Desktop — ганц мөр: зүүн nav · төв Unitel лого · баруун ангилагч + профайл */}
         <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
           {/* Зүүн — эко брэнд nav */}
