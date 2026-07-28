@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { LogoHomeLink } from "@/components/layout/logo-home-link";
 import { footerLinks, footerMeta } from "@/data/footer";
 import { appStores, socialLinks, type AppStoreLink, type SocialLink } from "@/data/footer-extras";
@@ -45,21 +45,8 @@ function FooterDetailed() {
         <div className="flex flex-col gap-10 md:flex-row md:flex-wrap md:items-start md:gap-12">
           {/* Зүүн — Logo + tagline (үлдсэн зайг шингээнэ) */}
           <div className="flex flex-col gap-4 md:max-w-sm md:flex-1">
-            <LogoHomeLink className="inline-flex items-center" aria-label="Unitel нүүр">
-              <Image
-                src="/eco-logo.png"
-                alt="Unitel"
-                width={36}
-                height={36}
-                className="block h-9 w-9 dark:hidden"
-              />
-              <Image
-                src="/eco-logo-dark.png"
-                alt="Unitel"
-                width={36}
-                height={36}
-                className="hidden h-9 w-9 dark:block"
-              />
+            <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
+              <BrandLogo height={28} />
             </LogoHomeLink>
             <p className="text-muted-foreground max-w-sm text-sm leading-relaxed">
               Монголын тэргүүлэх дижитал үйлчилгээ хаана ч, хэзээ ч тантай хамт.

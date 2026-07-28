@@ -8,6 +8,7 @@ import { ChatWidget } from "@/components/chatbot/chat-widget";
 import { AccessibilityProvider } from "@/components/accessibility/accessibility-provider";
 import { AccessibilityPanel } from "@/components/accessibility/accessibility-panel";
 import { AccessibilitySkipLinks } from "@/components/accessibility/accessibility-skip-links";
+import { BRAND, BRAND_LABEL, BRAND_LOGO } from "@/lib/brand";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -17,9 +18,15 @@ const manrope = Manrope({
   weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
 
+/**
+ * Tab-ын гарчиг ба icon нь БРЭНДЭЭР ялгаатай — NEXT_PUBLIC_BRAND-аас (build-ийн
+ * үед) шийдэгдэнэ. Анхаар: app/icon.svg байвал file-based metadata нь энэ
+ * `icons` тохиргоог ДАРДАГ тул тэр файлыг public/ рүү зөөсөн.
+ */
 export const metadata: Metadata = {
-  title: "Unitel 4.0 - Sample",
-  description: "Unitel Web 4.0 — The future of connectivity",
+  title: `${BRAND_LABEL[BRAND]} 4.0 - Sample`,
+  description: `${BRAND_LABEL[BRAND]} Web 4.0 — The future of connectivity`,
+  icons: { icon: BRAND_LOGO[BRAND].icon },
 };
 
 export default function RootLayout({

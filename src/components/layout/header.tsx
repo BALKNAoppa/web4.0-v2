@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -29,6 +28,7 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Navigation } from "@/components/layout/navigation";
 import { AudienceSwitchTabs, AudienceSwitchMobile } from "@/components/layout/audience-switch";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { PromoCard } from "@/components/layout/promo-card";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
@@ -42,6 +42,7 @@ import {
   type EcosystemLink,
   type MegaMenu,
 } from "@/data/navigation";
+import { BRAND, BRAND_LABEL } from "@/lib/brand";
 import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/header-variant";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
@@ -103,7 +104,9 @@ function VariantToggle({
   onChange: (v: Variant) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [barOpen, setBarOpen] = useState(true);
+  // Анхнаасаа ХААЛТТАЙ — танилцуулгад дэлгэц цэвэрхэн байна. Нээх бол баруун
+  // дээд булан руу hover хийж бариулыг гаргана.
+  const [barOpen, setBarOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const current = VARIANTS.find((v) => v.id === variant);
 
@@ -260,7 +263,7 @@ function AppleHeader() {
         {/* Desktop */}
         <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
           <div className="flex items-center">
-            <EcoLogo />
+            <BrandLogoLink />
           </div>
 
           <nav aria-label="Үндсэн цэс" className="flex items-center justify-center gap-5">
@@ -331,7 +334,7 @@ function AppleHeader() {
 
         {/* Mobile */}
         <div className="mx-auto flex h-11 max-w-300 items-center justify-between px-4 lg:hidden">
-          <EcoLogo />
+          <BrandLogoLink />
 
           <div className="flex items-center gap-0.5">
             <IconButton label="Хайх">
@@ -499,7 +502,7 @@ function GroupHeader() {
 
       {/* Main row — лого + mega-menu nav + icons (h-12, багассан) */}
       <div className="mx-auto flex h-12 max-w-300 items-center justify-between gap-4 px-4">
-        <EcoLogo />
+        <BrandLogoLink />
 
         <div className="hidden flex-1 justify-start lg:flex">
           <Navigation variant="desktop" categories={groupNavV2} />
@@ -680,7 +683,7 @@ function HybridHeader() {
 
           {/* Төв (гол) — Unitel үгэн лого */}
           <div className="flex justify-center">
-            <UnitelLogo />
+            <BrandLogoLink />
           </div>
 
           {/* Баруун — Хувь хэрэглэгч / Байгууллага ангилагч + профайл */}
@@ -758,7 +761,7 @@ function HybridHeader() {
             </SheetContent>
           </Sheet>
 
-          <UnitelLogo />
+          <BrandLogoLink />
 
           <AccountMenu />
         </div>
@@ -796,7 +799,7 @@ function ChatHeader() {
       {/* Desktop — лого · төв mega-menu nav · icons (Хувилбар 1 шиг) */}
       <div className="mx-auto hidden h-12 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
         <div className="flex items-center">
-          <EcoLogo />
+          <BrandLogoLink />
         </div>
         <div className="flex justify-center">
           <Navigation variant="desktop" categories={groupNavV2} panel="apple" />
@@ -812,7 +815,7 @@ function ChatHeader() {
 
       {/* Mobile — лого · icons + цэс */}
       <div className="mx-auto flex h-12 max-w-300 items-center justify-between px-4 lg:hidden">
-        <EcoLogo />
+        <BrandLogoLink />
         <div className="flex items-center gap-0.5">
           <IconButton label="Хайх">
             <Search className="size-5" />
@@ -855,53 +858,15 @@ function ChatHeader() {
 // Туслах компонентууд
 // =====================================================================
 
-/** Эко swirl icon-лого (текстгүй, бүх хувилбарт нэгдсэн). Light: хар, Dark: цагаан. */
-function EcoLogo() {
-  return (
-    <Link href="/" className="inline-flex items-center" aria-label="Нүүр">
-      <Image
-        src="/eco-logo.png"
-        alt="Unitel"
-        width={28}
-        height={28}
-        preload
-        className="h-7 w-7 dark:hidden"
-      />
-      <Image
-        src="/eco-logo-dark.png"
-        alt="Unitel"
-        width={28}
-        height={28}
-        preload
-        className="hidden h-7 w-7 dark:block"
-      />
-    </Link>
-  );
-}
-
 /**
- * Unitel үгэн лого (wordmark) — Хувилбар 3-ын төвд (гол). viewBox 2470×510.
- * Light: хар + ногоон · Dark: цагаан + ногоон (EcoLogo-той ижил зарчим).
+ * Брэндийн үгэн лого + нүүр рүү холбоос — бүх хувилбар, desktop/mobile
+ * хоёуланд нэг ижил. Unitel эсвэл Univision аль нь гарахыг NEXT_PUBLIC_BRAND
+ * шийднэ (lib/brand → BRAND_LOGO).
  */
-function UnitelLogo() {
+function BrandLogoLink() {
   return (
-    <Link href="/" className="inline-flex items-center" aria-label="Unitel — Нүүр">
-      <Image
-        src="/unitel-logo.svg"
-        alt="Unitel"
-        width={116}
-        height={24}
-        preload
-        className="h-6 w-auto dark:hidden"
-      />
-      <Image
-        src="/unitel-logo-dark.svg"
-        alt="Unitel"
-        width={116}
-        height={24}
-        preload
-        className="hidden h-6 w-auto dark:block"
-      />
+    <Link href="/" className="inline-flex items-center" aria-label={`${BRAND_LABEL[BRAND]} — Нүүр`}>
+      <BrandLogo height={24} preload />
     </Link>
   );
 }
