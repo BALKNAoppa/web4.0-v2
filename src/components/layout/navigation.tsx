@@ -15,14 +15,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  mainNav,
-  businessQuickLinks,
-  type NavCategory,
-  type NavItem,
-  type NavPromo,
-} from "@/data/navigation";
-import { ArrowRight, Gift, Tag, Percent } from "lucide-react";
+import { PromoCard } from "@/components/layout/promo-card";
+import { mainNav, businessQuickLinks, type NavCategory, type NavItem } from "@/data/navigation";
+import { Gift, Tag, Percent } from "lucide-react";
+import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
 /** Data-аас ирэх icon-ы нэрийг lucide компонент руу хөрвүүлнэ */
@@ -42,7 +38,12 @@ function getCategoryIcon(name?: NavCategory["icon"]) {
 /** Тооны badge (жишээ 36) — улбар шар дугуйтай */
 function CountBadge({ count }: { count: number }) {
   return (
-    <span className="ml-1 inline-flex min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold text-white">
+    <span
+      className={cn(
+        navType.badge,
+        "ml-1 inline-flex min-w-4 items-center justify-center rounded-full bg-orange-500 px-1 text-white",
+      )}
+    >
       {count}
     </span>
   );
@@ -92,7 +93,10 @@ function DesktopNav({
                 <NavigationMenuLink asChild>
                   <Link
                     href={category.href}
-                    className="hover:bg-muted focus-visible:ring-ring/50 inline-flex h-8 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all outline-none focus-visible:ring-3 focus-visible:outline-1"
+                    className={cn(
+                      navType.bar,
+                      "hover:bg-muted focus-visible:ring-ring/50 inline-flex h-8 items-center gap-1.5 rounded-md px-3 py-1.5 transition-all outline-none focus-visible:ring-3 focus-visible:outline-1",
+                    )}
                   >
                     {Icon && <Icon className="size-4" aria-hidden="true" />}
                     <span>{category.label}</span>
@@ -106,7 +110,7 @@ function DesktopNav({
           // Default — dropdown mega-menu
           return (
             <NavigationMenuItem key={category.label}>
-              <NavigationMenuTrigger className="h-8 px-3 py-1.5 text-sm font-medium">
+              <NavigationMenuTrigger className={cn(navType.bar, "h-8 px-3 py-1.5")}>
                 {category.label}
                 {category.count != null && <CountBadge count={category.count} />}
               </NavigationMenuTrigger>
@@ -140,9 +144,7 @@ function MegaMenuColumns({ category }: { category: NavCategory }) {
       <div className={cn("flex items-start gap-12", hasPromos ? "flex-1" : "w-full")}>
         {columns.map((column) => (
           <div key={column.title} className="min-w-0 flex-1">
-            <h3 className="text-muted-foreground mb-3.5 text-xs font-semibold tracking-wider uppercase">
-              {column.title}
-            </h3>
+            <h3 className={cn(navType.groupLabel, "mb-3.5")}>{column.title}</h3>
             <ul className="space-y-2.5">
               {column.items.map((item) => (
                 <li key={item.label}>
@@ -158,7 +160,7 @@ function MegaMenuColumns({ category }: { category: NavCategory }) {
       {hasPromos && (
         <div className="w-72 shrink-0 space-y-4">
           {promos.map((promo) => (
-            <PromoCard key={promo.title} promo={promo} />
+            <PromoCard key={promo.title} promo={promo} asMenuLink />
           ))}
         </div>
       )}
@@ -178,22 +180,21 @@ function AppleMegaPanel({ category }: { category: NavCategory }) {
     <div className="flex items-start gap-10">
       {/* Хувь хэрэглэгч — үндсэн (тод) жагсаалт */}
       <div className="flex-1">
-        <h3 className="text-muted-foreground mb-5 text-[11px] font-semibold tracking-[0.14em] uppercase">
-          Хувь хэрэглэгч
-        </h3>
+        <h3 className={cn(navType.groupLabel, "mb-5")}>Хувь хэрэглэгч</h3>
         <div className="flex items-start gap-10">
           {columns.map((col) => (
             <div key={col.title} className="min-w-0">
-              <p className="text-muted-foreground/80 mb-2.5 text-[11px] font-medium tracking-wide">
-                {col.title}
-              </p>
+              <p className={cn(navType.groupLabel, "mb-2.5")}>{col.title}</p>
               <ul className="space-y-2.5">
                 {col.items.map((item) => (
                   <li key={item.label}>
                     <NavigationMenuLink asChild>
                       <Link
                         href={item.href}
-                        className="text-foreground hover:text-primary text-[15px] font-medium tracking-tight transition-colors"
+                        className={cn(
+                          navType.secondaryLink,
+                          "text-foreground hover:text-primary transition-colors",
+                        )}
                       >
                         {item.label}
                       </Link>
@@ -208,16 +209,17 @@ function AppleMegaPanel({ category }: { category: NavCategory }) {
 
       {/* Бизнес эрхлэгч бол — жижиг quick link-үүд (ард нь) */}
       <div className="border-border w-60 shrink-0 border-l pl-10">
-        <h3 className="text-muted-foreground mb-4 text-[11px] font-semibold tracking-[0.14em] uppercase">
-          Бизнес эрхлэгч бол
-        </h3>
+        <h3 className={cn(navType.groupLabel, "mb-4")}>Бизнес эрхлэгч бол</h3>
         <ul className="space-y-2.5">
           {businessQuickLinks.map((item) => (
             <li key={item.label}>
               <NavigationMenuLink asChild>
                 <Link
                   href={item.href}
-                  className="text-muted-foreground hover:text-foreground text-[13px] transition-colors"
+                  className={cn(
+                    navType.secondaryLink,
+                    "text-muted-foreground hover:text-foreground transition-colors",
+                  )}
                 >
                   {item.label}
                 </Link>
@@ -230,44 +232,11 @@ function AppleMegaPanel({ category }: { category: NavCategory }) {
   );
 }
 
-/** Promo card — right side of mega menu */
-function PromoCard({ promo }: { promo: NavPromo }) {
-  return (
-    <NavigationMenuLink asChild>
-      <Link
-        href={promo.href}
-        className="hover:bg-muted/50 group flex items-start gap-3 rounded-lg p-2 transition-colors"
-      >
-        <div
-          className={cn(
-            "flex size-14 shrink-0 items-center justify-center rounded-full px-1 text-center text-[10px] leading-tight font-bold",
-            promo.badgeClass ?? "bg-muted text-foreground",
-          )}
-        >
-          {promo.badgeText ?? "PROMO"}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm leading-snug font-semibold">{promo.title}</p>
-          {promo.description && (
-            <p className="text-muted-foreground mt-0.5 text-xs leading-snug">{promo.description}</p>
-          )}
-          <span className="text-primary mt-1 inline-flex items-center gap-1 text-xs font-medium group-hover:underline">
-            {promo.ctaLabel}
-            <ArrowRight className="size-3" />
-          </span>
-        </div>
-      </Link>
-    </NavigationMenuLink>
-  );
-}
-
 /** Энгийн list — Life-style, Урамшуулал-д ашиглана */
 function SimpleList({ category }: { category: NavCategory }) {
   return (
     <div>
-      <h3 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
-        {category.label}
-      </h3>
+      <h3 className={cn(navType.groupLabel, "mb-3")}>{category.label}</h3>
       <ul className="space-y-2">
         {category.items?.map((item) => (
           <li key={item.label}>
@@ -285,11 +254,16 @@ function NavLink({ item }: { item: NavItem }) {
     <NavigationMenuLink asChild>
       <Link
         href={item.href}
-        className="hover:text-primary focus-visible:ring-ring! -mx-2 flex items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors focus-visible:ring-2! focus-visible:ring-offset-2! focus-visible:outline-none!"
+        className={cn(
+          navType.secondaryLink,
+          "hover:text-primary focus-visible:ring-ring! -mx-2 flex items-center gap-2 rounded-md px-2 py-1 transition-colors focus-visible:ring-2! focus-visible:ring-offset-2! focus-visible:outline-none!",
+        )}
       >
         <span>{item.label}</span>
         {item.badge && (
-          <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-medium">
+          <span
+            className={cn(navType.badge, "bg-muted text-muted-foreground rounded-full px-2 py-0.5")}
+          >
             {item.badge}
           </span>
         )}
@@ -319,7 +293,10 @@ function MobileNav({
               key={category.label}
               href={category.href}
               onClick={onItemClick}
-              className="hover:bg-muted focus-visible:ring-ring flex items-center gap-2 rounded-md px-2 py-3 text-base font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className={cn(
+                navType.mobileLink,
+                "hover:bg-muted focus-visible:ring-ring flex items-center gap-2 rounded-md px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:outline-none",
+              )}
             >
               {Icon && <Icon className="size-4" aria-hidden="true" />}
               <span>{category.label}</span>
@@ -330,7 +307,7 @@ function MobileNav({
 
         return (
           <AccordionItem key={category.label} value={category.label}>
-            <AccordionTrigger className="text-base font-medium">
+            <AccordionTrigger className={navType.mobileLink}>
               <span className="flex items-center">
                 {category.label}
                 {category.count != null && <CountBadge count={category.count} />}
@@ -362,9 +339,7 @@ function MobileColumns({
     <div className="space-y-4 pl-2">
       {category.columns?.map((column) => (
         <div key={column.title}>
-          <h4 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
-            {column.title}
-          </h4>
+          <h4 className={cn(navType.groupLabel, "mb-2")}>{column.title}</h4>
           <MobileList items={column.items} onItemClick={onItemClick} />
         </div>
       ))}
@@ -381,11 +356,19 @@ function MobileList({ items, onItemClick }: { items: NavItem[]; onItemClick?: ()
           <Link
             href={item.href}
             onClick={onItemClick}
-            className="hover:bg-muted focus-visible:ring-ring flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            className={cn(
+              navType.mobileLink,
+              "hover:bg-muted focus-visible:ring-ring flex items-center gap-2 rounded-md px-2 py-2 transition-colors focus-visible:ring-2 focus-visible:outline-none",
+            )}
           >
             <span>{item.label}</span>
             {item.badge && (
-              <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-medium">
+              <span
+                className={cn(
+                  navType.badge,
+                  "bg-muted text-muted-foreground rounded-full px-2 py-0.5",
+                )}
+              >
                 {item.badge}
               </span>
             )}

@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { audienceSegments, type AudienceSegment, type BrandCard } from "@/data/navigation";
+import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
 /**
@@ -50,16 +51,23 @@ function BrandCardItem({ brand }: { brand: BrandCard }) {
       className="group/card border-border hover:border-primary/40 hover:bg-muted/50 flex flex-col rounded-lg border p-3 transition-colors"
     >
       <div className="flex items-center gap-2">
-        <span className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md text-[10px] font-bold">
+        <span
+          className={cn(
+            navType.badge,
+            "bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-md",
+          )}
+        >
           {brand.badge}
         </span>
-        <span className="text-sm font-semibold">{brand.name}</span>
+        <span className={navType.secondaryLink}>{brand.name}</span>
         <ArrowUpRight
           className="text-muted-foreground ml-auto size-4 transition-transform group-hover/card:translate-x-0.5 group-hover/card:-translate-y-0.5"
           aria-hidden="true"
         />
       </div>
-      <p className="text-muted-foreground mt-1.5 text-xs leading-snug">{brand.description}</p>
+      <p className={cn(navType.body, "text-muted-foreground mt-1.5 leading-snug")}>
+        {brand.description}
+      </p>
     </a>
   );
 }
@@ -70,7 +78,7 @@ function BrandCardsPanel({ seg }: { seg: AudienceSegment }) {
     <>
       <div className="mb-3 flex items-center gap-2">
         <SegmentIcon icon={seg.icon} className="text-primary size-4" />
-        <p className="text-sm font-semibold">{seg.label}</p>
+        <p className={navType.secondaryLink}>{seg.label}</p>
       </div>
       {/* Багана = брэндийн тоо → бүх карт нэг эгнээнд жигд (3 эсвэл 4) */}
       <div
@@ -87,11 +95,15 @@ function BrandCardsPanel({ seg }: { seg: AudienceSegment }) {
   );
 }
 
-const tabClass =
-  "text-muted-foreground hover:text-foreground data-[state=open]:text-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors sm:text-sm";
+const tabClass = cn(
+  navType.bar,
+  "text-muted-foreground hover:text-foreground data-[state=open]:text-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-colors",
+);
 
-const pillClass =
-  "text-muted-foreground hover:text-foreground data-[state=open]:bg-background data-[state=open]:text-foreground data-[state=open]:shadow-sm inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors";
+const pillClass = cn(
+  navType.bar,
+  "text-muted-foreground hover:text-foreground data-[state=open]:bg-background data-[state=open]:text-foreground inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors data-[state=open]:shadow-sm",
+);
 
 /**
  * Audience switcher — нэг Popover, hover хийхэд доторх контент л солигдоно.
@@ -195,7 +207,12 @@ function AudienceSwitch({
                   target={seg.external ? "_blank" : undefined}
                   rel={seg.external ? "noopener noreferrer" : undefined}
                   onMouseEnter={hoverCloseNow}
-                  className={cn(triggerClass, "group", seg.id === activeId && activeCls, triggerClassName)}
+                  className={cn(
+                    triggerClass,
+                    "group",
+                    seg.id === activeId && activeCls,
+                    triggerClassName,
+                  )}
                 >
                   <SegmentIcon icon={seg.icon} className="size-4" />
                   <span>{seg.label}</span>
@@ -213,7 +230,12 @@ function AudienceSwitch({
                 aria-expanded={isOpen}
                 onMouseEnter={() => hoverOpen(seg.id)}
                 onClick={() => (isOpen ? closeNow() : openSeg(seg.id))}
-                className={cn(triggerClass, "group", seg.id === activeId && activeCls, triggerClassName)}
+                className={cn(
+                  triggerClass,
+                  "group",
+                  seg.id === activeId && activeCls,
+                  triggerClassName,
+                )}
               >
                 <SegmentIcon icon={seg.icon} className="size-4" />
                 <span>{seg.label}</span>
@@ -305,7 +327,7 @@ export function AudienceSwitchMobile({
       {segments.map((seg) =>
         seg.brands?.length ? (
           <AccordionItem key={seg.id} value={seg.id}>
-            <AccordionTrigger className="text-sm font-medium">
+            <AccordionTrigger className={navType.mobileLink}>
               <span className="flex items-center gap-2">
                 <SegmentIcon icon={seg.icon} className="text-muted-foreground size-4" />
                 {seg.label}
@@ -318,7 +340,10 @@ export function AudienceSwitchMobile({
                     <a
                       href={brand.href}
                       onClick={onItemClick}
-                      className="text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2 text-sm no-underline transition-colors"
+                      className={cn(
+                        navType.mobileLink,
+                        "text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2 no-underline transition-colors",
+                      )}
                     >
                       <span className="font-medium">{brand.name}</span>
                       <ArrowUpRight
@@ -339,7 +364,7 @@ export function AudienceSwitchMobile({
             target={seg.external ? "_blank" : undefined}
             rel={seg.external ? "noopener noreferrer" : undefined}
             onClick={onItemClick}
-            className="flex items-center gap-2 py-4 text-sm font-medium"
+            className={cn(navType.mobileLink, "flex items-center gap-2 py-4")}
           >
             <SegmentIcon icon={seg.icon} className="text-muted-foreground size-4" />
             <span>{seg.label}</span>

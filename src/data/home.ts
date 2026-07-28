@@ -64,7 +64,7 @@ export const entryTiles: EntryTile[] = [
     title: "Univision Go",
     description: "Хүссэн газраа, хүссэн үедээ — гар утаснаасаа.",
     href: "/univision-go",
-    ctaLabel: "Апп үзэх",
+    ctaLabel: "Апп татах",
     icon: "monitor-play",
     tint: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
   },

@@ -25,6 +25,9 @@ export type NavPromo = {
   badgeClass?: string;
   /** Short label shown inside the badge circle */
   badgeText?: string;
+  /** Урамшууллын зураг (16:9). Байвал badge-ийн оронд зурган карт гарна. */
+  image?: string;
+  imageAlt?: string;
 };
 
 export type NavCategory = {
@@ -102,7 +105,6 @@ export type MegaMenuSection = { id: string; title: string; href: string };
 export type MegaMenu = {
   name: string;
   sections: MegaMenuSection[];
-  promo?: { text: string; ctaLabel: string; href: string };
 };
 
 const TOKI_FAMILY_HREF =
@@ -119,11 +121,6 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
       { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
       { id: "foreigners", title: "For Foreigners", href: "#" },
     ],
-    promo: {
-      text: "Цаг үеийн урамшууллын талаарх мэдээлэл энд байрлана.",
-      ctaLabel: "Дэлгэрэнгүй",
-      href: "/campaigns",
-    },
   },
   Univision: {
     name: "Univision",
@@ -136,13 +133,8 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
       { id: "lifestyle", title: "Life-style", href: "#" },
       { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
     ],
-    promo: {
-      text: "HBO Max — 1 сар үнэгүй. Шинэ хэрэглэгчдэд.",
-      ctaLabel: "Дэлгэрэнгүй",
-      href: "/campaigns",
-    },
   },
-  "Дэлгүүр": {
+  Дэлгүүр: {
     name: "Дэлгүүр",
     sections: [
       { id: "phones", title: "Гар утас", href: "/devices" },
@@ -151,11 +143,6 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
       { id: "stb", title: "ТВ-н төхөөрөмж", href: "/devices" },
       { id: "fttr", title: "Нэмэлт төхөөрөмж", href: "/devices" },
     ],
-    promo: {
-      text: "Хуучин төхөөрөмжөө сольж, шинийг хөнгөлөлттэй үнээр.",
-      ctaLabel: "Дэлгэрэнгүй",
-      href: "/campaigns",
-    },
   },
   Entertainment: {
     name: "Entertainment",
@@ -166,11 +153,6 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
       { id: "apps", title: "Look TV", href: "#" },
       { id: "channels", title: "Бүх суваг", href: "#" },
     ],
-    promo: {
-      text: "HBO Max — 1 сар үнэгүй. Шинэ хэрэглэгчдэд.",
-      ctaLabel: "Дэлгэрэнгүй",
-      href: "/campaigns",
-    },
   },
 };
 
@@ -511,8 +493,10 @@ export const mainNav: NavCategory[] = [
 ];
 
 // Mega menu-ийн баруун талд (хоосон талбарт) харуулах "цаг үеийн" урамшуулал
-// (1-2 ширхэг). PromoCard-аар гарна: title = нэр (CTA) · description = богино тайлбар.
-const currentPromos: NavPromo[] = [
+// (1-2 ширхэг). Бүх header хувилбарт (1/2/3/4) ИЖИЛ энэ жагсаалт гарна —
+// PromoCard-аар: зүүн дугуй ("SAMPLE") + title + богино тайлбар + CTA.
+// Бодит баннер бэлэн болоход badgeText-ийн оронд image өгвөл дугуйд зураг орно.
+export const currentPromos: NavPromo[] = [
   {
     title: "Sample 1",
     description: "Цаг үеийн урамшууллын мэдээлэл байрлана",

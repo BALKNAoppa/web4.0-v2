@@ -87,7 +87,6 @@ export function SecondaryNav() {
                 </AccordionContent>
               </AccordionItem>
             ))}
-
           </Accordion>
 
           {/* App татах + Social — accordion-аас гадуур, icon-тойгоор үргэлж харагдана */}

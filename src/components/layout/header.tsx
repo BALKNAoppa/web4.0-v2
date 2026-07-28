@@ -4,17 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import {
-  Menu,
-  Search,
-  User,
-  Globe,
-  LogOut,
-  ArrowUpRight,
-  ArrowRight,
-  Layers,
-  ChevronDown,
-} from "lucide-react";
+import { Menu, Search, User, Globe, LogOut, ArrowUpRight, Layers, ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -29,10 +19,12 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Navigation } from "@/components/layout/navigation";
 import { AudienceSwitchTabs, AudienceSwitchMobile } from "@/components/layout/audience-switch";
+import { PromoCard } from "@/components/layout/promo-card";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
   appleMegaMenus,
   appleNavCategories,
+  currentPromos,
   customerSegments,
   ecosystemBrands,
   groupNavV2,
@@ -41,6 +33,7 @@ import {
   type MegaMenu,
 } from "@/data/navigation";
 import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/header-variant";
+import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
 // Шинэ header хувилбарууд — дээд toggle-оор солино (store: lib/header-variant):
@@ -194,15 +187,14 @@ function useActiveBrand(): string | null {
   return brand?.name ?? null;
 }
 
-function AppleHeader() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const activeBrand = useActiveBrand();
-
-  // Эко-систем nav-ын hover mega-menu (зөвхөн desktop). Триггерээс панел руу
-  // хулгана шилжихэд хаагдахгүйгээр богино саатал (150ms) тавина.
+/**
+ * Брэндийн hover mega-menu-ийн төлөв (Хувилбар 1 ба 3 хуваалцана).
+ * Триггерээс панел руу хулгана шилжихэд хаагдахгүйгээр богино саатал (150ms) тавина.
+ * Зөөлөн нээх/хаах — CSS transition (keyframe биш → тасрахгүй, тасалдвал эргэдэг):
+ *   panelBrand = DOM-д харагдах брэнд · shown = харагдах төлөв (opacity/translate).
+ */
+function useBrandMegaMenu() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  // Зөөлөн нээх/хаах — CSS transition (keyframe биш → тасрахгүй, тасалдвал эргэдэг).
-  // panelBrand = DOM-д харагдах брэнд; shown = харагдах төлөв (opacity/translate).
   const [panelBrand, setPanelBrand] = useState<string | null>(null);
   const [shown, setShown] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -232,6 +224,17 @@ function AppleHeader() {
     closeTimer.current = setTimeout(closeNow, 150);
   };
 
+  return { openMenu, panelBrand, shown, openBrandMenu, closeBrandMenu, closeNow };
+}
+
+function AppleHeader() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const activeBrand = useActiveBrand();
+
+  // Эко-систем nav-ын hover mega-menu (зөвхөн desktop)
+  const { openMenu, panelBrand, shown, openBrandMenu, closeBrandMenu, closeNow } =
+    useBrandMegaMenu();
+
   return (
     <>
       {/* Apple шиг scrim — mega-menu нээгдэхэд body бүдгэрнэ (зөөлөн opacity transition) */}
@@ -245,7 +248,8 @@ function AppleHeader() {
           )}
         />
       )}
-      <header className="bg-background/80 relative sticky top-0 z-50 backdrop-blur" role="banner">
+      {/* Header background — бүх хувилбарт Хувилбар 2-ын өнгө (тунгалаг биш bg-background) */}
+      <header className="bg-background relative sticky top-0 z-50" role="banner">
         {/* Desktop */}
         <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
           <div className="flex items-center">
@@ -256,12 +260,12 @@ function AppleHeader() {
             {appleNavCategories.map((brand) => {
               const active = brand.name === activeBrand;
               const linkClass = cn(
-                "relative text-[13px] font-medium transition-colors",
+                "relative transition-colors",
                 // Apple маягийн зөөлөн доогуур зураас — hover дээр төвөөс тэлнэ
                 "after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-full after:origin-center after:scale-x-0 after:rounded-full after:bg-current after:transition-transform after:duration-300 hover:after:scale-x-100",
                 active
-                  ? "text-foreground font-semibold"
-                  : "text-foreground/75 hover:text-foreground",
+                  ? cn(navType.barActive, "text-foreground")
+                  : cn(navType.bar, "text-foreground/75 hover:text-foreground"),
               );
 
               // Дотоод брэнд + mega-menu дата байвал hover дээр панел нээнэ
@@ -348,7 +352,10 @@ function AppleHeader() {
                   {appleNavCategories.map((brand) => {
                     const active = brand.name === activeBrand;
                     const linkClass = cn(
-                      "hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors",
+                      cn(
+                        navType.mobileLink,
+                        "hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 transition-colors",
+                      ),
                       active && "bg-muted",
                     );
                     return (
@@ -393,7 +400,8 @@ function AppleHeader() {
             onMouseEnter={() => openBrandMenu(panelBrand)}
             onMouseLeave={closeBrandMenu}
             className={cn(
-              "border-border bg-background absolute inset-x-0 top-full z-50 hidden border-t shadow-xl transition-[opacity,transform] duration-500 ease-out lg:block",
+              // Панелийн дэвсгэр — Хувилбар 2-ын dropdown-той ижил bg-popover (--background-2)
+              "border-border bg-popover text-popover-foreground absolute inset-x-0 top-full z-50 hidden border-t shadow-xl transition-[opacity,transform] duration-500 ease-out lg:block",
               shown ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
             )}
           >
@@ -419,16 +427,16 @@ const MEGA_RELATED_LINKS = [
 ];
 
 function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () => void }) {
-  const linkCls =
-    "text-foreground hover:text-primary block text-2xl font-semibold tracking-tight transition-colors";
+  const linkCls = cn(
+    navType.primaryLink,
+    "text-foreground hover:text-primary block transition-colors",
+  );
 
   return (
     <div className="mx-auto flex max-w-[1200px] items-start gap-16 px-4 py-10">
       {/* ── Үндсэн цэс — Apple шиг том, тод (урд нь) ── */}
       <div>
-        <h3 className="text-muted-foreground mb-4 text-xs font-medium tracking-wide">
-          {menu.name}
-        </h3>
+        <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.name}</h3>
         <ul className="space-y-3">
           {menu.sections.map((section) =>
             section.href.startsWith("http") ? (
@@ -455,16 +463,17 @@ function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () =
 
       {/* ── Холбоотой (Quick Links) — жижиг, ард нь ── */}
       <div className="w-52 shrink-0">
-        <h3 className="text-muted-foreground mb-4 text-xs font-semibold tracking-wider uppercase">
-          Холбоотой
-        </h3>
+        <h3 className={cn(navType.groupLabel, "mb-4")}>Холбоотой</h3>
         <ul className="space-y-2.5">
           {MEGA_RELATED_LINKS.map((link) => (
             <li key={link.label}>
               <Link
                 href={link.href}
                 onClick={onNavigate}
-                className="text-foreground/80 hover:text-foreground text-sm transition-colors"
+                className={cn(
+                  navType.secondaryLink,
+                  "text-foreground/80 hover:text-foreground block transition-colors",
+                )}
               >
                 {link.label}
               </Link>
@@ -473,23 +482,12 @@ function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () =
         </ul>
       </div>
 
-      {/* ── Урамшууллын карт — баруун захад ── */}
-      {menu.promo && (
-        <Link
-          href={menu.promo.href}
-          onClick={onNavigate}
-          className="border-border bg-muted/50 hover:bg-muted group ml-auto block w-72 shrink-0 rounded-xl border p-4 transition-colors"
-        >
-          <span className="text-primary text-[11px] font-bold tracking-wider uppercase">
-            Урамшуулал
-          </span>
-          <p className="text-foreground mt-1 text-sm leading-snug font-medium">{menu.promo.text}</p>
-          <span className="text-primary mt-2 inline-flex items-center gap-1 text-xs font-semibold">
-            {menu.promo.ctaLabel}
-            <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-          </span>
-        </Link>
-      )}
+      {/* ── Цаг үеийн урамшуулал — баруун захад, Хувилбар 2/4-тэй ИЖИЛ зурган карт ── */}
+      <div className="ml-auto w-72 shrink-0 space-y-4">
+        {currentPromos.map((promo) => (
+          <PromoCard key={promo.title} promo={promo} onNavigate={onNavigate} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -512,7 +510,7 @@ function GroupHeader() {
             segments={classifierSegments}
             activeId="personal"
             hover={false}
-            triggerClassName="text-[13px] sm:text-[13px]"
+            triggerClassName={navType.bar}
           />
         </div>
       </div>
@@ -557,7 +555,7 @@ function GroupHeader() {
 
               {/* Хувь хэрэглэгч / Байгууллага сегмент */}
               <div className="mt-4">
-                <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
+                <p className={cn(navType.groupLabel, "mb-1 px-2")}>
                   Хэрэглэгчийн төрөл something like that hha
                 </p>
                 <AudienceSwitchMobile
@@ -602,6 +600,12 @@ function HybridHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const activeBrand = useActiveBrand();
 
+  // Hover mega-menu — Хувилбар 1-ийн sub-menu дата (appleMegaMenus), гэхдээ
+  // зөвхөн Unitel / Univision дээр. Бусад линк хэвээрээ энгийн линк.
+  const { openMenu, panelBrand, shown, openBrandMenu, closeBrandMenu, closeNow } =
+    useBrandMegaMenu();
+  const V3_MEGA_BRANDS = ["Unitel", "Univision"];
+
   // Ганц эгнээний nav — эко брэнд + Mobile + Тусламж
   const v3Nav: EcosystemLink[] = [
     { name: "Unitel", href: "/unitel" },
@@ -615,124 +619,191 @@ function HybridHeader() {
   // classifierSegments-ийг Хувилбар 2-той хуваалцана.
 
   return (
-    <header
-      className="bg-background/80 border-border sticky top-0 z-50 border-b backdrop-blur"
-      role="banner"
-    >
-      {/* Desktop — ганц мөр: зүүн nav · төв Unitel лого · баруун ангилагч + профайл */}
-      <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
-        {/* Зүүн — эко брэнд nav */}
-        <nav aria-label="Үндсэн цэс" className="flex items-center gap-5">
-          {v3Nav.map((brand) => {
-            const active = !brand.external && brand.name === activeBrand;
-            const linkClass = cn(
-              "text-[13px] font-medium whitespace-nowrap transition-colors",
-              active ? "text-foreground font-semibold" : "text-foreground/75 hover:text-foreground",
-            );
-            return brand.external ? (
-              <a
-                key={brand.name}
-                href={brand.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={linkClass}
-              >
-                {brand.name}
-              </a>
-            ) : (
-              <Link
-                key={brand.name}
-                href={brand.href}
-                aria-current={active ? "page" : undefined}
-                className={linkClass}
-              >
-                {brand.name}
-              </Link>
-            );
-          })}
-        </nav>
+    <>
+      {/* Apple шиг scrim — mega-menu нээгдэхэд body бүдгэрнэ (Хувилбар 1-тэй ижил) */}
+      {panelBrand && appleMegaMenus[panelBrand] && (
+        <div
+          aria-hidden
+          onClick={closeNow}
+          className={cn(
+            "bg-foreground/10 fixed inset-0 z-40 hidden backdrop-blur-sm transition-opacity duration-500 ease-out lg:block",
+            shown ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+        />
+      )}
+      <header
+        className="bg-background border-border relative sticky top-0 z-50 border-b"
+        role="banner"
+      >
+        {/* Desktop — ганц мөр: зүүн nav · төв Unitel лого · баруун ангилагч + профайл */}
+        <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
+          {/* Зүүн — эко брэнд nav */}
+          <nav aria-label="Үндсэн цэс" className="flex items-center gap-5">
+            {v3Nav.map((brand) => {
+              const active = !brand.external && brand.name === activeBrand;
+              const linkClass = cn(
+                "relative whitespace-nowrap transition-colors",
+                // Apple маягийн зөөлөн доогуур зураас (Хувилбар 1-тэй ижил) — hover дээр төвөөс тэлнэ
+                "after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-full after:origin-center after:scale-x-0 after:rounded-full after:bg-current after:transition-transform after:duration-300 hover:after:scale-x-100",
+                active
+                  ? cn(navType.barActive, "text-foreground")
+                  : cn(navType.bar, "text-foreground/75 hover:text-foreground"),
+              );
 
-        {/* Төв (гол) — Unitel үгэн лого */}
-        <div className="flex justify-center">
-          <UnitelLogo />
-        </div>
-
-        {/* Баруун — Хувь хэрэглэгч / Байгууллага ангилагч + профайл */}
-        <div className="flex items-center justify-end gap-2">
-          <AudienceSwitchTabs
-            segments={classifierSegments}
-            activeId="personal"
-            align="end"
-            hover={false}
-            triggerClassName="text-[13px] sm:text-[13px]"
-          />
-          <AccountMenu />
-        </div>
-      </div>
-
-      {/* Mobile — цэс · лого · профайл */}
-      <div className="mx-auto flex h-11 max-w-300 items-center justify-between px-4 lg:hidden">
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Цэс нээх">
-              <Menu className="size-5" />
-            </Button>
-          </SheetTrigger>
-
-          <SheetContent side="left" className="w-75 p-6 sm:w-90">
-            <SheetHeader className="p-0">
-              <SheetTitle>Цэс</SheetTitle>
-            </SheetHeader>
-
-            {/* Nav линкүүд */}
-            <ul className="mt-4 space-y-1">
-              {v3Nav.map((brand) => (
-                <li key={brand.name}>
-                  {brand.external ? (
-                    <a
-                      href={brand.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setMobileOpen(false)}
-                      className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
-                    >
-                      <span>{brand.name}</span>
-                      <ArrowUpRight
-                        className="text-muted-foreground ml-auto size-4"
-                        aria-hidden="true"
-                      />
-                    </a>
-                  ) : (
+              // Unitel / Univision — hover дээр Хувилбар 1-ийн mega panel нээнэ
+              const menu =
+                !brand.external && V3_MEGA_BRANDS.includes(brand.name)
+                  ? appleMegaMenus[brand.name]
+                  : undefined;
+              if (menu) {
+                return (
+                  <div
+                    key={brand.name}
+                    className="flex items-center"
+                    onMouseEnter={() => openBrandMenu(brand.name)}
+                    onMouseLeave={closeBrandMenu}
+                  >
                     <Link
                       href={brand.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium transition-colors"
+                      aria-current={active ? "page" : undefined}
+                      aria-expanded={openMenu === brand.name}
+                      className={cn(
+                        linkClass,
+                        openMenu === brand.name && "text-foreground after:scale-x-100",
+                      )}
                     >
-                      <span>{brand.name}</span>
+                      {brand.name}
                     </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
+                  </div>
+                );
+              }
 
-            {/* Ангилагч — Хувь хэрэглэгч / Байгууллага */}
-            <div className="border-border mt-4 border-t pt-4">
-              <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wider uppercase">
-                Хэрэглэгчийн төрөл somthing like that hha
-              </p>
-              <AudienceSwitchMobile
-                segments={classifierSegments}
-                onItemClick={() => setMobileOpen(false)}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
+              return brand.external ? (
+                <a
+                  key={brand.name}
+                  href={brand.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkClass}
+                >
+                  {brand.name}
+                </a>
+              ) : (
+                <Link
+                  key={brand.name}
+                  href={brand.href}
+                  aria-current={active ? "page" : undefined}
+                  className={linkClass}
+                >
+                  {brand.name}
+                </Link>
+              );
+            })}
+          </nav>
 
-        <UnitelLogo />
+          {/* Төв (гол) — Unitel үгэн лого */}
+          <div className="flex justify-center">
+            <UnitelLogo />
+          </div>
 
-        <AccountMenu />
-      </div>
-    </header>
+          {/* Баруун — Хувь хэрэглэгч / Байгууллага ангилагч + профайл */}
+          <div className="flex items-center justify-end gap-2">
+            <AudienceSwitchTabs
+              segments={classifierSegments}
+              activeId="personal"
+              align="end"
+              hover={false}
+              triggerClassName={navType.bar}
+            />
+            <AccountMenu />
+          </div>
+        </div>
+
+        {/* Mobile — цэс · лого · профайл */}
+        <div className="mx-auto flex h-11 max-w-300 items-center justify-between px-4 lg:hidden">
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Цэс нээх">
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+
+            <SheetContent side="left" className="w-75 p-6 sm:w-90">
+              <SheetHeader className="p-0">
+                <SheetTitle>Цэс</SheetTitle>
+              </SheetHeader>
+
+              {/* Nav линкүүд */}
+              <ul className="mt-4 space-y-1">
+                {v3Nav.map((brand) => (
+                  <li key={brand.name}>
+                    {brand.external ? (
+                      <a
+                        href={brand.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setMobileOpen(false)}
+                        className={cn(
+                          navType.mobileLink,
+                          "hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 transition-colors",
+                        )}
+                      >
+                        <span>{brand.name}</span>
+                        <ArrowUpRight
+                          className="text-muted-foreground ml-auto size-4"
+                          aria-hidden="true"
+                        />
+                      </a>
+                    ) : (
+                      <Link
+                        href={brand.href}
+                        onClick={() => setMobileOpen(false)}
+                        className={cn(
+                          navType.mobileLink,
+                          "hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 transition-colors",
+                        )}
+                      >
+                        <span>{brand.name}</span>
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Ангилагч — Хувь хэрэглэгч / Байгууллага */}
+              <div className="border-border mt-4 border-t pt-4">
+                <p className={cn(navType.groupLabel, "mb-1 px-2")}>
+                  Хэрэглэгчийн төрөл somthing like that hha
+                </p>
+                <AudienceSwitchMobile
+                  segments={classifierSegments}
+                  onItemClick={() => setMobileOpen(false)}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <UnitelLogo />
+
+          <AccountMenu />
+        </div>
+
+        {/* Desktop hover mega-menu — Хувилбар 1-ийн панел, зөвхөн Unitel/Univision */}
+        {panelBrand && appleMegaMenus[panelBrand] && (
+          <div
+            onMouseEnter={() => openBrandMenu(panelBrand)}
+            onMouseLeave={closeBrandMenu}
+            className={cn(
+              // Панелийн дэвсгэр — Хувилбар 2-ын dropdown-той ижил bg-popover (--background-2)
+              "border-border bg-popover text-popover-foreground absolute inset-x-0 top-full z-50 hidden border-t shadow-xl transition-[opacity,transform] duration-500 ease-out lg:block",
+              shown ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
+            )}
+          >
+            <BrandMegaPanel menu={appleMegaMenus[panelBrand]} onNavigate={closeNow} />
+          </div>
+        )}
+      </header>
+    </>
   );
 }
 
@@ -746,10 +817,7 @@ function ChatHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header
-      className="bg-background/80 border-border sticky top-0 z-50 border-b backdrop-blur"
-      role="banner"
-    >
+    <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
       {/* Desktop — лого · төв mega-menu nav · icons (Хувилбар 1 шиг) */}
       <div className="mx-auto hidden h-12 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
         <div className="flex items-center">
@@ -891,8 +959,8 @@ function AccountMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
-          <span className="block text-sm font-semibold">{user?.name}</span>
-          <span className="text-muted-foreground block text-xs font-normal">Нэвтэрсэн</span>
+          <span className={cn(navType.secondaryLink, "block")}>{user?.name}</span>
+          <span className={cn(navType.body, "text-muted-foreground block")}>Нэвтэрсэн</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -920,7 +988,7 @@ function IconButton({ children, label }: { children: React.ReactNode; label: str
 function MobileToggleRow({ children, label }: { children: React.ReactNode; label: string }) {
   return (
     <div className="hover:bg-muted flex items-center justify-between rounded-md px-2 py-2 transition-colors">
-      <span className="text-sm font-medium">{label}</span>
+      <span className={navType.mobileLink}>{label}</span>
       {children}
     </div>
   );

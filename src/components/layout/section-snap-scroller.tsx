@@ -15,8 +15,7 @@ const COOLDOWN_MS = 250;
 const easeOutQuart = (t: number): number => 1 - Math.pow(1 - t, 4);
 
 /** Зайнаас хамаарсан хугацаа: ойр бол богино, хол бол удаан */
-const durationFor = (dist: number): number =>
-  Math.min(1300, Math.max(700, dist * 2.8));
+const durationFor = (dist: number): number => Math.min(1300, Math.max(700, dist * 2.8));
 
 /**
  * Section snap — JS хувилбар (цоо шинэ animation engine).
@@ -93,9 +92,7 @@ export function SectionSnapScroller() {
     const onSettle = () => {
       if (animating || performance.now() < cooldownUntil) return;
 
-      const sections = document.querySelectorAll<HTMLElement>(
-        "#main-content > section",
-      );
+      const sections = document.querySelectorAll<HTMLElement>("#main-content > section");
       if (sections.length === 0) return;
 
       const y = window.scrollY;

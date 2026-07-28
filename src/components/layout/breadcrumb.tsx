@@ -38,10 +38,7 @@ export function Breadcrumb({ homeHref = "/", items }: BreadcrumbProps) {
             const isCurrent = isLast || !item.href;
             return (
               <li key={`${item.label}-${index}`} className="inline-flex items-center gap-1">
-                <ChevronRight
-                  className="text-muted-foreground/60 size-3"
-                  aria-hidden="true"
-                />
+                <ChevronRight className="text-muted-foreground/60 size-3" aria-hidden="true" />
                 {isCurrent ? (
                   <span
                     aria-current={isLast ? "page" : undefined}
