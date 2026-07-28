@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -16,8 +15,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PromoCard } from "@/components/layout/promo-card";
+import { SmartLink } from "@/components/layout/smart-link";
 import { mainNav, businessQuickLinks, type NavCategory, type NavItem } from "@/data/navigation";
 import { Gift, Tag, Percent } from "lucide-react";
+import { type Owner } from "@/lib/brand";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
@@ -91,8 +92,9 @@ function DesktopNav({
             return (
               <NavigationMenuItem key={category.label}>
                 <NavigationMenuLink asChild>
-                  <Link
+                  <SmartLink
                     href={category.href}
+                    owner={category.owner}
                     className={cn(
                       navType.bar,
                       "hover:bg-muted focus-visible:ring-ring/50 inline-flex h-8 items-center gap-1.5 rounded-md px-3 py-1.5 transition-all outline-none focus-visible:ring-3 focus-visible:outline-1",
@@ -101,7 +103,7 @@ function DesktopNav({
                     {Icon && <Icon className="size-4" aria-hidden="true" />}
                     <span>{category.label}</span>
                     {category.count != null && <CountBadge count={category.count} />}
-                  </Link>
+                  </SmartLink>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             );
@@ -148,7 +150,7 @@ function MegaMenuColumns({ category }: { category: NavCategory }) {
             <ul className="space-y-2.5">
               {column.items.map((item) => (
                 <li key={item.label}>
-                  <NavLink item={item} />
+                  <NavLink item={item} owner={item.owner ?? category.owner} />
                 </li>
               ))}
             </ul>
@@ -189,15 +191,16 @@ function AppleMegaPanel({ category }: { category: NavCategory }) {
                 {col.items.map((item) => (
                   <li key={item.label}>
                     <NavigationMenuLink asChild>
-                      <Link
+                      <SmartLink
                         href={item.href}
+                        owner={item.owner ?? category.owner}
                         className={cn(
                           navType.secondaryLink,
                           "text-foreground hover:text-primary transition-colors",
                         )}
                       >
                         {item.label}
-                      </Link>
+                      </SmartLink>
                     </NavigationMenuLink>
                   </li>
                 ))}
@@ -214,15 +217,16 @@ function AppleMegaPanel({ category }: { category: NavCategory }) {
           {businessQuickLinks.map((item) => (
             <li key={item.label}>
               <NavigationMenuLink asChild>
-                <Link
+                <SmartLink
                   href={item.href}
+                  owner={item.owner}
                   className={cn(
                     navType.secondaryLink,
                     "text-muted-foreground hover:text-foreground transition-colors",
                   )}
                 >
                   {item.label}
-                </Link>
+                </SmartLink>
               </NavigationMenuLink>
             </li>
           ))}
@@ -240,7 +244,7 @@ function SimpleList({ category }: { category: NavCategory }) {
       <ul className="space-y-2">
         {category.items?.map((item) => (
           <li key={item.label}>
-            <NavLink item={item} />
+            <NavLink item={item} owner={item.owner ?? category.owner} />
           </li>
         ))}
       </ul>
@@ -249,11 +253,12 @@ function SimpleList({ category }: { category: NavCategory }) {
 }
 
 /** Нэг item — badge ("Coming soon") дэмждэг */
-function NavLink({ item }: { item: NavItem }) {
+function NavLink({ item, owner }: { item: NavItem; owner?: Owner }) {
   return (
     <NavigationMenuLink asChild>
-      <Link
+      <SmartLink
         href={item.href}
+        owner={owner}
         className={cn(
           navType.secondaryLink,
           "hover:text-primary focus-visible:ring-ring! -mx-2 flex items-center gap-2 rounded-md px-2 py-1 transition-colors focus-visible:ring-2! focus-visible:ring-offset-2! focus-visible:outline-none!",
@@ -267,7 +272,7 @@ function NavLink({ item }: { item: NavItem }) {
             {item.badge}
           </span>
         )}
-      </Link>
+      </SmartLink>
     </NavigationMenuLink>
   );
 }
@@ -289,9 +294,10 @@ function MobileNav({
         if (category.isDirectLink && category.href) {
           const Icon = getCategoryIcon(category.icon);
           return (
-            <Link
+            <SmartLink
               key={category.label}
               href={category.href}
+              owner={category.owner}
               onClick={onItemClick}
               className={cn(
                 navType.mobileLink,
@@ -301,7 +307,7 @@ function MobileNav({
               {Icon && <Icon className="size-4" aria-hidden="true" />}
               <span>{category.label}</span>
               {category.count != null && <CountBadge count={category.count} />}
-            </Link>
+            </SmartLink>
           );
         }
 
@@ -317,7 +323,11 @@ function MobileNav({
               {category.columns ? (
                 <MobileColumns category={category} onItemClick={onItemClick} />
               ) : (
-                <MobileList items={category.items ?? []} onItemClick={onItemClick} />
+                <MobileList
+                  items={category.items ?? []}
+                  owner={category.owner}
+                  onItemClick={onItemClick}
+                />
               )}
             </AccordionContent>
           </AccordionItem>
@@ -340,7 +350,7 @@ function MobileColumns({
       {category.columns?.map((column) => (
         <div key={column.title}>
           <h4 className={cn(navType.groupLabel, "mb-2")}>{column.title}</h4>
-          <MobileList items={column.items} onItemClick={onItemClick} />
+          <MobileList items={column.items} owner={category.owner} onItemClick={onItemClick} />
         </div>
       ))}
     </div>
@@ -348,13 +358,22 @@ function MobileColumns({
 }
 
 /** Mobile item list */
-function MobileList({ items, onItemClick }: { items: NavItem[]; onItemClick?: () => void }) {
+function MobileList({
+  items,
+  owner,
+  onItemClick,
+}: {
+  items: NavItem[];
+  owner?: Owner;
+  onItemClick?: () => void;
+}) {
   return (
     <ul className="space-y-1">
       {items.map((item) => (
         <li key={item.label}>
-          <Link
+          <SmartLink
             href={item.href}
+            owner={item.owner ?? owner}
             onClick={onItemClick}
             className={cn(
               navType.mobileLink,
@@ -372,7 +391,7 @@ function MobileList({ items, onItemClick }: { items: NavItem[]; onItemClick?: ()
                 {item.badge}
               </span>
             )}
-          </Link>
+          </SmartLink>
         </li>
       ))}
     </ul>

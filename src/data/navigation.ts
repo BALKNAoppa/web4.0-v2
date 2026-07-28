@@ -5,10 +5,18 @@
  * - Top bar линкүүд (гадаад domain)
  * - Main navigation (Мобайл, Интернэт, Телевиз, Life-style, Урамшуулал)
  */
+import { type Owner } from "@/lib/brand";
+
 export type NavItem = {
   label: string;
   href: string;
   badge?: string;
+  /**
+   * Энэ үйлчилгээг хэн эзэмших вэ. Өгөөгүй бол багана/категорийнхоо эзнийг
+   * өвлөнө. Unitel сайт дээр owner="univision" зүйл дархад univision.mn руу
+   * шинэ tab-аар үсэрнэ (мөн эсрэгээр).
+   */
+  owner?: Owner;
 };
 
 export type NavColumn = {
@@ -33,6 +41,8 @@ export type NavPromo = {
 export type NavCategory = {
   label: string;
   href?: string;
+  /** Категорийн default эзэн — доторх item-ууд өвлөнө (item дээрээс дарж бичиж болно) */
+  owner?: Owner;
   // Multi-column mega-menu (Бүтээгдэхүүн, Энтертайнмент)
   columns?: NavColumn[];
   // Энгийн dropdown list (Life-style, Урамшуулал)
@@ -525,37 +535,38 @@ export const currentPromos: NavPromo[] = [
 export const groupNavV2: NavCategory[] = [
   {
     label: "Mobile",
+    owner: "unitel",
     columns: [
       {
         title: "Дараа төлбөрт",
         items: [
-          { label: "Premium багц", href: "#" },
-          { label: "Priority багц", href: "#" },
-          { label: "Plus багц", href: "#" },
+          { label: "Premium багц", href: "/main-packages?plan=premium" },
+          { label: "Priority багц", href: "/main-packages?plan=priority" },
+          { label: "Plus багц", href: "/main-packages?plan=plus" },
         ],
       },
       {
         title: "Урьдчилсан төлбөрт",
         items: [
-          { label: "Smart Data", href: "#" },
-          { label: "Smart Talk", href: "#" },
-          { label: "Smart Days", href: "#" },
+          { label: "Smart Data", href: "/main-packages?plan=smart-data" },
+          { label: "Smart Talk", href: "/main-packages?plan=smart-talk" },
+          { label: "Smart Days", href: "/main-packages?plan=smart-days" },
         ],
       },
       {
         title: "Нэмэлт үйлчилгээ",
         items: [
-          { label: "Нэмэлт дата багц", href: "#" },
-          { label: "Нэмэлт үйлчилгээ", href: "#" },
-          { label: "Олон улсын дуудлага", href: "#" },
-          { label: "Олон улсын роуминг", href: "#" },
+          { label: "Нэмэлт дата багц", href: "/main-packages?plan=extra-data" },
+          { label: "Нэмэлт үйлчилгээ", href: "/main-packages?plan=addons" },
+          { label: "Олон улсын дуудлага", href: "/main-packages?plan=intl-call" },
+          { label: "Олон улсын роуминг", href: "/main-packages?plan=roaming" },
         ],
       },
       {
         title: "For Foreigners",
         items: [
-          { label: "Tour SIM", href: "#" },
-          { label: "Expat", href: "#" },
+          { label: "Tour SIM", href: "/main-packages?plan=tour-sim" },
+          { label: "Expat", href: "/main-packages?plan=expat" },
         ],
       },
     ],
@@ -563,29 +574,30 @@ export const groupNavV2: NavCategory[] = [
   },
   {
     label: "Internet",
+    owner: "univision",
     columns: [
       {
         title: "Main packages",
         items: [
-          { label: "Triple", href: "#" },
-          { label: "Single", href: "#" },
+          { label: "Triple", href: "/main-packages?plan=triple" },
+          { label: "Single", href: "/main-packages?plan=single" },
         ],
       },
       {
         title: "Add-On",
         items: [
-          { label: "Net Boost", href: "#" },
-          { label: "Data-Add-on", href: "#" },
-          { label: "2nd screen", href: "#" },
+          { label: "Net Boost", href: "/main-packages?plan=net-boost" },
+          { label: "Data-Add-on", href: "/main-packages?plan=data-addon" },
+          { label: "2nd screen", href: "/main-packages?plan=2nd-screen" },
         ],
       },
       {
         title: "Solutions",
         items: [
-          { label: "FTTH", href: "#" },
-          { label: "STB, Dongle", href: "#" },
-          { label: "FTTR, Mesh", href: "#" },
-          { label: "Wi-Fi 6 | HGW, ONT", href: "#" },
+          { label: "FTTH", href: "/main-packages?plan=ftth" },
+          { label: "STB, Dongle", href: "/devices?type=stb" },
+          { label: "FTTR, Mesh", href: "/devices?type=fttr" },
+          { label: "Wi-Fi 6 | HGW, ONT", href: "/devices?type=hgw" },
         ],
       },
     ],
@@ -593,59 +605,64 @@ export const groupNavV2: NavCategory[] = [
   },
   {
     label: "Entertainment",
+    owner: "univision",
     columns: [
       {
         title: "Main",
         items: [
-          { label: "VOD library", href: "#" },
-          { label: "SVOD", href: "#" },
+          { label: "VOD library", href: "/entertainment/main" },
+          { label: "SVOD", href: "/entertainment/main#svod" },
         ],
       },
       {
         title: "Channels",
         items: [
-          { label: "Linier TV", href: "#" },
-          { label: "Pay TV packages", href: "#" },
-          { label: "UniLive", href: "#" },
+          { label: "Linier TV", href: "/service?id=linear-tv" },
+          { label: "Pay TV packages", href: "/main-packages?plan=paytv" },
+          { label: "UniLive", href: "/univision-go" },
         ],
       },
       {
         title: "Apps",
         items: [
-          { label: "HBO Max", href: "#" },
-          { label: "Sport App", href: "#" },
-          { label: "Adult App", href: "#" },
-          { label: "M Karaoke", href: "#" },
-          { label: "Traffic App", href: "#" },
+          { label: "HBO Max", href: "/service?id=hbo-max" },
+          { label: "Sport App", href: "/service?id=sport-app" },
+          { label: "Adult App", href: "/service?id=adult-app" },
+          { label: "M Karaoke", href: "/service?id=m-karaoke" },
+          { label: "Traffic App", href: "/service?id=traffic-app" },
         ],
       },
       {
         title: "Life-style",
         items: [
-          { label: "Smart Home", href: "#", badge: "in future" },
-          { label: "Security", href: "#", badge: "in future" },
-          { label: "Gaming", href: "#", badge: "in future" },
+          { label: "Smart Home", href: "/service?id=smart-home", badge: "in future" },
+          { label: "Security", href: "/service?id=security", badge: "in future" },
+          { label: "Gaming", href: "/service?id=gaming", badge: "in future" },
         ],
       },
     ],
     promos: currentPromos,
   },
   {
+    // Холимог категори — item тус бүр өөрийн эзэнтэй
     label: "Төхөөрөмж",
+    owner: "unitel",
     items: [
-      { label: "Гар утас", href: "#" },
-      { label: "SIM | eSIM", href: "#" },
-      { label: "Гэр интернэт төхөөрөмж", href: "#" },
-      { label: "Дагалдах хэрэгсэл", href: "#" },
+      { label: "Гар утас", href: "/devices?type=phone" },
+      { label: "SIM | eSIM", href: "/devices?type=sim" },
+      { label: "Гэр интернэт төхөөрөмж", href: "/devices?type=cpe", owner: "univision" },
+      { label: "Дагалдах хэрэгсэл", href: "/devices?type=accessory" },
     ],
   },
   {
     label: "Family үйлчилгээ",
+    owner: "unitel",
     href: "https://www.toki.mn/family-%D2%AF%D0%B9%D0%BB%D1%87%D0%B8%D0%BB%D0%B3%D1%8D%D1%8D-%D1%88%D0%B8%D0%BD%D1%8D%D1%87%D0%BB%D1%8D%D0%B3%D0%B4%D0%BB%D1%8D%D1%8D/",
     isDirectLink: true,
   },
-  { label: "Урамшуулал", href: "/campaigns", isDirectLink: true, icon: "gift" },
-  { label: "Тусламж", href: "/support", isDirectLink: true },
+  // "self" — хоёр сайт тус бүр өөрийн Урамшуулал/Тусламж хуудастай, үсрэхгүй
+  { label: "Урамшуулал", href: "/campaigns", isDirectLink: true, icon: "gift", owner: "self" },
+  { label: "Тусламж", href: "/support", isDirectLink: true, owner: "self" },
 ];
 
 // Хувилбар 4 (Apple mega panel) — panel-ийн баруун талын "Бизнес эрхлэгч бол"

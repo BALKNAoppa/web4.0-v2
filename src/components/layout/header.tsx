@@ -46,11 +46,6 @@ import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/he
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
-// Шинэ header хувилбарууд — дээд toggle-оор солино (store: lib/header-variant):
-//   1 = Apple  (нэгдсэн эко-систем, ганц нимгэн nav)
-//   2 = Business line (хуучин маягийн header + Хувь хэрэглэгч/Өрх/Байгууллага сегмент)
-//   3 = Hybrid (1 + 2): дээд bar = сегмент switcher, үндсэн nav = эко брэндийн нэрс
-//   4 = Chat (Apple маягийн header + V2 ангилал, Apple mega panel; нүүр нь chat-hero)
 type Variant = HeaderVariant;
 const VARIANTS: { id: Variant; label: string }[] = [
   { id: 1, label: "Хувилбар 1 · Company 1st" },
@@ -59,11 +54,6 @@ const VARIANTS: { id: Variant; label: string }[] = [
   { id: 4, label: "Хувилбар 4 · Hybrid" },
 ];
 
-/**
- * Хувь хэрэглэгч / Байгууллага ангилагч — Хувилбар 2 ба 3 хуваалцана.
- *  · Хувь хэрэглэгч — customerSegments-ийн brands (Unitel/Univision/LookTV), дарахад задарна.
- *  · Байгууллага   — dropdown-гүй, дарахад шууд Nexmind руу шилжинэ.
- */
 const classifierSegments: AudienceSegment[] = [
   ...customerSegments.filter((s) => s.id === "personal"),
   {
@@ -79,7 +69,7 @@ export function Header() {
   const pathname = usePathname();
   const variant = useHeaderVariant();
 
-  // /web4 — immersive концепцийн хуудас: header харуулахгүй
+  // /web4 — immersive presentation хуудас: header харуулахгүй
   if (pathname?.startsWith("/web4")) return null;
 
   return (
@@ -99,12 +89,11 @@ export function Header() {
 }
 
 /**
- * Хувилбар сонгох toggle — дэлгэцийн дээд талд, хэвийн урсгалд (header дээр
- * давхцахгүй). Шийдсэний дараа энэ toggle-ийг устгана.
+ * Хувилбар сонгох toggle — дэлгэцийн дээд талд. Зөв хувилбараа шийдсэний дараа энэ toggle-ийг устгана.
  *
  * Энэ layer-ийг БҮХЭЛД НЬ хааж болно (X товч) — stakeholder-т үзүүлэхэд дэлгэц
  * цэвэрхэн харагдана. Хаагдсан үед зөвхөн баруун дээд булангийн үл мэдэгдэх
- * бариул үлдэнэ: hover хийхэд л гарч ирнэ, дарахад bar буцаж задарна.
+ * button үлдэнэ: hover хийхэд л гарч ирнэ, дарахад bar буцаж задарна.
  */
 function VariantToggle({
   variant,
@@ -118,7 +107,7 @@ function VariantToggle({
   const ref = useRef<HTMLDivElement>(null);
   const current = VARIANTS.find((v) => v.id === variant);
 
-  // Гадна дарахад хаах
+  // хүрээнээс гадна дарахад хаагдана
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -128,8 +117,6 @@ function VariantToggle({
     return () => window.removeEventListener("mousedown", onDown);
   }, [open]);
 
-  // Хаагдсан төлөв — урсгалаас бүрэн гарна (header дээшээ шахагдана). Үлдэх
-  // цорын ганц ул мөр нь баруун дээд булангийн ил бус бариул.
   if (!barOpen) {
     return (
       <button
@@ -167,7 +154,6 @@ function VariantToggle({
           />
         </button>
 
-        {/* Dropdown — босоо жагсаалт, баруун ирмэгээс доош унжина */}
         {open && (
           <div
             role="menu"
@@ -197,7 +183,6 @@ function VariantToggle({
         )}
       </div>
 
-      {/* Энэ layer-ийг бүхэлд нь хаах — танилцуулгын үед дэлгэц цэвэрхэн болно */}
       <button
         type="button"
         onClick={() => {
@@ -213,15 +198,6 @@ function VariantToggle({
   );
 }
 
-// =====================================================================
-// ХУВИЛБАР 1 — Apple-аас санаа авсан нэгдсэн эко-системийн nav.
-// Зүүн: жижиг лого · Төв: группын брэндүүд · Баруун: хайлт + профайл.
-// =====================================================================
-
-/**
- * Дотоод брэнд хуудсан дээр (/unitel, /univision) л тухайн брэндийг тодотгоно —
- * "тэнд нь байгаа" мэдрэмж өгнө. Бусад хуудсанд аль нь ч тодрохгүй.
- */
 function useActiveBrand(): string | null {
   const pathname = usePathname();
   const brand = ecosystemBrands.find(
@@ -230,12 +206,6 @@ function useActiveBrand(): string | null {
   return brand?.name ?? null;
 }
 
-/**
- * Брэндийн hover mega-menu-ийн төлөв (Хувилбар 1 ба 3 хуваалцана).
- * Триггерээс панел руу хулгана шилжихэд хаагдахгүйгээр богино саатал (150ms) тавина.
- * Зөөлөн нээх/хаах — CSS transition (keyframe биш → тасрахгүй, тасалдвал эргэдэг):
- *   panelBrand = DOM-д харагдах брэнд · shown = харагдах төлөв (opacity/translate).
- */
 function useBrandMegaMenu() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [panelBrand, setPanelBrand] = useState<string | null>(null);
@@ -249,11 +219,9 @@ function useBrandMegaMenu() {
     if (exitTimer.current) clearTimeout(exitTimer.current);
     setPanelBrand(name);
     setOpenMenu(name);
-    // mount → дараагийн frame-д shown=true болгож enter transition эхлүүлнэ
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => setShown(true));
   };
-  // Шууд хаах — shown=false (exit transition), дуусахаар panelBrand-г DOM-оос авна
   const closeNow = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     setOpenMenu(null);
@@ -261,7 +229,6 @@ function useBrandMegaMenu() {
     if (exitTimer.current) clearTimeout(exitTimer.current);
     exitTimer.current = setTimeout(() => setPanelBrand(null), 500);
   };
-  // Hover intent — 150ms саатлаар хаана (панел руу шилжих зай өгнө)
   const closeBrandMenu = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     closeTimer.current = setTimeout(closeNow, 150);
@@ -274,13 +241,11 @@ function AppleHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const activeBrand = useActiveBrand();
 
-  // Эко-систем nav-ын hover mega-menu (зөвхөн desktop)
   const { openMenu, panelBrand, shown, openBrandMenu, closeBrandMenu, closeNow } =
     useBrandMegaMenu();
 
   return (
     <>
-      {/* Apple шиг scrim — mega-menu нээгдэхэд body бүдгэрнэ (зөөлөн opacity transition) */}
       {panelBrand && appleMegaMenus[panelBrand] && (
         <div
           aria-hidden
@@ -291,7 +256,6 @@ function AppleHeader() {
           )}
         />
       )}
-      {/* Header background — бүх хувилбарт Хувилбар 2-ын өнгө (тунгалаг биш bg-background) */}
       <header className="bg-background relative top-0 z-50" role="banner">
         {/* Desktop */}
         <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
@@ -304,14 +268,11 @@ function AppleHeader() {
               const active = brand.name === activeBrand;
               const linkClass = cn(
                 "relative transition-colors",
-                // Apple маягийн зөөлөн доогуур зураас — hover дээр төвөөс тэлнэ
                 "after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-full after:origin-center after:scale-x-0 after:rounded-full after:bg-current after:transition-transform after:duration-300 hover:after:scale-x-100",
                 active
                   ? cn(navType.barActive, "text-foreground")
                   : cn(navType.bar, "text-foreground/75 hover:text-foreground"),
               );
-
-              // Дотоод брэнд + mega-menu дата байвал hover дээр панел нээнэ
               const menu = !brand.external ? appleMegaMenus[brand.name] : undefined;
               if (menu) {
                 return (
@@ -435,15 +396,11 @@ function AppleHeader() {
             </Sheet>
           </div>
         </div>
-
-        {/* Desktop hover mega-menu — зөөлөн нээх/хаах (CSS transition, тасрахгүй).
-            Брэнд солигдоход панель байрандаа үлдэж, зөвхөн контент шууд солигдоно. */}
         {panelBrand && appleMegaMenus[panelBrand] && (
           <div
             onMouseEnter={() => openBrandMenu(panelBrand)}
             onMouseLeave={closeBrandMenu}
             className={cn(
-              // Панелийн дэвсгэр — Хувилбар 2-ын dropdown-той ижил bg-popover (--background-2)
               "border-border bg-popover text-popover-foreground absolute inset-x-0 top-full z-50 hidden border-t shadow-xl transition-[opacity,transform] duration-500 ease-out lg:block",
               shown ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
             )}
@@ -456,12 +413,6 @@ function AppleHeader() {
   );
 }
 
-/**
- * Apple маягийн минимал brand mega-panel. Зүүн: үндсэн sub-menu — section-ийн
- * гарчгууд (Дараа төлбөрт, Урьдчилсан төлбөрт г.м.) ТОМ, BOLD, anchor руу.
- * Баруун: зөвхөн шаардлагатай холбоотой цөөн линк (дэлгэрэнгүй items хасагдсан).
- */
-/** Эко-системийн бүх брэндэд ерөнхий, бодит хуудас руу чиглэсэн холбоос */
 const MEGA_RELATED_LINKS = [
   { label: "Багц сонгох", href: "/main-packages" },
   { label: "Төхөөрөмж", href: "/devices" },
@@ -477,7 +428,6 @@ function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () =
 
   return (
     <div className="mx-auto flex max-w-300 items-start gap-16 px-4 py-10">
-      {/* ── Үндсэн цэс — Apple шиг том, тод (урд нь) ── */}
       <div>
         <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.name}</h3>
         <ul className="space-y-3">
@@ -503,8 +453,6 @@ function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () =
           )}
         </ul>
       </div>
-
-      {/* ── Холбоотой (Quick Links) — жижиг, ард нь ── */}
       <div className="w-52 shrink-0">
         <h3 className={cn(navType.groupLabel, "mb-4")}>Холбоотой</h3>
         <ul className="space-y-2.5">
@@ -524,8 +472,6 @@ function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () =
           ))}
         </ul>
       </div>
-
-      {/* ── Цаг үеийн урамшуулал — баруун захад, Хувилбар 2/4-тэй ИЖИЛ зурган карт ── */}
       <div className="ml-auto w-72 shrink-0 space-y-4">
         {currentPromos.map((promo) => (
           <PromoCard key={promo.title} promo={promo} onNavigate={onNavigate} />
@@ -535,18 +481,11 @@ function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () =
   );
 }
 
-// =====================================================================
-// ХУВИЛБАР 2 (сайжруулсан) — дээд bar-т Хувь хэрэглэгч / Байгууллага сегмент
-// (Хувилбар 3-тай ижил, Хувь хэрэглэгч идэвхтэй) + лого + бүтээгдэхүүний
-// mega-menu nav (Mobile / Internet / Entertainment / Life-style / Урамшуулал /
-// Тусламж, агуулга нь "Sample") + icons. Layer-ийн өндөр ба фонтыг багасгасан.
-// =====================================================================
 function GroupHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header className="bg-background border-border sticky top-0 z-50 border-b" role="banner">
-      {/* Top bar — Хувь хэрэглэгч / Байгууллага сегмент (h-8, багассан) */}
       <div className="bg-muted/40 border-border hidden border-b lg:block">
         <div className="mx-auto flex h-8 max-w-300 items-center px-4">
           <AudienceSwitchTabs
@@ -598,9 +537,7 @@ function GroupHeader() {
 
               {/* Хувь хэрэглэгч / Байгууллага сегмент */}
               <div className="mt-4">
-                <p className={cn(navType.groupLabel, "mb-1 px-2")}>
-                  Хэрэглэгчийн төрөл something like that hha
-                </p>
+                <p className={cn(navType.groupLabel, "mb-1 px-2")}>Хэрэглэгчийн төрөл</p>
                 <AudienceSwitchMobile
                   segments={classifierSegments}
                   onItemClick={() => setMobileOpen(false)}
@@ -812,9 +749,7 @@ function HybridHeader() {
 
               {/* Ангилагч — Хувь хэрэглэгч / Байгууллага */}
               <div className="border-border mt-4 border-t pt-4">
-                <p className={cn(navType.groupLabel, "mb-1 px-2")}>
-                  Хэрэглэгчийн төрөл somthing like that hha
-                </p>
+                <p className={cn(navType.groupLabel, "mb-1 px-2")}>Хэрэглэгчийн төрөл</p>
                 <AudienceSwitchMobile
                   segments={classifierSegments}
                   onItemClick={() => setMobileOpen(false)}

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowRight,
   Bot,
@@ -18,8 +19,10 @@ import {
 
 import { Footer } from "@/components/layout/footer";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
+import { ServiceSample } from "@/components/sections/service-sample";
 import { plans, type Plan, type PlanGroup } from "@/data/plans";
 import { quizQuestions, computeRecommendation, type PlanId } from "@/data/main-packages-quiz";
+import { findService } from "@/data/service-index";
 
 const iconMap: Record<PlanGroup["icon"], LucideIcon> = {
   wifi: Wifi,
@@ -57,7 +60,27 @@ function buildInitialMessages(counterStart: number): { messages: Message[]; coun
   return { messages: msgs, counter };
 }
 
+/**
+ * Хоёр горим нэг зам дээр:
+ *   /main-packages              → багц сонгох чат-туслах (default)
+ *   /main-packages?plan=triple  → тухайн үйлчилгээний sample дэлгэрэнгүй
+ * Цэснээс (мөн нөгөө брэндийн сайтаас) ирсэн deep link хоёр дахь горимд буна.
+ */
 export default function MainPackagesPage() {
+  return (
+    <Suspense fallback={null}>
+      <MainPackagesRouter />
+    </Suspense>
+  );
+}
+
+function MainPackagesRouter() {
+  const plan = useSearchParams().get("plan");
+  const service = plan ? findService(`/main-packages?plan=${plan}`) : null;
+  return service ? <ServiceSample service={service} /> : <PlanQuizPage />;
+}
+
+function PlanQuizPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [answers, setAnswers] = useState<number[]>([]);
   const [inputValue, setInputValue] = useState("");
