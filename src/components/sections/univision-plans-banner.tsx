@@ -1,10 +1,21 @@
 import Link from "next/link";
-import { ArrowRight, Tv } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { Reveal } from "@/components/web4/reveal";
+import { plans, type Plan } from "@/data/plans";
+import { cn } from "@/lib/utils";
 
 /** Univision брэнд ногоон (лого-гоос) */
 const UNIVISION_GREEN = "#0FAA0A";
+
+/**
+ * Багцын гол үзүүлэлт — интернэтийн хурд ба дата эрх.
+ * `plans.ts`-ээс уншина, энд давхардуулж бичихгүй.
+ */
+function internetSpec(plan: Plan): string {
+  const internet = plan.groups.find((group) => group.icon === "wifi");
+  return internet?.features.map((feature) => feature.value).join(" · ") ?? "";
+}
 
 export function UnivisionPlansBanner() {
   return (
@@ -17,7 +28,7 @@ export function UnivisionPlansBanner() {
         <div className="relative mx-auto grid w-full max-w-300 items-center gap-10 px-4 py-10 lg:grid-cols-2 lg:gap-16 lg:py-14">
           {/* ============ LEFT — Univision брэнд өнгөт дизайн visual ============ */}
           <div className="flex justify-center lg:justify-start">
-            <div className="ring-border/60 relative flex aspect-square w-full max-w-md items-center justify-center overflow-hidden rounded-3xl bg-linear-to-br from-[#0FAA0A] via-[#0d9488] to-[#2563eb] shadow-xl ring-1 lg:max-w-lg">
+            <div className="ring-border/60 relative flex aspect-square w-full max-w-md flex-col justify-center gap-3 overflow-hidden rounded-3xl bg-linear-to-br from-[#0FAA0A] via-[#0d9488] to-[#2563eb] p-5 shadow-xl ring-1 sm:p-7 lg:max-w-lg">
               {/* Гэрлийн зөөлөн толбо */}
               <div
                 aria-hidden
@@ -35,21 +46,39 @@ export function UnivisionPlansBanner() {
                 <div className="size-64 rounded-full border border-white/20" />
               </div>
 
-              {/* Төвийн glass icon disc — зөөлөн хөвөнө */}
-              <div className="animate-float-card relative flex size-28 items-center justify-center rounded-4xl bg-white/15 ring-1 ring-white/30 backdrop-blur-md">
-                <Tv className="size-14 text-white" strokeWidth={1.5} aria-hidden="true" />
-              </div>
+              {/* Багцын мэдээлэл — нэр, хурд, дата, үнэ. Утга нь plans.ts-ээс. */}
+              {plans.map((plan) => (
+                <div
+                  key={plan.id}
+                  className={cn(
+                    "relative flex items-center justify-between gap-3 rounded-2xl px-4 py-3 ring-1 backdrop-blur",
+                    plan.recommended ? "bg-white/25 ring-white/40" : "bg-white/12 ring-white/20",
+                  )}
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-extrabold text-white sm:text-2xl">
+                        {plan.name}
+                      </span>
+                      {plan.recommended && (
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold tracking-wider text-[#0d7a52]">
+                          САНАЛ БОЛГОХ
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 truncate text-xs text-white/80 sm:text-sm">
+                      {internetSpec(plan)}
+                    </p>
+                  </div>
 
-              {/* Багцын нэрсийн хөвөгч chip-үүд */}
-              <span className="absolute top-10 left-8 rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white ring-1 ring-white/25 backdrop-blur">
-                M+
-              </span>
-              <span className="absolute top-16 right-10 rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white ring-1 ring-white/25 backdrop-blur">
-                L+
-              </span>
-              <span className="absolute bottom-12 left-1/2 -translate-x-1/2 rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white ring-1 ring-white/25 backdrop-blur">
-                XL+
-              </span>
+                  <div className="shrink-0 text-right">
+                    <div className="text-base leading-none font-extrabold text-white sm:text-lg">
+                      {plan.price}
+                    </div>
+                    <div className="mt-1 text-[11px] text-white/70">сард</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
