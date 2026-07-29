@@ -37,7 +37,16 @@ export const homeHero: HomeHero = {
   secondaryCta: { label: "Бүх урамшуулал", href: "/campaigns" },
 };
 
-export type EntryTileIcon = "wifi" | "monitor-play" | "package" | "gift";
+export type EntryTileIcon =
+  | "wifi"
+  | "monitor-play"
+  | "package"
+  | "gift"
+  | "globe"
+  | "smartphone"
+  | "plane"
+  | "clapperboard"
+  | "router";
 
 export type EntryTile = {
   title: string;
@@ -49,13 +58,54 @@ export type EntryTile = {
   tint: string;
 };
 
-// Бусад үйлчилгээнүүд — Мобайл, Телевиз/Үзвэр нь дээрх banner section-уудад
-// тусдаа гардаг тул энд ДАВХАРДУУЛАХГҮЙ. Бүгд ижил Apple маягийн tile.
-export const entryTiles: EntryTile[] = [
+// ====================================================
+// ENTRY TILES — брэнд бүрт өөрийн бүтээгдэхүүн
+// Нүүрний үндсэн banner-т аль хэдийн гарсан зүйлийг энд ДАВХАРДУУЛАХГҮЙ
+// (Unitel: дараа төлбөрт, Univision: үндсэн багц).
+// ====================================================
+
+/** Unitel — гэр интернэт энд харьяалагдана */
+export const unitelEntryTiles: EntryTile[] = [
   {
     title: "Гэр интернэт",
     description: "M+, L+, XL+ багцууд — интернэт, IPTV, суурин утас.",
     href: "/main-packages",
+    ctaLabel: "Багц харах",
+    icon: "wifi",
+    tint: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+  },
+  {
+    title: "Олон улсын үйлчилгээ",
+    description: "Роуминг, олон улсын дуудлага — хилийн чанадад ч холбоотой.",
+    href: "/unitel#addons",
+    ctaLabel: "Үйлчилгээ харах",
+    icon: "globe",
+    tint: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+  },
+  {
+    title: "Урьдчилсан төлбөрт үйлчилгээ",
+    description: "Гэрээгүй, уян хатан — дата, ярианы нэгж хүссэн үедээ.",
+    href: "/unitel#prepaid",
+    ctaLabel: "Багц харах",
+    icon: "smartphone",
+    tint: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  },
+  {
+    title: "TourSim",
+    description: "Монголд ирсэн зочдод зориулсан SIM болон eSIM.",
+    href: "/unitel#devices",
+    ctaLabel: "Дэлгэрэнгүй",
+    icon: "plane",
+    tint: "bg-red-500/10 text-red-600 dark:text-red-400",
+  },
+];
+
+/** Univision — контент болон гэрийн шийдэл */
+export const univisionEntryTiles: EntryTile[] = [
+  {
+    title: "Single internet",
+    description: "Зөвхөн интернэт — дан холболтын багцууд.",
+    href: "/univision#single",
     ctaLabel: "Багц харах",
     icon: "wifi",
     tint: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
@@ -69,19 +119,19 @@ export const entryTiles: EntryTile[] = [
     tint: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
   },
   {
-    title: "Төхөөрөмж",
-    description: "Wi-Fi 6 роутер, STB болон бусад төхөөрөмж.",
-    href: "/devices",
-    ctaLabel: "Төхөөрөмж харах",
-    icon: "package",
-    tint: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    title: "HBO Max",
+    description: "Дэлхийн шилдэг кино, цуврал, шоу нэвтрүүлэг нэг дор.",
+    href: "/univision#entertainment",
+    ctaLabel: "Контент үзэх",
+    icon: "clapperboard",
+    tint: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
   },
   {
-    title: "Урамшуулал",
-    description: "Цаг үеийн хямдрал, урамшууллууд.",
-    href: "/campaigns",
-    ctaLabel: "Урамшуулал үзэх",
-    icon: "gift",
-    tint: "bg-red-500/10 text-red-600 dark:text-red-400",
+    title: "Mesh",
+    description: "FTTR, Wi-Fi 6 — гэрийн булан бүрт тасралтгүй сүлжээ.",
+    href: "/univision#solutions",
+    ctaLabel: "Шийдэл харах",
+    icon: "router",
+    tint: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   },
 ];

@@ -20,7 +20,8 @@ export function UnivisionGoApp() {
         }}
       />
 
-      <div className="relative mx-auto grid w-full max-w-screen-2xl items-center gap-10 px-6 py-7 sm:px-8 lg:grid-cols-2 lg:gap-16 lg:px-16 lg:py-12">
+      {/* Бусад section-уудтай ижил 1200px контентын хүрээнд тэгшилнэ */}
+      <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-10 px-4 py-10 lg:grid-cols-2 lg:gap-16 lg:py-14">
         {/* ============ LEFT — text + store badges ============ */}
         <div className="order-2 lg:order-1">
           <div className="flex items-center gap-2 text-xs font-bold tracking-[0.18em] text-[#0FAA0A] uppercase">

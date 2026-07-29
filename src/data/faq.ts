@@ -17,7 +17,11 @@ export type FaqIcon =
   | "movie"
   | "billing"
   | "subscription"
-  | "agent";
+  | "agent"
+  | "mobile"
+  | "data"
+  | "sim"
+  | "roaming";
 
 export type FaqCategory = {
   id: string;
@@ -82,8 +86,66 @@ export const faqMeta = {
 // ====================================================
 // CATEGORIES — Home entry point (circular icons)
 // Бүгд /support руу заана
+//
+// Брэнд бүр өөрийн 6 topic-той (unitelFaqCategories / univisionFaqCategories).
+// `faqCategories` нь ХОЁУЛАНГ нэгтгэсэн жагсаалт — /support?category={id}
+// хайлт аль ч брэндийн линкийг тайлж чаддаг байх ёстой тул нэгдсэн хэвээр.
 // ====================================================
-export const faqCategories: FaqCategory[] = [
+
+/** Хоёр брэнд хоёуланд нь байдаг topic-ууд */
+const billingCategory: FaqCategory = {
+  id: "billing",
+  label: "Төлбөр",
+  icon: "billing",
+  href: "/support?category=billing",
+  supportTitle: "Танд төлбөртэй холбоотой тусламж хэрэгтэй юу?",
+};
+
+const agentCategory: FaqCategory = {
+  id: "agent",
+  label: "Ажилтантай холбогдох",
+  icon: "agent",
+  href: "/support?category=agent",
+  supportTitle: "Манай ажилтантай хэрхэн холбогдох вэ?",
+  opensChat: true,
+};
+
+/** Unitel — мобайл талын topic-ууд */
+export const unitelFaqCategories: FaqCategory[] = [
+  {
+    id: "mobile",
+    label: "Мобайл багц",
+    icon: "mobile",
+    href: "/support?category=mobile",
+    supportTitle: "Танд мобайл багцтай холбоотой тусламж хэрэгтэй юу?",
+  },
+  {
+    id: "data",
+    label: "Дата, ярианы эрх",
+    icon: "data",
+    href: "/support?category=data",
+    supportTitle: "Танд дата, ярианы эрхтэй холбоотой тусламж хэрэгтэй юу?",
+  },
+  {
+    id: "sim",
+    label: "Дугаар, SIM",
+    icon: "sim",
+    href: "/support?category=sim",
+    supportTitle: "Танд дугаар, SIM-тэй холбоотой тусламж хэрэгтэй юу?",
+  },
+  billingCategory,
+  {
+    id: "roaming",
+    label: "Роуминг, олон улс",
+    icon: "roaming",
+    href: "/support?category=roaming",
+    supportTitle: "Танд роуминг, олон улсын үйлчилгээний тусламж хэрэгтэй юу?",
+  },
+  agentCategory,
+];
+
+/** Univision — интернэт, ТВ, контентын topic-ууд */
+export const univisionFaqCategories: FaqCategory[] = [
   {
     id: "internet",
     label: "Интернэт",
@@ -105,13 +167,7 @@ export const faqCategories: FaqCategory[] = [
     href: "/support?category=movie",
     supportTitle: "Танд кино багцтай холбоотой тусламж хэрэгтэй юу?",
   },
-  {
-    id: "billing",
-    label: "Төлбөр",
-    icon: "billing",
-    href: "/support?category=billing",
-    supportTitle: "Танд төлбөртэй холбоотой тусламж хэрэгтэй юу?",
-  },
+  billingCategory,
   {
     id: "subscription",
     label: "Захиалга",
@@ -119,14 +175,15 @@ export const faqCategories: FaqCategory[] = [
     href: "/support?category=subscription",
     supportTitle: "Танд захиалгатай холбоотой тусламж хэрэгтэй юу?",
   },
-  {
-    id: "agent",
-    label: "Ажилтантай холбогдох",
-    icon: "agent",
-    href: "/support?category=agent",
-    supportTitle: "Манай ажилтантай хэрхэн холбогдох вэ?",
-    opensChat: true,
-  },
+  agentCategory,
+];
+
+/** /support хуудасны хайлтад зориулсан нэгдсэн жагсаалт (давхардалгүй) */
+export const faqCategories: FaqCategory[] = [
+  ...univisionFaqCategories,
+  ...unitelFaqCategories.filter(
+    (c) => !univisionFaqCategories.some((existing) => existing.id === c.id),
+  ),
 ];
 
 // ====================================================
@@ -151,11 +208,7 @@ const priorityFrequentTopics: SupportTopic[] = [
     "Интернет тохиргооны заавар",
     "https://ckb.unitel.mn/category?categoryId=41082",
   ),
-  t(
-    "top-tv-setup",
-    "ТВ сувгийн тохиргоо",
-    "https://ckb.unitel.mn/category?categoryId=41124",
-  ),
+  t("top-tv-setup", "ТВ сувгийн тохиргоо", "https://ckb.unitel.mn/category?categoryId=41124"),
   t("top-movie-app", "Кино болон багц идэвхжүүлэх", "/support?category=movie"),
   t("top-billing-guide", "Төлбөр төлөх заавар", "/support?category=billing"),
   t("top-wifi-password", "Wi-Fi нууц үг солих"),

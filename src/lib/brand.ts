@@ -27,6 +27,18 @@ export const BRAND_LABEL: Record<BrandId, string> = {
 };
 
 /**
+ * Брэндийн онцлох ногоон (лого-гоос). Section-үүд дотор hex hardcode хийхийн
+ * оронд эндээс авна — ингэснээр build бүр өөрийн өнгөөр гарна.
+ */
+export const BRAND_ACCENT: Record<BrandId, string> = {
+  unitel: "#45c700",
+  univision: "#0FAA0A",
+};
+
+/** Энэ build-ийн онцлох ногоон */
+export const ACCENT = BRAND_ACCENT[BRAND];
+
+/**
  * Брэндийн үгэн лого (wordmark) — light/dark хос. width/height нь SVG-ийн
  * жинхэнэ харьцаа (next/image-д intrinsic хэмжээ шаардлагатай).
  *

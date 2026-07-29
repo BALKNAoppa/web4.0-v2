@@ -1,9 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { Wifi, Tv, Film, Receipt, Package, Headphones, type LucideIcon } from "lucide-react";
+import {
+  Wifi,
+  Tv,
+  Film,
+  Receipt,
+  Package,
+  Headphones,
+  Smartphone,
+  Signal,
+  CreditCard,
+  Globe,
+  type LucideIcon,
+} from "lucide-react";
 
-import { faqCategories, faqMeta, type FaqCategory, type FaqIcon } from "@/data/faq";
+import { faqMeta, type FaqCategory, type FaqIcon } from "@/data/faq";
 
 // Icon нэрийг lucide компонентэд буулгах map
 const iconMap: Record<FaqIcon, LucideIcon> = {
@@ -13,9 +25,17 @@ const iconMap: Record<FaqIcon, LucideIcon> = {
   billing: Receipt,
   subscription: Package,
   agent: Headphones,
+  mobile: Smartphone,
+  data: Signal,
+  sim: CreditCard,
+  roaming: Globe,
 };
 
-export function Faq() {
+/**
+ * Тусламжийн entry point — 6 дугуй icon. Topic-ууд брэндээс хамаарна
+ * (`unitelFaqCategories` / `univisionFaqCategories`).
+ */
+export function Faq({ categories }: { categories: FaqCategory[] }) {
   return (
     <section id="faq" aria-labelledby="faq-title" className="bg-muted/30 py-7 lg:py-10">
       <div className="mx-auto max-w-5xl px-4">
@@ -32,7 +52,7 @@ export function Faq() {
           aria-label="FAQ ангилал"
           className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-6"
         >
-          {faqCategories.map((category) => (
+          {categories.map((category) => (
             <CategoryItem key={category.id} category={category} />
           ))}
         </ul>

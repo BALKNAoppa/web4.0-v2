@@ -47,10 +47,11 @@ export function TrustOrbit() {
         aria-hidden="true"
       />
 
-      <div className="relative container mx-auto px-4">
+      {/* Бусад section-уудтай ижил 1200px контентын хүрээнд тэгшилнэ */}
+      <div className="relative mx-auto w-full max-w-[1200px] px-4">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* ============== LEFT — Text content ============== */}
-          <div className="text-white relative z-20">
+          <div className="relative z-20 text-white">
             <span className="text-primary text-sm font-semibold tracking-wider uppercase">
               {trustSection.eyebrow}
             </span>
@@ -111,22 +112,22 @@ function OrbitLayout() {
         <div className="relative size-32">
           {/* Pulse rings — full screen хүрнэ. Stagger 1.5s, 4 ширхэг */}
           <div
-            className="absolute inset-0 rounded-full border-2 border-primary"
+            className="border-primary absolute inset-0 rounded-full border-2"
             style={{ animation: "hub-pulse 9s ease-out infinite" }}
             aria-hidden="true"
           />
           <div
-            className="absolute inset-0 rounded-full border-2 border-primary"
+            className="border-primary absolute inset-0 rounded-full border-2"
             style={{ animation: "hub-pulse 9s ease-out infinite", animationDelay: "2.25s" }}
             aria-hidden="true"
           />
           <div
-            className="absolute inset-0 rounded-full border-2 border-primary"
+            className="border-primary absolute inset-0 rounded-full border-2"
             style={{ animation: "hub-pulse 9s ease-out infinite", animationDelay: "4.5s" }}
             aria-hidden="true"
           />
           <div
-            className="absolute inset-0 rounded-full border-2 border-primary"
+            className="border-primary absolute inset-0 rounded-full border-2"
             style={{ animation: "hub-pulse 9s ease-out infinite", animationDelay: "6.75s" }}
             aria-hidden="true"
           />
@@ -173,9 +174,7 @@ function OrbitItem({ item, style }: { item: TrustItem; style: React.CSSPropertie
   return (
     <div className="group absolute -translate-x-1/2 -translate-y-1/2" style={style}>
       {/* Эсрэг чиглэлд эргүүлэн icon босоо хадгална */}
-      <div
-        style={{ animation: `orbit-spin ${ORBIT_DURATION} linear infinite reverse` }}
-      >
+      <div style={{ animation: `orbit-spin ${ORBIT_DURATION} linear infinite reverse` }}>
         {/* Icon bubble */}
         <div className="bg-card text-foreground flex size-20 cursor-pointer flex-col items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110">
           <Icon className="size-7" aria-hidden="true" />

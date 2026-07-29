@@ -1,7 +1,19 @@
 import Link from "next/link";
-import { ArrowRight, Gift, MonitorPlay, Package, Wifi, type LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  Clapperboard,
+  Gift,
+  Globe,
+  MonitorPlay,
+  Package,
+  Plane,
+  Router,
+  Smartphone,
+  Wifi,
+  type LucideIcon,
+} from "lucide-react";
 
-import { entryTiles, type EntryTileIcon } from "@/data/home";
+import { type EntryTile, type EntryTileIcon } from "@/data/home";
 import { Reveal } from "@/components/web4/reveal";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +23,11 @@ const ICONS: Record<EntryTileIcon, LucideIcon> = {
   "monitor-play": MonitorPlay,
   package: Package,
   gift: Gift,
+  globe: Globe,
+  smartphone: Smartphone,
+  plane: Plane,
+  clapperboard: Clapperboard,
+  router: Router,
 };
 
 /** Дүрсний өнгөт дэвсгэр visual-ийн gradient — tint-ийн өнгөний гэр бүлтэй нийцүүлэв */
@@ -19,20 +36,27 @@ const VISUAL_GRADIENT: Record<EntryTileIcon, string> = {
   "monitor-play": "from-indigo-400 via-violet-500 to-purple-600",
   package: "from-amber-400 via-orange-500 to-orange-600",
   gift: "from-rose-400 via-red-500 to-red-600",
+  globe: "from-indigo-400 via-indigo-500 to-blue-700",
+  smartphone: "from-amber-400 via-amber-500 to-orange-600",
+  plane: "from-rose-400 via-rose-500 to-red-600",
+  clapperboard: "from-violet-400 via-purple-500 to-fuchsia-600",
+  router: "from-emerald-400 via-emerald-500 to-teal-600",
 };
 
 /**
- * Unitel, Univision-ий үндсэн үйлчилгээнүүдийн entry point-ууд —
- * Apple-ийн нүүрний шиг том tile: төвд гарчиг + тайлбар + CTA,
- * доор нь брэнд өнгөт дизайн visual (gradient + product дүрс). Хос багана —
- * баруун багана харанхуй, зүүн нь цайвар өнгөөр ээлжилнэ.
+ * Брэндийн үндсэн үйлчилгээнүүдийн entry point-ууд — Apple-ийн нүүрний шиг том
+ * tile: төвд гарчиг + тайлбар + CTA, доор нь брэнд өнгөт дизайн visual
+ * (gradient + product дүрс). Хос багана — баруун багана харанхуй, зүүн нь
+ * цайвар өнгөөр ээлжилнэ.
+ *
+ * `tiles` нь брэндээс хамаарна: `unitelEntryTiles` / `univisionEntryTiles`.
  */
-export function ProductEntryGrid() {
+export function ProductEntryGrid({ tiles }: { tiles: EntryTile[] }) {
   return (
-    <section aria-label="Үндсэн үйлчилгээнүүд" className="bg-background py-16 md:py-24">
-      <div className="mx-auto max-w-[1200px] px-4">
+    <section aria-label="Үндсэн үйлчилгээнүүд" className="bg-background py-16 md:py-18">
+      <div className="mx-auto max-w-300 px-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {entryTiles.map((tile, i) => {
+          {tiles.map((tile, i) => {
             // Баруун багананд харанхуй tile — Apple-ийн нүүрний хэв маяг
             const dark = i % 2 === 1;
             const Icon = ICONS[tile.icon];

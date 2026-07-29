@@ -8,6 +8,7 @@ import {
   type PromotionCard,
   type PromotionTone,
 } from "@/data/promotions";
+import { ACCENT } from "@/lib/brand";
 
 // =====================================================================
 // TONE MAP — зураг байхгүй үеийн gradient fallback + чимэглэлийн icon.
@@ -40,8 +41,15 @@ export function Promotions() {
       <div className="mx-auto w-full max-w-[1200px] px-4 py-8 lg:py-12">
         {/* ============ HEADER — Singtel-маягийн том гарчиг ============ */}
         <div className="mx-auto max-w-3xl text-center">
-          <div className="flex items-center justify-center gap-2 text-xs font-bold tracking-[0.18em] text-[#0FAA0A] uppercase">
-            <span className="size-2 rounded-full bg-[#0FAA0A]" aria-hidden="true" />
+          <div
+            className="flex items-center justify-center gap-2 text-xs font-bold tracking-[0.18em] uppercase"
+            style={{ color: ACCENT }}
+          >
+            <span
+              className="size-2 rounded-full"
+              style={{ backgroundColor: ACCENT }}
+              aria-hidden="true"
+            />
             {promotionsSection.eyebrow}
           </div>
 
@@ -50,7 +58,7 @@ export function Promotions() {
             className="text-foreground mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
           >
             {promotionsSection.titlePre}
-            <span className="text-[#0FAA0A]">{promotionsSection.titleAccent}</span>
+            <span style={{ color: ACCENT }}>{promotionsSection.titleAccent}</span>
             {promotionsSection.titlePost}
           </h2>
 
@@ -138,7 +146,9 @@ function PromotionTile({ card }: { card: PromotionCard }) {
       {/* Title + description */}
       <div className="relative mt-6 flex flex-1 flex-col justify-end">
         <h3 className="text-[1.2rem] font-bold tracking-tight text-white">{card.title}</h3>
-        <p className="mt-3 max-w-sm text-[0.7rem] leading-relaxed text-white/85">{card.description}</p>
+        <p className="mt-3 max-w-sm text-[0.7rem] leading-relaxed text-white/85">
+          {card.description}
+        </p>
       </div>
 
       {/* Доод эгнээ — хүчинтэй хугацаа + CTA */}
