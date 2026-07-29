@@ -171,7 +171,7 @@ export function ChatHero() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Асуултаа энд буулгана уу…"
+                placeholder="Асуултаа бичнэ үү..."
                 className="text-foreground placeholder:text-muted-foreground h-8 flex-1 bg-transparent text-sm outline-none md:text-base"
               />
               <button
