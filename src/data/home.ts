@@ -129,7 +129,7 @@ export const univisionEntryTiles: EntryTile[] = [
   {
     title: "Mesh",
     description: "FTTR, Wi-Fi 6 — гэрийн булан бүрт тасралтгүй сүлжээ.",
-    href: "/univision#solutions",
+    href: "/mesh",
     ctaLabel: "Шийдэл харах",
     icon: "router",
     tint: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",

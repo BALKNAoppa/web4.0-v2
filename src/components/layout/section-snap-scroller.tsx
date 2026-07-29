@@ -91,6 +91,9 @@ export function SectionSnapScroller() {
 
     const onSettle = () => {
       if (animating || performance.now() < cooldownUntil) return;
+      // Hero доторх туслахын үр дүн нээлттэй бол hero өндөр өөрчлөгдөж байгаа тул
+      // snap байрлал шилжиж гацалт үүсгэнэ — тэр хугацаанд оролцохгүй.
+      if (root.dataset.assistantOpen === "1") return;
 
       const sections = document.querySelectorAll<HTMLElement>("#main-content > section");
       if (sections.length === 0) return;

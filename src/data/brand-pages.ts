@@ -276,7 +276,7 @@ export const univisionPage: BrandPage = {
       items: [
         { label: "FTTH", href: "#" },
         { label: "STB, Dongle", href: "#" },
-        { label: "FTTR, Mesh", href: "#" },
+        { label: "FTTR, Mesh", href: "/mesh" },
         { label: "Wi-Fi 6 | HGW, ONT", href: "#" },
       ],
     },
