@@ -68,7 +68,7 @@ export type EntryTile = {
 export const unitelEntryTiles: EntryTile[] = [
   {
     title: "Гэр интернэт",
-    description: "M+, L+, XL+ багцууд — интернэт, IPTV, суурин утас.",
+    description: "Утасгүй, гэрийн интернэт.",
     href: "/main-packages",
     ctaLabel: "Багц харах",
     icon: "wifi",
@@ -76,15 +76,15 @@ export const unitelEntryTiles: EntryTile[] = [
   },
   {
     title: "Олон улсын үйлчилгээ",
-    description: "Роуминг, олон улсын дуудлага — хилийн чанадад ч холбоотой.",
+    description: "Олон улсын дуудлага - хилийн чанадад ч холбоотой.",
     href: "/unitel#addons",
     ctaLabel: "Үйлчилгээ харах",
     icon: "globe",
     tint: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
   },
   {
-    title: "Урьдчилсан төлбөрт үйлчилгээ",
-    description: "Гэрээгүй, уян хатан — дата, ярианы нэгж хүссэн үедээ.",
+    title: "Урьдчилсан төлбөрт",
+    description: "Дата, ярианы нэгжээ хүссэн үедээ цэнэглэ.",
     href: "/unitel#prepaid",
     ctaLabel: "Багц харах",
     icon: "smartphone",
@@ -92,7 +92,7 @@ export const unitelEntryTiles: EntryTile[] = [
   },
   {
     title: "TourSim",
-    description: "Монголд ирсэн зочдод зориулсан SIM болон eSIM.",
+    description: "SIM and eSIM for Visitors to Mongolia",
     href: "/unitel#devices",
     ctaLabel: "Дэлгэрэнгүй",
     icon: "plane",

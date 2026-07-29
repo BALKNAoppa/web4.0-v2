@@ -46,8 +46,8 @@ const VISUAL_GRADIENT: Record<EntryTileIcon, string> = {
 /**
  * Брэндийн үндсэн үйлчилгээнүүдийн entry point-ууд — Apple-ийн нүүрний шиг том
  * tile: төвд гарчиг + тайлбар + CTA, доор нь брэнд өнгөт дизайн visual
- * (gradient + product дүрс). Хос багана — баруун багана харанхуй, зүүн нь
- * цайвар өнгөөр ээлжилнэ.
+ * (gradient + product дүрс). Бүх карт ИЖИЛ цайвар дэвсгэртэй — өмнөх
+ * харанхуй/цайвар ээлжлэлийг болиулсан.
  *
  * `tiles` нь брэндээс хамаарна: `unitelEntryTiles` / `univisionEntryTiles`.
  */
@@ -57,35 +57,19 @@ export function ProductEntryGrid({ tiles }: { tiles: EntryTile[] }) {
       <div className="mx-auto max-w-300 px-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {tiles.map((tile, i) => {
-            // Баруун багананд харанхуй tile — Apple-ийн нүүрний хэв маяг
-            const dark = i % 2 === 1;
             const Icon = ICONS[tile.icon];
             return (
               <Reveal key={tile.title} delay={i * 90} className="h-full">
                 <Link
                   href={tile.href}
-                  className={cn(
-                    "group flex h-full min-h-[26rem] flex-col items-center overflow-hidden rounded-3xl p-8 pt-12 text-center md:min-h-[32rem]",
-                    dark ? "bg-foreground text-background" : "bg-muted/60 text-foreground",
-                  )}
+                  className="group bg-muted/60 text-foreground flex h-full min-h-104 flex-col items-center overflow-hidden rounded-3xl p-8 pt-12 text-center md:min-h-128"
                 >
                   <h3 className="text-3xl font-bold tracking-tight md:text-4xl">{tile.title}</h3>
-                  <p
-                    className={cn(
-                      "mt-2 max-w-md text-sm md:text-base",
-                      dark ? "text-background/70" : "text-muted-foreground",
-                    )}
-                  >
+                  <p className="text-muted-foreground mt-2 max-w-md text-sm md:text-base">
                     {tile.description}
                   </p>
 
-                  <span
-                    className={cn(
-                      "mt-6 inline-flex h-11 items-center justify-center gap-1.5 rounded-full px-6 text-sm font-semibold",
-                      "transition-opacity duration-700 ease-out group-hover:opacity-85",
-                      dark ? "bg-background text-foreground" : "bg-primary text-primary-foreground",
-                    )}
-                  >
+                  <span className="bg-primary text-primary-foreground mt-6 inline-flex h-11 items-center justify-center gap-1.5 rounded-full px-6 text-sm font-semibold transition-opacity duration-700 ease-out group-hover:opacity-85">
                     {tile.ctaLabel}
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </span>
