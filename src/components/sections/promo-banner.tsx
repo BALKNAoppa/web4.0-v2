@@ -1,0 +1,205 @@
+"use client";
+
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, Pause, Play } from "lucide-react";
+
+import { SmartLink } from "@/components/layout/smart-link";
+import { promoBanners, type PromoMedia } from "@/data/promo-banner";
+import { BRAND } from "@/lib/brand";
+
+/**
+ * Нүүрний PROMO BANNER — chat-hero-гийн ДЭЭР суух зурвас.
+ *
+ * Медиа нь видео / зураг / gradient — `promo-banner.ts`-ээс сонгогдоно. Видео
+ * бэлэн болоход зөвхөн тэр data-г солино, энэ компонент хөндөгдөхгүй.
+ *
+ * ─── WCAG 2.1 AA ──────────────────────────────────────────────────────
+ * 2.2.2 Pause, Stop, Hide (A) — 5 сек-с урт автомат хөдөлгөөнд зогсоох
+ *   боломж ЗААВАЛ байна. Тиймээс видео үед ХАРАГДАХ pause/play товч гарна
+ *   (hover-д нуугдахгүй), keyboard-аар хүрнэ, focus ring-тэй (2.1.1, 2.4.7).
+ * 1.4.2 Audio Control (A) — видеонд аудио track БАЙХГҮЙ (ffmpeg -an) тул
+ *   автоматаар хангагдана.
+ * 1.4.3 Contrast (AA) — текстийн доор бараан scrim. ЧУХАЛ: бодит видео
+ *   тавихдаа харьцааг видеоны ХАМГИЙН ЦАЙВАР frame-тэй тулгаж хэмжинэ
+ *   (дундажаар биш). Хүрэлцэхгүй бол scrim-ийн alpha-г нэмнэ.
+ * 1.1.1 Non-text Content (A) — `decorative: true` үед `aria-hidden`, бүх
+ *   мэдээлэл доорх текстэд байна.
+ *
+ * prefers-reduced-motion: globals.css-ийн дүрэм нь `animation`/`transition`-ыг
+ *   л тэглэдэг, `<video>`-г ЗОГСООХГҮЙ. Тиймээс `autoPlay` атрибут ХЭРЭГЛЭХГҮЙ
+ *   — JS-ээр matchMedia шалгаж, зөвшөөрөгдсөн үед л `play()` дуудна.
+ * ──────────────────────────────────────────────────────────────────────
+ */
+export function PromoBanner() {
+  const content = promoBanners[BRAND];
+  const isVideo = content.media.kind === "video";
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  // Эхний төлөв нь ЗОГССОН — poster харагдана. Autoplay зөвшөөрөгдвөл л
+  // доорх effect үүнийг false болгоно.
+  const [paused, setPaused] = useState(true);
+
+  // Autoplay-г ЗӨВХӨН reduced-motion унтраалттай үед эхлүүлнэ
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+
+    // Хөдөлгөөн хүсээгүй — эхний `paused: true` төлөв хэвээр, poster үлдэнэ
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    el.play().then(
+      () => setPaused(false),
+      // Browser autoplay-г блоклов — poster + play товч харагдана
+      () => setPaused(true),
+    );
+  }, []);
+
+  const toggle = () => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (el.paused) {
+      el.play().then(
+        () => setPaused(false),
+        () => setPaused(true),
+      );
+    } else {
+      el.pause();
+      setPaused(true);
+    }
+  };
+
+  return (
+    <section
+      aria-labelledby="promo-banner-title"
+      className="relative isolate w-full overflow-hidden"
+    >
+      {/* ============ МЕДИА ============ */}
+      <PromoMediaLayer media={content.media} decorative={content.decorative} videoRef={videoRef} />
+
+      {/* Scrim — текстийг уншигдахуйц болгоно (1.4.3). Зүүн тал хамгийн бараан. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25"
+      />
+
+      {/* ============ КОНТЕНТ ============ */}
+      <div className="relative mx-auto flex min-h-100 max-w-300 items-center px-4 py-16 lg:min-h-125 lg:py-24">
+        <div className="max-w-xl">
+          <p className="text-xs font-bold tracking-[0.18em] text-white/80 uppercase">
+            {content.eyebrow}
+          </p>
+
+          <h2
+            id="promo-banner-title"
+            className="mt-4 text-3xl font-extrabold tracking-tight text-balance text-white md:text-5xl"
+          >
+            {content.title}
+          </h2>
+
+          <p className="mt-4 max-w-lg text-base leading-relaxed text-white/85 md:text-lg">
+            {content.subtitle}
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <SmartLink
+              href={content.cta.href}
+              owner={content.cta.owner}
+              className="bg-primary text-primary-foreground focus-visible:ring-offset-background inline-flex h-12 items-center justify-center gap-2 rounded-full px-7 text-sm font-semibold transition-opacity duration-700 ease-out hover:opacity-85 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:outline-none"
+            >
+              {content.cta.label}
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </SmartLink>
+
+            {content.secondaryCta && (
+              <SmartLink
+                href={content.secondaryCta.href}
+                owner={content.secondaryCta.owner}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/35 px-6 text-sm font-semibold text-white transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent focus-visible:outline-none"
+              >
+                {content.secondaryCta.label}
+              </SmartLink>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ============ PAUSE / PLAY — WCAG 2.2.2 (заавал) ============ */}
+      {isVideo && (
+        <button
+          type="button"
+          onClick={toggle}
+          aria-pressed={paused}
+          aria-label={paused ? "Видеог тоглуулах" : "Видеог зогсоох"}
+          className="absolute right-4 bottom-4 z-10 inline-flex size-10 items-center justify-center rounded-full border border-white/35 bg-black/50 text-white backdrop-blur transition-colors hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent focus-visible:outline-none"
+        >
+          {paused ? (
+            <Play className="size-4" aria-hidden="true" />
+          ) : (
+            <Pause className="size-4" aria-hidden="true" />
+          )}
+        </button>
+      )}
+    </section>
+  );
+}
+
+// =====================================================================
+// МЕДИА ДАВХАРГА — төрөл нэмэх = нэг case нэмэх
+// =====================================================================
+function PromoMediaLayer({
+  media,
+  decorative,
+  videoRef,
+}: {
+  media: PromoMedia;
+  decorative: boolean;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
+}) {
+  if (media.kind === "video") {
+    return (
+      <video
+        ref={videoRef}
+        poster={media.poster}
+        muted
+        loop
+        // iOS-д autoplay ажиллуулахад muted + playsInline ЗААВАЛ
+        playsInline
+        // "auto" тавьбал LCP-тэй тэмцэлдэнэ
+        preload="metadata"
+        aria-hidden={decorative ? "true" : undefined}
+        tabIndex={-1}
+        className="absolute inset-0 -z-10 h-full w-full object-cover"
+      >
+        {media.sources.map((source) => (
+          <source key={source.src} src={source.src} type={source.type} media={source.media} />
+        ))}
+      </video>
+    );
+  }
+
+  if (media.kind === "image") {
+    return (
+      <Image
+        src={media.src}
+        alt={decorative ? "" : media.alt}
+        fill
+        // Хамгийн дээд section тул LCP элемент байх магадлалтай
+        priority
+        sizes="100vw"
+        className="absolute inset-0 -z-10 object-cover"
+      />
+    );
+  }
+
+  // gradient — медиа файлгүй ажиллах суурь хувилбар
+  return (
+    <div
+      aria-hidden="true"
+      className="absolute inset-0 -z-10 bg-linear-to-br from-[#0FAA0A] via-[#0d9488] to-[#2563eb]"
+    >
+      <div className="absolute -top-24 -left-24 size-96 rounded-full bg-white/20 blur-3xl" />
+      <div className="absolute -right-20 -bottom-32 size-96 rounded-full bg-black/20 blur-3xl" />
+    </div>
+  );
+}

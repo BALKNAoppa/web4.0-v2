@@ -1,16 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import {
-  ArrowRight,
-  ArrowUp,
-  Check,
-  ChevronDown,
-  Headphones,
-  Sparkles,
-  SquareDashed,
-} from "lucide-react";
+import { ArrowRight, ArrowUp, Check, ChevronDown, Headphones, Sparkles } from "lucide-react";
 
 import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
 import { SmartLink } from "@/components/layout/smart-link";
@@ -26,20 +17,6 @@ import {
   type TimelineResult,
 } from "@/data/hero-assistant";
 import { cn } from "@/lib/utils";
-
-// Hero доорх quick action карт — placeholder ("Sample"). Хэрэглэгчийн хандалтаас
-// хамааран бодит topic/action-оор солигдоно. Icon бүгд нэг default (SquareDashed).
-// Зөвхөн асуулт асуугаагүй (idle) үед харагдана — үр дүн гармагц алга болно.
-const QUICK_ACTIONS: { href: string; label: string }[] = [
-  { href: "/main-packages", label: "Sample 1" },
-  { href: "/unitel", label: "Sample 2" },
-  { href: "/entertainment/main", label: "Sample 3" },
-  { href: "/univision-go", label: "Sample 4" },
-  { href: "/devices", label: "Sample 5" },
-  { href: "/campaigns", label: "Sample 6" },
-  { href: "/univision", label: "Sample 7" },
-  { href: "/support", label: "Sample 8" },
-];
 
 /** Neon gradient (input-ийн хүрээ/гэрэлд) — брэнд ногоон → cyan → violet */
 const NEON = "linear-gradient(90deg,#45c700,#2ad4ff,#a855f7,#45c700)";
@@ -184,29 +161,6 @@ export function ChatHero() {
             </form>
           </div>
         </div>
-
-        {/* Quick actions — зөвхөн idle үед. Асуулт асуумагц үр дүн орно. */}
-        {blocks.length === 0 && (
-          <div className="animate-in fade-in mt-8 w-full duration-700 ease-out">
-            <p className="text-muted-foreground mb-3 flex items-center justify-center gap-1.5 text-sm font-medium">
-              Хэрэглэгчийн их ашигласан topic болон action button харагдана
-            </p>
-            <div className="grid grid-cols-4 gap-2.5 md:grid-cols-8">
-              {QUICK_ACTIONS.map((action) => (
-                <Link
-                  key={action.label}
-                  href={action.href}
-                  className="group border-border bg-card/60 hover:border-primary/40 hover:bg-card flex aspect-square flex-col items-center justify-center gap-1.5 rounded-2xl border p-1.5 text-center transition-colors"
-                >
-                  <SquareDashed className="text-primary size-5" aria-hidden="true" />
-                  <span className="text-muted-foreground group-hover:text-foreground text-[11px] leading-tight font-medium">
-                    {action.label}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Үр дүн — input-ийн доороос ургана. Өргөн нь input-тэй яг ижил. */}
         {blocks.length > 0 && (
