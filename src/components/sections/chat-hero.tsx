@@ -93,7 +93,7 @@ export function ChatHero() {
 
   return (
     <section
-      aria-label="Ухаалаг туслах"
+      aria-label="Ухаалаг сонголт"
       className="bg-background animate-in fade-in relative w-full overflow-hidden duration-1000 ease-out"
     >
       {/* Background — MagicUI Interactive Grid Pattern (hover-оор нүд бүр гэрэлтэнэ).
@@ -113,17 +113,22 @@ export function ChatHero() {
           агуулга нь min-h-ээс өндөр болж асуултын мөрийг доош түлхдэг тул
           босоо зайг нэмж хумина. Өндөр дэлгэцэнд энэ үйлчлэхгүй. */}
       <div className="relative z-10 mx-auto flex min-h-[44svh] max-w-3xl flex-col items-center justify-center px-4 py-8 text-center md:min-h-[46svh] md:py-10 [@media(max-height:720px)]:py-3">
+        {/* ЗОРИЛГО: энэ туслах нь ГОМДОЛ/АСУУДАЛ шийддэг support бот БИШ.
+            Хэрэглэгчид эко-системд юу байгааг ТАНИУЛЖ (awareness), судалж
+            (explore), өөрт тохирохыг СОНГОХОД (choice) чиглэсэн. Тиймээс
+            "туслах вэ?" гэсэн асуудал-шийдвэрлэх өнгө аясыг "тохирох вэ?"
+            гэсэн сонголт-нээлтийн өнгө аясаар сольсон. */}
         <span className="border-border bg-card/60 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur">
           <Sparkles className="text-primary size-3.5" aria-hidden="true" />
-          Ухаалаг туслах
+          Ухаалаг сонголт
         </span>
 
         <h1 className="text-foreground mt-6 text-4xl font-extrabold tracking-tight text-balance md:text-6xl [@media(max-height:720px)]:mt-3">
-          Танд юугаар <span className="from-primary bg-clip-text text-[#45c700]">туслах вэ?</span>
+          Танд юу <span className="from-primary bg-clip-text text-[#45c700]">тохирох вэ?</span>
         </h1>
         <p className="text-muted-foreground mt-4 max-w-xl text-base text-pretty md:text-lg [@media(max-height:720px)]:mt-2">
-          Та асуултаа бичихэд л хангалттай — багц, интернэт, ТВ, төлбөр гээд бүгд нэг дор гэх мэт
-          text байна.
+          Сонирхсоноо бичээрэй — багц, интернэт, ТВ, төхөөрөмж, урамшуулал гээд эко-системийн бүх
+          боломжийг нэг дороос судалж, өөрт тохирохыг олоорой.
         </p>
 
         {/* Chat input — neon gradient хүрээ + гэрэл (радиус томруулсан) */}

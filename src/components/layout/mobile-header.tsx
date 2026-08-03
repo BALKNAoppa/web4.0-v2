@@ -75,8 +75,10 @@ import { cn } from "@/lib/utils";
  *   бусдаасаа ялгарна; навигацын хэсэг болсон тул хөвөгч chat товч
  *   нуугдана (globals.css).
  *
- * Гурвуулаа НИЙТЛЭГ: одоо байгаа ДОМЭЙН (build-ийн брэнд) брэнд ногооноор
- * тодорно — Хувилбар 1-д таб, 2-т burger-ийн ангилал, 3-т доод bar дээр.
+ * ОДОО БАЙГАА ДОМЭЙН (build-ийн брэнд) тодорсон байна:
+ *   Хувилбар 1 · 2 — брэнд ногооноор (header-ийн таб / burger-ийн ангилал)
+ *   Хувилбар 3     — доод bar дээр `text-foreground` + `font-bold`-оор
+ *                    (хар/цагаан). Ногоон нь доод bar-т зохицдоггүй.
  */
 
 export type MobileVariant = 1 | 2 | 3;
@@ -334,6 +336,31 @@ function useBrowserBottomInset(ref: React.RefObject<HTMLElement | null>) {
 function BottomTabBar() {
   const ref = useRef<HTMLElement>(null);
   useBrowserBottomInset(ref);
+  const pathname = usePathname() ?? "";
+
+  /**
+   * ХАМГИЙН ИХДЭЭ НЭГ таб тодорно — доод tab bar-т "би хаана байна" гэдэг нь
+   * ганц байх ёстой. Замтай таарсан таб байвал тэр, эс бөгөөс (жишээ нь
+   * нүүр хуудсанд) build-ийн домэйны таб тодорно.
+   *
+   * Нөгөө домэйны таб (шинэ tab-аар нээгддэг) хэзээ ч "одоогийн" болохгүй.
+   */
+  const isInternal = (t: (typeof TABS)[number]) =>
+    !t.owner || t.owner === "self" || t.owner === BRAND;
+  const currentName = TABS.find(
+    (t) => isInternal(t) && (pathname === t.href || pathname.startsWith(`${t.href}/`)),
+  )?.name;
+  const highlightedName = currentName ?? DOMAIN_TAB;
+
+  const renderTab = (tab: (typeof TABS)[number]) => (
+    <li key={tab.name} className="flex-1">
+      <BottomTab
+        tab={tab}
+        highlighted={tab.name === highlightedName}
+        isCurrentPage={tab.name === currentName}
+      />
+    </li>
+  );
 
   return (
     <nav
@@ -344,19 +371,11 @@ function BottomTabBar() {
       className="border-border bg-background/95 supports-backdrop-filter:bg-background/75 fixed inset-x-0 z-50 border-t pb-[env(safe-area-inset-bottom)] backdrop-blur transition-[bottom,transform,opacity] duration-300 ease-out data-[keyboard=open]:pointer-events-none data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
     >
       <ul className="mx-auto flex max-w-300 items-stretch">
-        {BOTTOM_LEFT.map((tab) => (
-          <li key={tab.name} className="flex-1">
-            <BottomTab tab={tab} />
-          </li>
-        ))}
+        {BOTTOM_LEFT.map(renderTab)}
         <li className="flex-1">
           <BottomChatTab />
         </li>
-        {BOTTOM_RIGHT.map((tab) => (
-          <li key={tab.name} className="flex-1">
-            <BottomTab tab={tab} />
-          </li>
-        ))}
+        {BOTTOM_RIGHT.map(renderTab)}
         <li className="flex-1">
           <BottomAccountTab />
         </li>
@@ -376,31 +395,31 @@ function BottomTabBar() {
  * Нөгөө домэйн бол шинэ tab-аар нээгдэнэ. Дотоод/гадаадыг ХАРАГДАЦААР
  * ялгахгүй (сум, брэндийн нэр нэмэхгүй) — нэгдсэн эко-системийн зарчим.
  *
- * Хоёр тэмдэг:
- *   - брэнд ногоон = одоо байгаа домэйн (тогтмол, build-ээс)
- *   - `text-foreground` + `aria-current="page"` = ОДОО байгаа хуудас
+ * ТОДОТГОЛ — брэнд ногоон БИШ, `text-foreground` + `font-bold` (light theme-д
+ * хар, dark theme-д цагаан). Ногоон нь доод bar-ын бусад элементтэй
+ * зохицохгүй байсан. Тодорсон таб нь ХАМГИЙН ИХДЭЭ НЭГ (`BottomTabBar`-д
+ * шийдэгдэнэ): замтай таарсан нь, эс бөгөөс домэйны таб.
  */
-function BottomTab({ tab }: { tab: EcosystemLink & { name: TabName } }) {
-  const pathname = usePathname() ?? "";
+function BottomTab({
+  tab,
+  highlighted,
+  isCurrentPage,
+}: {
+  tab: EcosystemLink & { name: TabName };
+  highlighted: boolean;
+  isCurrentPage: boolean;
+}) {
   const isDomain = tab.name === DOMAIN_TAB;
-  // Нөгөө домэйны таб хэзээ ч "одоогийн хуудас" болохгүй
-  const isCurrent =
-    (!tab.owner || tab.owner === "self" || tab.owner === BRAND) &&
-    (pathname === tab.href || pathname.startsWith(`${tab.href}/`));
   const Icon = TAB_ICONS[tab.name];
 
   return (
     <SmartLink
       href={tab.href}
       owner={tab.owner}
-      aria-current={isCurrent ? "page" : undefined}
+      aria-current={isCurrentPage ? "page" : undefined}
       className={cn(
         BOTTOM_TAB,
-        isDomain
-          ? "text-primary font-semibold"
-          : isCurrent
-            ? "text-foreground font-semibold"
-            : "text-muted-foreground hover:text-foreground",
+        highlighted ? "text-foreground font-bold" : "text-muted-foreground hover:text-foreground",
       )}
     >
       <Icon className="size-5 shrink-0" aria-hidden="true" />
