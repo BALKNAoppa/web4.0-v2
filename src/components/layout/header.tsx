@@ -3,17 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, ChevronDown, Layers, Menu, X } from "lucide-react";
+import { ChevronDown, Globe, Layers, X } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { AudienceSwitchTabs, AudienceSwitchMobile } from "@/components/layout/audience-switch";
+import { AudienceSwitchTabs } from "@/components/layout/audience-switch";
+import { MobileBrandHeader } from "@/components/layout/mobile-header";
 import {
   AccountMenu,
   BrandLogoLink,
   BrandMegaPanel,
-  MobileToggleRow,
+  IconButton,
   classifierSegments,
   useActiveNavName,
   useBrandMegaMenu,
@@ -23,46 +22,38 @@ import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/he
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
-/**
- * ═══════════════════════════════════════════════════════════════════════
- * HEADER — Хувилбар 3 (single-row) -ийн суурь дээр хоёр хувилбар
- * ═══════════════════════════════════════════════════════════════════════
- *
- * Хоёулаа ИЖИЛ зүүн ангилалтай (`appleNavCategories`):
- *   Unitel · Univision · Дэлгүүр · Entertainment · Урамшуулал · Тусламж
- *
- * Ялгаа нь ЗӨВХӨН "Хувь хэрэглэгч / Байгууллага" ангилагчийг хэрхэн
- * харуулахад:
- *
- *   Хувилбар 1 — ГАНЦ МӨР. Ангилагч үндсэн мөрний баруун талд, профайлын хамт.
- *     ┌────────────────────────────────────────────────────────────┐
- *     │ Unitel Univision Дэлгүүр…   [ЛОГО]   Хувь хэрэглэгч ▾  👤 │
- *     └────────────────────────────────────────────────────────────┘
- *
- *   Хувилбар 2 — ХОЁР МӨР. Ангилагч дээд нимгэн мөрний баруун талд; түүний
- *     оронд үндсэн мөрний баруун талд хайх · профайл · theme toggle.
- *     ┌────────────────────────────────────────────────────────────┐
- *     │                                        Хувь хэрэглэгч ▾    │
- *     ├────────────────────────────────────────────────────────────┤
- *     │ Unitel Univision Дэлгүүр…   [ЛОГО]      🔍   👤   ☀/🌙    │
- *     └────────────────────────────────────────────────────────────┘
- *
- * Хоёуланд Unitel / Univision / Дэлгүүр / Entertainment дээр hover хийхэд
- * Apple маягийн mega panel задарна (`appleMegaMenus`-д бичлэгтэй нь).
- *
- * Ашиглагдахгүй болсон хувилбарууд (Apple · Group · Chat) header-archive.tsx-д
- * бүтнээр хадгалагдсан — build-д орохгүй.
- */
-
 type Variant = HeaderVariant;
 
 const VARIANTS: { id: Variant; label: string }[] = [
-  { id: 1, label: "Хувилбар 1 · Ганц мөр" },
-  { id: 2, label: "Хувилбар 2 · Дээд ангилагч" },
+  { id: 1, label: "Хувилбар 1 · Only L1" },
+  { id: 2, label: "Хувилбар 2 · L1 & L2" },
+  // Хувилбар 3 нь ЗӨВХӨН mobile-д өөр (доод tab bar). Desktop нь Хувилбар
+  // 1-тэй бүрэн ижил — тиймээс тусдаа desktop header байхгүй.
+  { id: 3, label: "Хувилбар 3 · Доод tab bar (mobile)" },
 ];
 
-/** Хоёр хувилбарын ХУВААЛЦАХ зүүн талын ангилал */
+/** Хоёр хувилбарын ХУВААЛЦАХ зүүн талын ангилал (Layer 2) */
 const NAV_ITEMS: EcosystemLink[] = appleNavCategories;
+
+/**
+ * Баруун талын хэрэгслүүд — хоёр хувилбарт ИЖИЛ: профайл · хэл · theme.
+ *
+ * Анхаар: "Хэл солих" нь ОДООГООР зөвхөн харагдах тал. Проектод i18n
+ * давхарга байхгүй (`layout.tsx` дээр `lang="mn"` тогтмол, бүх data монгол)
+ * тул дарахад сольж болох зүйл байхгүй. i18n нэмэгдмэгц MN/EN сонголттой
+ * dropdown болгоно. `header-archive.tsx`-д ч ижил placeholder байсан.
+ */
+function HeaderTools() {
+  return (
+    <div className="flex items-center gap-0.5">
+      <AccountMenu />
+      <IconButton label="Хэл солих">
+        <Globe className="size-5" />
+      </IconButton>
+      <ThemeToggle />
+    </div>
+  );
+}
 
 export function Header() {
   const pathname = usePathname();
@@ -74,8 +65,13 @@ export function Header() {
   return (
     <>
       <VariantToggle variant={variant} onChange={setHeaderVariant} />
-      {/* Архивласан 3 / 4 localStorage-д үлдсэн байвал Хувилбар 1 рүү унана */}
-      {variant === 2 ? <TopClassifierHeader /> : <SingleRowHeader />}
+      {/* Хувилбар 3 — desktop нь Хувилбар 1-тэй ижил, ЗӨВХӨН mobile нь өөр
+          (доод tab bar). Архивласан 4 localStorage-д үлдсэн байвал 1 рүү унана. */}
+      {variant === 2 ? (
+        <TopClassifierHeader />
+      ) : (
+        <LogoLeftHeader mobileVariant={variant === 3 ? 3 : 1} />
+      )}
     </>
   );
 }
@@ -302,75 +298,18 @@ function MegaLayer({
   );
 }
 
-/** Mobile Sheet — ангиллын жагсаалт. Хоёр хувилбарт ижил, доод хэсэг нь өөр. */
-function MobileNav({
-  open,
-  onOpenChange,
-  children,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Цэс нээх">
-          <Menu className="size-5" />
-        </Button>
-      </SheetTrigger>
-
-      <SheetContent side="left" className="w-75 p-6 sm:w-90">
-        <SheetHeader className="p-0">
-          <SheetTitle>Цэс</SheetTitle>
-        </SheetHeader>
-
-        <ul className="mt-4 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const label = <span>{item.name}</span>;
-            const rowClass = cn(
-              navType.mobileLink,
-              "hover:bg-muted flex items-center gap-2 rounded-md px-2 py-2.5 transition-colors",
-            );
-
-            return (
-              <li key={item.name}>
-                {item.external ? (
-                  <a
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => onOpenChange(false)}
-                    className={rowClass}
-                  >
-                    {label}
-                    <ArrowUpRight
-                      className="text-muted-foreground ml-auto size-4"
-                      aria-hidden="true"
-                    />
-                  </a>
-                ) : (
-                  <Link href={item.href} onClick={() => onOpenChange(false)} className={rowClass}>
-                    {label}
-                  </Link>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-
-        {children}
-      </SheetContent>
-    </Sheet>
-  );
-}
-
 // =====================================================================
-// ХУВИЛБАР 1 — ГАНЦ МӨР
-//   Зүүн: ангилал · Төв: лого · Баруун: Хувь хэрэглэгч/Байгууллага + профайл
+// ХУВИЛБАР 1 — ЛОГО ЗҮҮН ТАЛД
+//   Layer 1: ангилагч БАРУУН талд (header-ийн баруун ирмэгт шахсан)
+//   Layer 2: [ЛОГО] → араас нь ангиллын mega menu … баруунд хэрэгслүүд
+//
+//   ┌────────────────────────────────────────────────────────────┐
+//   │                          Хувь хэрэглэгч ▾  Байгууллага ↗   │ L1
+//   ├────────────────────────────────────────────────────────────┤
+//   │ [ЛОГО] Unitel Univision Дэлгүүр …          👤  🌐  ☀       │ L2
+//   └────────────────────────────────────────────────────────────┘
 // =====================================================================
-function SingleRowHeader() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+function LogoLeftHeader({ mobileVariant }: { mobileVariant: 1 | 3 }) {
   const activeName = useActiveNavName(NAV_ITEMS);
   const { openMenu, panelBrand, shown, openBrandMenu, closeBrandMenu, closeNow } =
     useBrandMegaMenu();
@@ -390,20 +329,9 @@ function SingleRowHeader() {
       )}
 
       <header className="bg-background border-border relative top-0 z-50 border-b" role="banner">
-        {/* Desktop — ганц мөр */}
-        <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
-          <CategoryNav
-            activeName={activeName}
-            openMenu={openMenu}
-            onOpen={openBrandMenu}
-            onClose={closeBrandMenu}
-          />
-
-          <div className="flex justify-center">
-            <BrandLogoLink />
-          </div>
-
-          <div className="flex items-center justify-end gap-2">
+        {/* Layer 1 — ангилагч header-ийн БАРУУН ирмэгт шахсан (зөвхөн desktop) */}
+        <div className="bg-muted/40 border-border hidden border-b lg:block">
+          <div className="mx-auto flex h-8 max-w-300 items-center justify-end px-4">
             <AudienceSwitchTabs
               segments={classifierSegments}
               activeId="personal"
@@ -411,35 +339,28 @@ function SingleRowHeader() {
               hover={false}
               triggerClassName={navType.bar}
             />
-            <AccountMenu />
           </div>
         </div>
 
-        {/* Mobile — цэс · лого · профайл.
-            Desktop-тэй ижил 3 баганат grid: хоёр талын багана 1fr тул лого
-            хажуугийн icon-уудын тооноос үл хамааран ҮНЭХЭЭР төвд суудаг
-            (justify-between нь өргөн зөрөхөд логог хазайлгадаг). */}
-        <div className="mx-auto grid h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:hidden">
-          <div className="flex justify-start">
-            <MobileNav open={mobileOpen} onOpenChange={setMobileOpen}>
-              <div className="border-border mt-4 border-t pt-4">
-                <p className={cn(navType.groupLabel, "mb-1 px-2")}>Хэрэглэгчийн төрөл</p>
-                <AudienceSwitchMobile
-                  segments={classifierSegments}
-                  onItemClick={() => setMobileOpen(false)}
-                />
-              </div>
-            </MobileNav>
+        {/* Layer 2 — лого ЗҮҮН ирмэгт шахаад, араас нь ангиллын mega menu.
+            `mr-auto` нь хэрэгслүүдийг баруун ирмэг рүү түлхэнэ. */}
+        <div className="mx-auto hidden h-11 max-w-300 items-center gap-6 px-4 lg:flex">
+          <BrandLogoLink />
+
+          <div className="mr-auto">
+            <CategoryNav
+              activeName={activeName}
+              openMenu={openMenu}
+              onOpen={openBrandMenu}
+              onClose={closeBrandMenu}
+            />
           </div>
 
-          <div className="flex justify-center">
-            <BrandLogoLink />
-          </div>
-
-          <div className="flex items-center justify-end">
-            <AccountMenu />
-          </div>
+          <HeaderTools />
         </div>
+
+        {/* Mobile — Хувилбар 1 (таб төвд) эсвэл 3 (доод tab bar) */}
+        <MobileBrandHeader variant={mobileVariant} />
 
         <MegaLayer
           panelBrand={panelBrand}
@@ -454,12 +375,17 @@ function SingleRowHeader() {
 }
 
 // =====================================================================
-// ХУВИЛБАР 2 — ХОЁР МӨР
-//   Дээд нимгэн мөр: Хувь хэрэглэгч/Байгууллага (баруун)
-//   Үндсэн мөр: зүүн ангилал · төв лого · баруун хайх + профайл + theme
+// ХУВИЛБАР 2 — ЛОГО ТӨВД
+//   Layer 1: ангилагч ЗҮҮН талд (header-ийн зүүн ирмэгт шахсан)
+//   Layer 2: зүүн ангиллын mega menu · төв лого · баруун хэрэгслүүд
+//
+//   ┌────────────────────────────────────────────────────────────┐
+//   │ Хувь хэрэглэгч ▾  Байгууллага ↗                            │ L1
+//   ├────────────────────────────────────────────────────────────┤
+//   │ Unitel Univision Дэлгүүр …   [ЛОГО]        👤  🌐  ☀       │ L2
+//   └────────────────────────────────────────────────────────────┘
 // =====================================================================
 function TopClassifierHeader() {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const activeName = useActiveNavName(NAV_ITEMS);
   const { openMenu, panelBrand, shown, openBrandMenu, closeBrandMenu, closeNow } =
     useBrandMegaMenu();
@@ -478,13 +404,14 @@ function TopClassifierHeader() {
       )}
 
       <header className="bg-background border-border relative top-0 z-50 border-b" role="banner">
-        {/* Дээд нимгэн мөр — ангилагч баруун талд (зөвхөн desktop) */}
+        {/* Layer 1 — ангилагч header-ийн ЗҮҮН ирмэгт шахсан (зөвхөн desktop).
+            `align="start"` — hover панел ч зүүн ирмэгээр зэрэгцэнэ. */}
         <div className="bg-muted/40 border-border hidden border-b lg:block">
-          <div className="mx-auto flex h-8 max-w-300 items-center justify-end px-4">
+          <div className="mx-auto flex h-8 max-w-300 items-center justify-start px-4">
             <AudienceSwitchTabs
               segments={classifierSegments}
               activeId="personal"
-              align="end"
+              align="start"
               hover={false}
               triggerClassName={navType.bar}
             />
@@ -504,42 +431,13 @@ function TopClassifierHeader() {
             <BrandLogoLink />
           </div>
 
-          <div className="flex items-center justify-end gap-0.5">
-            <AccountMenu />
-            <ThemeToggle />
+          <div className="flex items-center justify-end">
+            <HeaderTools />
           </div>
         </div>
 
-        {/* Mobile — цэс · лого · хайх + профайл.
-            3 баганат grid — баруун талд 2 icon байгаа тул `justify-between`-д
-            лого зүүн тийш хазайдаг. 1fr_auto_1fr нь логог ҮНЭХЭЭР төвд барина. */}
-        <div className="mx-auto grid h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:hidden">
-          <div className="flex justify-start">
-            <MobileNav open={mobileOpen} onOpenChange={setMobileOpen}>
-              <div className="border-border mt-4 border-t pt-4">
-                <p className={cn(navType.groupLabel, "mb-1 px-2")}>Хэрэглэгчийн төрөл</p>
-                <AudienceSwitchMobile
-                  segments={classifierSegments}
-                  onItemClick={() => setMobileOpen(false)}
-                />
-              </div>
-
-              <div className="border-border mt-6 space-y-2 border-t pt-6">
-                <MobileToggleRow label="Theme">
-                  <ThemeToggle />
-                </MobileToggleRow>
-              </div>
-            </MobileNav>
-          </div>
-
-          <div className="flex justify-center">
-            <BrandLogoLink />
-          </div>
-
-          <div className="flex items-center justify-end gap-0.5">
-            <AccountMenu />
-          </div>
-        </div>
+        {/* Mobile — Хувилбар 2: header дээр таб байхгүй, бүх цэс burger дотор */}
+        <MobileBrandHeader variant={2} />
 
         <MegaLayer
           panelBrand={panelBrand}

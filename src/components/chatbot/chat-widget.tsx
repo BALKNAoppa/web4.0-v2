@@ -175,6 +175,10 @@ export function ChatWidget() {
         <div
           role="status"
           aria-live="polite"
+          // Header Хувилбар 3 (доод tab bar)-д chat нь bar-ын таб болдог тул
+          // хөвөгч бөмбөлөг/товч нуугдана — globals.css дотор
+          // `body:has([data-bottom-tab-bar])`-аар шүүнэ.
+          data-chat-teaser
           className="bg-card text-foreground border-border animate-in fade-in slide-in-from-bottom-2 fixed right-22 bottom-9 z-50 flex max-w-55 items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium shadow-lg duration-500 lg:right-24 lg:bottom-24"
         >
           <button
@@ -208,6 +212,9 @@ export function ChatWidget() {
         aria-label={isOpen ? "Chat хаах" : "Chat нээх"}
         aria-expanded={isOpen}
         aria-controls="chat-panel"
+        // Хувилбар 3-д нуугдана (chat нь доод bar-ын таб). Панелийг хаах нь
+        // панелийн өөрийн X товч болон Esc-ээр хэвээр боломжтой.
+        data-chat-fab
         className={`bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring fixed right-5 bottom-5 z-50 flex size-14 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none lg:right-6 lg:bottom-20 ${
           isOpen ? "rotate-90" : ""
         }`}

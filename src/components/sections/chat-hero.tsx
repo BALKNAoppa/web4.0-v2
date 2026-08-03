@@ -105,22 +105,29 @@ export function ChatHero() {
         className="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]"
       />
 
-      <div className="relative z-10 mx-auto flex min-h-[68vh] max-w-3xl flex-col items-center justify-center px-4 py-16 text-center md:py-24">
+      {/* Өндөр — promo banner-тай ХАМТ первый дэлгэцэнд багтах ёстой тул
+          68vh → 44/46svh болгож хумив. `svh` нь мобайлын URL bar хураагдахаас
+          үл хамаарсан жижиг viewport — `vh` бол бодит харагдахаас өндөр
+          гарч, асуултын мөрийг доош түлхдэг. */}
+      {/* `[@media(max-height:720px)]` — намхан дэлгэц (iPhone SE ~667px) дээр
+          агуулга нь min-h-ээс өндөр болж асуултын мөрийг доош түлхдэг тул
+          босоо зайг нэмж хумина. Өндөр дэлгэцэнд энэ үйлчлэхгүй. */}
+      <div className="relative z-10 mx-auto flex min-h-[44svh] max-w-3xl flex-col items-center justify-center px-4 py-8 text-center md:min-h-[46svh] md:py-10 [@media(max-height:720px)]:py-3">
         <span className="border-border bg-card/60 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur">
           <Sparkles className="text-primary size-3.5" aria-hidden="true" />
           Ухаалаг туслах
         </span>
 
-        <h1 className="text-foreground mt-6 text-4xl font-extrabold tracking-tight text-balance md:text-6xl">
+        <h1 className="text-foreground mt-6 text-4xl font-extrabold tracking-tight text-balance md:text-6xl [@media(max-height:720px)]:mt-3">
           Танд юугаар <span className="from-primary bg-clip-text text-[#45c700]">туслах вэ?</span>
         </h1>
-        <p className="text-muted-foreground mt-4 max-w-xl text-base text-pretty md:text-lg">
+        <p className="text-muted-foreground mt-4 max-w-xl text-base text-pretty md:text-lg [@media(max-height:720px)]:mt-2">
           Та асуултаа бичихэд л хангалттай — багц, интернэт, ТВ, төлбөр гээд бүгд нэг дор гэх мэт
           text байна.
         </p>
 
         {/* Chat input — neon gradient хүрээ + гэрэл (радиус томруулсан) */}
-        <div className="relative mt-8 w-full">
+        <div className="relative mt-8 w-full [@media(max-height:720px)]:mt-4">
           {/* Ард талын бүдэг гэрэл (glow) */}
           <div
             aria-hidden

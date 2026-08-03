@@ -75,7 +75,17 @@ export const topBar: TopBarLink[] = [
 // Эко-систем брэндүүд — Шинэ Хувилбар 1 (Apple маягийн нэгдсэн nav).
 // Ганц navigation дээр группын брэндүүдийг цэвэр нэрээр (домэйнгүй) харуулна.
 // =====================================================================
-export type EcosystemLink = { name: string; href: string; external?: boolean };
+export type EcosystemLink = {
+  name: string;
+  href: string;
+  external?: boolean;
+  /**
+   * Хэн эзэмших вэ. Өгөөгүй бол "self" — хоёр build хоёуланд дотоод хуудас.
+   * Өгсөн бол `SmartLink`/`resolveHref` нь тухайн брэндийн БУСАД build дээр
+   * нөгөө домэйн руу (шинэ tab) шилжүүлнэ — AI туслахын CTA-тай ижил логик.
+   */
+  owner?: Owner;
+};
 
 export const ecosystemBrands: EcosystemLink[] = [
   // Unitel, Univision — Apple маягийн дотоод брэнд хуудсууд (/unitel, /univision)
@@ -93,13 +103,17 @@ export const ecosystemBrands: EcosystemLink[] = [
 
 // Хувилбар 1 (Apple) header — 5 үндсэн category. Dropdown доторх агуулгыг дараа тодорхойлно.
 // Unitel/Univision-д brandPages mega-menu байгаа; бусад нь одоогоор энгийн линк.
+// Layer 2 — 5 ангилал. "Тусламж" нь энэ жагсаалтаас ХАСАГДСАН (nav-д биш,
+// footer болон нүүр хуудасны FAQ блокоос хүрнэ).
+// `owner` — Unitel/Univision нь ТУС БҮРИЙН домэйны эзэн тул нөгөө build дээр
+// дарахад тэр домэйн руу шилжинэ (`SmartLink`). Дэлгүүр/Entertainment/
+// Урамшуулал нь "self" (өгөөгүй) — хоёр сайт тус бүр өөрийн хувилбартай.
 export const appleNavCategories: EcosystemLink[] = [
-  { name: "Unitel", href: "/unitel" },
-  { name: "Univision", href: "/univision" },
+  { name: "Unitel", href: "/unitel", owner: "unitel" },
+  { name: "Univision", href: "/univision", owner: "univision" },
   { name: "Дэлгүүр", href: "/devices" },
   { name: "Entertainment", href: "/entertainment/main" },
   { name: "Урамшуулал", href: "/campaigns" },
-  { name: "Тусламж", href: "/support" },
 ];
 
 // =====================================================================
@@ -525,13 +539,6 @@ export const currentPromos: NavPromo[] = [
   },
 ];
 
-// =====================================================================
-// Хувилбар 2 (сайжруулсан) — Mobile / Internet / Entertainment (Life-style
-// дотор нь) / Төхөөрөмж / Family үйлчилгээ / Урамшуулал / Тусламж.
-// Дэд цэс (баганат mega-menu) агуулга — 2 скриншотоос буулгав. Family
-// үйлчилгээ, Урамшуулал, Тусламж нь dropdown-гүй шууд линк. mega-menu-ийн
-// баруун талд currentPromos (цаг үеийн урамшуулал) харагдана.
-// =====================================================================
 export const groupNavV2: NavCategory[] = [
   {
     label: "Mobile",

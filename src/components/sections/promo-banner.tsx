@@ -83,8 +83,14 @@ export function PromoBanner() {
         className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25"
       />
 
-      {/* ============ КОНТЕНТ ============ */}
-      <div className="relative mx-auto flex min-h-100 max-w-300 items-center px-4 py-16 lg:min-h-125 lg:py-24">
+      {/* ============ КОНТЕНТ ============
+          ӨНДРИЙГ ХЭМНЭНЭ: promo banner + доорх AI туслах ХОЁУЛАА нүүрний
+          ПЕРВЫЙ дэлгэцэнд багтах ёстой. Тиймээс өндөр нь px биш `svh`-д
+          тулгуурлана (`svh` = URL bar хураагдахаас үл хамаарсан жижиг
+          viewport; `vh` бол мобайлд бодит харагдахаас өндөр гардаг).
+          Banner нь анхаарал татах хэмжээгээ хадгална — 34/38svh нь ~1/3
+          дэлгэц. Хэрэв текст түүнээс өндөр бол агуулга давамгайлна. */}
+      <div className="relative mx-auto flex min-h-[34svh] max-w-300 items-center px-4 py-10 lg:min-h-[38svh] [@media(max-height:720px)]:py-4">
         <div className="max-w-xl">
           <p className="text-xs font-bold tracking-[0.18em] text-white/80 uppercase">
             {content.eyebrow}
