@@ -1,9 +1,6 @@
 import { MobilePlans } from "@/components/sections/mobile-plans";
 import { ProductEntryGrid } from "@/components/sections/product-entry-grid";
-import { Faq } from "@/components/sections/faq";
-import { HideOnVariant } from "@/components/layout/variant-gate";
 import { unitelEntryTiles } from "@/data/home";
-import { unitelFaqCategories } from "@/data/faq";
 
 /**
  * Unitel нүүрний hero доорх хэсэг — зөвхөн Unitel-ийн бүтээгдэхүүн,
@@ -24,11 +21,9 @@ export function UnitelHome() {
       {/* Гэр интернэт, олон улсын үйлчилгээ, урьдчилсан төлбөрт, TourSim */}
       <ProductEntryGrid tiles={unitelEntryTiles} />
 
-      {/* Тусламжийн блок — Хувилбар 2-т ХАРАГДАХГҮЙ: тэр хувилбарын footer
-          өөрөө бүтэн "Тусламж" багана + 1200 блоктой тул давхардана. */}
-      <HideOnVariant variants={[2]}>
-        <Faq categories={unitelFaqCategories} />
-      </HideOnVariant>
+      {/* Тусламжийн блок ("Танд тусламж хэрэгтэй юу?") нүүрнээс ХАСАГДСАН.
+          `Faq` компонент болон /support хуудас хэвээр байгаа тул хэрэгтэй
+          үед энд буцааж нэмж болно. */}
     </>
   );
 }

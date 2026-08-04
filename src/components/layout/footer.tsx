@@ -14,9 +14,11 @@ import { useHeaderVariant } from "@/lib/header-variant";
 // Гадны экспорт — бусад хуудсууд `Footer` гэж import-лоор ашигладаг.
 //
 // Хувилбар нь HEADER-ийн toggle-той ХАМТ солигдоно (`useHeaderVariant`):
-//   1 → Одоогийн (лого + апп + сошиал)
-//   2 → Телеком классик (sitemap багана / mobile accordion)
+//   1 → Телеком классик (sitemap багана / mobile accordion)
+//   2 → Singtel-styled (лого + апп + сошиал)
 //   3 → Ecosystem (бараан, брэнд картууд / mobile snap-scroll)
+//
+// ⚠️ 1 ба 2 нь ЗОРИУД СОЛИГДСОН (өмнө 1 = Singtel, 2 = sitemap байсан).
 //
 // SSR-д header-ийн store үргэлж 1 буцаадаг тул server дээр Хувилбар 1
 // рендэрлэгдээд, client дээр localStorage-оос уншиж зөөлөн солигдоно.
@@ -24,17 +26,17 @@ import { useHeaderVariant } from "@/lib/header-variant";
 export function Footer() {
   const variant = useHeaderVariant();
 
-  if (variant === 2) return <FooterSitemapVariant />;
+  if (variant === 2) return <FooterClassic />;
   if (variant === 3) return <FooterEcosystemVariant />;
   // 1 — болон localStorage-д үлдсэн архивласан 4
-  return <FooterClassic />;
+  return <FooterSitemapVariant />;
 }
 
 // =====================================================================
-// ХУВИЛБАР 1 — Одоогийн footer (Singtel-styled), хэвээр хадгалав.
+// ХУВИЛБАР 2 — Singtel-styled footer.
 // Дээд хэсэгт: Logo + tagline | Апп татах | Сошиал хаяг
 // Дараа нь: түргэн холбоосын мөр
-// Хамгийн доор: LegalStrip (3 хувилбарт нийтлэг)
+// LegalStrip нь энэ хувилбарт ЗОРИУД байхгүй (доорх тайлбарыг үз).
 // =====================================================================
 function FooterClassic() {
   return (
@@ -66,8 +68,8 @@ function FooterClassic() {
       </div>
 
       {/* Түргэн холбоос — өмнөх bottom strip-ийн nav хэсэг.
-          Хувилбар 1-д LegalStrip (copyright / legal / бүс нутаг) ЗОРИУД
-          байхгүй — зөвхөн Хувилбар 2, 3-т үлдээсэн. */}
+          Энэ хувилбарт LegalStrip (copyright / компанийн линк / бүс нутаг)
+          ЗОРИУД байхгүй — зөвхөн Хувилбар 1 ба 3-т үлдээсэн. */}
       <div className="border-border border-t">
         <nav aria-label="Footer navigation" className="container mx-auto px-4 py-5">
           <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 md:justify-start md:gap-x-8">
