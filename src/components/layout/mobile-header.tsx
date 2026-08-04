@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import {
+  ArrowRight,
   ArrowUpRight,
   BotMessageSquare,
   Globe,
@@ -35,7 +36,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useAuth } from "@/components/auth/auth-provider";
 import { SmartLink } from "@/components/layout/smart-link";
 import { BrandLogoLink, classifierSegments } from "@/components/layout/header-shared";
-import { appleMegaMenus, appleNavCategories, type EcosystemLink } from "@/data/navigation";
+import { appleNavCategories, mobileMegaMenus, type EcosystemLink } from "@/data/navigation";
 import { BRAND } from "@/lib/brand";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
@@ -199,7 +200,7 @@ function HeaderRow({ variant, children }: { variant: MobileVariant; children?: R
  */
 function BrandTab({ tab }: { tab: EcosystemLink & { name: TabName } }) {
   const isDomain = tab.name === DOMAIN_TAB;
-  const sections = appleMegaMenus[tab.name]?.sections ?? [];
+  const sections = mobileMegaMenus[tab.name]?.sections ?? [];
 
   const triggerClass = cn(
     "shrink-0 rounded-full border border-transparent px-2.5 py-1.5 whitespace-nowrap transition-colors",
@@ -241,7 +242,20 @@ function TabLabel({ name, isDomain }: { name: string; isDomain: boolean }) {
   );
 }
 
-/** Ангиллын дэд цэс — dropdown агуулга (Хувилбар 1 ба 3-д хуваалцана). */
+/**
+ * Ангиллын дэд цэс — dropdown агуулга (Хувилбар 1). ЗӨВХӨН MOBILE.
+ * Desktop-ийн mega menu (`BrandMegaPanel`) эндээс ТУСДАА бөгөөд хуучнаараа.
+ *
+ * ӨРГӨН: дэлгэцийн БҮТЭН өргөн (хоёр талд `collisionPadding`-тэй тэнцүү
+ * 12px зайтай) — дэд цэс нь header-ийн үргэлжлэл мэт харагдана.
+ *
+ * МӨР: гарчиг зүүн, сум баруун, доогуураа нимгэн зураас. Мөр БҮХЭЛДЭЭ
+ * дарагдана. Сүүлийн МӨРНИЙ зураас байхгүй — доорх урамшууллын блокийн
+ * `border-t` давхардахгүйн тулд.
+ *
+ * БАГАНА: 2 баганат grid — жагсаалт хоёр дахин богиносно. Radix-ийн
+ * keyboard навигаци DOM дарааллаар явдаг тул grid нь focus-ийг эвдэхгүй.
+ */
 function SectionMenu({
   sections,
   side = "bottom",
@@ -249,27 +263,85 @@ function SectionMenu({
   sections: { id: string; title: string; href: string }[];
   side?: "bottom" | "top";
 }) {
+  // Сүүлийн мөрөнд орох элементүүдийн эхлэх индекс (2 баганаар тоолж)
+  const lastRowStart = sections.length - (sections.length % 2 === 0 ? 2 : 1);
+
   return (
     <DropdownMenuContent
       side={side}
       align="center"
       sideOffset={8}
       collisionPadding={12}
-      className="w-64"
+      className="w-[calc(100vw-24px)] max-w-none p-2"
     >
-      {sections.map((section) => (
-        <DropdownMenuItem key={section.id} asChild>
-          {section.href.startsWith("http") ? (
-            <a href={section.href} target="_blank" rel="noopener noreferrer">
-              {section.title.trim()}
-              <ArrowUpRight className="ml-auto size-3.5 shrink-0 opacity-60" aria-hidden="true" />
-            </a>
-          ) : (
-            <Link href={section.href}>{section.title.trim()}</Link>
-          )}
-        </DropdownMenuItem>
-      ))}
+      <div className="grid grid-cols-2 gap-x-3">
+        {sections.map((section, i) => (
+          <SectionRow key={section.id} section={section} divider={i < lastRowStart} />
+        ))}
+      </div>
+
+      <MenuPromoTeaser />
     </DropdownMenuContent>
+  );
+}
+
+/** Дэд цэсний нэг мөр — гарчиг зүүн, сум баруун, доогуур зураастай. */
+function SectionRow({
+  section,
+  divider,
+}: {
+  section: { id: string; title: string; href: string };
+  divider: boolean;
+}) {
+  const external = section.href.startsWith("http");
+
+  const rowCls = cn(
+    navType.mobileLink,
+    "group/row text-foreground flex items-center justify-between gap-2 rounded-none px-1 py-2.5",
+    divider && "border-border border-b",
+  );
+
+  const arrowCls =
+    "text-primary size-3.5 shrink-0 transition-transform duration-300 ease-out group-hover/row:translate-x-0.5";
+
+  return (
+    <DropdownMenuItem asChild className={rowCls}>
+      {external ? (
+        <a href={section.href} target="_blank" rel="noopener noreferrer">
+          <span className="min-w-0">{section.title.trim()}</span>
+          <ArrowUpRight className={arrowCls} aria-hidden="true" />
+        </a>
+      ) : (
+        <Link href={section.href}>
+          <span className="min-w-0">{section.title.trim()}</span>
+          <ArrowRight className={arrowCls} aria-hidden="true" />
+        </Link>
+      )}
+    </DropdownMenuItem>
+  );
+}
+
+/**
+ * Дэд цэсний ЁРООЛ — тухайн ангилалтай холбоотой урамшуулал энд суух блок.
+ * Одоогоор SAMPLE: жинхэнэ урамшуулал холбогдох үед энэ текст/CTA-г тухайн
+ * ангиллын promo data-гаар солино.
+ */
+function MenuPromoTeaser() {
+  return (
+    <div className="border-border mt-2 border-t px-1 pt-3 pb-1">
+      <p className={cn(navType.body, "text-muted-foreground")}>
+        Энэ цэстэй холбоотой урамшуулал энд байрлана.
+      </p>
+      <DropdownMenuItem
+        asChild
+        className="bg-primary text-primary-foreground focus:bg-primary/90 focus:text-primary-foreground mt-2.5 inline-flex h-9 w-auto items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold"
+      >
+        <Link href="/campaigns">
+          Sample CTA
+          <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
+        </Link>
+      </DropdownMenuItem>
+    </div>
   );
 }
 
@@ -534,7 +606,7 @@ function MobileMenuSheet({ variant }: { variant: MobileVariant }) {
         <div className="mt-5">
           <Accordion type="single" collapsible className="gap-0.5">
             {categories.map((category) => {
-              const menu = appleMegaMenus[category.name];
+              const menu = mobileMegaMenus[category.name];
               const isDomain = category.name === DOMAIN_TAB;
 
               // Дэд цэсгүй ангилал (Урамшуулал) — accordion биш, шууд линк

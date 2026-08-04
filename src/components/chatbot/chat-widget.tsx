@@ -179,7 +179,7 @@ export function ChatWidget() {
           // хөвөгч бөмбөлөг/товч нуугдана — globals.css дотор
           // `body:has([data-bottom-tab-bar])`-аар шүүнэ.
           data-chat-teaser
-          className="bg-card text-foreground border-border animate-in fade-in slide-in-from-bottom-2 fixed right-22 bottom-9 z-50 flex max-w-55 items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium shadow-lg duration-500 lg:right-24 lg:bottom-24"
+          className="bg-card text-foreground border-border animate-in fade-in slide-in-from-bottom-2 fixed right-22 bottom-32 z-50 flex max-w-55 items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium shadow-lg duration-500 lg:right-24 lg:bottom-32"
         >
           <button
             type="button"
@@ -215,7 +215,7 @@ export function ChatWidget() {
         // Хувилбар 3-д нуугдана (chat нь доод bar-ын таб). Панелийг хаах нь
         // панелийн өөрийн X товч болон Esc-ээр хэвээр боломжтой.
         data-chat-fab
-        className={`bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring fixed right-5 bottom-5 z-50 flex size-14 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none lg:right-6 lg:bottom-20 ${
+        className={`bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring fixed right-5 bottom-28 z-50 flex size-14 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none lg:right-6 lg:bottom-28 ${
           isOpen ? "rotate-90" : ""
         }`}
       >
@@ -240,7 +240,7 @@ export function ChatWidget() {
           role="dialog"
           aria-modal="false"
           aria-labelledby="chat-title"
-          className="bg-card border-border fixed right-5 bottom-24 z-50 flex h-[min(580px,calc(100vh-8rem))] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border shadow-2xl lg:right-6 lg:bottom-26"
+          className="bg-card border-border fixed right-5 bottom-47 z-50 flex h-[min(580px,calc(100vh-15rem))] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border shadow-2xl lg:right-6 lg:bottom-34"
         >
           {/* Header */}
           <div className="bg-primary text-primary-foreground flex items-center justify-between gap-3 px-4 py-3">

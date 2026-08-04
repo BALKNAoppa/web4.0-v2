@@ -123,12 +123,12 @@ export function ChatHero() {
           Ухаалаг сонголт
         </span>
 
-        <h1 className="text-foreground mt-6 text-4xl font-extrabold tracking-tight text-balance md:text-6xl [@media(max-height:720px)]:mt-3">
-          Танд юу <span className="from-primary bg-clip-text text-[#45c700]">тохирох вэ?</span>
+        <h1 className="text-foreground mt-6 text-3xl font-extrabold tracking-tight text-balance md:text-4xl [@media(max-height:720px)]:mt-3">
+          Танд юу <span className="from-primary bg-clip-text text-[#45c700]">хэрэгтэй вэ?</span>
         </h1>
         <p className="text-muted-foreground mt-4 max-w-xl text-base text-pretty md:text-lg [@media(max-height:720px)]:mt-2">
-          Сонирхсоноо бичээрэй — багц, интернэт, ТВ, төхөөрөмж, урамшуулал гээд эко-системийн бүх
-          боломжийг нэг дороос судалж, өөрт тохирохыг олоорой.
+          Өөрт хэрэгтэй зүйлээ асуугаарай — бид таны асуултыг ойлгож, хамгийн тохирохыг санал
+          болгоно.
         </p>
 
         {/* Chat input — neon gradient хүрээ + гэрэл (радиус томруулсан) */}

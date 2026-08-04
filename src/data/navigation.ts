@@ -180,6 +180,54 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
   },
 };
 
+// =====================================================================
+// MOBILE-ЫН дэд цэс — ЗӨВХӨН mobile header (таб dropdown + burger).
+//
+// Desktop-ийн mega menu (`appleMegaMenus`) ЭНЭ ангиллаас ТУСДАА бөгөөд
+// хуучнаараа хэвээр. Mobile дээр дэлгэц нарийн тул ангиллыг цөөлж,
+// нэрийг нь нэгтгэсэн ("Гар утас & Дагалдах хэрэгсэл" г.м.).
+//
+// ⚠️ Хоёр цэс ТУСДАА хөгжинө — mobile-д мөр нэмэхэд desktop өөрчлөгдөхгүй.
+// =====================================================================
+export const mobileMegaMenus: Record<string, MegaMenu> = {
+  Unitel: {
+    name: "Unitel",
+    sections: [
+      { id: "postpaid", title: "Дараа төлбөрт", href: "/main-packages" },
+      { id: "prepaid", title: "Урьдчилсан төлбөрт", href: "#" },
+      { id: "toki-mobile", title: "Toki Мобайл", href: "https://toki.mn/" },
+      { id: "family", title: "Family үйлчилгээ", href: TOKI_FAMILY_HREF },
+      { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
+      { id: "tourist", title: "For Tourist", href: "#" },
+    ],
+  },
+  Univision: {
+    name: "Univision",
+    sections: [
+      { id: "triple_packages", title: "Гурвалсан багц", href: "/main-packages" },
+      { id: "single_packages", title: "Дан багц", href: "/main-packages" },
+      { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
+      { id: "all_movies", title: "Бүх кино контент", href: "/entertainment/main" },
+      { id: "channels", title: "Бүх суваг", href: "#" },
+    ],
+  },
+  Дэлгүүр: {
+    name: "Дэлгүүр",
+    sections: [
+      { id: "phones_accessories", title: "Гар утас & Дагалдах хэрэгсэл", href: "/devices" },
+      { id: "tv_internet_devices", title: "ТВ & Интернэтийн төхөөрөмж", href: "/devices" },
+    ],
+  },
+  Entertainment: {
+    name: "Entertainment",
+    sections: [
+      { id: "univision-go", title: "Univision Go", href: "/univision-go" },
+      { id: "look-tv", title: "Look TV", href: "#" },
+      { id: "hbo-max", title: "HBO Max", href: "#" },
+    ],
+  },
+};
+
 // Хувилбар 3 (Unitel) — Unitel.mn домэйны мобайл үйлчилгээтэй холбоотой брэндүүд
 // (дээд bar-т байрлана)
 export const unitelDomains: EcosystemLink[] = [

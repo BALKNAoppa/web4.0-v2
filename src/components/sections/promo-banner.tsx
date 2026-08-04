@@ -1,12 +1,51 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Pause, Play } from "lucide-react";
 
 import { SmartLink } from "@/components/layout/smart-link";
 import { promoBanners, type PromoMedia } from "@/data/promo-banner";
 import { BRAND } from "@/lib/brand";
+
+// =====================================================================
+// Гадны экспорт — нүүр хуудас `PromoBanner` гэж дууддаг.
+// Доорх return-н мөрүүдээс нэгийг идэвхтэй үлдээж нөгөөг `//`-аар сольно.
+// =====================================================================
+export function PromoBanner() {
+  return <PromoBannerFull />; // Жинхэнэ хувилбар — видео/зураг + eyebrow, гарчиг, CTA
+  // return <PromoBannerPlaceholder />; // Танилцуулгын sample — контентгүй хоосон banner
+}
+
+// Идэвхгүй хувилбарыг TypeScript "unused" гэж бүү зэмлэ
+void PromoBannerPlaceholder;
+
+// =====================================================================
+// SAMPLE — зөвхөн "Sample banner" гэсэн placeholder + "Sample" CTA.
+// Танилцуулгад хуурамч маркетингийн текст анхаарал сарниулахгүйн тулд
+// зориуд саарал хоосон талбай болгосон. Өндөр нь жинхэнэ banner-тайгаа
+// ижил (34/38svh) тул доорх AI туслахын байрлал өөрчлөгдөхгүй.
+// =====================================================================
+function PromoBannerPlaceholder() {
+  return (
+    <section aria-label="Sample banner" className="bg-muted w-full">
+      <div className="mx-auto flex min-h-[34svh] max-w-300 flex-col items-center justify-center gap-6 px-4 py-10 lg:min-h-[38svh] [@media(max-height:720px)]:py-4">
+        <span className="text-muted-foreground text-2xl font-semibold md:text-4xl">
+          Sample banner
+        </span>
+
+        <Link
+          href="#"
+          className="bg-primary text-primary-foreground focus-visible:ring-ring inline-flex h-12 items-center justify-center gap-2 rounded-full px-7 text-sm font-semibold transition-opacity duration-700 ease-out hover:opacity-85 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          Sample
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Link>
+      </div>
+    </section>
+  );
+}
 
 /**
  * Нүүрний PROMO BANNER — chat-hero-гийн ДЭЭР суух зурвас.
@@ -31,7 +70,7 @@ import { BRAND } from "@/lib/brand";
  *   — JS-ээр matchMedia шалгаж, зөвшөөрөгдсөн үед л `play()` дуудна.
  * ──────────────────────────────────────────────────────────────────────
  */
-export function PromoBanner() {
+function PromoBannerFull() {
   const content = promoBanners[BRAND];
   const isVideo = content.media.kind === "video";
 
