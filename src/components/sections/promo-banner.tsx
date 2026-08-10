@@ -14,22 +14,28 @@ import { BRAND } from "@/lib/brand";
 // Доорх return-н мөрүүдээс нэгийг идэвхтэй үлдээж нөгөөг `//`-аар сольно.
 // =====================================================================
 export function PromoBanner() {
-  return <PromoBannerFull />; // Жинхэнэ хувилбар — видео/зураг + eyebrow, гарчиг, CTA
-  // return <PromoBannerPlaceholder />; // Танилцуулгын sample — контентгүй хоосон banner
+  return <PromoBannerPlaceholder />; // Танилцуулгын sample — энгийн саарал хоосон banner
+  // return <PromoBannerFull />; // Жинхэнэ хувилбар — видео/зураг + eyebrow, гарчиг, CTA
 }
 
 // Идэвхгүй хувилбарыг TypeScript "unused" гэж бүү зэмлэ
-void PromoBannerPlaceholder;
+void PromoBannerFull;
 
 // =====================================================================
 // SAMPLE — зөвхөн "Sample banner" гэсэн placeholder + "Sample" CTA.
 // Танилцуулгад хуурамч маркетингийн текст анхаарал сарниулахгүйн тулд
 // зориуд саарал хоосон талбай болгосон. Өндөр нь жинхэнэ banner-тайгаа
 // ижил (34/38svh) тул доорх AI туслахын байрлал өөрчлөгдөхгүй.
+//
+// ӨНГӨ: `bg-card` = `--background-2` (light #f3f5f7 / dark #1c202d) — дизайн
+// системийн саарал гадарга. `bg-muted` (= `--background-3`) хэрэглэхгүй:
+// dark theme дээр тэр нь #27203e буюу ЯГААН болж үндсэн өнгөнөөс зөрдөг.
+// Contrast: light 6.4:1, dark 3.8:1 — гарчиг нь 24/36px semibold буюу "том
+// текст" тул AA-гийн 3:1 шаардлагыг давна.
 // =====================================================================
 function PromoBannerPlaceholder() {
   return (
-    <section aria-label="Sample banner" className="bg-muted w-full">
+    <section aria-label="Sample banner" className="bg-card w-full">
       <div className="mx-auto flex min-h-[34svh] max-w-300 flex-col items-center justify-center gap-6 px-4 py-10 lg:min-h-[38svh] [@media(max-height:720px)]:py-4">
         <span className="text-muted-foreground text-2xl font-semibold md:text-4xl">
           Sample banner
@@ -59,9 +65,11 @@ function PromoBannerPlaceholder() {
  *   (hover-д нуугдахгүй), keyboard-аар хүрнэ, focus ring-тэй (2.1.1, 2.4.7).
  * 1.4.2 Audio Control (A) — видеонд аудио track БАЙХГҮЙ (ffmpeg -an) тул
  *   автоматаар хангагдана.
- * 1.4.3 Contrast (AA) — текстийн доор бараан scrim. ЧУХАЛ: бодит видео
- *   тавихдаа харьцааг видеоны ХАМГИЙН ЦАЙВАР frame-тэй тулгаж хэмжинэ
- *   (дундажаар биш). Хүрэлцэхгүй бол scrim-ийн alpha-г нэмнэ.
+ * 1.4.3 Contrast (AA) — цулгуй өнгөт дэвсгэр дээр өнгө өөрөө 9.7:1 өгдөг тул
+ *   scrim БАЙХГҮЙ. Видео/зураг тавихад scrim автоматаар эргэж ирнэ
+ *   (`needsScrim`). ЧУХАЛ: бодит видео тавихдаа харьцааг видеоны ХАМГИЙН
+ *   ЦАЙВАР frame-тэй тулгаж хэмжинэ (дундажаар биш). Хүрэлцэхгүй бол
+ *   scrim-ийн alpha-г нэмнэ.
  * 1.1.1 Non-text Content (A) — `decorative: true` үед `aria-hidden`, бүх
  *   мэдээлэл доорх текстэд байна.
  *
@@ -73,6 +81,10 @@ function PromoBannerPlaceholder() {
 function PromoBannerFull() {
   const content = promoBanners[BRAND];
   const isVideo = content.media.kind === "video";
+  // Scrim нь зөвхөн ЖИНХЭНЭ медиа (видео/зураг) дээр хэрэгтэй — тэдгээрийн
+  // тод frame дээр цагаан текст уншигдахгүй болох эрсдэлтэй. Цулгуй өнгөт
+  // дэвсгэр өөрөө хангалттай contrast-тай тул scrim нэмбэл зүгээр л бохирдоно.
+  const needsScrim = content.media.kind !== "gradient";
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   // Эхний төлөв нь ЗОГССОН — poster харагдана. Autoplay зөвшөөрөгдвөл л
@@ -117,10 +129,12 @@ function PromoBannerFull() {
       <PromoMediaLayer media={content.media} decorative={content.decorative} videoRef={videoRef} />
 
       {/* Scrim — текстийг уншигдахуйц болгоно (1.4.3). Зүүн тал хамгийн бараан. */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25"
-      />
+      {needsScrim && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25"
+        />
+      )}
 
       {/* ============ КОНТЕНТ ============
           ӨНДРИЙГ ХЭМНЭНЭ: promo banner + доорх AI туслах ХОЁУЛАА нүүрний
@@ -237,14 +251,13 @@ function PromoMediaLayer({
     );
   }
 
-  // gradient — медиа файлгүй ажиллах суурь хувилбар
-  return (
-    <div
-      aria-hidden="true"
-      className="absolute inset-0 -z-10 bg-linear-to-br from-[#0FAA0A] via-[#0d9488] to-[#2563eb]"
-    >
-      <div className="absolute -top-24 -left-24 size-96 rounded-full bg-white/20 blur-3xl" />
-      <div className="absolute -right-20 -bottom-32 size-96 rounded-full bg-black/20 blur-3xl" />
-    </div>
-  );
+  // gradient — медиа файлгүй ажиллах суурь хувилбар.
+  // ЦУЛГУЙ НЭГ ӨНГӨ: өмнө нь ногоон→turquoise→цэнхэр gradient дээр хоёр blur
+  // толбо нэмээд, дээрээс нь бараан scrim тавьдаг байсан — гурван давхарга
+  // хоорондоо уусаж бохир харагддаг байсан тул бүгдийг хассан.
+  //
+  // #0d4f26 — брэндийн ногооны гүн сүүдэр. Цагаан текстэд 9.7:1 (WCAG AA
+  // 4.5:1, AAA 7:1 хоёуланг давна) тул тусдаа scrim шаардлагагүй. Хоёр theme
+  // дээр ижил — банер дээрх текст үргэлж цагаан тул өнгө нь солигдох ёсгүй.
+  return <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[#0d4f26]" />;
 }

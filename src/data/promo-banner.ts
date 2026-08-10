@@ -53,7 +53,11 @@ export type PromoMedia =
       poster: string;
     }
   | { kind: "image"; src: string; alt: string }
-  /** Файлгүй ажиллах суурь хувилбар — брэндийн өнгөт gradient */
+  /**
+   * Файлгүй ажиллах суурь хувилбар — цулгуй НЭГ өнгө (өмнө нь gradient байсан,
+   * өнгө нь promo-banner.tsx дотор). Нэрийг нь `gradient` хэвээр үлдээв —
+   * хоёр брэндийн data хоёулаа үүнийг заадаг.
+   */
   | { kind: "gradient" };
 
 export type PromoBannerContent = {

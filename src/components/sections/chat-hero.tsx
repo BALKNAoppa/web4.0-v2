@@ -80,17 +80,6 @@ export function ChatHero() {
     latestRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [blocks.length]);
 
-  // Hero ургахад SectionSnapScroller-ийн snap байрлал шилжиж гацалт үүсгэдэг.
-  // Үр дүн нээлттэй байх хугацаанд snap-ийг унтраана.
-  useEffect(() => {
-    const root = document.documentElement;
-    if (blocks.length > 0) root.dataset.assistantOpen = "1";
-    else delete root.dataset.assistantOpen;
-    return () => {
-      delete root.dataset.assistantOpen;
-    };
-  }, [blocks.length]);
-
   return (
     <section
       aria-label="Ухаалаг сонголт"

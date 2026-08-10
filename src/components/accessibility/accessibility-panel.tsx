@@ -42,7 +42,7 @@ const PALETTE = ["#000000", "#ffffff", "#1e3a8a", "#dc2626", "#16a34a", "#facc15
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="mt-6 mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+    <h3 className="text-muted-foreground mt-6 mb-3 text-xs font-semibold tracking-wider uppercase">
       {children}
     </h3>
   );
@@ -67,21 +67,21 @@ function OptionCard({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "flex flex-col items-start gap-2 rounded-xl border bg-background p-3 text-left text-sm transition-colors",
-        "hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        active && "border-primary ring-2 ring-primary/30 bg-primary/5",
+        "bg-background flex flex-col items-start gap-2 rounded-xl border p-3 text-left text-sm transition-colors",
+        "hover:bg-muted focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+        active && "border-primary ring-primary/30 bg-primary/5 ring-2",
         className,
       )}
     >
       <span
         className={cn(
-          "inline-flex size-9 items-center justify-center rounded-lg bg-muted text-foreground",
+          "bg-muted text-foreground inline-flex size-9 items-center justify-center rounded-lg",
           active && "bg-primary/15 text-primary",
         )}
       >
         {icon}
       </span>
-      <span className="font-medium leading-tight">{label}</span>
+      <span className="leading-tight font-medium">{label}</span>
     </button>
   );
 }
@@ -103,9 +103,9 @@ function FontSlider({
 }) {
   return (
     <div className="mt-3">
-      <div className="mb-2 flex justify-between text-xs text-muted-foreground">
+      <div className="text-muted-foreground mb-2 flex justify-between text-xs">
         <span>{formatLabel(min)}</span>
-        <span className="font-medium text-foreground">{formatLabel(value)}</span>
+        <span className="text-foreground font-medium">{formatLabel(value)}</span>
         <span>{formatLabel(max)}</span>
       </div>
       <input
@@ -115,7 +115,7 @@ function FontSlider({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="h-2 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
+        className="bg-muted accent-primary h-2 w-full cursor-pointer appearance-none rounded-full"
       />
     </div>
   );
@@ -143,7 +143,7 @@ export function AccessibilityPanel() {
       aria-label="Хүртээмжийн тохиргоо"
       aria-hidden={!open}
       className={cn(
-        "fixed top-0 left-0 z-40 flex h-dvh w-full max-w-[360px] flex-col gap-0 overflow-y-auto border-r bg-popover p-5 text-popover-foreground shadow-2xl transition-transform duration-300 ease-out",
+        "bg-popover text-popover-foreground fixed top-0 left-0 z-40 flex h-dvh w-full max-w-90 flex-col gap-0 overflow-y-auto border-r p-5 shadow-2xl transition-transform duration-300 ease-out",
         open ? "translate-x-0" : "-translate-x-full",
       )}
     >
@@ -157,15 +157,15 @@ export function AccessibilityPanel() {
             className="size-9 shrink-0"
           />
           <div>
-            <h2 className="text-lg font-semibold leading-tight">Хүртээмжийн тохиргоо</h2>
-            <p className="text-xs text-muted-foreground">Сонголтыг хийхэд шууд харагдана</p>
+            <h2 className="text-lg leading-tight font-semibold">Хүртээмжийн тохиргоо</h2>
+            <p className="text-muted-foreground text-xs">Сонголтыг хийхэд шууд харагдана</p>
           </div>
         </div>
         <button
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Хаах"
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md p-1.5"
         >
           <X className="size-5" />
         </button>
@@ -203,14 +203,14 @@ export function AccessibilityPanel() {
         {WEB_COLORS.map((c) => {
           const current = settings[c.key];
           return (
-            <div key={c.key} className="rounded-xl border bg-background p-3">
+            <div key={c.key} className="bg-background rounded-xl border p-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm">{c.label}</span>
                 {current && (
                   <button
                     type="button"
                     onClick={() => update(c.key, null)}
-                    className="text-xs text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground text-xs"
                   >
                     Цэвэрлэх
                   </button>
@@ -227,7 +227,7 @@ export function AccessibilityPanel() {
                     style={{ background: p }}
                     className={cn(
                       "size-7 rounded-full border-2 transition-transform",
-                      current === p ? "scale-110 border-primary" : "border-border hover:scale-105",
+                      current === p ? "border-primary scale-110" : "border-border hover:scale-105",
                     )}
                   />
                 ))}
@@ -238,14 +238,14 @@ export function AccessibilityPanel() {
       </div>
 
       <SectionTitle>Контентийн тохиргоо</SectionTitle>
-      <div className="rounded-xl border bg-background p-3">
+      <div className="bg-background rounded-xl border p-3">
         <div className="text-sm font-medium">Фонт</div>
         <div className="mt-3 flex gap-2">
-          {([
+          {[
             { id: "size" as FontTab, label: "Хэмжээ" },
             { id: "word" as FontTab, label: "Үгийн зай" },
             { id: "letter" as FontTab, label: "Үсгийн зай" },
-          ]).map((t) => (
+          ].map((t) => (
             <button
               key={t.id}
               type="button"
@@ -317,8 +317,8 @@ export function AccessibilityPanel() {
               settings.cursorColor === "default"
                 ? "white"
                 : settings.cursorColor === "white"
-                ? "yellow"
-                : "default";
+                  ? "yellow"
+                  : "default";
             update("cursorColor", next);
           }}
         />
@@ -348,22 +348,35 @@ export function AccessibilityPanel() {
           onClick={() => setKeyboardOpen((v) => !v)}
           aria-expanded={keyboardOpen}
           className={cn(
-            "flex w-full items-center gap-3 rounded-xl border bg-background p-3 text-left text-sm transition-colors hover:bg-muted",
+            "bg-background hover:bg-muted flex w-full items-center gap-3 rounded-xl border p-3 text-left text-sm transition-colors",
             keyboardOpen && "border-primary",
           )}
         >
-          <span className="inline-flex size-9 items-center justify-center rounded-lg bg-muted">
+          <span className="bg-muted inline-flex size-9 items-center justify-center rounded-lg">
             <Keyboard className="size-5" />
           </span>
           <span className="font-medium">Keyboard заавар</span>
         </button>
         {keyboardOpen && (
-          <div className="mt-2 rounded-lg border bg-muted/40 p-3 text-xs leading-relaxed">
+          <div className="bg-muted/40 mt-2 rounded-lg border p-3 text-xs leading-relaxed">
             <ul className="space-y-1.5">
-              <li><kbd className="rounded border bg-background px-1.5 py-0.5">Tab</kbd> — дараагийн элемент</li>
-              <li><kbd className="rounded border bg-background px-1.5 py-0.5">Shift + Tab</kbd> — өмнөх элемент</li>
-              <li><kbd className="rounded border bg-background px-1.5 py-0.5">Enter</kbd> / <kbd className="rounded border bg-background px-1.5 py-0.5">Space</kbd> — идэвхжүүлэх</li>
-              <li><kbd className="rounded border bg-background px-1.5 py-0.5">Esc</kbd> — энэ цонхыг хаах</li>
+              <li>
+                <kbd className="bg-background rounded border px-1.5 py-0.5">Tab</kbd> — дараагийн
+                элемент
+              </li>
+              <li>
+                <kbd className="bg-background rounded border px-1.5 py-0.5">Shift + Tab</kbd> —
+                өмнөх элемент
+              </li>
+              <li>
+                <kbd className="bg-background rounded border px-1.5 py-0.5">Enter</kbd> /{" "}
+                <kbd className="bg-background rounded border px-1.5 py-0.5">Space</kbd> —
+                идэвхжүүлэх
+              </li>
+              <li>
+                <kbd className="bg-background rounded border px-1.5 py-0.5">Esc</kbd> — энэ цонхыг
+                хаах
+              </li>
             </ul>
           </div>
         )}

@@ -25,8 +25,8 @@ const durationFor = (dist: number): number => Math.min(1300, Math.max(700, dist 
  * байсан. Энэ нь том гацалт үүсгэдэг — тиймээс анимацийн үеэр
  * scroll-behavior-ийг түр "auto" болгож, フрэйм бүрд шууд байрлал онооно.
  *
- *  - Намхан section (viewport-д багтдаг) → дэлгэцийн төвд
- *  - Өндөр section → эхлэл нь header-ийн доор
+ *  - Section бүрийн эхлэл header-ийн доор буудаг (өндрөөс үл хамаарна).
+ *    Намхан section-ийг дэлгэцийн ТӨВД татдаг байсныг ХАССАН.
  *  - Радиусаас хол зогссон бол оролцохгүй
  *  - Хэрэглэгчийн wheel/touch/keyboard анимацийг шууд таслана
  */
@@ -47,18 +47,10 @@ export function SectionSnapScroller() {
       root.style.scrollBehavior = ""; // CSS-ийн smooth-ийг сэргээнэ
     };
 
-    /** Section бүрийн snap байрлал: намхан бол төвлүүлж, өндөр бол start */
+    /** Section бүрийн snap байрлал — өндрөөс үл хамааран эхлэл нь header-ийн доор */
     const targetFor = (section: HTMLElement, scrollY: number): number => {
-      const rect = section.getBoundingClientRect();
-      const sectionTop = rect.top + scrollY;
-      const avail = window.innerHeight - HEADER_OFFSET;
-
-      const target =
-        rect.height < avail
-          ? sectionTop - HEADER_OFFSET - (avail - rect.height) / 2
-          : sectionTop - HEADER_OFFSET;
-
-      return Math.max(0, target);
+      const sectionTop = section.getBoundingClientRect().top + scrollY;
+      return Math.max(0, sectionTop - HEADER_OFFSET);
     };
 
     const animateTo = (target: number) => {
