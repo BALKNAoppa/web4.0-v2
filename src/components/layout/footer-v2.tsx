@@ -12,9 +12,11 @@ import {
   AppStoreRow,
   FooterHeading,
   LegalStrip,
+  SHOW_APP_DOWNLOAD,
   SocialRow,
 } from "@/components/layout/footer-shared";
 import { footerSitemap, type FooterLink } from "@/data/footer";
+import { cn } from "@/lib/utils";
 
 /**
  * ХУВИЛБАР 2 — "Телеком классик"
@@ -100,11 +102,13 @@ function DesktopSitemap() {
             </div>
           ))}
 
-          <div>
-            <FooterHeading>Апп татах</FooterHeading>
-            {/* `flex-col` — badge бүр өөрийн мөрөнд (3 мөр) */}
-            <AppStoreRow className="mt-4 flex-col" />
-          </div>
+          {SHOW_APP_DOWNLOAD && (
+            <div>
+              <FooterHeading>Апп татах</FooterHeading>
+              {/* `flex-col` — badge бүр өөрийн мөрөнд (3 мөр) */}
+              <AppStoreRow className="mt-4 flex-col" />
+            </div>
+          )}
 
           <div>
             <FooterHeading>Сошиал хаяг</FooterHeading>
@@ -122,14 +126,22 @@ function DesktopSitemap() {
 function MobileSitemap() {
   return (
     <div className="container mx-auto py-8 lg:hidden">
-      {/* 1. Апп татах — хамгийн дээр */}
-      <div>
-        <FooterHeading>Апп татах</FooterHeading>
-        <AppStoreRow className="mt-3" />
-      </div>
+      {/* 1. Апп татах — хамгийн дээр (Unitel дээр харагдахгүй) */}
+      {SHOW_APP_DOWNLOAD && (
+        <div>
+          <FooterHeading>Апп татах</FooterHeading>
+          <AppStoreRow className="mt-3" />
+        </div>
+      )}
 
-      {/* 2. Secondary navigation — dropdown (accordion) хэвээр */}
-      <Accordion type="single" collapsible className="border-border mt-6 border-t pt-1">
+      {/* 2. Secondary navigation — dropdown (accordion) хэвээр.
+          Апп татах блокгүй үед энэ нь хамгийн дээр гарах тул дээд зайг
+          нөхөж өгнө (эс бөгөөс footer-ийн ирмэгт наалдана). */}
+      <Accordion
+        type="single"
+        collapsible
+        className={cn("border-border border-t pt-1", SHOW_APP_DOWNLOAD && "mt-6")}
+      >
         {footerSitemap.map((column) => (
           <AccordionItem key={column.id} value={column.id}>
             <AccordionTrigger className="text-foreground text-base font-semibold">

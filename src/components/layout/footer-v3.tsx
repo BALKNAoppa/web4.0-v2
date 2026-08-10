@@ -8,6 +8,7 @@ import {
   AppStoreRow,
   FooterHeading,
   LegalStrip,
+  SHOW_APP_DOWNLOAD,
   SocialRow,
   StoreIcon,
 } from "@/components/layout/footer-shared";
@@ -91,13 +92,15 @@ export function FooterEcosystemVariant() {
             </nav>
 
             <div className="flex flex-col gap-6 sm:flex-row sm:gap-10">
-              <div>
-                <FooterHeading>Апп татах</FooterHeading>
-                {/* Desktop — зөвхөн icon; hover дээр QR задарна */}
-                <AppQrRow className="mt-4 hidden lg:flex" />
-                {/* Mobile — hover байхгүй тул badge хэвээр */}
-                <AppStoreRow className="mt-4 lg:hidden" />
-              </div>
+              {SHOW_APP_DOWNLOAD && (
+                <div>
+                  <FooterHeading>Апп татах</FooterHeading>
+                  {/* Desktop — зөвхөн icon; hover дээр QR задарна */}
+                  <AppQrRow className="mt-4 hidden lg:flex" />
+                  {/* Mobile — hover байхгүй тул badge хэвээр */}
+                  <AppStoreRow className="mt-4 lg:hidden" />
+                </div>
+              )}
               <div>
                 <FooterHeading>Сошиал хаяг</FooterHeading>
                 <SocialRow className="mt-4" />

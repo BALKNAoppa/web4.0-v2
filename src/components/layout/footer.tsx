@@ -4,7 +4,12 @@ import Link from "next/link";
 
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { LogoHomeLink } from "@/components/layout/logo-home-link";
-import { AppStoreRow, FooterHeading, SocialRow } from "@/components/layout/footer-shared";
+import {
+  AppStoreRow,
+  FooterHeading,
+  SHOW_APP_DOWNLOAD,
+  SocialRow,
+} from "@/components/layout/footer-shared";
 import { FooterSitemapVariant } from "@/components/layout/footer-v2";
 import { FooterEcosystemVariant } from "@/components/layout/footer-v3";
 import { footerLinks } from "@/data/footer";
@@ -53,11 +58,13 @@ function FooterClassic() {
             </p>
           </div>
 
-          {/* Дунд — Апп татах (3-ыг нэг мөрөнд) */}
-          <div>
-            <FooterHeading>Апп татах</FooterHeading>
-            <AppStoreRow className="mt-4" />
-          </div>
+          {/* Дунд — Апп татах (3-ыг нэг мөрөнд). Unitel дээр харагдахгүй. */}
+          {SHOW_APP_DOWNLOAD && (
+            <div>
+              <FooterHeading>Апп татах</FooterHeading>
+              <AppStoreRow className="mt-4" />
+            </div>
+          )}
 
           {/* Баруун — Сошиал хаяг */}
           <div>

@@ -2,7 +2,22 @@ import Link from "next/link";
 
 import { footerMeta, footerStripLinks } from "@/data/footer";
 import { appStores, socialLinks, type AppStoreLink, type SocialLink } from "@/data/footer-extras";
+import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/utils";
+
+/**
+ * Footer-т "Апп татах" блок харуулах эсэх.
+ *
+ * Unitel дээр нүүрэнд `AppPromo` section (том гарчиг + badge + QR) байгаа тул
+ * footer-т дахин давтвал нэг хуудсанд ижил CTA хоёр удаа гарна. Тиймээс
+ * ЗӨВХӨН Univision дээр үлдээв.
+ *
+ * `BRAND` нь build-ийн үеийн тогтмол (`NEXT_PUBLIC_BRAND`) тул брэнд бүр
+ * өөрийн build дээр энэ утга тогтмол хэвээр — runtime-д хэзээ ч солигдохгүй.
+ * Footer-ийн 3 хувилбар БҮГД үүнийг шалгана — хэрэглэгч header-ийн toggle-оор
+ * хувилбар солиход зан төлөв зөрөхгүй.
+ */
+export const SHOW_APP_DOWNLOAD = BRAND !== "unitel";
 
 /**
  * LegalStrip — Apple маягийн доод strip (3 хувилбарт БҮГДЭД НЬ ижил).
