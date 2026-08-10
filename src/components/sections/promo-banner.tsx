@@ -36,7 +36,9 @@ void PromoBannerFull;
 function PromoBannerPlaceholder() {
   return (
     <section aria-label="Sample banner" className="bg-card w-full">
-      <div className="mx-auto flex min-h-[34svh] max-w-300 flex-col items-center justify-center gap-6 px-4 py-10 lg:min-h-[38svh] [@media(max-height:720px)]:py-4">
+      {/* Өндөр: МОБАЙЛ дээр 52svh (доорх AI туслахаас илүү зай авна),
+          sm:-ээс дээш хуучин 34/38svh. PromoBannerFull-тай ижил байлгана. */}
+      <div className="mx-auto flex min-h-[52svh] max-w-300 flex-col items-center justify-center gap-6 px-4 py-10 sm:min-h-[34svh] lg:min-h-[38svh] [@media(max-height:720px)]:py-4">
         <span className="text-muted-foreground text-2xl font-semibold md:text-4xl">
           Sample banner
         </span>
@@ -143,7 +145,7 @@ function PromoBannerFull() {
           viewport; `vh` бол мобайлд бодит харагдахаас өндөр гардаг).
           Banner нь анхаарал татах хэмжээгээ хадгална — 34/38svh нь ~1/3
           дэлгэц. Хэрэв текст түүнээс өндөр бол агуулга давамгайлна. */}
-      <div className="relative mx-auto flex min-h-[34svh] max-w-300 items-center px-4 py-10 lg:min-h-[38svh] [@media(max-height:720px)]:py-4">
+      <div className="relative mx-auto flex min-h-[52svh] max-w-300 items-center px-4 py-10 sm:min-h-[34svh] lg:min-h-[38svh] [@media(max-height:720px)]:py-4">
         <div className="max-w-xl">
           <p className="text-xs font-bold tracking-[0.18em] text-white/80 uppercase">
             {content.eyebrow}

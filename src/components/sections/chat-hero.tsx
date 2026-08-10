@@ -101,7 +101,11 @@ export function ChatHero() {
       {/* `[@media(max-height:720px)]` — намхан дэлгэц (iPhone SE ~667px) дээр
           агуулга нь min-h-ээс өндөр болж асуултын мөрийг доош түлхдэг тул
           босоо зайг нэмж хумина. Өндөр дэлгэцэнд энэ үйлчлэхгүй. */}
-      <div className="relative z-10 mx-auto flex min-h-[44svh] max-w-3xl flex-col items-center justify-center px-4 py-8 text-center md:min-h-[46svh] md:py-10 [@media(max-height:720px)]:py-3">
+      {/* МОБАЙЛ: банерт илүү зай өгөхийн тулд туслахыг хумив — 44→34svh.
+          Гэхдээ min-h ганцаараа хангалтгүй: агуулга нь өөрөө 44svh-ээс өндөр
+          байсан тул доорх гарчиг/тайлбар/зайнуудыг ч мобайл дээр багасгав.
+          `sm:`-ээс дээш бүх хэмжээ хуучнаараа. */}
+      <div className="relative z-10 mx-auto flex min-h-[34svh] max-w-3xl flex-col items-center justify-center px-4 py-5 text-center sm:min-h-[44svh] sm:py-8 md:min-h-[46svh] md:py-10 [@media(max-height:720px)]:py-3">
         {/* ЗОРИЛГО: энэ туслах нь ГОМДОЛ/АСУУДАЛ шийддэг support бот БИШ.
             Хэрэглэгчид эко-системд юу байгааг ТАНИУЛЖ (awareness), судалж
             (explore), өөрт тохирохыг СОНГОХОД (choice) чиглэсэн. Тиймээс
@@ -112,16 +116,16 @@ export function ChatHero() {
           Ухаалаг сонголт
         </span>
 
-        <h1 className="text-foreground mt-6 text-3xl font-extrabold tracking-tight text-balance md:text-4xl [@media(max-height:720px)]:mt-3">
+        <h1 className="text-foreground mt-4 text-2xl font-extrabold tracking-tight text-balance sm:mt-6 sm:text-3xl md:text-4xl [@media(max-height:720px)]:mt-3">
           Танд юу <span className="from-primary bg-clip-text text-[#45c700]">хэрэгтэй вэ?</span>
         </h1>
-        <p className="text-muted-foreground mt-4 max-w-xl text-base text-pretty md:text-lg [@media(max-height:720px)]:mt-2">
+        <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media(max-height:720px)]:mt-2">
           Өөрт хэрэгтэй зүйлээ асуугаарай — бид таны асуултыг ойлгож, хамгийн тохирохыг санал
           болгоно.
         </p>
 
         {/* Chat input — neon gradient хүрээ + гэрэл (радиус томруулсан) */}
-        <div className="relative mt-8 w-full [@media(max-height:720px)]:mt-4">
+        <div className="relative mt-5 w-full sm:mt-8 [@media(max-height:720px)]:mt-4">
           {/* Ард талын бүдэг гэрэл (glow) */}
           <div
             aria-hidden

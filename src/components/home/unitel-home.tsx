@@ -1,7 +1,8 @@
 import { MobilePlans } from "@/components/sections/mobile-plans";
 import { ProductEntryGrid } from "@/components/sections/product-entry-grid";
-import { WideImageBanner } from "@/components/sections/wide-image-banner";
+import { AppPromo } from "@/components/sections/app-promo";
 import { unitelEntryTiles } from "@/data/home";
+import { unitelApp } from "@/data/app-promo";
 
 /**
  * Unitel нүүрний hero доорх хэсэг — зөвхөн Unitel-ийн бүтээгдэхүүн,
@@ -22,18 +23,12 @@ export function UnitelHome() {
       {/* Гэр интернэт, олон улсын үйлчилгээ, урьдчилсан төлбөрт, TourSim */}
       <ProductEntryGrid tiles={unitelEntryTiles} />
 
-      {/* Unitel апп санал болгох бүтэн өргөнтэй зурвас.
-          Эх файл `Group 38072.png` (Figma export) -ын дээд/доод ирмэг дээр
-          1px тод ногоон зураас (#4ffc13 — frame-ийн stroke) шигдсэн байсан.
-          Тиймээс ирмэгийг нь тайруулсан `unitel-app-banner.png` (1920×477)
-          -г ашиглана. Эх файлыг хэвээр үлдээв.
-          alt — зураг дотор утга агуулсан текст байгаа тул заавал (WCAG 1.1.1). */}
-      <WideImageBanner
-        src="/unitel-app-banner.png"
-        alt="Бүх үйлчилгээг Unitel аппаас: Юнител, Юнивишний төлбөр төлөх, нэгж, дата авах болон бусад үйлчилгээ. Апп нь App Store болон Google Play дээр байна."
-        width={1920}
-        height={477}
-      />
+      {/* Unitel апп — QR + store badge. Univision GO-гийн section-тэй НЭГ
+          компонент (`AppPromo`), зөвхөн data өөр.
+          Өмнө нь энд текст шигтгэсэн нэг зураг (`Group 38072.png`) байсныг
+          сольсон: гарчиг, тайлбар, badge бүгд HTML болсон тул орчуулагдана,
+          screen reader уншина, жижиг дэлгэцэнд текст нь бүдгэрэхгүй. */}
+      <AppPromo content={unitelApp} />
 
       {/* Тусламжийн блок ("Танд тусламж хэрэгтэй юу?") нүүрнээс ХАСАГДСАН.
           `Faq` компонент болон /support хуудас хэвээр байгаа тул хэрэгтэй
