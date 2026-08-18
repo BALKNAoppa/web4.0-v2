@@ -12,20 +12,15 @@ export type FooterLink = {
   id: string;
   label: string;
   href: string;
-  /** true бол шинэ tab-д нээгдэнэ (өөр домэйн) */
   external?: boolean;
 };
 
-/** Sitemap-ын нэг багана (Хувилбар 2 — desktop grid / mobile accordion) */
 export type FooterColumn = {
   id: string;
   title: string;
   items: FooterLink[];
 };
 
-// =====================================================================
-// Түргэн холбоос — Хувилбар 1, 3-т ашиглагдана
-// =====================================================================
 export const footerLinks: FooterLink[] = [
   { id: "about", label: "Бидний тухай", href: "#" },
   { id: "news", label: "Хэвлэлийн мэдээ", href: "#" },
