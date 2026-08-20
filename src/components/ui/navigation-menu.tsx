@@ -9,9 +9,16 @@ function NavigationMenu({
   className,
   children,
   viewport = true,
+  viewportClassName,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Root> & {
   viewport?: boolean
+  /**
+   * Viewport-д дамжуулах класс. Viewport нь Root-ийн ДОТОР үүсдэг тул гаднаас
+   * шууд хүрэх боломжгүй байсан — mobile header-т full-width / хүрээгүй /
+   * header-тэй нийлсэн болгоход шаардлагатай.
+   */
+  viewportClassName?: string
 }) {
   return (
     <NavigationMenuPrimitive.Root
@@ -24,7 +31,7 @@ function NavigationMenu({
       {...props}
     >
       {children}
-      {viewport && <NavigationMenuViewport />}
+      {viewport && <NavigationMenuViewport className={viewportClassName} />}
     </NavigationMenuPrimitive.Root>
   )
 }
@@ -65,18 +72,36 @@ const navigationMenuTriggerStyle = cva(
 function NavigationMenuTrigger({
   className,
   children,
+  chevron = true,
+  unstyled = false,
   ...props
-}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger>) {
+}: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger> & {
+  /**
+   * ChevronDown-ыг харуулах эсэх. Mobile header-т 5 таб нэг мөрөнд багтах ёстой
+   * тул 5 chevron (~60px) өргөний нөөцийг бүрэн зарцуулна — тэнд `false`.
+   */
+  chevron?: boolean
+  /**
+   * `navigationMenuTriggerStyle()`-ийг ХЭРЭГЛЭХГҮЙ. Тэр style нь `h-9 px-4
+   * text-sm` тул mobile-ын 12px / px-0.5 табтай зөрчилддөг.
+   */
+  unstyled?: boolean
+}) {
   return (
     <NavigationMenuPrimitive.Trigger
       data-slot="navigation-menu-trigger"
-      className={cn(navigationMenuTriggerStyle(), "group", className)}
+      className={cn(!unstyled && navigationMenuTriggerStyle(), "group", className)}
       onPointerMove={(e) => e.preventDefault()}
       onPointerLeave={(e) => e.preventDefault()}
       {...props}
     >
-      {children}{" "}
-      <ChevronDownIcon className="relative top-px ml-1 size-3 transition duration-300 group-data-popup-open/navigation-menu-trigger:rotate-180 group-data-open/navigation-menu-trigger:rotate-180" aria-hidden="true" />
+      {children}
+      {chevron && (
+        <>
+          {" "}
+          <ChevronDownIcon className="relative top-px ml-1 size-3 transition duration-300 group-data-popup-open/navigation-menu-trigger:rotate-180 group-data-open/navigation-menu-trigger:rotate-180" aria-hidden="true" />
+        </>
+      )}
     </NavigationMenuPrimitive.Trigger>
   )
 }
@@ -109,10 +134,14 @@ function NavigationMenuViewport({
     "absolute top-full left-0 right-0 isolate z-50 flex justify-center"
   )}
 >
+      {/* `transition-[height]` — Radix нь `--radix-navigation-menu-viewport-height`
+          -ийг агуулгын дагуу шинэчилдэг ч transition байхгүй бол өндөр нь
+          ҮСРЭНЭ. Ингэснээр НЭГ суурь нь sub menu хооронд зөөлөн "тэнийж"
+          агуулга нь хажуугаас гулсаж орж ирнэ (`data-motion` → Content). */}
       <NavigationMenuPrimitive.Viewport
         data-slot="navigation-menu-viewport"
         className={cn(
-          "origin-top relative h-(--radix-navigation-menu-viewport-height) w-full overflow-hidden bg-popover text-popover-foreground shadow ring-1 ring-foreground/10 duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+          "origin-top relative h-(--radix-navigation-menu-viewport-height) w-full overflow-hidden bg-popover text-popover-foreground shadow ring-1 ring-foreground/10 transition-[height,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
           className
         )}
         {...props}

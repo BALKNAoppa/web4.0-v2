@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
-import { LogOut, User } from "lucide-react";
+import { ArrowRight, LogOut, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,15 +15,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PromoCard } from "@/components/layout/promo-card";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
-  currentPromos,
   customerSegments,
   ecosystemBrands,
   type AudienceSegment,
   type EcosystemLink,
   type MegaMenu,
+  type MegaMenuSection,
 } from "@/data/navigation";
 import { BRAND, BRAND_LABEL } from "@/lib/brand";
 import { navType } from "@/lib/nav-type";
@@ -95,10 +94,20 @@ export function useActiveNavName(items: EcosystemLink[]): string | null {
 // =====================================================================
 // MEGA MENU — hover-оор задардаг панелийн төлөв
 // =====================================================================
-export function useBrandMegaMenu() {
+/**
+ * Панел нээх/хаах төлөв.
+ *
+ * `order` — цэсний нэрсийн ДАРААЛАЛ (`appleNavCategories`-ийн). Ангилал
+ * хооронд шилжихэд агуулга ЯМАР ЧИГЛЭЛД гулсахыг эндээс тооцно: баруун тийшх
+ * ангилал руу орвол шинэ агуулга баруунаас, зүүн тийш бол зүүнээс орж ирнэ —
+ * mobile-ын `NavigationMenu` (Radix `data-motion`)-тай ижил зан.
+ */
+export function useBrandMegaMenu(order: string[] = []) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [panelBrand, setPanelBrand] = useState<string | null>(null);
   const [shown, setShown] = useState(false);
+  /** null = шинээр нээгдэж байна (гулсалтгүй, зөвхөн fade) */
+  const [direction, setDirection] = useState<"from-start" | "from-end" | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafRef = useRef(0);
@@ -106,7 +115,17 @@ export function useBrandMegaMenu() {
   const openBrandMenu = (name: string) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     if (exitTimer.current) clearTimeout(exitTimer.current);
-    setPanelBrand(name);
+    setPanelBrand((prev) => {
+      // Нэг панелаас нөгөө рүү шилжиж байгаа үед л чиглэл гаргана
+      if (prev && prev !== name) {
+        const from = order.indexOf(prev);
+        const to = order.indexOf(name);
+        setDirection(from !== -1 && to !== -1 && to < from ? "from-start" : "from-end");
+      } else if (!prev) {
+        setDirection(null);
+      }
+      return name;
+    });
     setOpenMenu(name);
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => setShown(true));
@@ -116,79 +135,160 @@ export function useBrandMegaMenu() {
     setOpenMenu(null);
     setShown(false);
     if (exitTimer.current) clearTimeout(exitTimer.current);
-    exitTimer.current = setTimeout(() => setPanelBrand(null), 500);
+    exitTimer.current = setTimeout(() => {
+      setPanelBrand(null);
+      // Дараагийн нээлт нь "шинээр нээгдэж байна" гэж тооцогдоно
+      setDirection(null);
+    }, 500);
   };
   const closeBrandMenu = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     closeTimer.current = setTimeout(closeNow, 150);
   };
 
-  return { openMenu, panelBrand, shown, openBrandMenu, closeBrandMenu, closeNow };
+  return { openMenu, panelBrand, shown, direction, openBrandMenu, closeBrandMenu, closeNow };
 }
 
-const MEGA_RELATED_LINKS = [
-  { label: "Багц сонгох", href: "/main-packages" },
-  { label: "Төхөөрөмж", href: "/devices" },
-  { label: "Тусламж", href: "/support" },
-  { label: "Бүх урамшуулал", href: "/campaigns" },
+/**
+ * "Нэмэлт" баганын DEFAULT агуулга — `menu.extras` өгөөгүй брэндэд.
+ * Ингэснээр Univision-д тусгай жагсаалт орсон ч Unitel · Дэлгүүр · LookTV-ийн
+ * панелаас эдгээр линк алдагдахгүй.
+ */
+const MEGA_RELATED_LINKS: MegaMenuSection[] = [
+  { id: "packages", title: "Багц сонгох", href: "/main-packages" },
+  { id: "devices", title: "Төхөөрөмж", href: "/devices" },
+  { id: "support", title: "Тусламж", href: "/support" },
+  { id: "campaigns", title: "Бүх урамшуулал", href: "/campaigns" },
 ];
 
+/**
+ * Дэд цэсний нэг зүйл — гадаад бол `<a target="_blank">`, дотоод бол `<Link>`.
+ * Хоёр багана хоёулаа эндээс рендерлэгддэг тул логик нэг л газарт байна.
+ */
+function MegaItem({
+  section,
+  className,
+  onNavigate,
+}: {
+  section: MegaMenuSection;
+  className: string;
+  onNavigate: () => void;
+}) {
+  return section.href.startsWith("http") ? (
+    <a href={section.href} target="_blank" rel="noopener noreferrer" className={className}>
+      {section.title}
+    </a>
+  ) : (
+    <Link href={section.href} onClick={onNavigate} className={className}>
+      {section.title}
+    </Link>
+  );
+}
+
 export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () => void }) {
-  const linkCls = cn(
-    navType.primaryLink,
-    "text-foreground hover:text-primary block transition-colors",
+  /**
+   * ҮНДСЭН АНГИЛАЛ — hover/focus дээр ХАР pill + цагаан текст.
+   *
+   * Өмнө 24px (`primaryLink`) + hover дээр ногоон текст байсан. Одоо 15px
+   * (`navType.bar`) бөгөөд тодотгол нь ӨНГӨ БИШ, БҮТЭН ДЭВСГЭР — ингэснээр
+   * "хаана байна" гэдэг нь тодхон харагдана.
+   *
+   * `bg-foreground` / `text-background` — theme-ийн токеноор: light-д хар
+   * дэвсгэр + цагаан үсэг, dark-д цагаан дэвсгэр + хар үсэг. Брэнд ногоон
+   * хэрэглэхгүй (header-ийн бусад тодотголтой нэгдсэн байхын тулд).
+   *
+   * `w-fit` — pill нь баганы бүтэн өргөнөөр татагдахгүй, үсгээ л ална.
+   */
+  const sectionCls = cn(
+    navType.bar,
+    "block w-fit rounded-full px-3 py-1.5 transition-colors",
+    "text-foreground hover:bg-foreground hover:text-background",
+    "focus-visible:bg-foreground focus-visible:text-background focus-visible:outline-none",
   );
 
+  /** НЭМЭЛТ багана — 13px, туслах шинжтэй тул pill-гүй, зөвхөн өнгө хүчждэг. */
+  const extraCls = cn(
+    navType.secondaryLink,
+    "text-foreground/70 hover:text-foreground block transition-colors",
+  );
+
+  /**
+   * ХУРДАН ҮЙЛДЭЛ — дээд мөр. Ангиллын линкээс ЯЛГАРАХ ёстой (тэднийг тойрч
+   * шууд үйлдэл хийдэг) тул хүрээтэй pill: дэвсгэргүй, hover дээр л дүүрнэ.
+   */
+  const quickCls = cn(
+    navType.bar,
+    "border-border text-foreground hover:bg-foreground hover:text-background hover:border-foreground focus-visible:bg-foreground focus-visible:text-background inline-flex items-center rounded-full border px-3.5 py-1.5 transition-colors focus-visible:outline-none",
+  );
+
+  const extras = menu.extras ?? MEGA_RELATED_LINKS;
+
   return (
-    <div className="mx-auto flex max-w-300 items-start gap-16 px-4 py-10">
-      <div>
-        <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.name}</h3>
-        <ul className="space-y-3">
-          {menu.sections.map((section) =>
-            section.href.startsWith("http") ? (
-              <li key={section.id}>
-                <a
-                  href={section.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={linkCls}
-                >
-                  {section.title}
-                </a>
-              </li>
-            ) : (
-              <li key={section.id}>
-                <Link href={section.href} onClick={onNavigate} className={linkCls}>
-                  {section.title}
-                </Link>
-              </li>
-            ),
-          )}
-        </ul>
-      </div>
-      <div className="w-52 shrink-0">
-        <h3 className={cn(navType.groupLabel, "mb-4")}>Холбоотой</h3>
-        <ul className="space-y-2.5">
-          {MEGA_RELATED_LINKS.map((link) => (
-            <li key={link.label}>
-              <Link
-                href={link.href}
-                onClick={onNavigate}
-                className={cn(
-                  navType.secondaryLink,
-                  "text-foreground/80 hover:text-foreground block transition-colors",
-                )}
-              >
-                {link.label}
-              </Link>
-            </li>
+    <div className="mx-auto max-w-300 px-4 py-8">
+      {/* ХУРДАН ҮЙЛДЭЛ — ГАРЧИГГҮЙ дээд мөр, доогуураа зааглана.
+          Байхгүй брэнд (Univision · Дэлгүүр · LookTV) дээр мөр бүхэлдээ
+          рендерлэгдэхгүй — хоосон зай гаргахгүй. */}
+      {menu.quickActions && menu.quickActions.length > 0 && (
+        <div className="border-border mb-7 flex flex-wrap items-center gap-2 border-b pb-6">
+          {menu.quickActions.map((action) => (
+            <MegaItem
+              key={action.id}
+              section={action}
+              className={quickCls}
+              onNavigate={onNavigate}
+            />
           ))}
-        </ul>
-      </div>
-      <div className="ml-auto w-72 shrink-0 space-y-4">
-        {currentPromos.map((promo) => (
-          <PromoCard key={promo.title} promo={promo} onNavigate={onNavigate} />
-        ))}
+        </div>
+      )}
+
+      <div className="flex items-start gap-16">
+        {/* Багана 1 — үндсэн ангилал. `-ml-3` нь pill-ийн зүүн padding-ийг
+            нөхөж, үсэг нь гарчигтай оптикоор жигдэрнэ.
+            Гарчиг нь брэндийн нэр БИШ байж болно (`sectionsLabel`) — Unitel-д
+            "Багц", учир нь багана нь тарифын нэрсийг агуулдаг. */}
+        <div>
+          <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.sectionsLabel ?? menu.name}</h3>
+          <ul className="-ml-3 space-y-1">
+            {menu.sections.map((section) => (
+              <li key={section.id}>
+                <MegaItem section={section} className={sectionCls} onNavigate={onNavigate} />
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Багана 2 — Нэмэлт / Бусад үйлчилгээ (`sections`-ийн ард) */}
+        <div className="w-52 shrink-0">
+          <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.extrasLabel ?? "Нэмэлт"}</h3>
+          <ul className="space-y-2.5">
+            {extras.map((item) => (
+              <li key={item.id}>
+                <MegaItem section={item} className={extraCls} onNavigate={onNavigate} />
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Багана 3 — УРАМШУУЛАЛ.
+            Өмнө `currentPromos`-ийн "Sample 1 / Sample 2" картууд байсан. Тэднийг
+            mobile-д аль хэдийн байгаа PLACEHOLDER бичвэрээр солив — жинхэнэ
+            урамшуулал нь тухайн ЦЭСТЭЙ холбоотой байх ёстой бөгөөд тэр data
+            хараахан байхгүй. Хоёр давхарга (desktop/mobile) нэг бичвэр
+            хэрэглэснээр аль хэдийн байгаа зөрөх шалтгаан үлдэхгүй. */}
+        <div className="ml-auto w-72 shrink-0">
+          <h3 className={cn(navType.groupLabel, "mb-4")}>Урамшуулал</h3>
+          <p className={cn(navType.body, "text-muted-foreground")}>
+            Энэ цэстэй холбоотой урамшуулал энд байрлана.
+          </p>
+          <Link
+            href="/campaigns"
+            onClick={onNavigate}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 mt-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold transition-colors"
+          >
+            Sample CTA
+            <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
+          </Link>
+        </div>
       </div>
     </div>
   );

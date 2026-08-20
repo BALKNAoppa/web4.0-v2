@@ -17,6 +17,11 @@
  * Бодит зураг гарахаар item-д image талбар нэмж холбоно.
  */
 
+// LookTV-ийн гадаад хаягийг navigation.ts-ээс УНШИНА — хуулбарлахгүй. (Тэр
+// хуулбарлалт л `look.tv` / `looktv.mn` гэсэн 2 өөр домэйн зэрэг явах шалтгаан
+// болсон.) navigation.ts нь энэ файлаас юу ч import хийдэггүй тул цикл үүсэхгүй.
+import { LOOKTV_APP_HREF, LOOKTV_SITE } from "@/data/navigation";
+
 export type BrandRibbonIcon =
   | "smartphone"
   | "credit-card"
@@ -292,9 +297,103 @@ export const univisionPage: BrandPage = {
   ],
 };
 
+// =====================================================================
+// LOOKTV — стриминг ТВ. Layer 2-ын 5 дахь ангилал (`appleNavCategories`).
+//
+// ⚠️ ТҮР ЗУУРЫН КАРКАС. Nav-ийн "LookTV" нь дотоод `/looktv` хуудас байх ЁСТОЙ
+// (эс бөгөөс header-ийн hover панел задардаггүй — navigation.ts-ийн тайлбарыг
+// үз) тул хуудас нь эхлээд Unitel/Univision-тай ижил бүтэцтэй каркас хэлбэрээр
+// гарч байна. Section-ийн жинхэнэ агуулга submenu-ийн шинэ design тодрохоор
+// эндээс л засагдана — `items` бүгд `#` placeholder.
+//
+// Ribbon-ийн дараалал `appleMegaMenus.LookTV`-ийн section-той ижил байлгав:
+// Бүх суваг · Багц ба үнэ · Кино сан · Апп. Урамшуулал нь univisionPage-тай
+// ижлээр /campaigns руу шууд явна.
+// =====================================================================
+export const looktvPage: BrandPage = {
+  slug: "looktv",
+  name: "LookTV",
+  tagline: "Интернэт телевиз — хүссэн газраа, хүссэн үедээ.",
+  ribbon: [
+    {
+      label: "Бүх суваг",
+      href: "#channels",
+      icon: "tv",
+      tint: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+    },
+    {
+      label: "Багц ба үнэ",
+      href: "#packages",
+      icon: "package",
+      tint: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    },
+    {
+      label: "Кино сан",
+      href: "#movies",
+      icon: "clapperboard",
+      tint: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+    },
+    {
+      label: "Апп",
+      href: "#app",
+      icon: "monitor-play",
+      tint: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+    },
+    {
+      label: "Урамшуулал",
+      href: "/campaigns",
+      icon: "gift",
+      tint: "bg-red-500/10 text-red-600 dark:text-red-400",
+    },
+  ],
+  sections: [
+    {
+      id: "channels",
+      title: "Бүх суваг",
+      description: "Шууд дамжуулалт, мэдээ, спорт, хүүхдийн сувгууд.",
+      items: [
+        { label: "Мэдээ", href: "#" },
+        { label: "Спорт", href: "#" },
+        { label: "Хүүхэд", href: "#" },
+        { label: "Кино суваг", href: "#" },
+      ],
+    },
+    {
+      id: "packages",
+      title: "Багц ба үнэ",
+      description: "Хэрэглээндээ тааруулж сонгох багцууд.",
+      items: [
+        { label: "Basic", href: "#" },
+        { label: "Standard", href: "#" },
+        { label: "Premium", href: "#" },
+      ],
+    },
+    {
+      id: "movies",
+      title: "Кино сан",
+      description: "Хүссэн үедээ үзэх кино, цуврал.",
+      items: [
+        { label: "Шинэ кино", href: "#" },
+        { label: "Цуврал", href: "#" },
+      ],
+    },
+    {
+      id: "app",
+      title: "Апп",
+      description: "Утас, таблет, Smart TV — хаанаас ч нэг эрхээр.",
+      items: [
+        { label: "iOS | Android", href: LOOKTV_APP_HREF },
+        { label: "Smart TV", href: LOOKTV_APP_HREF },
+        { label: "Web", href: LOOKTV_SITE },
+      ],
+    },
+  ],
+};
+
 // Header-ийн эко-систем nav-д hover mega-menu гаргахад ашиглана.
 // Түлхүүр нь navigation.ts дахь ecosystemBrands-ын нэртэй таарна.
 export const brandPages: Record<string, BrandPage> = {
   Unitel: unitelPage,
   Univision: univisionPage,
+  LookTV: looktvPage,
 };

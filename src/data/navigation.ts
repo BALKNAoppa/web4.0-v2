@@ -92,7 +92,7 @@ export const ecosystemBrands: EcosystemLink[] = [
   { name: "Unitel", href: "/unitel" },
   { name: "Univision", href: "/univision" },
   { name: "Toki", href: "https://toki.mn/", external: true },
-  { name: "Look TV", href: "https://look.tv/", external: true },
+  { name: "Look TV", href: "https://looktv.mn/", external: true },
   { name: "DDish TV", href: "#" }, // TODO: домэйн (ddishtv.mn?)
   { name: "Nexmind", href: "https://nexmind.mn/", external: true },
   { name: "OSS", href: "#" }, // TODO: домэйн
@@ -101,19 +101,33 @@ export const ecosystemBrands: EcosystemLink[] = [
   { name: "ESN", href: "#" }, // TODO: домэйн
 ];
 
-// Хувилбар 1 (Apple) header — 5 үндсэн category. Dropdown доторх агуулгыг дараа тодорхойлно.
-// Unitel/Univision-д brandPages mega-menu байгаа; бусад нь одоогоор энгийн линк.
-// Layer 2 — 5 ангилал. "Тусламж" нь энэ жагсаалтаас ХАСАГДСАН (nav-д биш,
-// footer болон нүүр хуудасны FAQ блокоос хүрнэ).
+// Layer 2 — 5 ангилал: Unitel · Univision · Дэлгүүр · Урамшуулал · LookTV.
+//
+// Жагсаалтаас ХАСАГДСАН нь:
+//   "Тусламж"       — nav-д биш, footer болон нүүрийн FAQ блокоос хүрнэ.
+//   "Entertainment" — дэд цэсний агуулга нь `archivedMegaMenus`-д 1:1
+//                     хадгалагдсан; /entertainment/* хуудсууд хэвээр ажиллана.
+//
+// ДЭД ЦЭС ЗАДРАХ ЭСЭХ нь `appleMegaMenus`-д бичлэгтэй эсэхээр шийдэгдэнэ
+// (header.tsx > CategoryNav). Тиймээс:
+//   Unitel · Univision · Дэлгүүр · LookTV → hover панел задарна
+//   Урамшуулал                            → ЗӨРИУДААР бичлэггүй, энгийн линк
+//
+// ⚠️ LookTV нь `external: true` БИШ, дотоод `/looktv`. Шалтгаан: `CategoryNav`
+// нь `!item.external` үед л mega menu-г уншдаг тул гадаад линк болгосон бол
+// hover панел ХЭЗЭЭ Ч задрахгүй; мөн `useActiveNavName` external-ийг
+// өнгөрүүлдэг тул active тодотгол ч гарахгүй. looktv.mn руу үсрэх линкийг
+// панелийн ДОТРООС өгнө (`LOOKTV_APP_HREF`).
+//
 // `owner` — Unitel/Univision нь ТУС БҮРИЙН домэйны эзэн тул нөгөө build дээр
-// дарахад тэр домэйн руу шилжинэ (`SmartLink`). Дэлгүүр/Entertainment/
-// Урамшуулал нь "self" (өгөөгүй) — хоёр сайт тус бүр өөрийн хувилбартай.
+// дарахад тэр домэйн руу шилжинэ (`SmartLink`). Дэлгүүр/Урамшуулал/LookTV нь
+// "self" (өгөөгүй) — хоёр сайт тус бүр өөрийн хувилбартай.
 export const appleNavCategories: EcosystemLink[] = [
   { name: "Unitel", href: "/unitel", owner: "unitel" },
   { name: "Univision", href: "/univision", owner: "univision" },
   { name: "Дэлгүүр", href: "/devices" },
-  { name: "Entertainment", href: "/entertainment/main" },
   { name: "Урамшуулал", href: "/campaigns" },
+  { name: "LookTV", href: "/looktv" },
 ];
 
 // =====================================================================
@@ -123,39 +137,120 @@ export const appleNavCategories: EcosystemLink[] = [
 //   Unitel    = Mobile + Family
 //   Univision = Internet + Entertainment (төхөөрөмжийг Дэлгүүр рүү зөөв)
 //   Дэлгүүр   = Unitel/Univision-ийн төхөөрөмжтэй холбоотой хэсгүүд
+//   LookTV    = стриминг ТВ (ТҮР ЗУУРЫН каркас — доорх тайлбарыг үз)
 // Section title = том тод линк (section.href рүү; http бол шинэ таб).
+//
+// "Урамшуулал" энд ЗӨРИУДААР байхгүй — бичлэггүй ангилал нь энгийн линк болж,
+// hover панел задардаггүй. Мөрдөх дүрэм: энд нэмбэл панел гарна.
 // =====================================================================
 export type MegaMenuSection = { id: string; title: string; href: string };
 export type MegaMenu = {
   name: string;
+  /**
+   * ХУРДАН ҮЙЛДЭЛ — дэд цэсний ХАМГИЙН ДЭЭД мөр, ГАРЧИГГҮЙ.
+   *
+   * Ангиллын жагсаалтыг тойрч шууд хийдэг 1-2 үйлдлийн товч. Зориудаар ЕРӨНХИЙ
+   * нэртэй (`quickActions`) — брэнд бүр өөр үйлдэл тавьж болно.
+   *
+   * ⚠️ Одоогоор ЗӨВХӨН PLACEHOLDER ("Quick action 1/2"). Header-т ЦЭСНИЙ НЭРС
+   * л тодорхой болсон; товч/CTA/урамшууллын бодит агуулга дараа шийдэгдэнэ.
+   * Тиймээс энд жинхэнэ нэр ЗОХИОХГҮЙ — slot байгааг л үзүүлнэ.
+   */
+  quickActions?: MegaMenuSection[];
+  /** 1-р баганын гарчиг. Өгөөгүй бол `name` (ж. "Unitel") харагдана. */
+  sectionsLabel?: string;
+  /**
+   * ҮНДСЭН АНГИЛАЛ — дэд цэсний ЗҮҮН багана. Бүтээгдэхүүнийг ангилдаг
+   * (ж: Үндсэн бүтээгдэхүүн · Интернэтийн шийдэл · Энтертайнмэнт · Life-style).
+   * Hover/идэвхтэй үед ХАР pill + цагаан текстээр тодорно.
+   */
   sections: MegaMenuSection[];
+  /** 2-р баганын гарчиг. Өгөөгүй бол "Нэмэлт". */
+  extrasLabel?: string;
+  /**
+   * НЭМЭЛТ — дэд цэсний ХОЁР ДАХЬ багана (`sections`-ийн ард).
+   *
+   * `sections` нь зөвхөн бүтээгдэхүүнийг ангилдаг тул үйлчилгээ/туслах шинжтэй
+   * зүйлс (Нэмэлт үйлчилгээ · Хамрах хүрээ · Тусламж г.м) хаана ч суудаггүй —
+   * тэднийг энэ баганад цуглуулна.
+   *
+   * Өгөөгүй бол `BrandMegaPanel` нь бүх брэндэд хуваалцах default жагсаалтыг
+   * (Багц сонгох · Төхөөрөмж · Тусламж · Бүх урамшуулал) харуулна.
+   */
+  extras?: MegaMenuSection[];
 };
 
 const TOKI_FAMILY_HREF =
   "https://www.toki.mn/family-%D2%AF%D0%B9%D0%BB%D1%87%D0%B8%D0%BB%D0%B3%D1%8D%D1%8D-%D1%88%D0%B8%D0%BD%D1%8D%D1%87%D0%BB%D1%8D%D0%B3%D0%B4%D0%BB%D1%8D%D1%8D/";
 
+/**
+ * LookTV-ийн ГАДААД сайт. Кодод `looktv.mn` ба `look.tv` хоёр зэрэг байсныг
+ * `looktv.mn` руу нэгтгэв. Nav-ийн "LookTV" өөрөө дотоод `/looktv` хуудас —
+ * гадагш үсрэх нь зөвхөн эндээс.
+ */
+export const LOOKTV_SITE = "https://looktv.mn/";
+export const LOOKTV_APP_HREF = "https://looktv.mn/#/setup";
+
 export const appleMegaMenus: Record<string, MegaMenu> = {
+  /**
+   * UNITEL — багцын нэрээр ангилсан (өмнө "Дараа/Урьдчилсан төлбөрт" гэсэн
+   * төлбөрийн хэлбэрээр байсан).
+   *
+   * `sectionsLabel: "Багц"` — 1-р баганын гарчиг брэндийн нэр БИШ. Багана нь
+   * тарифын нэрсийг агуулдаг тул "Unitel" гэсэн гарчиг агуулгыг тайлбарлахгүй.
+   */
   Unitel: {
     name: "Unitel",
+    // ⚠️ PLACEHOLDER — жинхэнэ үйлдлийн нэр ТОДОРХОЙ БОЛООГҮЙ. Энэ мөрөнд
+    // "хурдан үйлдлийн товч ЭНД байрлана" гэдгийг л үзүүлж байна.
+    quickActions: [
+      { id: "quick-1", title: "Quick action 1", href: "#" },
+      { id: "quick-2", title: "Quick action 2", href: "#" },
+    ],
+    sectionsLabel: "Багц",
     sections: [
-      { id: "postpaid", title: "Дараа төлбөрт", href: "/main-packages" },
-      { id: "prepaid", title: "Урьдчилсан төлбөрт", href: "#" },
-      { id: "sim", title: "SIM | eSIM", href: "/devices" },
-      { id: "family", title: "Family үйлчилгээ", href: TOKI_FAMILY_HREF },
+      { id: "premium", title: "Premium", href: "/main-packages" },
+      { id: "priority", title: "Priority", href: "/main-packages" },
+      { id: "plus", title: "Plus", href: "/main-packages" },
+      { id: "smart-data", title: "Smart Data", href: "/main-packages" },
+      { id: "smart-talk", title: "Smart Talk", href: "/main-packages" },
+      { id: "family", title: "Family", href: TOKI_FAMILY_HREF },
+    ],
+    extrasLabel: "Бусад үйлчилгээ",
+    extras: [
+      { id: "extra-data", title: "Нэмэлт дата", href: "#" },
       { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
-      { id: "foreigners", title: "For Foreigners", href: "#" },
+      { id: "home-internet", title: "Гэр интернэт", href: "/main-packages" },
+      { id: "foreigners", title: "For foreigners", href: "#" },
     ],
   },
+  /**
+   * UNIVISION — 4 ангилал + Нэмэлт багана.
+   *
+   * Ангилал нь `brand-pages.ts > univisionPage`-ийн section-уудыг бүлэглэдэг:
+   *   Үндсэн бүтээгдэхүүн ← Гурвалсан (M+/L+/XL+) · Single (дан интернэт/телевиз)
+   *   Интернэтийн шийдэл  ← FTTH · STB/Dongle · FTTR/Mesh · Wi-Fi 6
+   *   Энтертайнмэнт       ← Linier TV · PayTV · TVOD · SVOD · HBO Max …
+   *   Life-style          ← Smart Home · Security · Gaming
+   *
+   * ✅ "Энтертайнмэнт" нь `/entertainment/main` руу холбогдсоноор Entertainment
+   * ангилал Layer 2-оос гарснаас хойш ТАСАРСАН desktop-ийн зам сэргэв
+   * (агуулга нь `archivedMegaMenus.Entertainment`-д хэвээр).
+   */
   Univision: {
     name: "Univision",
-    // Гэр интернэт + ТВ үйлчилгээ. On-demand контент (Univision Go/SVOD/TVOD/апп)
-    // нь тусдаа "Entertainment" nav-д шилжсэн.
     sections: [
-      { id: "triple_packages", title: "Гурвалсан багц", href: "/main-packages" },
-      { id: "single_packages", title: "Single багц ", href: "/main-packages" },
-      { id: "solutions", title: "Өрхийн хэрэглээний шийдлүүд", href: "#" },
+      { id: "core", title: "Үндсэн бүтээгдэхүүн", href: "/main-packages" },
+      { id: "internet", title: "Интернэтийн шийдэл", href: "/mesh" },
+      { id: "entertainment", title: "Энтертайнмэнт", href: "/entertainment/main" },
       { id: "lifestyle", title: "Life-style", href: "#" },
+    ],
+    extras: [
       { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
+      { id: "coverage", title: "Сүлжээний хамрах хүрээ", href: "#" },
+      { id: "devices", title: "Төхөөрөмж", href: "/devices" },
+      { id: "support", title: "Тусламж", href: "/support" },
+      { id: "campaigns", title: "Бүх урамшуулал", href: "/campaigns" },
     ],
   },
   Дэлгүүр: {
@@ -168,14 +263,16 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
       { id: "fttr", title: "Нэмэлт төхөөрөмж", href: "/devices" },
     ],
   },
-  Entertainment: {
-    name: "Entertainment",
+  // ⚠️ ТҮР ЗУУРЫН КАРКАС — submenu-ийн шинэ design тодрох хүртэл. Гурав нь `#`
+  // placeholder, "Апп татах" нь бодит гадаад линк. Агуулгыг эцэслэхэд
+  // `archivedMegaMenus.Entertainment.desktop`-оос авах эсэхийг шийднэ.
+  LookTV: {
+    name: "LookTV",
     sections: [
-      { id: "univision-go", title: "Univision Go", href: "/univision-go" },
-      { id: "svod", title: "Кино сан", href: "/entertainment/main" },
-      { id: "tvod", title: "Кино багц", href: "/entertainment/main#tvod" },
-      { id: "apps", title: "Look TV", href: "#" },
       { id: "channels", title: "Бүх суваг", href: "#" },
+      { id: "packages", title: "Багц ба үнэ", href: "#" },
+      { id: "movies", title: "Кино сан", href: "#" },
+      { id: "app", title: "Апп татах", href: LOOKTV_APP_HREF },
     ],
   },
 };
@@ -190,25 +287,49 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
 // ⚠️ Хоёр цэс ТУСДАА хөгжинө — mobile-д мөр нэмэхэд desktop өөрчлөгдөхгүй.
 // =====================================================================
 export const mobileMegaMenus: Record<string, MegaMenu> = {
+  // Desktop-той ИЖИЛ агуулга — багцын нэрс + Бусад үйлчилгээ + хурдан үйлдэл.
   Unitel: {
     name: "Unitel",
+    // ⚠️ PLACEHOLDER — жинхэнэ үйлдлийн нэр ТОДОРХОЙ БОЛООГҮЙ. Энэ мөрөнд
+    // "хурдан үйлдлийн товч ЭНД байрлана" гэдгийг л үзүүлж байна.
+    quickActions: [
+      { id: "quick-1", title: "Quick action 1", href: "#" },
+      { id: "quick-2", title: "Quick action 2", href: "#" },
+    ],
+    sectionsLabel: "Багц",
     sections: [
-      { id: "postpaid", title: "Дараа төлбөрт", href: "/main-packages" },
-      { id: "prepaid", title: "Урьдчилсан төлбөрт", href: "#" },
-      { id: "toki-mobile", title: "Toki Мобайл", href: "https://toki.mn/" },
-      { id: "family", title: "Family үйлчилгээ", href: TOKI_FAMILY_HREF },
+      { id: "premium", title: "Premium", href: "/main-packages" },
+      { id: "priority", title: "Priority", href: "/main-packages" },
+      { id: "plus", title: "Plus", href: "/main-packages" },
+      { id: "smart-data", title: "Smart Data", href: "/main-packages" },
+      { id: "smart-talk", title: "Smart Talk", href: "/main-packages" },
+      { id: "family", title: "Family", href: TOKI_FAMILY_HREF },
+    ],
+    extrasLabel: "Бусад үйлчилгээ",
+    extras: [
+      { id: "extra-data", title: "Нэмэлт дата", href: "#" },
       { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
-      { id: "tourist", title: "For Tourist", href: "#" },
+      { id: "home-internet", title: "Гэр интернэт", href: "/main-packages" },
+      { id: "foreigners", title: "For foreigners", href: "#" },
     ],
   },
+  // Desktop-той ИЖИЛ 4 ангилал (screenshot-ийн бүтэц mobile-д ч мөрдөгдөнө).
+  // Mobile-д хажуу зэрэгцүүлэх өргөн байхгүй тул `extras` нь доор тусдаа
+  // блок болж, "Нэмэлт" гэсэн жижиг гарчигтай гарна (`SectionMenu`).
   Univision: {
     name: "Univision",
     sections: [
-      { id: "triple_packages", title: "Гурвалсан багц", href: "/main-packages" },
-      { id: "single_packages", title: "Дан багц", href: "/main-packages" },
+      { id: "core", title: "Үндсэн бүтээгдэхүүн", href: "/main-packages" },
+      { id: "internet", title: "Интернэтийн шийдэл", href: "/mesh" },
+      { id: "entertainment", title: "Энтертайнмэнт", href: "/entertainment/main" },
+      { id: "lifestyle", title: "Life-style", href: "#" },
+    ],
+    extras: [
       { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
-      { id: "all_movies", title: "Бүх кино контент", href: "/entertainment/main" },
-      { id: "channels", title: "Бүх суваг", href: "#" },
+      { id: "coverage", title: "Сүлжээний хамрах хүрээ", href: "#" },
+      { id: "devices", title: "Төхөөрөмж", href: "/devices" },
+      { id: "support", title: "Тусламж", href: "/support" },
+      { id: "campaigns", title: "Бүх урамшуулал", href: "/campaigns" },
     ],
   },
   Дэлгүүр: {
@@ -218,13 +339,52 @@ export const mobileMegaMenus: Record<string, MegaMenu> = {
       { id: "tv_internet_devices", title: "ТВ & Интернэтийн төхөөрөмж", href: "/devices" },
     ],
   },
-  Entertainment: {
-    name: "Entertainment",
+  // ⚠️ ТҮР ЗУУРЫН КАРКАС — desktop-той ижил, mobile-ын журмаар цөөрүүлсэн.
+  LookTV: {
+    name: "LookTV",
     sections: [
-      { id: "univision-go", title: "Univision Go", href: "/univision-go" },
-      { id: "look-tv", title: "Look TV", href: "#" },
-      { id: "hbo-max", title: "HBO Max", href: "#" },
+      { id: "channels", title: "Бүх суваг", href: "#" },
+      { id: "packages", title: "Багц ба үнэ", href: "#" },
+      { id: "app", title: "Апп татах", href: LOOKTV_APP_HREF },
     ],
+  },
+};
+
+// =====================================================================
+// АРХИВ — Layer 2-оос ГАРСАН ангиллын дэд цэс. УСТГАХГҮЙ.
+//
+// "Entertainment" нь nav-аас гарсан (Layer 2 = Unitel · Univision · Дэлгүүр ·
+// Урамшуулал · LookTV) ч агуулга нь 1:1 хадгалагдана — submenu-ийн шинэ design
+// тодрох үед хаана байрлуулахыг шийднэ. Сэргээх бол `desktop`-ыг
+// `appleMegaMenus`, `mobile`-ыг `mobileMegaMenus` рүү хуулж, нэрийг
+// `appleNavCategories`-д нэмнэ.
+//
+// ⚠️ /entertainment/main · /entertainment/category/[id] · /entertainment/movie/[id]
+// хуудсууд БҮГД ажиллаж байна. Одоогоор тийш хүрэх зам:
+//   mobile  — `mobileMegaMenus.Univision` > "Бүх кино контент"
+//   хуудсын бие — `brand-pages.ts` > univisionPage > entertainment > "TVOD"
+// Desktop header-ээс хүрэх зам ТҮР БАЙХГҮЙ.
+// =====================================================================
+export const archivedMegaMenus: Record<string, { desktop: MegaMenu; mobile: MegaMenu }> = {
+  Entertainment: {
+    desktop: {
+      name: "Entertainment",
+      sections: [
+        { id: "univision-go", title: "Univision Go", href: "/univision-go" },
+        { id: "svod", title: "Кино сан", href: "/entertainment/main" },
+        { id: "tvod", title: "Кино багц", href: "/entertainment/main#tvod" },
+        { id: "apps", title: "Look TV", href: "#" },
+        { id: "channels", title: "Бүх суваг", href: "#" },
+      ],
+    },
+    mobile: {
+      name: "Entertainment",
+      sections: [
+        { id: "univision-go", title: "Univision Go", href: "/univision-go" },
+        { id: "look-tv", title: "Look TV", href: "#" },
+        { id: "hbo-max", title: "HBO Max", href: "#" },
+      ],
+    },
   },
 };
 

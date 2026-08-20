@@ -94,7 +94,7 @@ export const footerEcosystem: FooterBrand[] = [
   {
     id: "looktv",
     name: "Look TV",
-    href: "https://look.tv/",
+    href: "https://looktv.mn/",
     external: true,
     tagline: "Кино, контент стриминг",
   },

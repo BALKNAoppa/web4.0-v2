@@ -36,6 +36,12 @@ const VARIANTS: { id: Variant; label: string }[] = [
 const NAV_ITEMS: EcosystemLink[] = appleNavCategories;
 
 /**
+ * Ангиллын ДАРААЛАЛ — `useBrandMegaMenu` нь панел хооронд шилжихэд агуулгыг
+ * аль чиглэлд гулсуулахыг эндээс тооцно (баруун тийшх ангилал → баруунаас).
+ */
+const NAV_ORDER = NAV_ITEMS.map((item) => item.name);
+
+/**
  * Баруун талын хэрэгслүүд — хоёр хувилбарт ИЖИЛ: профайл · хэл · theme.
  *
  * Анхаар: "Хэл солих" нь ОДООГООР зөвхөн харагдах тал. Проектод i18n
@@ -272,12 +278,14 @@ function CategoryNav({
 function MegaLayer({
   panelBrand,
   shown,
+  direction,
   onOpen,
   onClose,
   onCloseNow,
 }: {
   panelBrand: string | null;
   shown: boolean;
+  direction: "from-start" | "from-end" | null;
   onOpen: (name: string) => void;
   onClose: () => void;
   onCloseNow: () => void;
@@ -286,14 +294,34 @@ function MegaLayer({
 
   return (
     <div
+      // Mobile-ын `NavigationMenuViewport`-ийн wrapper ч `absolute top-full`
+      // тул CSS класс дээр тулгуурласан selector хоёрыг зөрүүлдэг — desktop
+      // панелд тогтвортой тэмдэг.
+      data-mega-panel={panelBrand}
       onMouseEnter={() => onOpen(panelBrand)}
       onMouseLeave={onClose}
       className={cn(
-        "border-border bg-popover text-popover-foreground absolute inset-x-0 top-full z-50 hidden border-t shadow-xl transition-[opacity,transform] duration-500 ease-out lg:block",
+        "border-border bg-popover text-popover-foreground absolute inset-x-0 top-full z-50 hidden overflow-hidden border-t shadow-xl transition-[opacity,transform] duration-500 ease-out lg:block",
         shown ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
       )}
     >
-      <BrandMegaPanel menu={appleMegaMenus[panelBrand]} onNavigate={onCloseNow} />
+      {/* АГУУЛГЫН ГУЛСАЛТ — mobile-ын `NavigationMenu`-тай ижил зан.
+          Гаднах дэвсгэр (энэ div) нь НЭГ суурь болж үлдэж, зөвхөн ДОТООД
+          агуулга нь шилжих чиглэлд гулсаж орж ирнэ.
+
+          `key={panelBrand}` — брэнд солигдоход React дахин mount хийж
+          `animate-in`-ийг ДАХИН тоглуулна (key-гүй бол зөвхөн эхний удаа).
+          `direction === null` (шинээр нээгдэж байна) бол гулсалтгүй, fade л. */}
+      <div
+        key={panelBrand}
+        className={cn(
+          "animate-in fade-in duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          direction === "from-end" && "slide-in-from-right-8",
+          direction === "from-start" && "slide-in-from-left-8",
+        )}
+      >
+        <BrandMegaPanel menu={appleMegaMenus[panelBrand]} onNavigate={onCloseNow} />
+      </div>
     </div>
   );
 }
@@ -311,8 +339,8 @@ function MegaLayer({
 // =====================================================================
 function LogoLeftHeader({ mobileVariant }: { mobileVariant: 1 | 3 }) {
   const activeName = useActiveNavName(NAV_ITEMS);
-  const { openMenu, panelBrand, shown, openBrandMenu, closeBrandMenu, closeNow } =
-    useBrandMegaMenu();
+  const { openMenu, panelBrand, shown, direction, openBrandMenu, closeBrandMenu, closeNow } =
+    useBrandMegaMenu(NAV_ORDER);
 
   return (
     <>
@@ -365,6 +393,7 @@ function LogoLeftHeader({ mobileVariant }: { mobileVariant: 1 | 3 }) {
         <MegaLayer
           panelBrand={panelBrand}
           shown={shown}
+          direction={direction}
           onOpen={openBrandMenu}
           onClose={closeBrandMenu}
           onCloseNow={closeNow}
@@ -387,8 +416,8 @@ function LogoLeftHeader({ mobileVariant }: { mobileVariant: 1 | 3 }) {
 // =====================================================================
 function TopClassifierHeader() {
   const activeName = useActiveNavName(NAV_ITEMS);
-  const { openMenu, panelBrand, shown, openBrandMenu, closeBrandMenu, closeNow } =
-    useBrandMegaMenu();
+  const { openMenu, panelBrand, shown, direction, openBrandMenu, closeBrandMenu, closeNow } =
+    useBrandMegaMenu(NAV_ORDER);
 
   return (
     <>
@@ -442,6 +471,7 @@ function TopClassifierHeader() {
         <MegaLayer
           panelBrand={panelBrand}
           shown={shown}
+          direction={direction}
           onOpen={openBrandMenu}
           onClose={closeBrandMenu}
           onCloseNow={closeNow}
