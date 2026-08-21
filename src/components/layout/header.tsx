@@ -12,10 +12,11 @@ import {
   AccountMenu,
   BrandLogoLink,
   BrandMegaPanel,
+  DOMAIN_NAV_NAME,
   IconButton,
   classifierSegments,
-  useActiveNavName,
   useBrandMegaMenu,
+  useCurrentNavName,
 } from "@/components/layout/header-shared";
 import { appleMegaMenus, appleNavCategories, type EcosystemLink } from "@/data/navigation";
 import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/header-variant";
@@ -200,28 +201,49 @@ function VariantToggle({
 // ХУВААЛЦАХ — зүүн талын ангиллын nav (desktop) + mega menu hover
 // =====================================================================
 function CategoryNav({
-  activeName,
   openMenu,
   onOpen,
   onClose,
 }: {
-  activeName: string | null;
   openMenu: string | null;
   onOpen: (name: string) => void;
   onClose: () => void;
 }) {
+  // `aria-current`-д ЗӨВХӨН замаар таарсан нь (fallback-гүй)
+  const currentName = useCurrentNavName(NAV_ITEMS);
+
+  /**
+   * ДООГУУР ЗУРААС нь ХАМГИЙН ИХДЭЭ НЭГ элемент дээр байна. Эрэмбэ:
+   *   1. Цэс НЭЭЛТТЭЙ бол ТЭР — хэрэглэгчийн одоогийн СОНГОЛТ хамгийн чухал
+   *   2. Эс бөгөөс замаар таарсан нь (`/univision` → "Univision")
+   *   3. Эс бөгөөс build-ийн домэйн (нүүр, `/support` гэх мэт)
+   *
+   * ⚠️ Өмнө нь 2/3-аар гарсан нь БАЙНГА зураастай байсан ба нээлттэй цэс нь
+   * ТУСДАА зураас авдаг байв — тиймээс Unitel build дээр Univision-ий цэсийг
+   * нээхэд ХОЁР зураас зэрэг харагдаж, аль нь сонгогдсоныг ялгахад хүндрэлтэй
+   * байлаа.
+   */
+  const highlightedName = openMenu ?? currentName ?? DOMAIN_NAV_NAME;
+
   return (
     <nav aria-label="Үндсэн цэс" className="flex items-center gap-5">
       {NAV_ITEMS.map((item) => {
-        const active = !item.external && item.name === activeName;
+        const highlighted = !item.external && item.name === highlightedName;
+        const isCurrentPage = !item.external && item.name === currentName;
         const label = item.name;
         const linkClass = cn(
+          // ⚠️ ҮСГИЙН ЗУЗААН СОЛИГДОХГҮЙ (`navType.bar` бүгдэд). Тодотгол нь
+          // hover-оор зөөгддөг болсон тул зузаан сольвол элементийн өргөн
+          // хэлбэлзэж, хажуугийн ангиллууд хажуу тийш цүүрнэ.
+          navType.bar,
           "relative whitespace-nowrap transition-colors",
           // Apple маягийн зөөлөн доогуур зураас — hover дээр төвөөс тэлнэ
           "after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-full after:origin-center after:scale-x-0 after:rounded-full after:bg-current after:transition-transform after:duration-300 hover:after:scale-x-100",
-          active
-            ? cn(navType.barActive, "text-foreground")
-            : cn(navType.bar, "text-foreground/75 hover:text-foreground"),
+          highlighted
+            // Дээрх `after:` зураас нь hover үед тэлдэг — `scale-x-100`-аар
+            // түүнийг тогтмол болгоно (шинэ элемент нэмэхгүй).
+            ? "text-foreground after:scale-x-100"
+            : "text-foreground/75 hover:text-foreground",
         );
 
         // appleMegaMenus-д бичлэгтэй ангилал — hover дээр панел задарна
@@ -236,12 +258,9 @@ function CategoryNav({
             >
               <Link
                 href={item.href}
-                aria-current={active ? "page" : undefined}
+                aria-current={isCurrentPage ? "page" : undefined}
                 aria-expanded={openMenu === item.name}
-                className={cn(
-                  linkClass,
-                  openMenu === item.name && "text-foreground after:scale-x-100",
-                )}
+                className={linkClass}
               >
                 {label}
               </Link>
@@ -263,7 +282,7 @@ function CategoryNav({
           <Link
             key={item.name}
             href={item.href}
-            aria-current={active ? "page" : undefined}
+            aria-current={isCurrentPage ? "page" : undefined}
             className={linkClass}
           >
             {label}
@@ -301,7 +320,16 @@ function MegaLayer({
       onMouseEnter={() => onOpen(panelBrand)}
       onMouseLeave={onClose}
       className={cn(
-        "border-border bg-popover text-popover-foreground absolute inset-x-0 top-full z-50 hidden overflow-hidden border-t shadow-xl transition-[opacity,transform] duration-500 ease-out lg:block",
+        "border-border bg-popover text-popover-foreground absolute inset-x-0 top-full z-50 hidden overflow-hidden border-t shadow-xl lg:block",
+        // ӨНДРИЙН ШИЛЖИЛТ — Unitel (6 мөр) → Univision (4 мөр) сольвол панелийн
+        // өндөр ҮСРЭХГҮЙ, зөөлөн тэнийнэ. Mobile-ын `NavigationMenuViewport`
+        // үүнийг `--radix-…-viewport-height` хувьсагчаар хийдэг; desktop-д тэр
+        // хувьсагч байхгүй тул `height: auto`-г шууд interpolate хийлгэнэ.
+        //
+        // ⚠️ `interpolate-size: allow-keywords` нь ОДООГООР Chromium-д л
+        // ажиллана. Firefox/Safari-д өндөр нь өмнөх шигээ шууд солигдоно —
+        // зүгээр л энэ сайжруулалт нь тэдэнд үзэгдэхгүй, эвдрэхгүй.
+        "transition-[height,opacity,transform] duration-500 ease-out [interpolate-size:allow-keywords]",
         shown ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
       )}
     >
@@ -315,7 +343,9 @@ function MegaLayer({
       <div
         key={panelBrand}
         className={cn(
-          "animate-in fade-in duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          // `duration-500` — mobile-ын Content/Viewport-той ИЖИЛ хугацаа.
+          // Өмнө 300 байсан тул хоёр давхарга өөр хэмнэлтэй мэдрэгддэг байв.
+          "animate-in fade-in duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           direction === "from-end" && "slide-in-from-right-8",
           direction === "from-start" && "slide-in-from-left-8",
         )}
@@ -338,7 +368,6 @@ function MegaLayer({
 //   └────────────────────────────────────────────────────────────┘
 // =====================================================================
 function LogoLeftHeader({ mobileVariant }: { mobileVariant: 1 | 3 }) {
-  const activeName = useActiveNavName(NAV_ITEMS);
   const { openMenu, panelBrand, shown, direction, openBrandMenu, closeBrandMenu, closeNow } =
     useBrandMegaMenu(NAV_ORDER);
 
@@ -377,7 +406,6 @@ function LogoLeftHeader({ mobileVariant }: { mobileVariant: 1 | 3 }) {
 
           <div className="mr-auto">
             <CategoryNav
-              activeName={activeName}
               openMenu={openMenu}
               onOpen={openBrandMenu}
               onClose={closeBrandMenu}
@@ -415,7 +443,6 @@ function LogoLeftHeader({ mobileVariant }: { mobileVariant: 1 | 3 }) {
 //   └────────────────────────────────────────────────────────────┘
 // =====================================================================
 function TopClassifierHeader() {
-  const activeName = useActiveNavName(NAV_ITEMS);
   const { openMenu, panelBrand, shown, direction, openBrandMenu, closeBrandMenu, closeNow } =
     useBrandMegaMenu(NAV_ORDER);
 
@@ -450,7 +477,6 @@ function TopClassifierHeader() {
         {/* Үндсэн мөр — зүүн ангилал · төв лого · баруун icons */}
         <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
           <CategoryNav
-            activeName={activeName}
             openMenu={openMenu}
             onOpen={openBrandMenu}
             onClose={closeBrandMenu}

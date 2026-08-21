@@ -239,6 +239,11 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
    */
   Univision: {
     name: "Univision",
+    // ⚠️ PLACEHOLDER — Unitel-тэй ижил. Жинхэнэ үйлдлийн нэр ТОДОРХОЙ БОЛООГҮЙ.
+    quickActions: [
+      { id: "quick-1", title: "Quick action 1", href: "#" },
+      { id: "quick-2", title: "Quick action 2", href: "#" },
+    ],
     sections: [
       { id: "core", title: "Үндсэн бүтээгдэхүүн", href: "/main-packages" },
       { id: "internet", title: "Интернэтийн шийдэл", href: "/mesh" },
@@ -318,6 +323,11 @@ export const mobileMegaMenus: Record<string, MegaMenu> = {
   // блок болж, "Нэмэлт" гэсэн жижиг гарчигтай гарна (`SectionMenu`).
   Univision: {
     name: "Univision",
+    // ⚠️ PLACEHOLDER — desktop-той ИЖИЛ (`appleMegaMenus.Univision`).
+    quickActions: [
+      { id: "quick-1", title: "Quick action 1", href: "#" },
+      { id: "quick-2", title: "Quick action 2", href: "#" },
+    ],
     sections: [
       { id: "core", title: "Үндсэн бүтээгдэхүүн", href: "/main-packages" },
       { id: "internet", title: "Интернэтийн шийдэл", href: "/mesh" },

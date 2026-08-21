@@ -45,7 +45,12 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/components/auth/auth-provider";
 import { SmartLink } from "@/components/layout/smart-link";
-import { BrandLogoLink, classifierSegments } from "@/components/layout/header-shared";
+import {
+  BrandLogoLink,
+  MENU_PROMOS,
+  classifierSegments,
+  useActiveNavName,
+} from "@/components/layout/header-shared";
 import {
   appleNavCategories,
   mobileMegaMenus,
@@ -103,11 +108,14 @@ import { cn } from "@/lib/utils";
  *   бусдаасаа ялгарна; навигацын хэсэг болсон тул хөвөгч chat товч
  *   нуугдана (globals.css).
  *
- * ОДОО БАЙГАА ДОМЭЙН (build-ийн брэнд) тодорсон байна — БҮХ хувилбарт ИЖИЛ
- * хэлбэрээр: `text-foreground` + зузаан үсэг (light-д хар, dark-д цагаан).
- * Брэнд ногоон (`text-primary`) байхаа больсон — desktop-ийн `CategoryNav`
- * ч хараар тодруулдаг тул давхаргууд хооронд зөрөх шалтгаан байхгүй.
- * Ногоон нь одоо ЗӨВХӨН CTA / promo / Chat-ын дугуйд үлдсэн.
+ * ТОДОРСОН ангилал — `useActiveNavName` (`header-shared.tsx`): зам таарвал
+ * тэр, таарахгүй бол build-ийн домэйн. Desktop-ийн `CategoryNav`, header-ийн
+ * таб, burger, доод tab bar — ДӨРВҮҮЛЭЭ нэг эх сурвалжаас уншина тул
+ * `/univision` рүү орвол бүх давхаргад тодотгол зэрэг зөөгдөнө.
+ *
+ * Хэлбэр нь БҮХ хувилбарт ИЖИЛ: `text-foreground` + зузаан үсэг + доогуур
+ * зураас (light-д хар, dark-д цагаан). Брэнд ногоон (`text-primary`) байхаа
+ * больсон — ногоон нь одоо ЗӨВХӨН CTA / promo / Chat-ын дугуйд үлдсэн.
  */
 
 export type MobileVariant = 1 | 2 | 3;
@@ -130,14 +138,6 @@ const isTab = (name: string): name is TabName => TAB_NAMES.includes(name as TabN
 const TABS = appleNavCategories.filter((c): c is EcosystemLink & { name: TabName } =>
   isTab(c.name),
 );
-
-/**
- * ОДОО БАЙГАА ДОМЭЙН — build-ийн брэнд (`NEXT_PUBLIC_BRAND`). Unitel build дээр
- * "Unitel", Univision build дээр "Univision" нь ХАРААР (`text-foreground`) +
- * зузаан үсгээр тодорно тул хэрэглэгч аль домэйн дээрээ байгаагаа цэс
- * нээхгүйгээр харна. "Дэлгүүр" нь домэйн биш тул хэзээ ч тодрохгүй.
- */
-const DOMAIN_TAB: TabName = BRAND === "univision" ? "Univision" : "Unitel";
 
 /**
  * Burger дотор ямар ангилал харуулах вэ.
@@ -221,13 +221,28 @@ function BrandTabsHeader() {
 
   return (
     <>
-      {/* PAGE BLUR — desktop-ийн scrim-тэй ижил (`header.tsx`). Дарвал хаагдана.
-          `z-40` — header (z-50)-ийн доор, хуудасны агуулгын дээр. */}
+      {/* PAGE BLUR — хуудасны агуулга бүдгэрнэ, дарвал хаагдана.
+          ⚠️ АЛДАА ЗАССАН: өмнө нь `fixed inset-0` байсан. Энэ scrim нь
+          `<header>`-ийн ДОТОР рендерлэгддэг (desktop-ийн scrim нь header-ийн
+          sibling — тэнд асуудал байхгүй). Тиймээс `z-40` нь header-ийн
+          z-50 stacking context-ийн ДОТОРХ 40 болж, header-ийн мөрийг өөрийг нь
+          дүүргэж `backdrop-blur` түүнийг ч бүдгэрүүлж байв.
+
+          Одоо `absolute top-full` — header-ийн ДООД ирмэгээс эхэлнэ. Ингэснээр
+          header өөрөө хэзээ ч scrim-ийн доор орохгүй, харин доорх агуулга
+          бүдгэрнэ. Өндрийг px-ээр hardcode хийхгүй (`top-12` гэх мэт) —
+          header-ийн бодит өндрөөс тооцогдоно.
+
+          `h-lvh` (100lvh, screen-ээс биш) — мобайл браузерын URL bar
+          хураагдсан үед ч доод тал нь дүүрч хоосон зурвас гарахгүй.
+
+          NavigationMenu Viewport нь `z-50` тул хаалттай цэсний панел
+          бүдгэрэхгүй, тод хэвээр үлдэнэ. */}
       <div
         aria-hidden
         onClick={() => setOpenValue("")}
         className={cn(
-          "bg-foreground/10 fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 ease-out lg:hidden",
+          "bg-foreground/10 absolute inset-x-0 top-full z-40 h-lvh backdrop-blur-sm transition-opacity duration-300 ease-out lg:hidden",
           isOpen ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
@@ -256,7 +271,7 @@ function BrandTabsHeader() {
                 тэнцүү — эндээс доош `h-full` дахин зөв ажиллана. */}
             <NavigationMenuList className="mx-auto h-12 w-max gap-1">
               {TABS.map((tab) => (
-                <BrandTab key={tab.name} tab={tab} />
+                <BrandTab key={tab.name} tab={tab} openValue={openValue} />
               ))}
             </NavigationMenuList>
           </div>
@@ -309,14 +324,29 @@ function HeaderRow({ variant, children }: { variant: MobileVariant; children?: R
 // =====================================================================
 
 /**
- * Хоёр ТУСДАА тэмдэг зэрэг харагдаж болно:
- *   - хар + зузаан үсэг = одоо байгаа домэйн (тогтмол)
- *   - өргөгдсөн pill    = dropdown нээлттэй (`data-[state=open]`)
- * Нээхэд ҮСГИЙН ЗУЗААН СОЛИГДОХГҮЙ — эс бөгөөс таб өргөсөж, хажуугийн
- * табууд хажуу тийш "цүүрнэ".
+ * ТОДОТГОЛ нь ХАМГИЙН ИХДЭЭ НЭГ таб дээр — desktop-ийн `CategoryNav`-тай ижил
+ * эрэмбээр:
+ *   1. Дэд цэс НЭЭЛТТЭЙ бол ТЭР таб (хэрэглэгчийн одоогийн СОНГОЛТ)
+ *   2. Эс бөгөөс замаар таарсан нь (`/univision` → "Univision")
+ *   3. Эс бөгөөс build-ийн домэйн
+ *
+ * Өмнө нь 2/3-аар гарсан нь БАЙНГА доогуур зураастай байсан ба нээлттэй таб нь
+ * ТУСДАА тэмдэг авдаг байв — хоёр тэмдэг зэрэг харагдаж эргэлзээ төрүүлдэг.
+ *
+ * ⚠️ ҮСГИЙН ЗУЗААН СОЛИГДОХГҮЙ (`navType.mobileTab` бүгдэд) — тодотгол нь
+ * дарахад зөөгддөг тул зузаан сольвол таб өргөсөж, хажуугийн табууд хажуу
+ * тийш "цүүрнэ".
  */
-function BrandTab({ tab }: { tab: EcosystemLink & { name: TabName } }) {
-  const isDomain = tab.name === DOMAIN_TAB;
+function BrandTab({
+  tab,
+  openValue,
+}: {
+  tab: EcosystemLink & { name: TabName };
+  openValue: string;
+}) {
+  const activeName = useActiveNavName(appleNavCategories);
+  const highlightedName = openValue || activeName;
+  const isDomain = tab.name === highlightedName;
   const sections = mobileMegaMenus[tab.name]?.sections ?? [];
 
   /**
@@ -345,20 +375,22 @@ function BrandTab({ tab }: { tab: EcosystemLink & { name: TabName } }) {
    *
    * `border → ring` — ring нь layout-д өргөн НЭМДЭГГҮЙ (таб бүрт 2px хэмнэнэ).
    *
-   * ТОДОТГОЛ — идэвхтэй/одоогийн домэйны таб нь БРЭНД НОГООН БИШ, `text-foreground`
-   * (light-д хар, dark-д цагаан) + `font-bold`. Ингэснээр desktop-ийн
-   * `CategoryNav` (`header.tsx`) болон Хувилбар 3-ын доод bar-тай ИЖИЛ болно —
-   * бүх давхарга дээр "би хаана байна" гэдэг нь нэг л хэлбэрээр илэрхийлэгдэнэ.
+   * ТОДОТГОЛ — БРЭНД НОГООН БИШ, `text-foreground` (light-д хар, dark-д
+   * цагаан) + доогуур зураас. Ингэснээр desktop-ийн `CategoryNav`
+   * (`header.tsx`) болон Хувилбар 3-ын доод bar-тай ИЖИЛ болно — бүх давхарга
+   * дээр "би хаана байна" гэдэг нь нэг л хэлбэрээр илэрхийлэгдэнэ.
    */
   const pillClass = cn(
+    navType.mobileTab,
     "rounded-full px-0.5 py-1.5 whitespace-nowrap transition-colors",
-    "group-data-[state=open]/tab:bg-background group-data-[state=open]/tab:ring-border group-data-[state=open]/tab:shadow-sm group-data-[state=open]/tab:ring-1",
+    // ХҮРЭЭТ PILL ХАСАГДСАН. Өмнө нь цэс нээлттэй үед
+    // `bg-background + ring-1 + ring-border + shadow-sm` нь табыг хүрээтэй
+    // хайрцаг болгодог байв — минимал чиглэлд нийцэхгүй.
     isDomain
-      ? cn(navType.mobileTabActive, "text-foreground")
-      : cn(
-          navType.mobileTab,
-          "text-foreground/75 group-hover/tab:text-foreground group-data-[state=open]/tab:text-foreground",
-        ),
+      // Desktop нь `after:` элемент хэрэглэдэг (hover дээр тэлэх анимацитай),
+      // энд анимаци шаардлагагүй тул шууд `underline`.
+      ? "text-foreground underline underline-offset-4"
+      : "text-foreground/75 group-hover/tab:text-foreground",
   );
 
   const label = (
@@ -367,11 +399,26 @@ function BrandTab({ tab }: { tab: EcosystemLink & { name: TabName } }) {
     </span>
   );
 
-  // Дэд цэсгүй ангилал (Урамшуулал) — цэс нээхгүй, ШУУД тухайн хуудас руу
+  // Дэд цэсгүй ангилал (Урамшуулал) — цэс нээхгүй, ШУУД тухайн хуудас руу.
+  //
+  // ⚠️ САНАРАЛ PILL-ИЙН ШАЛТГААН: `NavigationMenuLink`-ийн үндсэн класст
+  // `rounded-md hover:bg-muted focus:bg-muted data-[active=true]:bg-muted/50`
+  // байдаг. Өмнө нь зөвхөн `hover:bg-transparent` (`!`-гүй) бичсэн байсан тул:
+  //   - `focus:bg-muted` НЭГ Ч ДАРАГДААГҮЙ — таб дарж хуудас солигдсоны дараа
+  //     линк focus-тай үлдэж саарал хайрцаг ХЭВЭЭР харагддаг байв
+  //   - tailwind-merge нь `hover:bg-muted` ба `hover:bg-transparent`-ыг ижил
+  //     бүлэг гэж танихгүй тул хоёулаа үлдэж, CSS-ийн дараалал шийддэг
+  // Тиймээс гурван төлөв бүгдийг `!`-ээр гүйцэд дарна.
   if (sections.length === 0) {
     return (
       <NavigationMenuItem className="h-full">
-        <NavigationMenuLink asChild className={cn(hitClass, "p-0 hover:bg-transparent")}>
+        <NavigationMenuLink
+          asChild
+          className={cn(
+            hitClass,
+            "p-0 hover:bg-transparent! focus:bg-transparent! data-[active=true]:bg-transparent!",
+          )}
+        >
           <Link href={tab.href}>{label}</Link>
         </NavigationMenuLink>
       </NavigationMenuItem>
@@ -427,11 +474,20 @@ function SectionMenu({ menu }: { menu?: MegaMenu }) {
     // `w-full p-3` — Content нь Viewport-ийн дотор бүтэн өргөнөөр суудаг.
     // Хажуугийн гулсалтыг Radix `data-motion`-оор өөрөө хийнэ (ui компонентод).
     <NavigationMenuContent className="w-full p-3">
-      <div className="mx-auto flex max-w-300 flex-col gap-0.5">
-        {/* ХУРДАН ҮЙЛДЭЛ — ГАРЧИГГҮЙ дээд мөр, хүрээтэй pill.
+      {/* ⚠️ ЗУРААСЫГ ХАСАВ. Өмнө нь нэг цэсэнд ГУРВАН хэвтээ зураас байсан
+          (quick action-ий доор, extras-ийн дээр, promo-ийн дээр) — 4 блокийг
+          3 зураасаар хуваахад цэс "хүснэгт" шиг хуваагдаж, минимал хэлбэрээс
+          зөрж байв. Одоо зөвхөн promo-ийн дээр НЭГ зураас: тэр нь навигаци
+          биш ӨӨР төрлийн агуулга тул бодит зааг хэрэгтэй.
+          Блокуудыг хооронд нь ЗАЙ (`gap-*`) ялгана.
+
+          Мөрүүдийн хооронд `gap-0.5` байсныг хассан — мөр бүр 44px өндөртэй
+          тул зай нэмэх нь урт жагсаалтыг ор дэмий сунгаж байв. */}
+      <div className="mx-auto flex max-w-300 flex-col">
+        {/* ХУРДАН ҮЙЛДЭЛ — ГАРЧИГГҮЙ дээд мөр, минимал текст линк.
             Desktop-той ижил: ангиллын жагсаалтыг тойрч шууд үйлдэл. */}
         {menu.quickActions && menu.quickActions.length > 0 && (
-          <div className="border-border mb-1.5 flex flex-wrap gap-2 border-b px-1 pb-3">
+          <div className="mb-1 flex flex-wrap gap-x-6 px-3">
             {menu.quickActions.map((action) => (
               <QuickActionChip key={action.id} section={action} />
             ))}
@@ -443,13 +499,11 @@ function SectionMenu({ menu }: { menu?: MegaMenu }) {
         ))}
 
         {extras && extras.length > 0 && (
-          <div className="border-border mt-2.5 border-t pt-2.5">
+          <div className="mt-4">
             <p className={cn(navType.groupLabel, "mb-1 px-3")}>{menu.extrasLabel ?? "Нэмэлт"}</p>
-            <div className="flex flex-col gap-0.5">
-              {extras.map((item) => (
-                <SectionRow key={item.id} section={item} secondary />
-              ))}
-            </div>
+            {extras.map((item) => (
+              <SectionRow key={item.id} section={item} secondary />
+            ))}
           </div>
         )}
 
@@ -459,15 +513,31 @@ function SectionMenu({ menu }: { menu?: MegaMenu }) {
   );
 }
 
-/** Хурдан үйлдлийн chip — хүрээтэй, дарахад дүүрнэ (desktop-той ижил хэлбэр). */
+/** Хурдан үйлдэл — МИНИМАЛ, жижиг текст линк (desktop-той ижил зарчим). */
 function QuickActionChip({ section }: { section: MegaMenuSection }) {
-  // `min-h-11` = 44px — эдгээр нь ДАРАГДАХ үйлдэл тул хүрэх талбайн доод
-  // хязгаарыг мөрдөнө (padding-аар 36px л болж байсан).
+  // ⚠️ `NavigationMenuLink` нь ӨӨРИЙН үндсэн класстай ирдэг:
+  //      `p-2 rounded-md hover:bg-muted focus:bg-muted`
+  // Тэр нь текст линкийг саарал дэвсгэртэй ТОВЧ шиг харагдуулж, 8px padding
+  // нэмж хэтэрхий өргөн болгож байв. Тиймээс `p-0` ба `bg-transparent!`-ээр
+  // бүгдийг нь буцаана (`!` — hover/focus-ийн default-ыг гүйцэд дарахад).
+  //
+  // Underline ХЭРЭГЛЭХГҮЙ — доогуур зураас нь ИДЭВХТЭЙ ангиллын тэмдэг
+  // (`BrandTab`), quick action-д тавибал утга давхцана.
+  //
+  // `min-h-11` = 44px ХЭВЭЭР. Хүрээ, padding явсан ч эдгээр нь ДАРАГДАХ
+  // үйлдэл тул хүрэх талбайн доод хязгаар мөрдөгдөнө — зөвхөн текстийн
+  // өндөр (~16px) болбол хуруугаар онилоход хэцүү болно.
   const cls = cn(
     navType.mobileTab,
-    "border-border text-foreground inline-flex min-h-11 items-center rounded-full border px-4 transition-colors",
-    "hover:bg-foreground! hover:text-background! hover:border-foreground",
-    "focus-visible:bg-foreground! focus-visible:text-background! focus-visible:ring-0",
+    "text-foreground/75 inline-flex min-h-11 items-center p-0 transition-colors",
+    // ⚠️ `!` ЗААВАЛ: tailwind-merge нь `hover:bg-muted` ба `hover:bg-transparent!`
+    // -ыг ИЖИЛ бүлэг гэж танихгүй тул хоёулаа класс мөрөнд үлддэг —
+    // `!important` л саарал дэвсгэрийг бодитоор дардаг.
+    "hover:text-foreground! hover:bg-transparent!",
+    "focus:bg-transparent! focus-visible:text-foreground! focus-visible:ring-0",
+    // `data-[active=true]:bg-muted/50` нь href жинхэнэ болоход ажиллаж
+    // саарал дэвсгэрийг буцааж авчирна — түүнийг ч хаав.
+    "data-[active=true]:bg-transparent!",
   );
 
   return section.href.startsWith("http") ? (
@@ -501,11 +571,23 @@ function SectionRow({
   const external = section.href.startsWith("http");
 
   const rowCls = cn(
-    secondary ? navType.secondaryLink : navType.mobileLink,
-    "group/row flex items-center justify-between gap-2 rounded-full px-3 py-2.5",
-    secondary ? "text-foreground/70" : "text-foreground",
-    "hover:bg-foreground! hover:text-background! hover:**:text-background!",
-    "focus-visible:bg-foreground! focus-visible:text-background! focus-visible:**:text-background! focus-visible:ring-0",
+    // ⚠️ ЗЭРЭГЛЭЛ ХӨМӨРСӨН БАЙСНЫГ ЗАСАВ. Өмнө: үндсэн мөр `mobileLink`
+    // (14px · 500), туслах мөр `secondaryLink` (13px · **600**) — туслах нь
+    // үндсэнээсээ ЗУЗААН байсан тул "Нэмэлт дата" нь "Premium"-аас илүү
+    // тодорхой харагдаж, зэрэглэл нүдэнд ЭСРЭГ уншигдаж байв.
+    // Одоо: үндсэн 14px · 500 · `text-foreground`, туслах 13px · 400 ·
+    // `text-muted-foreground`.
+    secondary ? navType.body : navType.mobileLink,
+    // `min-h-11` (44px) нь мөрний өндрийг барина — `py-2.5` шаардлагагүй.
+    "group/row flex min-h-11 items-center justify-between gap-2 rounded-md px-3",
+    secondary ? "text-muted-foreground" : "text-foreground",
+    // ⚠️ ХАР PILL ХАСАГДСАН (`hover:bg-foreground` + цагаан текст). Хоёр
+    // шалтгаан: (1) touch дэлгэцэнд hover БАЙХГҮЙ тул тэр эффект мобайлд
+    // хэзээ ч харагддаггүй байсан — зөвхөн дарах мэдрэмж л хэрэгтэй;
+    // (2) бүтэн хар мөр нь минимал цэсэнд хэтэрхий хүчтэй.
+    // `active:` нь хуруугаар дарахад ажиллана, `hover:` нь pointer-т.
+    "transition-colors hover:bg-muted! active:bg-muted!",
+    "focus-visible:bg-muted! focus-visible:ring-0",
   );
 
   // Сум нь ЗӨВХӨН гадаад линкэд — тэр нь "сайтаас гарна" гэсэн ХЭРЭГТЭЙ мэдээлэл.
@@ -538,18 +620,32 @@ function SectionRow({
 function MenuPromoTeaser() {
   return (
     <div className="border-border mt-2 border-t px-1 pt-3 pb-1">
-      <p className={cn(navType.body, "text-muted-foreground")}>
-        Энэ цэстэй холбоотой урамшуулал энд байрлана.
-      </p>
-      <NavigationMenuLink
-        asChild
-        className="bg-primary text-primary-foreground hover:bg-primary/90! hover:text-primary-foreground! mt-2.5 inline-flex h-9 w-auto items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold"
-      >
-        <Link href="/campaigns">
-          Sample CTA
-          <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
-        </Link>
-      </NavigationMenuLink>
+      {/* Урамшуулал бүр = ӨӨРИЙН гарчиг + ӨӨРИЙН CTA. Бичвэр, тоо нь
+          desktop-той ИЖИЛ эх сурвалжаас (`MENU_PROMOS`) ирнэ.
+          `min-h-9` (36px) — `h-9` биш: `NavigationMenuLink` дотор текст хоёр
+          мөр болвол `h-9` нь агуулгыг хайчилна.
+
+          БАЙРЛАЛ (mobile): CTA нь БАРУУН ирмэгт (`items-end`), гарчиг нь
+          `w-full`-ээр бүтэн мөр эзэлж зүүн талд хэвээр. Гарчиг, товчийг НЭГ
+          мөрөнд хажуу зэрэгцүүлэх боломжгүй — 375px дэлгэцэнд 46 тэмдэгт
+          гарчиг + товч багтахгүй, гарчиг 3 мөр болж шахагдана.
+          Desktop нь `items-start` хэвээр (`header-shared.tsx`). */}
+      <div className="flex flex-col gap-4">
+        {MENU_PROMOS.map((promo) => (
+          <div key={promo.ctaLabel} className="flex flex-col items-end">
+            <p className={cn(navType.body, "text-muted-foreground w-full")}>{promo.title}</p>
+            <NavigationMenuLink
+              asChild
+              className="bg-primary text-primary-foreground hover:bg-primary/90! hover:text-primary-foreground! mt-2 inline-flex min-h-9 w-auto items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold"
+            >
+              <Link href={promo.href}>
+                {promo.ctaLabel}
+                <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
+              </Link>
+            </NavigationMenuLink>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -628,10 +724,14 @@ function BottomTabBar() {
    */
   const isInternal = (t: (typeof TABS)[number]) =>
     !t.owner || t.owner === "self" || t.owner === BRAND;
+  // `isCurrentPage` (aria-current) — ХАТУУ: нөгөө домэйны таб нь шинэ tab-аар
+  // нээгддэг тул "одоогийн хуудас" болж чадахгүй.
   const currentName = TABS.find(
     (t) => isInternal(t) && (pathname === t.href || pathname.startsWith(`${t.href}/`)),
   )?.name;
-  const highlightedName = currentName ?? DOMAIN_TAB;
+  // Харагдах ТОДОТГОЛ — header-ийн таб, desktop-той НЭГ эх сурвалжаас, тиймээс
+  // гурван давхарга (доод bar · header таб · desktop) хэзээ ч зөрөхгүй.
+  const highlightedName = useActiveNavName(appleNavCategories);
 
   const renderTab = (tab: (typeof TABS)[number]) => (
     <li key={tab.name} className="flex-1">
@@ -690,7 +790,10 @@ function BottomTab({
   highlighted: boolean;
   isCurrentPage: boolean;
 }) {
-  const isDomain = tab.name === DOMAIN_TAB;
+  // sr-only тодотгол нь ХАРАГДАХ тодотголтой ижил байх ёстой — эс бөгөөс
+  // харааны хэрэглэгч нэгийг, screen reader хэрэглэгч өөрийг "одоогийн" гэж
+  // харна. Тиймээс `highlighted`-ыг шууд дамжуулна.
+  const isDomain = highlighted;
   const Icon = TAB_ICONS[tab.name];
 
   return (
@@ -801,6 +904,9 @@ function MobileMenuSheet({ variant }: { variant: MobileVariant }) {
 
   const categories = BURGER_CATEGORIES[variant];
   const rowClass = cn(navType.mobileLink, ROW);
+  // Header-ийн таб, доод bar-тай НЭГ эх сурвалж (`useActiveNavName`) — hook
+  // тул `.map()` дотор дуудаж болохгүй, энд нэг удаа тооцно.
+  const activeName = useActiveNavName(appleNavCategories);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -823,7 +929,7 @@ function MobileMenuSheet({ variant }: { variant: MobileVariant }) {
             <Accordion type="single" collapsible className="gap-0.5">
               {categories.map((category) => {
                 const menu = mobileMegaMenus[category.name];
-                const isDomain = category.name === DOMAIN_TAB;
+                const isDomain = category.name === activeName;
 
                 // Дэд цэсгүй ангилал (Урамшуулал) — accordion биш, шууд линк
                 if (!menu) {

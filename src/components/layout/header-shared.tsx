@@ -67,29 +67,80 @@ export function useActiveBrand(): string | null {
 }
 
 /**
- * ХАРАГДАЖ БАЙГАА цэсний жагсаалттай нь тулгаж актив линкийг олно.
- *
- * `useActiveBrand` нь зөвхөн `ecosystemBrands`-аас хайдаг тул "Дэлгүүр",
- * "Entertainment", "Урамшуулал", "Тусламж" зэрэг ангилал хэзээ ч актив
- * болдоггүй байсан. Энэ нь рендерлэгдэж байгаа жагсаалтаас хайна.
- *
- * Хамгийн УРТ таарсан зам хожино — `/entertainment` ба `/entertainment/main`
- * хоёр зэрэг байвал тодорхой нь сонгогдоно.
+ * ОДОО БАЙГАА ДОМЭЙНЫ цэсний нэр — `NEXT_PUBLIC_BRAND`-аас гарна.
+ * Unitel build дээр "Unitel", Univision build дээр "Univision".
+ * Зөвхөн FALLBACK — доорх `useActiveNavName`-ийг үз.
  */
-export function useActiveNavName(items: EcosystemLink[]): string | null {
-  const pathname = usePathname();
+export const DOMAIN_NAV_NAME: string = BRAND_LABEL[BRAND];
+
+/**
+ * ТОДРОХ (underline) цэсний нэр — ХОЁР ШАТЛАЛТ:
+ *
+ *   1. Одоогийн зам цэсний элементтэй таарвал ТЭР тодорно.
+ *      `/univision` → "Univision", `/devices` → "Дэлгүүр".
+ *      Хамгийн УРТ таарсан зам хожино — `/entertainment` ба
+ *      `/entertainment/main` хоёр зэрэг байвал тодорхой нь сонгогдоно.
+ *   2. Юу ч таарахгүй бол (нүүр `/`, `/support`, `/main-packages` …)
+ *      build-ийн ДОМЭЙН тодорно (`DOMAIN_NAV_NAME`).
+ *
+ * ⚠️ `owner`-оор ШҮҮХГҮЙ. Хоёр брэнд одоогоор НЭГ Next.js апп дотор
+ * (`/unitel`, `/univision` нь дотоод зам) тул Unitel build дээр байгаа
+ * хэрэглэгч `/univision` рүү орж чадна — тэр үед "Univision" тодрох ёстой.
+ * `owner === BRAND` гэж шүүвэл нөгөө брэнд ХЭЗЭЭ Ч тодрохгүй болно.
+ *
+ * Desktop (`CategoryNav`), mobile таб (`BrandTab`), burger, доод tab bar —
+ * БҮГД үүнийг уншина тул давхаргууд хооронд зөрөхгүй.
+ */
+export function useActiveNavName(items: EcosystemLink[]): string {
+  return useCurrentNavName(items) ?? DOMAIN_NAV_NAME;
+}
+
+/**
+ * ЗӨВХӨН замаар таарсан цэс — таарахгүй бол `null` (домэйн руу унахгүй).
+ *
+ * `aria-current="page"`-д ЯГ ҮҮНИЙГ хэрэглэнэ: нүүр (`/`) хуудсанд домэйны
+ * цэс нь ХАРАГДАХ тодотголтой байж болох ч тэр нь "одоогийн хуудас" БИШ —
+ * screen reader-т ийм гэж хэлбэл хэрэглэгч `/unitel` дээр байна гэж
+ * төөрөгдөнө.
+ */
+export function useCurrentNavName(items: EcosystemLink[]): string | null {
+  const pathname = usePathname() ?? "";
 
   let best: { name: string; length: number } | null = null;
   for (const item of items) {
-    if (item.external || item.href === "/" || item.href.startsWith("#")) continue;
-    // Замын хэсэг бүтнээр таарах ёстой: /devices нь /devices-extra-г тааруулахгүй
+    if (item.external) continue;
     const base = item.href.split(/[?#]/)[0];
+    // Нүүр (`/`) нь бүх замтай таарах тул оролцуулахгүй. Гадаад URL мөн адил.
+    if (base === "/" || !base.startsWith("/")) continue;
+    // Замын хэсэг БҮТНЭЭР таарах ёстой: /devices нь /devices-extra-г авахгүй
     if (pathname !== base && !pathname.startsWith(`${base}/`)) continue;
     if (!best || base.length > best.length) best = { name: item.name, length: base.length };
   }
 
   return best?.name ?? null;
 }
+
+/**
+ * Цэсний урамшуулал — PLACEHOLDER. Урамшуулал бүр ӨӨРИЙН гарчиг (title) ба
+ * өөрийн CTA-тай: өмнө нь нэг ерөнхий бичвэр дээр хоёр товч зэрэгцэж байсан
+ * тул аль товч аль урамшууллынх нь болох нь тодорхойгүй байв.
+ *
+ * Desktop (`BrandMegaPanel`) ба mobile (`MenuPromoTeaser`) ХОЁУЛАА эндээс
+ * уншина тул тоо, бичвэр зөрөхгүй. Жинхэнэ урамшууллын data гарахад энэ
+ * жагсаалт цэсээс хамаарч динамик болно.
+ */
+export const MENU_PROMOS: { title: string; ctaLabel: string; href: string }[] = [
+  {
+    title: "Энэ цэстэй холбоотой урамшуулал 1 энд байрлана.",
+    ctaLabel: "Sample CTA 1",
+    href: "/campaigns",
+  },
+  {
+    title: "Энэ цэстэй холбоотой урамшуулал 2 энд байрлана.",
+    ctaLabel: "Sample CTA 2",
+    href: "/campaigns",
+  },
+];
 
 // =====================================================================
 // MEGA MENU — hover-оор задардаг панелийн төлөв
@@ -206,30 +257,49 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
     "focus-visible:bg-foreground focus-visible:text-background focus-visible:outline-none",
   );
 
-  /** НЭМЭЛТ багана — 13px, туслах шинжтэй тул pill-гүй, зөвхөн өнгө хүчждэг. */
+  /**
+   * НЭМЭЛТ багана — туслах шинжтэй тул pill-гүй, зөвхөн өнгө хүчждэг.
+   *
+   * ⚠️ `navType.secondaryLink` (13px · **600**) байсныг `body` (13px · 400)
+   * болгов. Үндсэн багана нь `navType.bar` (15px · **400**) тул туслах багана
+   * нь үндсэнээсээ ЗУЗААН байж, зэрэглэл нүдэнд ЭСРЭГ уншигдаж байв.
+   * Mobile-ийн `SectionRow`-д ч ижил алдаа байсныг хамт зассан.
+   */
   const extraCls = cn(
-    navType.secondaryLink,
-    "text-foreground/70 hover:text-foreground block transition-colors",
+    navType.body,
+    "text-muted-foreground hover:text-foreground block transition-colors",
   );
 
   /**
-   * ХУРДАН ҮЙЛДЭЛ — дээд мөр. Ангиллын линкээс ЯЛГАРАХ ёстой (тэднийг тойрч
-   * шууд үйлдэл хийдэг) тул хүрээтэй pill: дэвсгэргүй, hover дээр л дүүрнэ.
+   * ХУРДАН ҮЙЛДЭЛ — дээд мөр. МИНИМАЛ: хүрээтэй pill байсныг хассан.
+   * Ангиллын линкээс ялгарах нь хэлбэрээр биш БАЙРЛАЛААР шийдэгдэнэ —
+   * дээд мөрөнд, доогуураа зааглагдсан. Тод илэрхийлэл нь өнгө + underline.
    */
+  // `navType.body` (13px) — өмнөх `navType.bar` (15px)-ээс ЖИЖИГ. Эдгээр нь
+  // ангиллын үндсэн линкүүдээс дэд зэрэглэлийн шууд үйлдэл тул мөрний
+  // линкүүдтэй ижил хэмжээтэй байх шаардлагагүй.
+  // Underline ХЭРЭГЛЭХГҮЙ — доогуур зураас нь ИДЭВХТЭЙ ангиллын тэмдэг
+  // (`header.tsx > CategoryNav`), quick action-д тавибал утга давхцана.
   const quickCls = cn(
-    navType.bar,
-    "border-border text-foreground hover:bg-foreground hover:text-background hover:border-foreground focus-visible:bg-foreground focus-visible:text-background inline-flex items-center rounded-full border px-3.5 py-1.5 transition-colors focus-visible:outline-none",
+    navType.body,
+    "text-foreground/75 hover:text-foreground focus-visible:text-foreground inline-flex items-center transition-colors focus-visible:outline-none",
   );
 
   const extras = menu.extras ?? MEGA_RELATED_LINKS;
 
   return (
-    <div className="mx-auto max-w-300 px-4 py-8">
+    // `py-8` (32px) байсныг ДЭЭД талд `pt-4` (16px) болгов — панел header-ийн
+    // доод ирмэгээс шууд задардаг тул дээд зай нь header-тэй хамт хуримтлагдаж
+    // хэтэрхий сул харагдаж байв. Доод `pb-8` хэвээр: панелийн доод ирмэг нь
+    // хуудасны агуулгатай зааглагдах зай хэрэгтэй.
+    <div className="mx-auto max-w-300 px-4 pt-4 pb-8">
       {/* ХУРДАН ҮЙЛДЭЛ — ГАРЧИГГҮЙ дээд мөр, доогуураа зааглана.
           Байхгүй брэнд (Univision · Дэлгүүр · LookTV) дээр мөр бүхэлдээ
           рендерлэгдэхгүй — хоосон зай гаргахгүй. */}
       {menu.quickActions && menu.quickActions.length > 0 && (
-        <div className="border-border mb-7 flex flex-wrap items-center gap-2 border-b pb-6">
+        // pill-ийн padding явсан тул элементүүд хоорондоо `gap-x-6`-аар
+        // амьсгална — эс бөгөөс текстүүд нэг урт мөр шиг нийлж уншигдана.
+        <div className="border-border mb-7 flex flex-wrap items-center gap-x-6 gap-y-2 border-b pb-6">
           {menu.quickActions.map((action) => (
             <MegaItem
               key={action.id}
@@ -275,19 +345,37 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
             урамшуулал нь тухайн ЦЭСТЭЙ холбоотой байх ёстой бөгөөд тэр data
             хараахан байхгүй. Хоёр давхарга (desktop/mobile) нэг бичвэр
             хэрэглэснээр аль хэдийн байгаа зөрөх шалтгаан үлдэхгүй. */}
-        <div className="ml-auto w-72 shrink-0">
+        {/* ӨРГӨН: `w-72` (288px) байсан нь 13px гарчгийг ХОЁР мөр болгож
+            байв. Одоо `w-fit` — багана нь агуулгынхаа (хамгийн урт гарчгийн)
+            хэмжээгээр яг тохирно, гарчиг НЭГ мөрөнд байна.
+            `max-w-100` (400px) нь хамгаалалт: жинхэнэ урамшууллын урт бичвэр
+            орвол багана хязгааргүй тэлж зүүн баганыг шахахгүй. */}
+        <div className="ml-auto w-fit max-w-100 shrink-0">
           <h3 className={cn(navType.groupLabel, "mb-4")}>Урамшуулал</h3>
-          <p className={cn(navType.body, "text-muted-foreground")}>
-            Энэ цэстэй холбоотой урамшуулал энд байрлана.
-          </p>
-          <Link
-            href="/campaigns"
-            onClick={onNavigate}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 mt-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold transition-colors"
-          >
-            Sample CTA
-            <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
-          </Link>
+          {/* Урамшуулал бүр = ӨӨРИЙН гарчиг + ӨӨРИЙН CTA. `gap-5` нь хоёр
+              блокийг тод салгана — эс бөгөөс гарчиг, товч солбицож уншигдана.
+              `items-start` — товч агуулгынхаа өргөнөөр, баганын бүтэн
+              өргөнөөр сунахгүй. */}
+          <div className="flex flex-col gap-5">
+            {MENU_PROMOS.map((promo) => (
+              <div key={promo.ctaLabel} className="flex flex-col items-start">
+                {/* `whitespace-nowrap` — гарчиг заавал НЭГ мөр. `w-fit`-тэй
+                    хамт баганын өргөнийг ЭНЭ мөр шийднэ. Mobile-д (`MenuPromoTeaser`)
+                    ХЭРЭГЛЭХГҮЙ — тэнд өргөн 375px тул халина. */}
+                <p className={cn(navType.body, "text-muted-foreground whitespace-nowrap")}>
+                  {promo.title}
+                </p>
+                <Link
+                  href={promo.href}
+                  onClick={onNavigate}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 mt-2.5 inline-flex h-9 items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold transition-colors"
+                >
+                  {promo.ctaLabel}
+                  <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
