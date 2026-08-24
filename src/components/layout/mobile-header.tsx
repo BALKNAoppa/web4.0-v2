@@ -1,25 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useTheme } from "next-themes";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  BotMessageSquare,
-  Gift,
-  Globe,
-  LogOut,
-  Menu,
-  MonitorPlay,
-  Moon,
-  ShoppingBag,
-  Smartphone,
-  Sun,
-  Tv,
-  User,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, Gift, Globe, LogOut, Menu, Moon, Sun, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,12 +12,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -44,10 +22,10 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/components/auth/auth-provider";
-import { SmartLink } from "@/components/layout/smart-link";
 import {
   BrandLogoLink,
   MENU_PROMOS,
+  MENU_PROMOS_HEADING,
   classifierSegments,
   useActiveNavName,
 } from "@/components/layout/header-shared";
@@ -58,13 +36,12 @@ import {
   type MegaMenu,
   type MegaMenuSection,
 } from "@/data/navigation";
-import { BRAND } from "@/lib/brand";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════
- * MOBILE HEADER — 3 хувилбар (desktop-ийн хувилбартай хамт солигдоно)
+ * MOBILE HEADER — 2 хувилбар (desktop-ийн хувилбартай хамт солигдоно)
  * ═══════════════════════════════════════════════════════════════════════
  *
  * ХУВИЛБАР 1 — таб төвд, Layer 2-ын БҮХ 5 ангилал
@@ -92,33 +69,20 @@ import { cn } from "@/lib/utils";
  *   Header дээр таб байхгүй. Desktop-ийн mega menu БҮГД burger дотор
  *   dropdown (accordion)-оор задарна.
  *
- * ХУВИЛБАР 3 — доод tab bar (ЗӨВХӨН mobile; desktop нь Хувилбар 1-тэй ижил)
- *   ┌──────────────────────────────────────┐
- *   │ (◉)                               ☰ │  header
- *   └──────────────────────────────────────┘
- *                      ╭────╮
- *   ┌────────────────│ 🤖 │────────────────┐  sticky доод bar
- *   │  📱      📺    ╰────╯    🛍      👤  │
- *   │ Unitel Univision Chat Дэлгүүр Профайл│
- *   └──────────────────────────────────────┘
- *   Доод bar нь `fixed bottom-0 z-50` — контентын хамгийн наана. Ангилал
- *   дарахад ДЭД ЦЭС нээгдэхгүй, ШУУД тухайн хуудас руу шилжинэ; дэд цэсэнд
- *   burger-ээс хүрнэ (Хувилбар 3-ын burger нь Хувилбар 2-той ижил — бүх
- *   ангилал accordion-оор). Chat нь ГОЛД, брэнд өнгөт өргөгдсөн дугуйгаар
- *   бусдаасаа ялгарна; навигацын хэсэг болсон тул хөвөгч chat товч
- *   нуугдана (globals.css).
+ * ⚠️ ХУВИЛБАР 3 (sticky доод tab bar) нь ХАСАГДСАН — код нь бүрэн устсан
+ * (`BottomTabBar` ба туслахууд, globals.css-ийн зай, chat-ийн нуулт).
  *
  * ТОДОРСОН ангилал — `useActiveNavName` (`header-shared.tsx`): зам таарвал
  * тэр, таарахгүй бол build-ийн домэйн. Desktop-ийн `CategoryNav`, header-ийн
- * таб, burger, доод tab bar — ДӨРВҮҮЛЭЭ нэг эх сурвалжаас уншина тул
- * `/univision` рүү орвол бүх давхаргад тодотгол зэрэг зөөгдөнө.
+ * таб, burger — ГУРВУУЛАА нэг эх сурвалжаас уншина тул
+ * `/devices` рүү орвол бүх давхаргад тодотгол зэрэг зөөгдөнө.
  *
  * Хэлбэр нь БҮХ хувилбарт ИЖИЛ: `text-foreground` + зузаан үсэг + доогуур
  * зураас (light-д хар, dark-д цагаан). Брэнд ногоон (`text-primary`) байхаа
  * больсон — ногоон нь одоо ЗӨВХӨН CTA / promo / Chat-ын дугуйд үлдсэн.
  */
 
-export type MobileVariant = 1 | 2 | 3;
+export type MobileVariant = 1 | 2;
 
 /**
  * Хувилбар 1-ийн header дээрх табууд — Layer 2-ын БҮХ 5 ангилал.
@@ -142,58 +106,24 @@ const TABS = appleNavCategories.filter((c): c is EcosystemLink & { name: TabName
 /**
  * Burger дотор ямар ангилал харуулах вэ.
  *   Хувилбар 1 — табанд ОРООГҮЙ нь. `TAB_NAMES` нь 5 ангилал БҮГДИЙГ агуулдаг
- *     болсон тул энэ нь одоо ХООСОН — burger-т зөвхөн Байгууллага + тохиргоо
- *     үлдэнэ. (Ангиллын дэд цэсэнд header-ийн таб dropdown-оос хүрнэ.)
- *   Хувилбар 2 · 3 — БҮГД. Хувилбар 3-ын доод bar нь дэд цэс нээхгүй, шууд
- *     хуудас руу шилжүүлдэг тул дэд цэсэнд хүрэх ганц зам нь burger болно.
+ *     тул энэ нь ХООСОН — burger-т зөвхөн Байгууллага + тохиргоо үлдэнэ.
+ *     (Ангиллын дэд цэсэнд header-ийн таб dropdown-оос хүрнэ.)
+ *   Хувилбар 2 — БҮГД. Header дээр таб байхгүй тул цэсэнд хүрэх ганц зам.
  */
 const BURGER_CATEGORIES: Record<MobileVariant, EcosystemLink[]> = {
   1: appleNavCategories.filter((c) => !isTab(c.name)),
   2: appleNavCategories,
-  3: appleNavCategories,
 };
 
 /** Байгууллага — дэд цэсгүй, дарвал ШУУД Nexmind руу (`classifierSegments`). */
 const BUSINESS = classifierSegments.find((s) => s.id === "business");
-
-/**
- * Доод tab bar-ын ангилал бүрийн icon (Хувилбар 3).
- *
- * `TabName` нь 5 болсон тул бүгдэд бичлэг шаардлагатай (TS). Гэхдээ доод bar нь
- * `BOTTOM_LEFT`/`BOTTOM_RIGHT`-аар зөвхөн Unitel · Univision · Дэлгүүр-ийг
- * авдаг тул Урамшуулал/LookTV-ийн icon одоогоор ЗӨВХӨН нөөц — доод bar-ын
- * бүтэц (5 slot: 2 + Chat + 1 + Профайл) өөрчлөгдөөгүй.
- */
-const TAB_ICONS: Record<TabName, typeof Smartphone> = {
-  Unitel: Smartphone,
-  Univision: Tv,
-  Дэлгүүр: ShoppingBag,
-  Урамшуулал: Gift,
-  LookTV: MonitorPlay,
-};
-
-/**
- * Доод bar-ын ДАРААЛАЛ:
- *   Unitel · Univision · [Chat] · Дэлгүүр · Профайл
- * Chat нь ГОЛД, брэнд өнгөт өргөгдсөн дугуйгаар бусдаасаа ялгарна.
- */
-const BOTTOM_LEFT = TABS.filter((t) => t.name === "Unitel" || t.name === "Univision");
-const BOTTOM_RIGHT = TABS.filter((t) => t.name === "Дэлгүүр");
 
 // =====================================================================
 // ROUTER — хувилбараар салгана
 // =====================================================================
 export function MobileBrandHeader({ variant }: { variant: MobileVariant }) {
   if (variant === 1) return <BrandTabsHeader />;
-
-  if (variant === 2) return <HeaderRow variant={2} />;
-
-  return (
-    <>
-      <HeaderRow variant={3} />
-      <BottomTabBar />
-    </>
-  );
+  return <HeaderRow variant={2} />;
 }
 
 /**
@@ -327,7 +257,7 @@ function HeaderRow({ variant, children }: { variant: MobileVariant; children?: R
  * ТОДОТГОЛ нь ХАМГИЙН ИХДЭЭ НЭГ таб дээр — desktop-ийн `CategoryNav`-тай ижил
  * эрэмбээр:
  *   1. Дэд цэс НЭЭЛТТЭЙ бол ТЭР таб (хэрэглэгчийн одоогийн СОНГОЛТ)
- *   2. Эс бөгөөс замаар таарсан нь (`/univision` → "Univision")
+ *   2. Эс бөгөөс замаар таарсан нь (`/devices` → "Дэлгүүр")
  *   3. Эс бөгөөс build-ийн домэйн
  *
  * Өмнө нь 2/3-аар гарсан нь БАЙНГА доогуур зураастай байсан ба нээлттэй таб нь
@@ -377,8 +307,8 @@ function BrandTab({
    *
    * ТОДОТГОЛ — БРЭНД НОГООН БИШ, `text-foreground` (light-д хар, dark-д
    * цагаан) + доогуур зураас. Ингэснээр desktop-ийн `CategoryNav`
-   * (`header.tsx`) болон Хувилбар 3-ын доод bar-тай ИЖИЛ болно — бүх давхарга
-   * дээр "би хаана байна" гэдэг нь нэг л хэлбэрээр илэрхийлэгдэнэ.
+   * (`header.tsx`)-тай ИЖИЛ болно — бүх давхарга дээр "би хаана байна"
+   * гэдэг нь нэг л хэлбэрээр илэрхийлэгдэнэ.
    */
   const pillClass = cn(
     navType.mobileTab,
@@ -387,9 +317,9 @@ function BrandTab({
     // `bg-background + ring-1 + ring-border + shadow-sm` нь табыг хүрээтэй
     // хайрцаг болгодог байв — минимал чиглэлд нийцэхгүй.
     isDomain
-      // Desktop нь `after:` элемент хэрэглэдэг (hover дээр тэлэх анимацитай),
-      // энд анимаци шаардлагагүй тул шууд `underline`.
-      ? "text-foreground underline underline-offset-4"
+      ? // Desktop нь `after:` элемент хэрэглэдэг (hover дээр тэлэх анимацитай),
+        // энд анимаци шаардлагагүй тул шууд `underline`.
+        "text-foreground underline underline-offset-4"
       : "text-foreground/75 group-hover/tab:text-foreground",
   );
 
@@ -534,7 +464,7 @@ function QuickActionChip({ section }: { section: MegaMenuSection }) {
     // -ыг ИЖИЛ бүлэг гэж танихгүй тул хоёулаа класс мөрөнд үлддэг —
     // `!important` л саарал дэвсгэрийг бодитоор дардаг.
     "hover:text-foreground! hover:bg-transparent!",
-    "focus:bg-transparent! focus-visible:text-foreground! focus-visible:ring-0",
+    "focus-visible:text-foreground! focus:bg-transparent! focus-visible:ring-0",
     // `data-[active=true]:bg-muted/50` нь href жинхэнэ болоход ажиллаж
     // саарал дэвсгэрийг буцааж авчирна — түүнийг ч хаав.
     "data-[active=true]:bg-transparent!",
@@ -586,7 +516,7 @@ function SectionRow({
     // хэзээ ч харагддаггүй байсан — зөвхөн дарах мэдрэмж л хэрэгтэй;
     // (2) бүтэн хар мөр нь минимал цэсэнд хэтэрхий хүчтэй.
     // `active:` нь хуруугаар дарахад ажиллана, `hover:` нь pointer-т.
-    "transition-colors hover:bg-muted! active:bg-muted!",
+    "hover:bg-muted! active:bg-muted! transition-colors",
     "focus-visible:bg-muted! focus-visible:ring-0",
   );
 
@@ -620,29 +550,30 @@ function SectionRow({
 function MenuPromoTeaser() {
   return (
     <div className="border-border mt-2 border-t px-1 pt-3 pb-1">
-      {/* Урамшуулал бүр = ӨӨРИЙН гарчиг + ӨӨРИЙН CTA. Бичвэр, тоо нь
-          desktop-той ИЖИЛ эх сурвалжаас (`MENU_PROMOS`) ирнэ.
-          `min-h-9` (36px) — `h-9` биш: `NavigationMenuLink` дотор текст хоёр
-          мөр болвол `h-9` нь агуулгыг хайчилна.
+      {/* Баганын ерөнхий тайлбар — desktop-той ИЖИЛ эх сурвалжаас, нэг л удаа.
+          Өмнө нь мөр бүр "…урамшуулал 1/2 энд байрлана" гэж давтагддаг байв. */}
+      <h3 className={cn(navType.groupLabel, "mb-3")}>{MENU_PROMOS_HEADING}</h3>
 
-          БАЙРЛАЛ (mobile): CTA нь БАРУУН ирмэгт (`items-end`), гарчиг нь
-          `w-full`-ээр бүтэн мөр эзэлж зүүн талд хэвээр. Гарчиг, товчийг НЭГ
-          мөрөнд хажуу зэрэгцүүлэх боломжгүй — 375px дэлгэцэнд 46 тэмдэгт
-          гарчиг + товч багтахгүй, гарчиг 3 мөр болж шахагдана.
-          Desktop нь `items-start` хэвээр (`header-shared.tsx`). */}
+      {/* Мөрийн бүтэц desktop-той ИЖИЛ: дугуй зураг + гарчиг + CTA.
+          Өмнө нь mobile нь өөр байрлалтай (CTA баруун ирмэгт, дүрсгүй) байсан
+          нь урт placeholder бичвэрээс үүдэлтэй — гарчиг богино болсноор тэр
+          шалтгаан алга болж, хоёр давхарга нэг хэлбэрт орлоо. */}
       <div className="flex flex-col gap-4">
-        {MENU_PROMOS.map((promo) => (
-          <div key={promo.ctaLabel} className="flex flex-col items-end">
-            <p className={cn(navType.body, "text-muted-foreground w-full")}>{promo.title}</p>
-            <NavigationMenuLink
-              asChild
-              className="bg-primary text-primary-foreground hover:bg-primary/90! hover:text-primary-foreground! mt-2 inline-flex min-h-9 w-auto items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold"
-            >
-              <Link href={promo.href}>
-                {promo.ctaLabel}
-                <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
-              </Link>
-            </NavigationMenuLink>
+        {MENU_PROMOS.map((promo, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <MobilePromoAvatar />
+            <div className="flex min-w-0 flex-col items-start">
+              <p className={cn(navType.secondaryLink, "text-foreground")}>{promo.title}</p>
+              <NavigationMenuLink
+                asChild
+                className="text-primary hover:text-primary! mt-1 inline-flex w-auto items-center gap-1.5 bg-transparent! p-0 text-xs font-semibold"
+              >
+                <Link href={promo.href}>
+                  <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
+                  {promo.ctaLabel}
+                </Link>
+              </NavigationMenuLink>
+            </div>
           </div>
         ))}
       </div>
@@ -650,245 +581,21 @@ function MenuPromoTeaser() {
   );
 }
 
-// =====================================================================
-// ХУВИЛБАР 3 — sticky доод tab bar
-// =====================================================================
-
 /**
- * Хөтчийн ДООД UI-ийн өндрийг хөөж, доод bar-ыг тэр хэмжээгээр дээш зөөнө.
- *
- * ЯАГААД: iOS Safari-д `position: fixed; bottom: 0` нь LAYOUT viewport-д
- * бэхлэгддэг. Safari-ийн доод toolbar задрахад layout viewport дахин
- * тооцогддоггүй — toolbar нь bar-ыг ДАРНА. `env(safe-area-inset-bottom)` нь
- * зөвхөн home indicator-ын зурааст зориулагдсан тул үүнийг НӨХӨХГҮЙ.
- *
- * `visualViewport` нь ХАРАГДАЖ байгаа хэсгийг мэдээлдэг тул
- * `innerHeight − vv.height − vv.offsetTop` = доод талд нуугдсан px. Тэрийг
- * CSS хувьсагчаар өгч bar-ыг toolbar задрах/хураагдах бүрд дагуулна.
- *
- * REACT STATE ХЭРЭГЛЭХГҮЙ — scroll бүрд re-render хийхгүйн тулд ref-ээр
- * шууд CSS хувьсагч бичнэ (rAF-аар нэгтгэсэн).
- *
- * ГАР ЧУХАЛ: экран дээрх KEYBOARD нээгдэхэд visualViewport ЭРС жижигрэнэ.
- * Тэр үед bar-ыг дэлгэцийн голд хөвүүлэх нь эвгүй тул 120px-ээр хязгаарлаж,
- * 150px-ээс их бол `data-keyboard="open"` болгож бүхэлд нь нууна.
+ * Mobile-ын урамшууллын дугуй — desktop-ийн `PromoAvatar`-тай ижил үүрэг,
+ * гэхдээ `size-12` (48px). Desktop нь 56px: 375px дэлгэцэнд 56px дугуй нь
+ * текстэд 280px-аас бага зай үлдээж гарчгийг гурван мөр болгодог.
  */
-function useBrowserBottomInset(ref: React.RefObject<HTMLElement | null>) {
-  useEffect(() => {
-    const vv = window.visualViewport;
-    const el = ref.current;
-    if (!vv || !el) return;
-
-    let raf = 0;
-    const apply = () => {
-      const hidden = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
-      el.style.setProperty("--vv-bottom", `${Math.min(hidden, 120)}px`);
-      el.dataset.keyboard = hidden > 150 ? "open" : "closed";
-    };
-    const update = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(apply);
-    };
-
-    apply();
-    vv.addEventListener("resize", update);
-    vv.addEventListener("scroll", update);
-    return () => {
-      cancelAnimationFrame(raf);
-      vv.removeEventListener("resize", update);
-      vv.removeEventListener("scroll", update);
-    };
-  }, [ref]);
-}
-
-/**
- * Доод tab bar — `fixed z-50`, контентын хамгийн наана.
- *
- * `bottom` нь 0 БИШ — `--vv-bottom` (дээрх hook) тул Safari-ийн доод toolbar
- * задрахад bar нь зөөлөн дээш гарч, хураагдахад буцаж доошилно.
- *
- * `data-bottom-tab-bar` — globals.css дотор `body:has(…)`-аар доод зай
- * гаргахад ашиглагдана (bar нь fixed тул footer-ийг дардаг).
- */
-function BottomTabBar() {
-  const ref = useRef<HTMLElement>(null);
-  useBrowserBottomInset(ref);
-  const pathname = usePathname() ?? "";
-
-  /**
-   * ХАМГИЙН ИХДЭЭ НЭГ таб тодорно — доод tab bar-т "би хаана байна" гэдэг нь
-   * ганц байх ёстой. Замтай таарсан таб байвал тэр, эс бөгөөс (жишээ нь
-   * нүүр хуудсанд) build-ийн домэйны таб тодорно.
-   *
-   * Нөгөө домэйны таб (шинэ tab-аар нээгддэг) хэзээ ч "одоогийн" болохгүй.
-   */
-  const isInternal = (t: (typeof TABS)[number]) =>
-    !t.owner || t.owner === "self" || t.owner === BRAND;
-  // `isCurrentPage` (aria-current) — ХАТУУ: нөгөө домэйны таб нь шинэ tab-аар
-  // нээгддэг тул "одоогийн хуудас" болж чадахгүй.
-  const currentName = TABS.find(
-    (t) => isInternal(t) && (pathname === t.href || pathname.startsWith(`${t.href}/`)),
-  )?.name;
-  // Харагдах ТОДОТГОЛ — header-ийн таб, desktop-той НЭГ эх сурвалжаас, тиймээс
-  // гурван давхарга (доод bar · header таб · desktop) хэзээ ч зөрөхгүй.
-  const highlightedName = useActiveNavName(appleNavCategories);
-
-  const renderTab = (tab: (typeof TABS)[number]) => (
-    <li key={tab.name} className="flex-1">
-      <BottomTab
-        tab={tab}
-        highlighted={tab.name === highlightedName}
-        isCurrentPage={tab.name === currentName}
-      />
-    </li>
-  );
-
+function MobilePromoAvatar() {
   return (
-    <nav
-      ref={ref}
-      data-bottom-tab-bar
-      aria-label="Доод цэс"
-      style={{ bottom: "var(--vv-bottom, 0px)" }}
-      className="border-border bg-background/95 supports-backdrop-filter:bg-background/75 fixed inset-x-0 z-50 border-t pb-[env(safe-area-inset-bottom)] backdrop-blur transition-[bottom,transform,opacity] duration-300 ease-out data-[keyboard=open]:pointer-events-none data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
+    <span
+      aria-hidden="true"
+      className="bg-muted text-muted-foreground flex size-12 shrink-0 items-center justify-center rounded-full"
     >
-      <ul className="mx-auto flex max-w-300 items-stretch">
-        {BOTTOM_LEFT.map(renderTab)}
-        <li className="flex-1">
-          <BottomChatTab />
-        </li>
-        {BOTTOM_RIGHT.map(renderTab)}
-        <li className="flex-1">
-          <BottomAccountTab />
-        </li>
-      </ul>
-    </nav>
+      <Gift className="size-5" />
+    </span>
   );
 }
-
-/**
- * Доод bar-ын нэг ангилал — дэд цэс НЭЭХГҮЙ, дарвал ШУУД тухайн брэнд рүү
- * шилжинэ. Дэд цэсэнд burger-ээс хүрнэ (Хувилбар 3-ын burger нь бүх
- * ангиллыг accordion-оор агуулна).
- *
- * `SmartLink` — AI туслахын CTA-тай ЯГ ИЖИЛ логик (`resolveHref`):
- *   Unitel build дээр  → Unitel: дотоод /unitel · Univision: univision домэйн
- *   Univision build    → Univision: дотоод /univision · Unitel: unitel домэйн
- * Нөгөө домэйн бол шинэ tab-аар нээгдэнэ. Дотоод/гадаадыг ХАРАГДАЦААР
- * ялгахгүй (сум, брэндийн нэр нэмэхгүй) — нэгдсэн эко-системийн зарчим.
- *
- * ТОДОТГОЛ — брэнд ногоон БИШ, `text-foreground` + `font-bold` (light theme-д
- * хар, dark theme-д цагаан). Ногоон нь доод bar-ын бусад элементтэй
- * зохицохгүй байсан. Тодорсон таб нь ХАМГИЙН ИХДЭЭ НЭГ (`BottomTabBar`-д
- * шийдэгдэнэ): замтай таарсан нь, эс бөгөөс домэйны таб.
- */
-function BottomTab({
-  tab,
-  highlighted,
-  isCurrentPage,
-}: {
-  tab: EcosystemLink & { name: TabName };
-  highlighted: boolean;
-  isCurrentPage: boolean;
-}) {
-  // sr-only тодотгол нь ХАРАГДАХ тодотголтой ижил байх ёстой — эс бөгөөс
-  // харааны хэрэглэгч нэгийг, screen reader хэрэглэгч өөрийг "одоогийн" гэж
-  // харна. Тиймээс `highlighted`-ыг шууд дамжуулна.
-  const isDomain = highlighted;
-  const Icon = TAB_ICONS[tab.name];
-
-  return (
-    <SmartLink
-      href={tab.href}
-      owner={tab.owner}
-      aria-current={isCurrentPage ? "page" : undefined}
-      className={cn(
-        BOTTOM_TAB,
-        highlighted ? "text-foreground font-bold" : "text-muted-foreground hover:text-foreground",
-      )}
-    >
-      <Icon className="size-5 shrink-0" aria-hidden="true" />
-      <span className="truncate">
-        <TabLabel name={tab.name} isDomain={isDomain} />
-      </span>
-    </SmartLink>
-  );
-}
-
-/** Доод bar-ын профайл — Хувилбар 3-д профайл burger-т биш, энд байна. */
-function BottomAccountTab() {
-  const { isAuthenticated, user, openLogin, logout } = useAuth();
-
-  if (!isAuthenticated) {
-    return (
-      <button
-        type="button"
-        onClick={() => openLogin()}
-        className={cn(BOTTOM_TAB, "text-muted-foreground hover:text-foreground")}
-      >
-        <User className="size-5 shrink-0" aria-hidden="true" />
-        <span className="truncate">Нэвтрэх</span>
-      </button>
-    );
-  }
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            BOTTOM_TAB,
-            "text-muted-foreground hover:text-foreground data-[state=open]:text-foreground",
-          )}
-        >
-          <User className="size-5 shrink-0" aria-hidden="true" />
-          <span className="truncate">{user?.name}</span>
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent side="top" align="center" sideOffset={8} className="w-48">
-        <DropdownMenuItem onClick={logout} className="text-destructive">
-          <LogOut className="size-4" aria-hidden="true" />
-          Гарах
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-/**
- * Chat — Хувилбар 3-д chatbot нь НАВИГАЦЫН нэг хэсэг болно.
- *
- * `chat-widget.tsx` нь `univision:chat-open` window event-ийг аль хэдийн
- * сонсдог (support/service хуудсууд ч түүгээр дуудаж байгаа) тул шинэ store
- * хэрэггүй. Хөвөгч chat товч нь globals.css-д нуугдана — эс бөгөөс доод
- * bar-ыг дардаг.
- */
-function BottomChatTab() {
-  return (
-    <button
-      type="button"
-      onClick={() => window.dispatchEvent(new Event("univision:chat-open"))}
-      aria-label="Chat нээх"
-      className={cn(BOTTOM_TAB, "text-foreground")}
-    >
-      {/* ГОЛЫН ТАБ — брэнд өнгөт дугуй, bar-аас 28px ДЭЭШ өргөгдсөн тул
-          бусдаасаа шууд ялгарна. `-mt-7` нь өргөлтийн хэмжээтэй тэнцүү flow
-          өндрийг хасдаг учир bar-ын өндөр бусад табтай ижил (58px) хэвээр.
-          `ring-background` — bar-ын дэвсгэртэй цэвэр зааг гаргана. */}
-      <span className="bg-primary text-primary-foreground ring-background -mt-7 flex size-12 shrink-0 items-center justify-center rounded-full shadow-lg ring-4">
-        <BotMessageSquare className="size-6" aria-hidden="true" />
-      </span>
-      <span className="truncate">Chat</span>
-    </button>
-  );
-}
-
-// 11px · 500 нь `navType.mobileTab`-тай ИЖИЛ роль — header-ийн таб ба доод
-// bar хоёр нэг хэмжээнээс уншина (өмнө энд inline hardcode байсан).
-const BOTTOM_TAB = cn(
-  navType.mobileTab,
-  "flex w-full flex-col items-center justify-center gap-1 px-1 py-2 transition-colors",
-);
 
 // =====================================================================
 // BURGER
@@ -995,11 +702,11 @@ function MobileMenuSheet({ variant }: { variant: MobileVariant }) {
           </div>
         )}
 
-        {/* ── 3. Тохиргоо. Хувилбар 3-д профайл нь доод bar-т тул энд гарахгүй ── */}
+        {/* ── 3. Тохиргоо ── */}
         <div className="border-border mt-4 space-y-0.5 border-t pt-4">
           <ThemeRow />
           <LanguageRow />
-          {variant !== 3 && <AccountRow onDone={close} />}
+          <AccountRow onDone={close} />
         </div>
       </SheetContent>
     </Sheet>

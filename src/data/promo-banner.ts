@@ -98,7 +98,7 @@ export const promoBanners: Record<BrandId, PromoBannerContent> = {
     eyebrow: "Цаг үеийн урамшуулал",
     title: "Шинэ дугаар — эхний сарын төлбөр үнэгүй",
     subtitle: "Дараа төлбөрт дугаар авах амархан.",
-    cta: { label: "Багц харах", href: "/unitel#postpaid", owner: "unitel" },
+    cta: { label: "Багц харах", href: "#", owner: "unitel" },
     secondaryCta: { label: "Бүх урамшуулал", href: "/campaigns" },
   },
   univision: {
@@ -111,3 +111,30 @@ export const promoBanners: Record<BrandId, PromoBannerContent> = {
     secondaryCta: { label: "Бүх урамшуулал", href: "/campaigns" },
   },
 };
+
+// =====================================================================
+// SAMPLE PROMO КАРТУУД — нүүрний hero-гийн ДЭЭД хэсэгт 3 ширхэг зэрэгцэнэ.
+//
+// ЯАГААД 1-ИЙН ОРОНД 3: нэг бүтэн өргөний banner нь өндрөө барихын тулд
+// дэлгэцийн ~60%-ыг иддэг байв. Site-ийн ерөнхий өргөнд (1200px) багтсан
+// 3 карт нь ижил мэдээллийг ~28%-д багтаана — доорх багцын хэсэгт зай
+// чөлөөлнө.
+//
+// ⚠️ АГУУЛГА нь PLACEHOLDER: `campaigns.ts`-ийн `placeholderText` хэвээр
+// зургийн слотыг шошгоор нэрлэв. Жинхэнэ урамшуулал гарахад энэ жагсаалтыг
+// солино — компонент хөндөгдөхгүй.
+// =====================================================================
+
+export type PromoCard = {
+  id: string;
+  /** Жинхэнэ зураг бэлэн болтол картан дотор харагдах шошго */
+  placeholderText: string;
+  ctaLabel: string;
+  href: string;
+};
+
+export const samplePromoCards: PromoCard[] = [
+  { id: "promo-1", placeholderText: "Sample banner 1", ctaLabel: "Sample", href: "#" },
+  { id: "promo-2", placeholderText: "Sample banner 2", ctaLabel: "Sample", href: "#" },
+  { id: "promo-3", placeholderText: "Sample banner 3", ctaLabel: "Sample", href: "#" },
+];

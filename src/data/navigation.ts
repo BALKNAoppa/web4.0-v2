@@ -88,9 +88,11 @@ export type EcosystemLink = {
 };
 
 export const ecosystemBrands: EcosystemLink[] = [
-  // Unitel, Univision — Apple маягийн дотоод брэнд хуудсууд (/unitel, /univision)
-  { name: "Unitel", href: "/unitel" },
-  { name: "Univision", href: "/univision" },
+  // ⚠️ Unitel, Univision — өмнө нь дотоод `/unitel`, `/univision` хуудас руу
+  // заадаг байсан. Тэр ХОЁР ХУУДАС УСТСАН (LookTV-тэй хамт) тул одоо `#`.
+  // Хаашаа заахыг хойшлуулсан — доорх `appleNavCategories`-ийн тайлбарыг үз.
+  { name: "Unitel", href: "#" },
+  { name: "Univision", href: "#" },
   { name: "Toki", href: "https://toki.mn/", external: true },
   { name: "Look TV", href: "https://looktv.mn/", external: true },
   { name: "DDish TV", href: "#" }, // TODO: домэйн (ddishtv.mn?)
@@ -110,30 +112,40 @@ export const ecosystemBrands: EcosystemLink[] = [
 //
 // ДЭД ЦЭС ЗАДРАХ ЭСЭХ нь `appleMegaMenus`-д бичлэгтэй эсэхээр шийдэгдэнэ
 // (header.tsx > CategoryNav). Тиймээс:
-//   Unitel · Univision · Дэлгүүр · LookTV → hover панел задарна
-//   Урамшуулал                            → ЗӨРИУДААР бичлэггүй, энгийн линк
+//   Unitel · Univision            → hover панел задарна
+//   Дэлгүүр · Урамшуулал · LookTV → бичлэггүй ⇒ ЭНГИЙН ЛИНК, панел задрахгүй
 //
-// ⚠️ LookTV нь `external: true` БИШ, дотоод `/looktv`. Шалтгаан: `CategoryNav`
-// нь `!item.external` үед л mega menu-г уншдаг тул гадаад линк болгосон бол
-// hover панел ХЭЗЭЭ Ч задрахгүй; мөн `useActiveNavName` external-ийг
-// өнгөрүүлдэг тул active тодотгол ч гарахгүй. looktv.mn руу үсрэх линкийг
-// панелийн ДОТРООС өгнө (`LOOKTV_APP_HREF`).
+// Дэлгүүр, LookTV-гийн ӨМНӨХ дэд цэс нь `archivedMegaMenus`-д 1:1 хадгалагдсан
+// (устгаагүй) — тэдгээрийг буцаахад л панел дахин задарна.
 //
-// `owner` — Unitel/Univision нь ТУС БҮРИЙН домэйны эзэн тул нөгөө build дээр
-// дарахад тэр домэйн руу шилжинэ (`SmartLink`). Дэлгүүр/Урамшуулал/LookTV нь
-// "self" (өгөөгүй) — хоёр сайт тус бүр өөрийн хувилбартай.
+// ⚠️⚠️ ХҮЛЭЭГДЭЖ БУЙ ШИЙДВЭР — Unitel · Univision · LookTV нь `#`.
+// `/unitel`, `/univision`, `/looktv` ГУРВАН ХУУДАС УСТСАН (тэдгээрийн ribbon
+// нь `data/brand-ribbon.ts` + `components/sections/brand-ribbon.tsx` болж
+// авч үлдсэн, бусад хэсэг нь устсан). Тиймээс эдгээр цэс одоогоор ХААШАА Ч
+// ЗААХГҮЙ.
+//   Unitel · Univision — hover дээр панел задардаг тул үйлдэлгүй биш
+//   LookTV             — панелгүй ⇒ дархад ЮУ Ч БОЛОХГҮЙ
+// Аль ангилалд ТУСДАА хуудас хэрэгтэй, алийг нь нэг template + параметрээр
+// динамикаар шийдэхийг тухайн ажлыг хийхдээ ярина. Хуурмаг зам ЗОХИОХГҮЙ.
+//
+// `#` нь энэ codebase-ийн стандарт placeholder (`resolveHref` тусад нь
+// боловсруулдаг). `useCurrentNavName` нь `#`-ийг чимээгүй алгасдаг тул active
+// тодотгол нь `/devices`, `/campaigns` дээр ажиллаж, бусад үед build-ийн
+// домэйн рүү унана — алдаа гаргахгүй.
+//
+// `owner` — Unitel/Univision нь ТУС БҮРИЙН домэйны эзэн. ⚠️ `resolveHref` нь
+// `#`-ийг owner шалгахаас ӨМНӨ таслан буцаадаг тул ХӨНДЛӨН ДОМЭЙН РҮҮ ҮСРЭХ
+// нь ОДООГООР АЖИЛЛАХГҮЙ. Бодит зам сэргэмэгц дахин ажиллана.
 export const appleNavCategories: EcosystemLink[] = [
-  { name: "Unitel", href: "/unitel", owner: "unitel" },
-  { name: "Univision", href: "/univision", owner: "univision" },
+  { name: "Unitel", href: "#", owner: "unitel" },
+  { name: "Univision", href: "#", owner: "univision" },
   { name: "Дэлгүүр", href: "/devices" },
   { name: "Урамшуулал", href: "/campaigns" },
-  { name: "LookTV", href: "/looktv" },
+  { name: "LookTV", href: "#" },
 ];
 
 // =====================================================================
-// Хувилбар 1 (Apple) header-ийн mega menu — brandPages-ээс ТУСДАА (тэр нь
-// /unitel, /univision хуудсыг удирддаг тул хөндөхгүй). groupNavV2 ангилалд
-// нийцүүлэв:
+// Хувилбар 1 (Apple) header-ийн mega menu. groupNavV2 ангилалд нийцүүлэв:
 //   Unitel    = Mobile + Family
 //   Univision = Internet + Entertainment (төхөөрөмжийг Дэлгүүр рүү зөөв)
 //   Дэлгүүр   = Unitel/Univision-ийн төхөөрөмжтэй холбоотой хэсгүүд
@@ -227,7 +239,7 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
   /**
    * UNIVISION — 4 ангилал + Нэмэлт багана.
    *
-   * Ангилал нь `brand-pages.ts > univisionPage`-ийн section-уудыг бүлэглэдэг:
+   * Ангилал нь Univision-ы бүтээгдэхүүнийг ингэж бүлэглэдэг:
    *   Үндсэн бүтээгдэхүүн ← Гурвалсан (M+/L+/XL+) · Single (дан интернэт/телевиз)
    *   Интернэтийн шийдэл  ← FTTH · STB/Dongle · FTTR/Mesh · Wi-Fi 6
    *   Энтертайнмэнт       ← Linier TV · PayTV · TVOD · SVOD · HBO Max …
@@ -258,28 +270,6 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
       { id: "campaigns", title: "Бүх урамшуулал", href: "/campaigns" },
     ],
   },
-  Дэлгүүр: {
-    name: "Дэлгүүр",
-    sections: [
-      { id: "phones", title: "Гар утас", href: "/devices" },
-      { id: "accessories", title: "Дагалдах хэрэгсэл", href: "/devices" },
-      { id: "wifi", title: "Интернэтийн төхөөрөмж", href: "/devices" },
-      { id: "stb", title: "ТВ-н төхөөрөмж", href: "/devices" },
-      { id: "fttr", title: "Нэмэлт төхөөрөмж", href: "/devices" },
-    ],
-  },
-  // ⚠️ ТҮР ЗУУРЫН КАРКАС — submenu-ийн шинэ design тодрох хүртэл. Гурав нь `#`
-  // placeholder, "Апп татах" нь бодит гадаад линк. Агуулгыг эцэслэхэд
-  // `archivedMegaMenus.Entertainment.desktop`-оос авах эсэхийг шийднэ.
-  LookTV: {
-    name: "LookTV",
-    sections: [
-      { id: "channels", title: "Бүх суваг", href: "#" },
-      { id: "packages", title: "Багц ба үнэ", href: "#" },
-      { id: "movies", title: "Кино сан", href: "#" },
-      { id: "app", title: "Апп татах", href: LOOKTV_APP_HREF },
-    ],
-  },
 };
 
 // =====================================================================
@@ -287,9 +277,14 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
 //
 // Desktop-ийн mega menu (`appleMegaMenus`) ЭНЭ ангиллаас ТУСДАА бөгөөд
 // хуучнаараа хэвээр. Mobile дээр дэлгэц нарийн тул ангиллыг цөөлж,
-// нэрийг нь нэгтгэсэн ("Гар утас & Дагалдах хэрэгсэл" г.м.).
+// нэрийг нь нэгтгэж болно.
 //
-// ⚠️ Хоёр цэс ТУСДАА хөгжинө — mobile-д мөр нэмэхэд desktop өөрчлөгдөхгүй.
+// ⚠️ Түлхүүрүүд нь `appleMegaMenus`-тай ТААРАХ ЁСТОЙ. Эс бөгөөс нэг ангилал
+// desktop дээр панелтай, mobile дээр энгийн линк (эсвэл эсрэгээр) болж
+// хоёр давхарга зөрнө. Одоо хоёулаа: Unitel · Univision.
+//
+// ⚠️ Хоёр цэсний АГУУЛГА ТУСДАА хөгжинө — mobile-д мөр нэмэхэд desktop
+// өөрчлөгдөхгүй.
 // =====================================================================
 export const mobileMegaMenus: Record<string, MegaMenu> = {
   // Desktop-той ИЖИЛ агуулга — багцын нэрс + Бусад үйлчилгээ + хурдан үйлдэл.
@@ -342,40 +337,87 @@ export const mobileMegaMenus: Record<string, MegaMenu> = {
       { id: "campaigns", title: "Бүх урамшуулал", href: "/campaigns" },
     ],
   },
-  Дэлгүүр: {
-    name: "Дэлгүүр",
-    sections: [
-      { id: "phones_accessories", title: "Гар утас & Дагалдах хэрэгсэл", href: "/devices" },
-      { id: "tv_internet_devices", title: "ТВ & Интернэтийн төхөөрөмж", href: "/devices" },
-    ],
-  },
-  // ⚠️ ТҮР ЗУУРЫН КАРКАС — desktop-той ижил, mobile-ын журмаар цөөрүүлсэн.
-  LookTV: {
-    name: "LookTV",
-    sections: [
-      { id: "channels", title: "Бүх суваг", href: "#" },
-      { id: "packages", title: "Багц ба үнэ", href: "#" },
-      { id: "app", title: "Апп татах", href: LOOKTV_APP_HREF },
-    ],
-  },
 };
 
 // =====================================================================
-// АРХИВ — Layer 2-оос ГАРСАН ангиллын дэд цэс. УСТГАХГҮЙ.
+// АРХИВ — ДЭД ЦЭСГҮЙ болсон ангиллын агуулга. УСТГАХГҮЙ.
 //
-// "Entertainment" нь nav-аас гарсан (Layer 2 = Unitel · Univision · Дэлгүүр ·
-// Урамшуулал · LookTV) ч агуулга нь 1:1 хадгалагдана — submenu-ийн шинэ design
-// тодрох үед хаана байрлуулахыг шийднэ. Сэргээх бол `desktop`-ыг
-// `appleMegaMenus`, `mobile`-ыг `mobileMegaMenus` рүү хуулж, нэрийг
-// `appleNavCategories`-д нэмнэ.
+// Энд байгаа нь nav-аас ГАРСАН гэсэн үг БИШ — "Дэлгүүр" ба "LookTV" нь
+// `appleNavCategories`-д хэвээр, зүгээр л ПАНЕЛГҮЙ энгийн линк болсон
+// ("Дэлгүүр" нь `/devices` рүү; "LookTV" нь хуудас нь устсан тул `#`).
+// "Entertainment" нь nav-аас ч гарсан.
 //
-// ⚠️ /entertainment/main · /entertainment/category/[id] · /entertainment/movie/[id]
-// хуудсууд БҮГД ажиллаж байна. Одоогоор тийш хүрэх зам:
-//   mobile  — `mobileMegaMenus.Univision` > "Бүх кино контент"
-//   хуудсын бие — `brand-pages.ts` > univisionPage > entertainment > "TVOD"
-// Desktop header-ээс хүрэх зам ТҮР БАЙХГҮЙ.
+// Сэргээх бол `desktop`-ыг `appleMegaMenus`, `mobile`-ыг `mobileMegaMenus`
+// рүү буцааж хуулна — панел тэр дороо задарна (`header.tsx > CategoryNav`).
+//
+// ⚠️ ЭНД БАЙГАА ЗАМУУД ХААГДААГҮЙ. Хүрэх бусад зам:
+//   Дэлгүүр       — `/devices` landing-ийн ангиллын шүүлтүүр (pill) дээрх
+//                   `?category=` линкүүд ЯГ ижил зорилготой
+//   LookTV        — ⚠️ ЗАМГҮЙ. `/looktv` хуудас УСТСАН, шинэ зам шийдэгдээгүй
+//   Entertainment — `/entertainment/main` · `/entertainment/category/[id]` ·
+//                   `/entertainment/movie/[id]` бүгд ажиллаж байна;
+//                   `appleMegaMenus.Univision > "Энтертайнмэнт"`-аас хүрнэ
 // =====================================================================
 export const archivedMegaMenus: Record<string, { desktop: MegaMenu; mobile: MegaMenu }> = {
+  /**
+   * ДЭЛГҮҮР — `/devices` landing-ийн ангилал бүрийг нээдэг байсан панел.
+   *
+   * `?category=<id>` дэх id нь `data/devices.ts > deviceCategories`-ийн
+   * id-тай ЯГ ТААРНА. Mobile нь ангиллыг НЭГТГЭСЭН тул нэг мөр хоёр ангилал
+   * нээдэг (`?category=` таслалаар олон утга авдаг).
+   *
+   * ⚠️ `?category=` ба `?type=` нь ӨӨР зүйл: `type` нь өмнөх хувилбарын
+   * SAMPLE дэлгэрэнгүй хуудсыг нээдэг (`service-index.ts`).
+   */
+  Дэлгүүр: {
+    desktop: {
+      name: "Дэлгүүр",
+      sections: [
+        { id: "phones", title: "Гар утас", href: "/devices?category=phones" },
+        { id: "accessories", title: "Дагалдах хэрэгсэл", href: "/devices?category=accessories" },
+        { id: "wifi", title: "Интернэтийн төхөөрөмж", href: "/devices?category=wifi" },
+        { id: "stb", title: "ТВ-н төхөөрөмж", href: "/devices?category=stb" },
+        { id: "fttr", title: "Нэмэлт төхөөрөмж", href: "/devices?category=fttr" },
+      ],
+    },
+    mobile: {
+      name: "Дэлгүүр",
+      sections: [
+        {
+          id: "phones_accessories",
+          title: "Гар утас & Дагалдах хэрэгсэл",
+          href: "/devices?category=phones,accessories",
+        },
+        {
+          id: "tv_internet_devices",
+          title: "ТВ & Интернэтийн төхөөрөмж",
+          href: "/devices?category=stb,wifi",
+        },
+      ],
+    },
+  },
+  // LOOKTV — ТҮР ЗУУРЫН каркас байсан (гурав нь `#` placeholder, "Апп татах"
+  // нь бодит гадаад линк). Агуулгыг эцэслэхэд `Entertainment.desktop`-оос
+  // авах эсэхийг шийднэ.
+  LookTV: {
+    desktop: {
+      name: "LookTV",
+      sections: [
+        { id: "channels", title: "Бүх суваг", href: "#" },
+        { id: "packages", title: "Багц ба үнэ", href: "#" },
+        { id: "movies", title: "Кино сан", href: "#" },
+        { id: "app", title: "Апп татах", href: LOOKTV_APP_HREF },
+      ],
+    },
+    mobile: {
+      name: "LookTV",
+      sections: [
+        { id: "channels", title: "Бүх суваг", href: "#" },
+        { id: "packages", title: "Багц ба үнэ", href: "#" },
+        { id: "app", title: "Апп татах", href: LOOKTV_APP_HREF },
+      ],
+    },
+  },
   Entertainment: {
     desktop: {
       name: "Entertainment",

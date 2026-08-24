@@ -4,10 +4,14 @@ import { useSyncExternalStore } from "react";
 
 /**
  * Header (болон нүүр хуудас) хоёрын хуваалцах header-хувилбарын store.
- *   1 = Apple · 2 = Business line · 3 = Hybrid · 4 = Chat (chat-hero нүүр)
+ *   1 = Only L1 · 2 = L1 & L2
  * localStorage-д хадгална; toggle сонголтод бүх subscriber шинэчлэгдэнэ.
+ *
+ * ⚠️ Өмнө нь 3 (доод tab bar) ба 4 (chat нүүр) байсныг ХАССАН. Тэдгээрийн
+ * код бүрэн устсан тул localStorage-д "3"/"4" үлдсэн хэрэглэгч 1 рүү унана
+ * (доорх `getSnapshot`) — цагаан дэлгэц гарахгүй.
  */
-export type HeaderVariant = 1 | 2 | 3 | 4;
+export type HeaderVariant = 1 | 2;
 
 const VARIANT_KEY = "uv-header-variant-new";
 const VARIANT_EVENT = "uv-header-variant-new-change";
@@ -22,11 +26,11 @@ function subscribe(cb: () => void) {
 }
 
 function getSnapshot(): HeaderVariant {
-  const v = window.localStorage.getItem(VARIANT_KEY);
-  return v === "2" ? 2 : v === "3" ? 3 : v === "4" ? 4 : 1;
+  // ЗӨВХӨН "2" нь 2 — бусад БҮХ утга (устгасан "3"/"4", хог, null) 1 рүү унана.
+  return window.localStorage.getItem(VARIANT_KEY) === "2" ? 2 : 1;
 }
 
-/** SSR-д үргэлж 1 (Apple + энгийн нүүр) — client дээр localStorage-оос уншина. */
+/** SSR-д үргэлж 1 — client дээр localStorage-оос уншина. */
 function getServerSnapshot(): HeaderVariant {
   return 1;
 }

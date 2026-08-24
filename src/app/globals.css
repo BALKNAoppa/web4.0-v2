@@ -84,6 +84,25 @@
    LIGHT MODE — White primary, Black text, Green CTA
    WCAG 2.2 AA contrast tested
    ============================================ */
+/* ============================================
+   --header-h — header-ийн өндөр. Нүүрний hero нь "дэлгэц ХАСАХ header" гэсэн
+   зайг яг эзлэхэд хэрэглэнэ (`h-[calc(100svh-var(--header-h))]`).
+
+   ЭДГЭЭР НЬ ЗӨВХӨН FALLBACK — SSR болон hydration хүртэлх агшинд зориулсан.
+   Client дээр `HeaderHeightVar` (ResizeObserver) бодит утгаар дарж бичнэ.
+   Хэмжсэн утга: мобайл 49px (48px мөр + 1px border), desktop 78px.
+   Header-ийн бүтэц өөрчлөгдвөл ЭНД засах шаардлагагүй — зөвхөн эхний
+   frame-ийн нарийвчлалд нөлөөлнө.
+   ============================================ */
+:root {
+  --header-h: 49px;
+}
+@media (min-width: 1024px) {
+  :root {
+    --header-h: 78px;
+  }
+}
+
 :root {
   /* Web 4.0 — Light Mode background & text tokens */
   --background-1: #e2e8ec;
@@ -164,7 +183,13 @@
   --background-2: #1c202d;
   --background-3: #27203e;
   --text-1: #ffffff;
-  --text-2: rgba(184, 184, 184, 0.6);
+  /* secondary text — WCAG AA 5.0:1 (bg-3) … 5.8:1 (bg-1).
+     Өмнө нь alpha .6 байсан нь 3.73:1 (bg-3) … 4.11:1 (bg-1) — гурван
+     дэвсгэрийн АЛЬ Ч дээр AA (4.5:1) унадаг байв. Light theme-ийн хос нь
+     (#595959) 5.5:1 гэж бичигдсэн тул харанхуйг ижил босго руу татав.
+     ⚠️ Энэ токеныг `text-muted-foreground` (кодод 150+ газар) уншина —
+     alpha-г бууруулбал тэр бүх газар дахин AA-аас унана. */
+  --text-2: rgba(184, 184, 184, 0.75);
 
   /* shadcn token-уудыг шинэ палет руу холбов */
   --background: var(--background-1);
@@ -534,27 +559,6 @@
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
-  }
-}
-
-/* ============================================
-   Header Хувилбар 3 — доод tab bar-ын зай
-   Bar нь `fixed bottom-0` тул хуудасны доод хэсгийг (footer) дардаг.
-   `body:has(…)` — bar рендерлэгдсэн үед л зай гаргана. Медиа query нь
-   Tailwind-ийн `lg` (1024px) breakpoint-той тааруулсан: bar нь `lg:hidden`
-   тул desktop дээр зай гаргах шаардлагагүй.
-   ============================================ */
-@media (max-width: 1023px) {
-  body:has([data-bottom-tab-bar]) {
-    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
-  }
-
-  /* Chat нь доод bar-ын таб болсон тул хөвөгч товч ба санамжийн бөмбөлөг
-     хэрэггүй (мөн bar-ын "Профайл" табыг дардаг байсан). Chat ПАНЕЛ нь
-     `bottom-24` = 96px тул 58px өндөр bar-ын дээр таарч байрлана. */
-  body:has([data-bottom-tab-bar]) [data-chat-fab],
-  body:has([data-bottom-tab-bar]) [data-chat-teaser] {
-    display: none;
   }
 }
 

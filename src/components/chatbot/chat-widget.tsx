@@ -268,10 +268,6 @@ export function ChatWidget() {
         <div
           role="status"
           aria-live="polite"
-          // Header Хувилбар 3 (доод tab bar)-д chat нь bar-ын таб болдог тул
-          // хөвөгч бөмбөлөг/товч нуугдана — globals.css дотор
-          // `body:has([data-bottom-tab-bar])`-аар шүүнэ.
-          data-chat-teaser
           // Байрлал: хөвөгч товчны ДЭЭР (өмнө нь ЗҮҮН талд байсан). Товчийг
           // чирсэн үед `style` нь класст өгсөн байрлалыг дарж дагана.
           // `bottom-44` = товчны дээд ирмэг (28+14=42) + 8px завсар.
@@ -321,9 +317,6 @@ export function ChatWidget() {
         aria-expanded={isOpen}
         aria-controls="chat-panel"
         title="Дарж нээнэ · чирж зөөнө"
-        // Хувилбар 3-д нуугдана (chat нь доод bar-ын таб). Панелийг хаах нь
-        // панелийн өөрийн X товч болон Esc-ээр хэвээр боломжтой.
-        data-chat-fab
         style={pos ? { right: pos.right, bottom: pos.bottom } : undefined}
         // `touch-none` — хуруугаар чирэхэд хуудас гүйлгэхгүй (drag л болно).
         // `transition-[transform,background-color]` — `transition-all` байсныг

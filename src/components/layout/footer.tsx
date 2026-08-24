@@ -11,7 +11,6 @@ import {
   SocialRow,
 } from "@/components/layout/footer-shared";
 import { FooterSitemapVariant } from "@/components/layout/footer-v2";
-import { FooterEcosystemVariant } from "@/components/layout/footer-v3";
 import { footerLinks } from "@/data/footer";
 import { useHeaderVariant } from "@/lib/header-variant";
 
@@ -21,9 +20,9 @@ import { useHeaderVariant } from "@/lib/header-variant";
 // Хувилбар нь HEADER-ийн toggle-той ХАМТ солигдоно (`useHeaderVariant`):
 //   1 → Телеком классик (sitemap багана / mobile accordion)
 //   2 → Singtel-styled (лого + апп + сошиал)
-//   3 → Ecosystem (бараан, брэнд картууд / mobile snap-scroll)
 //
 // ⚠️ 1 ба 2 нь ЗОРИУД СОЛИГДСОН (өмнө 1 = Singtel, 2 = sitemap байсан).
+// ⚠️ Хувилбар 3 (Ecosystem footer) нь header-ийн Хувилбар 3-тай хамт УСТСАН.
 //
 // SSR-д header-ийн store үргэлж 1 буцаадаг тул server дээр Хувилбар 1
 // рендэрлэгдээд, client дээр localStorage-оос уншиж зөөлөн солигдоно.
@@ -32,8 +31,6 @@ export function Footer() {
   const variant = useHeaderVariant();
 
   if (variant === 2) return <FooterClassic />;
-  if (variant === 3) return <FooterEcosystemVariant />;
-  // 1 — болон localStorage-д үлдсэн архивласан 4
   return <FooterSitemapVariant />;
 }
 

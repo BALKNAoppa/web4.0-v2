@@ -25,12 +25,12 @@ import { cn } from "@/lib/utils";
 
 type Variant = HeaderVariant;
 
+// ⚠️ Хувилбар 3 (mobile-ын доод tab bar) ба 4 (chat нүүр) нь ХАСАГДСАН —
+// код нь бүрэн устсан. localStorage-д тэр утга үлдсэн бол `useHeaderVariant`
+// 1 рүү унагана (`lib/header-variant.ts`).
 const VARIANTS: { id: Variant; label: string }[] = [
   { id: 1, label: "Хувилбар 1 · Only L1" },
   { id: 2, label: "Хувилбар 2 · L1 & L2" },
-  // Хувилбар 3 нь ЗӨВХӨН mobile-д өөр (доод tab bar). Desktop нь Хувилбар
-  // 1-тэй бүрэн ижил — тиймээс тусдаа desktop header байхгүй.
-  { id: 3, label: "Хувилбар 3 · Доод tab bar (mobile)" },
 ];
 
 /** Хоёр хувилбарын ХУВААЛЦАХ зүүн талын ангилал (Layer 2) */
@@ -72,13 +72,7 @@ export function Header() {
   return (
     <>
       <VariantToggle variant={variant} onChange={setHeaderVariant} />
-      {/* Хувилбар 3 — desktop нь Хувилбар 1-тэй ижил, ЗӨВХӨН mobile нь өөр
-          (доод tab bar). Архивласан 4 localStorage-д үлдсэн байвал 1 рүү унана. */}
-      {variant === 2 ? (
-        <TopClassifierHeader />
-      ) : (
-        <LogoLeftHeader mobileVariant={variant === 3 ? 3 : 1} />
-      )}
+      {variant === 2 ? <TopClassifierHeader /> : <LogoLeftHeader />}
     </>
   );
 }
@@ -215,7 +209,7 @@ function CategoryNav({
   /**
    * ДООГУУР ЗУРААС нь ХАМГИЙН ИХДЭЭ НЭГ элемент дээр байна. Эрэмбэ:
    *   1. Цэс НЭЭЛТТЭЙ бол ТЭР — хэрэглэгчийн одоогийн СОНГОЛТ хамгийн чухал
-   *   2. Эс бөгөөс замаар таарсан нь (`/univision` → "Univision")
+   *   2. Эс бөгөөс замаар таарсан нь (`/devices` → "Дэлгүүр")
    *   3. Эс бөгөөс build-ийн домэйн (нүүр, `/support` гэх мэт)
    *
    * ⚠️ Өмнө нь 2/3-аар гарсан нь БАЙНГА зураастай байсан ба нээлттэй цэс нь
@@ -240,9 +234,9 @@ function CategoryNav({
           // Apple маягийн зөөлөн доогуур зураас — hover дээр төвөөс тэлнэ
           "after:absolute after:-bottom-1 after:left-0 after:h-[1.5px] after:w-full after:origin-center after:scale-x-0 after:rounded-full after:bg-current after:transition-transform after:duration-300 hover:after:scale-x-100",
           highlighted
-            // Дээрх `after:` зураас нь hover үед тэлдэг — `scale-x-100`-аар
-            // түүнийг тогтмол болгоно (шинэ элемент нэмэхгүй).
-            ? "text-foreground after:scale-x-100"
+            ? // Дээрх `after:` зураас нь hover үед тэлдэг — `scale-x-100`-аар
+              // түүнийг тогтмол болгоно (шинэ элемент нэмэхгүй).
+              "text-foreground after:scale-x-100"
             : "text-foreground/75 hover:text-foreground",
         );
 
@@ -367,7 +361,7 @@ function MegaLayer({
 //   │ [ЛОГО] Unitel Univision Дэлгүүр …          👤  🌐  ☀       │ L2
 //   └────────────────────────────────────────────────────────────┘
 // =====================================================================
-function LogoLeftHeader({ mobileVariant }: { mobileVariant: 1 | 3 }) {
+function LogoLeftHeader() {
   const { openMenu, panelBrand, shown, direction, openBrandMenu, closeBrandMenu, closeNow } =
     useBrandMegaMenu(NAV_ORDER);
 
@@ -405,18 +399,14 @@ function LogoLeftHeader({ mobileVariant }: { mobileVariant: 1 | 3 }) {
           <BrandLogoLink />
 
           <div className="mr-auto">
-            <CategoryNav
-              openMenu={openMenu}
-              onOpen={openBrandMenu}
-              onClose={closeBrandMenu}
-            />
+            <CategoryNav openMenu={openMenu} onOpen={openBrandMenu} onClose={closeBrandMenu} />
           </div>
 
           <HeaderTools />
         </div>
 
-        {/* Mobile — Хувилбар 1 (таб төвд) эсвэл 3 (доод tab bar) */}
-        <MobileBrandHeader variant={mobileVariant} />
+        {/* Mobile — Хувилбар 1: таб төвд */}
+        <MobileBrandHeader variant={1} />
 
         <MegaLayer
           panelBrand={panelBrand}
@@ -476,11 +466,7 @@ function TopClassifierHeader() {
 
         {/* Үндсэн мөр — зүүн ангилал · төв лого · баруун icons */}
         <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
-          <CategoryNav
-            openMenu={openMenu}
-            onOpen={openBrandMenu}
-            onClose={closeBrandMenu}
-          />
+          <CategoryNav openMenu={openMenu} onOpen={openBrandMenu} onClose={closeBrandMenu} />
 
           <div className="flex justify-center">
             <BrandLogoLink />

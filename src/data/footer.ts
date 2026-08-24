@@ -34,7 +34,7 @@ export const footerSitemap: FooterColumn[] = [
     id: "connectivity",
     title: "Харилцаа холбоо",
     items: [
-      { id: "unitel", label: "Юнител", href: "/unitel" },
+      { id: "unitel", label: "Юнител", href: "#" },
       { id: "home-internet", label: "Гэр интернэт", href: "#" },
     ],
   },
@@ -42,7 +42,7 @@ export const footerSitemap: FooterColumn[] = [
     id: "platform",
     title: "Платформ",
     items: [
-      { id: "univision", label: "Юнивишн", href: "/univision" },
+      { id: "univision", label: "Юнивишн", href: "#" },
       { id: "looktv", label: "Look TV", href: "#" },
       { id: "ddishtv", label: "DDISH TV", href: "#" },
     ],

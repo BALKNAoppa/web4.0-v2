@@ -44,7 +44,21 @@ type Block = {
  * асуувал хариулт гарч, CTA нь `SmartLink`-ээр Unitel-ийн домэйн руу шилжинэ —
  * header-тэй яг ижил зарчим.
  */
-export function ChatHero() {
+/**
+ * `heroRest` — туслах нь эхний дэлгэцийн ҮЛДСЭН хэсгийг эзэлнэ.
+ *
+ *   md+    — 40%. `UnitelHero` нь `(100svh − header) × 0.6` авдаг тул
+ *            header + promo + туслах = ЯГ нэг дэлгэц.
+ *   мобайл — 28%. Тооцоогоор 40% нь ч багтдаг ч бодит утсан дээр хөтчийн
+ *            доод самбар үлдсэн зайг залгидаг (доорх тайлбарыг үз).
+ *
+ * ЯАГААД PROP БОЛГОВ: доорх `34/44/46svh` нь туслах promo banner-тай НЭГ
+ * дэлгэц ХУВААЛЦАЖ байсан үеийн ТААМАГЛАЛ. 1280×720 дээр тэр нь 331px
+ * болж, header 78 + promo 385-тай нийлээд 794px = дэлгэцээс 74px халдаг
+ * байв. Агуулга нь ердөө ~180–200px тул хумихад алдах зүйл алга.
+ * Univision-ы нүүр хуучин бүтэцтэй хэвээр тул prop өгөхгүй.
+ */
+export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
   const questions = assistantQuestions;
 
   const [input, setInput] = useState("");
@@ -105,7 +119,25 @@ export function ChatHero() {
           Гэхдээ min-h ганцаараа хангалтгүй: агуулга нь өөрөө 44svh-ээс өндөр
           байсан тул доорх гарчиг/тайлбар/зайнуудыг ч мобайл дээр багасгав.
           `sm:`-ээс дээш бүх хэмжээ хуучнаараа. */}
-      <div className="relative z-10 mx-auto flex min-h-[34svh] max-w-3xl flex-col items-center justify-center px-4 py-5 text-center sm:min-h-[44svh] sm:py-8 md:min-h-[46svh] md:py-10 [@media(max-height:720px)]:py-3">
+      <div
+        className={cn(
+          "relative z-10 mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-5 text-center sm:py-8 md:py-10 [@media(max-height:720px)]:py-3",
+          heroRest
+            ? // МОБАЙЛ 28% · md+ 40% (promo-гийн 60%-ийн хос).
+              //
+              // ⚠️ Мобайлд ЯАГААД 40% БИШ ГЭЖ: тооцоогоор 40% нь `svh`-д
+              // багтдаг (412×915 дээр 908/915). Гэвч БОДИТ утсан дээр хөтчийн
+              // доод самбар `svh`-гийн үлдээсэн зайг залгиж, асуултын мөр
+              // ирмэгт наалдаж эсвэл дор нь оршдог байв (S22 Ultra, iPhone
+              // 17 Pro Max дээр илэрсэн).
+              //
+              // Туслахын АГУУЛГА ердөө ~198px тул 40% (346px) нь 148px цэвэр
+              // хоосон зай байв — хумихад алдах зүйл алга. 28% нь ~242px
+              // өгч, агуулгаас дээгүүр хэвээр үлдэнэ.
+              "min-h-[calc((100svh-var(--header-h))*0.28)] md:min-h-[calc((100svh-var(--header-h))*0.4)]"
+            : "min-h-[34svh] sm:min-h-[44svh] md:min-h-[46svh]",
+        )}
+      >
         {/* ЗОРИЛГО: энэ туслах нь ГОМДОЛ/АСУУДАЛ шийддэг support бот БИШ.
             Хэрэглэгчид эко-системд юу байгааг ТАНИУЛЖ (awareness), судалж
             (explore), өөрт тохирохыг СОНГОХОД (choice) чиглэсэн. Тиймээс
@@ -113,15 +145,14 @@ export function ChatHero() {
             гэсэн сонголт-нээлтийн өнгө аясаар сольсон. */}
         <span className="border-border bg-card/60 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur">
           <Sparkles className="text-primary size-3.5" aria-hidden="true" />
-          Ухаалаг сонголт
+          Highlight keyword байна
         </span>
 
         <h1 className="text-foreground mt-4 text-2xl font-extrabold tracking-tight text-balance sm:mt-6 sm:text-3xl md:text-4xl [@media(max-height:720px)]:mt-3">
-          Танд юу <span className="from-primary bg-clip-text text-[#45c700]">хэрэгтэй вэ?</span>
+          AI <span className="from-primary bg-clip-text text-[#45c700]">assistant</span>
         </h1>
         <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media(max-height:720px)]:mt-2">
-          Өөрт хэрэгтэй зүйлээ асуугаарай — бид таны асуултыг ойлгож, хамгийн тохирохыг санал
-          болгоно.
+          Ai assistant-н Capability-г сайн тододгосон text энд байрлана.
         </p>
 
         {/* Chat input — neon gradient хүрээ + гэрэл (радиус томруулсан) */}
@@ -153,7 +184,7 @@ export function ChatHero() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Асуултаа бичнэ үү..."
+                placeholder="CTA чиглүүлсэн placeholder той байна"
                 className="text-foreground placeholder:text-muted-foreground h-8 flex-1 bg-transparent text-sm outline-none md:text-base"
               />
               <button

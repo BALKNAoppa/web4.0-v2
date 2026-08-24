@@ -3,55 +3,217 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Pause, Play } from "lucide-react";
+import { ArrowLeft, ArrowRight, Pause, Play } from "lucide-react";
 
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 import { SmartLink } from "@/components/layout/smart-link";
-import { promoBanners, type PromoMedia } from "@/data/promo-banner";
+import {
+  promoBanners,
+  samplePromoCards,
+  type PromoCard,
+  type PromoMedia,
+} from "@/data/promo-banner";
 import { BRAND } from "@/lib/brand";
+import { cn } from "@/lib/utils";
 
 // =====================================================================
 // Гадны экспорт — нүүр хуудас `PromoBanner` гэж дууддаг.
 // Доорх return-н мөрүүдээс нэгийг идэвхтэй үлдээж нөгөөг `//`-аар сольно.
 // =====================================================================
-export function PromoBanner() {
-  return <PromoBannerPlaceholder />; // Танилцуулгын sample — энгийн саарал хоосон banner
-  // return <PromoBannerFull />; // Жинхэнэ хувилбар — видео/зураг + eyebrow, гарчиг, CTA
+
+/**
+ * `fill` — banner нь ЭЦГИЙНХЭЭ өндрийг бүтнээр эзэлнэ (`h-full`), өөрийн
+ * `svh`-д суурилсан өндрөө хэрэглэхгүй.
+ *
+ * ЯАГААД: Unitel-ийн нүүрэнд banner нь hero-гийн ДЭЭД 60%-д суудаг
+ * (`UnitelHero`) — тэр өндрийг эцэг нь аль хэдийн тооцсон байдаг. Өөрийн
+ * `min-h-[52svh]`-ээ хэвээр барих юм бол хоёр тооцоо зөрж hero нь дэлгэцээс
+ * халина. `fill` өгөөгүй үед (Univision нүүр) хуучин зан хэвээр.
+ */
+export function PromoBanner({ fill = false }: { fill?: boolean }) {
+  return <PromoBannerPlaceholder fill={fill} />; // Танилцуулгын sample — энгийн саарал хоосон banner
+  // return <PromoBannerFull fill={fill} />; // Жинхэнэ хувилбар — видео/зураг + eyebrow, гарчиг, CTA
 }
+
+/** `fill` үед эцгийн өндрийг дүүргэнэ, эс бөгөөс өөрийн svh өндөр. */
+const bannerBox = (fill: boolean) =>
+  fill
+    ? "h-full"
+    : "min-h-[52svh] sm:min-h-[34svh] lg:min-h-[38svh] py-10 [@media(max-height:720px)]:py-4";
 
 // Идэвхгүй хувилбарыг TypeScript "unused" гэж бүү зэмлэ
 void PromoBannerFull;
 
 // =====================================================================
-// SAMPLE — зөвхөн "Sample banner" гэсэн placeholder + "Sample" CTA.
-// Танилцуулгад хуурамч маркетингийн текст анхаарал сарниулахгүйн тулд
-// зориуд саарал хоосон талбай болгосон. Өндөр нь жинхэнэ banner-тайгаа
-// ижил (34/38svh) тул доорх AI туслахын байрлал өөрчлөгдөхгүй.
+// SAMPLE — 3 САНАЛТАЙ CAROUSEL, site-ийн ерөнхий өргөнд (1200px) багтсан.
 //
-// ӨНГӨ: `bg-card` = `--background-2` (light #f3f5f7 / dark #1c202d) — дизайн
-// системийн саарал гадарга. `bg-muted` (= `--background-3`) хэрэглэхгүй:
-// dark theme дээр тэр нь #27203e буюу ЯГААН болж үндсэн өнгөнөөс зөрдөг.
-// Contrast: light 6.4:1, dark 3.8:1 — гарчиг нь 24/36px semibold буюу "том
-// текст" тул AA-гийн 3:1 шаардлагыг давна.
+// Танилцуулгад хуурамч маркетингийн текст анхаарал сарниулахгүйн тулд
+// зориуд шошготой хоосон талбай болгосон (`samplePromoCards`).
+//
+// ⚠️ 3 санал нь ЗЭРЭГЦЭЭ БИШ — нэг зэрэг НЭГ л харагдана, баруун доод
+// булангийн сум/тоолуураар солигдоно. Тиймээс panel нь эцгээсээ (hero-гийн
+// 60%) авсан БҮТЭН өндрийг эзэлнэ: слайд бүр тэр талбайг дүүргэнэ.
+//
+// ӨРГӨН нь full-bleed БИШ, `max-w-300` (1200px) — бусад section болон доорх
+// багцын мөртэй босоо тэнхлэгээр тэгширнэ.
 // =====================================================================
-function PromoBannerPlaceholder() {
-  return (
-    <section aria-label="Sample banner" className="bg-card w-full">
-      {/* Өндөр: МОБАЙЛ дээр 52svh (доорх AI туслахаас илүү зай авна),
-          sm:-ээс дээш хуучин 34/38svh. PromoBannerFull-тай ижил байлгана. */}
-      <div className="mx-auto flex min-h-[52svh] max-w-300 flex-col items-center justify-center gap-6 px-4 py-10 sm:min-h-[34svh] lg:min-h-[38svh] [@media(max-height:720px)]:py-4">
-        <span className="text-muted-foreground text-2xl font-semibold md:text-4xl">
-          Sample banner
-        </span>
+function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
+  const [api, setApi] = useState<CarouselApi>();
+  /**
+   * Одоогийн слайд (1-ээс эхэлнэ). Effect дотор setState СИНХРОНООР
+   * дуудахгүй (`react-hooks/set-state-in-effect`) — carousel үргэлж 0-р
+   * слайдаас эхэлдэг тул анхны утга нь аль хэдийн зөв.
+   */
+  const [current, setCurrent] = useState(1);
 
-        <Link
-          href="#"
-          className="bg-primary text-primary-foreground focus-visible:ring-ring inline-flex h-12 items-center justify-center gap-2 rounded-full px-7 text-sm font-semibold transition-opacity duration-700 ease-out hover:opacity-85 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+  useEffect(() => {
+    if (!api) return;
+    const onSelect = () => setCurrent(api.selectedScrollSnap() + 1);
+    api.on("select", onSelect);
+    return () => {
+      api.off("select", onSelect);
+    };
+  }, [api]);
+
+  return (
+    <section
+      aria-label="Онцлох урамшуулал"
+      className={cn("w-full", fill ? "flex h-full items-stretch" : "py-8")}
+    >
+      {/* FULL WIDTH — `max-w-300` (1200px) хязгаарыг ЗОРИУДААР ЦУЦАЛСАН.
+          Promo нь дэлгэцийн бүтэн өргөнийг эзэлнэ; идэвхтэй panel нь
+          peek-ийн хэмжээгээр л дотогшоо суух тул хоёр ирмэг дээр өмнөх/
+          дараагийн banner харагдана.
+          ⚠️ Доорх багцын хэсэг (`RecommendedPlans`) нь 1200px-дээ ХЭВЭЭР —
+          зөвхөн promo нь full-bleed. */}
+      <div className="flex w-full">
+        <Carousel
+          setApi={setApi}
+          opts={{ loop: true, align: "center" }}
+          // `data-slot=carousel-content` нь `CarouselContent`-ийн ГАДНА
+          // (`ref`-тэй) div — тэр нь className хүлээж авдаггүй тул өндрийг
+          // эндээс дамжуулна. Үүнгүйгээр panel нь эцгийн 60%-ыг дүүргэхгүй.
+          className="w-full [&_[data-slot=carousel-content]]:h-full"
         >
-          Sample
-          <ArrowRight className="size-4" aria-hidden="true" />
-        </Link>
+          {/* PEEK — слайд бүр контейнерийн БҮТЭН өргөнийг эзлэхгүй
+              (`basis` < 100%) тул хажуугийн хоёр слайдын ирмэг харагдана.
+              `-ml-4`/`pl-4` (shadcn-ийн анхдагч завсар) нь харагдаж буй
+              ирмэгүүдийг идэвхтэй panel-аас зааглана.
+
+              DESKTOP (md+) — 62.5% нь Jio-гийн нүүрнээс ХЭМЖСЭН харьцаа:
+              1919px дэлгэцэнд идэвхтэй banner ~1183px (≈62%), хоёр талын
+              ирмэг тус бүр ~350px (≈18%). Ирмэг нь "бас banner байна" гэдгийг
+              хангалттай тод хэлнэ.
+
+              МОБАЙЛ — 82% хэвээр. Jio-гийн 62.5%-ийг 375px дэлгэцэнд тавибал
+              идэвхтэй banner 234px болж уншигдахгүй; тэнд ирмэг 26px нь
+              хангалттай дохио өгнө. Завсар ч 8px (md+ дээр 16px). */}
+          <CarouselContent className="-ml-2 h-full md:-ml-4">
+            {samplePromoCards.map((promo) => (
+              <CarouselItem
+                key={promo.id}
+                className="h-full basis-[82%] pl-2 md:basis-[62.5%] md:pl-4"
+              >
+                <PromoSlide promo={promo} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+
+          <CarouselCounter
+            current={current}
+            total={samplePromoCards.length}
+            onPrev={() => api?.scrollPrev()}
+            onNext={() => api?.scrollNext()}
+          />
+        </Carousel>
       </div>
     </section>
+  );
+}
+
+/**
+ * Нэг слайд — panel-ийн бүтэн талбайг эзэлнэ.
+ *
+ * ӨНГӨ: `bg-card` (= `--background-2`) — `bg-muted` нь dark theme-д ягаан
+ * (#27203e) болж үндсэн өнгөнөөс зөрдөг.
+ */
+function PromoSlide({ promo }: { promo: PromoCard }) {
+  return (
+    <div className="bg-card flex h-full flex-col items-center justify-center gap-[clamp(0.75rem,2svh,1.5rem)] rounded-3xl">
+      {/* МОБАЙЛД ЖИЖИГ — 306px өргөнтэй картан дээр 3.4svh (≈28px) нь хэтэрхий
+          том байв. `sm:`-ээс дээш хуучин хэмжээ хэвээр. */}
+      <span className="text-muted-foreground text-[clamp(0.875rem,2.2svh,1.125rem)] font-semibold sm:text-[clamp(1.125rem,3.4svh,2.25rem)]">
+        {promo.placeholderText}
+      </span>
+
+      <Link
+        href={promo.href}
+        className="bg-primary text-primary-foreground focus-visible:ring-ring inline-flex h-[clamp(2.25rem,5svh,3rem)] items-center justify-center gap-2 rounded-full px-7 text-sm font-semibold transition-opacity duration-700 ease-out hover:opacity-85 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+      >
+        {promo.ctaLabel}
+        <ArrowRight className="size-4" aria-hidden="true" />
+      </Link>
+    </div>
+  );
+}
+
+/**
+ * Carousel-ийн удирдлага — БАРУУН ДООД буланд нэг pill дотор `←  n/N  →`.
+ *
+ * shadcn-ийн `CarouselPrevious`/`CarouselNext`-ийг ХЭРЭГЛЭХГҮЙ: тэдгээр нь
+ * panel-ийн ГАДНА, хоёр хажуугаар нь хөвдөг дугуй товчнууд бөгөөд энд
+ * 1200px-ийн хүрээнээс халина. Мөн тоолуур (`n/N`) байхгүй.
+ *
+ * `loop: true` тул хоёр товч ҮРГЭЛЖ идэвхтэй — `canScrollPrev/Next`
+ * шалгах шаардлагагүй.
+ *
+ * ХҮРЭХ ТАЛБАЙ: мобайлд `size-11` (44px) — хуруунд зориулсан доод хэмжээ
+ * (`sm:size-8` = 32px нь зөвхөн хулгана/trackpad-тай өргөн дэлгэцэнд).
+ */
+function CarouselCounter({
+  current,
+  total,
+  onPrev,
+  onNext,
+}: {
+  current: number;
+  total: number;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  return (
+    // `right` — контейнерийн ирмэг БИШ, идэвхтэй panel-ийн ирмэгээс тооцов:
+    // peek нь (100% − basis) / 2 тул мобайлд 9%, md+ дээр 18.75% дотогш.
+    <div className="bg-background/90 border-border absolute right-[calc(9%+0.75rem)] bottom-4 inline-flex items-center gap-1 rounded-full border p-1 shadow-md backdrop-blur sm:bottom-6 md:right-[calc(18.75%+1.5rem)]">
+      <button
+        type="button"
+        onClick={onPrev}
+        aria-label="Өмнөх урамшуулал"
+        className="hover:bg-muted focus-visible:ring-ring inline-flex size-11 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none sm:size-8"
+      >
+        <ArrowLeft className="size-4" aria-hidden="true" />
+      </button>
+
+      {/* `aria-live` — сумаар гүйлгэхэд дэлгэц уншигчид байрлал сонсогдоно.
+          `tabular-nums` — 1/3 → 2/3 солигдоход өргөн үсрэхгүй. */}
+      <span aria-live="polite" className="text-foreground px-1 text-xs font-semibold tabular-nums">
+        {current}/{total}
+      </span>
+
+      <button
+        type="button"
+        onClick={onNext}
+        aria-label="Дараагийн урамшуулал"
+        className="hover:bg-muted focus-visible:ring-ring inline-flex size-11 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none sm:size-8"
+      >
+        <ArrowRight className="size-4" aria-hidden="true" />
+      </button>
+    </div>
   );
 }
 
@@ -80,7 +242,7 @@ function PromoBannerPlaceholder() {
  *   — JS-ээр matchMedia шалгаж, зөвшөөрөгдсөн үед л `play()` дуудна.
  * ──────────────────────────────────────────────────────────────────────
  */
-function PromoBannerFull() {
+function PromoBannerFull({ fill }: { fill: boolean }) {
   const content = promoBanners[BRAND];
   const isVideo = content.media.kind === "video";
   // Scrim нь зөвхөн ЖИНХЭНЭ медиа (видео/зураг) дээр хэрэгтэй — тэдгээрийн
@@ -125,7 +287,7 @@ function PromoBannerFull() {
   return (
     <section
       aria-labelledby="promo-banner-title"
-      className="relative isolate w-full overflow-hidden"
+      className={cn("relative isolate w-full overflow-hidden", fill && "h-full")}
     >
       {/* ============ МЕДИА ============ */}
       <PromoMediaLayer media={content.media} decorative={content.decorative} videoRef={videoRef} />
@@ -145,7 +307,7 @@ function PromoBannerFull() {
           viewport; `vh` бол мобайлд бодит харагдахаас өндөр гардаг).
           Banner нь анхаарал татах хэмжээгээ хадгална — 34/38svh нь ~1/3
           дэлгэц. Хэрэв текст түүнээс өндөр бол агуулга давамгайлна. */}
-      <div className="relative mx-auto flex min-h-[52svh] max-w-300 items-center px-4 py-10 sm:min-h-[34svh] lg:min-h-[38svh] [@media(max-height:720px)]:py-4">
+      <div className={cn("relative mx-auto flex max-w-300 items-center px-4", bannerBox(fill))}>
         <div className="max-w-xl">
           <p className="text-xs font-bold tracking-[0.18em] text-white/80 uppercase">
             {content.eyebrow}

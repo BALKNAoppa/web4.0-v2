@@ -9,7 +9,8 @@ import { Reveal } from "@/components/web4/reveal";
  * Main product — Мобайл · Дараа төлбөрт. Univision Go section-тэй ижил
  * бүтэцтэй full-width banner, гэхдээ цайвар дэвсгэртэй (theme-aware):
  * зүүн талд текст + CTA, баруун талд public/Priority.jpg зураг.
- * Багцын дэлгэрэнгүй мэдээллийг энд харуулахгүй — CTA-гаар /unitel руу хөтөлнө.
+ * Багцын дэлгэрэнгүй мэдээллийг энд харуулахгүй — CTA нь дэлгэрэнгүй хуудас
+ * руу хөтөлнө. ⚠️ Тэр хуудас (/unitel) УСТСАН тул CTA одоогоор `#`.
  */
 
 /** Unitel брэнд ногоон (лого-гоос) */
@@ -56,7 +57,7 @@ export function MobilePlans() {
 
             <div className="mt-6 flex flex-wrap items-center gap-4 sm:mt-7">
               <Link
-                href="/unitel#postpaid"
+                href="#"
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#45c700] px-7 text-sm font-semibold text-white transition-opacity duration-700 ease-out hover:opacity-85"
               >
                 Дэлгэрэнгүй үзэх

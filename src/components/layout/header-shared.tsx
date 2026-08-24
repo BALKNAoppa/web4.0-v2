@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
-import { ArrowRight, LogOut, User } from "lucide-react";
+import { ArrowRight, Gift, LogOut, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -77,16 +77,21 @@ export const DOMAIN_NAV_NAME: string = BRAND_LABEL[BRAND];
  * ТОДРОХ (underline) цэсний нэр — ХОЁР ШАТЛАЛТ:
  *
  *   1. Одоогийн зам цэсний элементтэй таарвал ТЭР тодорно.
- *      `/univision` → "Univision", `/devices` → "Дэлгүүр".
+ *      `/devices` → "Дэлгүүр", `/campaigns` → "Урамшуулал".
  *      Хамгийн УРТ таарсан зам хожино — `/entertainment` ба
  *      `/entertainment/main` хоёр зэрэг байвал тодорхой нь сонгогдоно.
  *   2. Юу ч таарахгүй бол (нүүр `/`, `/support`, `/main-packages` …)
  *      build-ийн ДОМЭЙН тодорно (`DOMAIN_NAV_NAME`).
  *
- * ⚠️ `owner`-оор ШҮҮХГҮЙ. Хоёр брэнд одоогоор НЭГ Next.js апп дотор
- * (`/unitel`, `/univision` нь дотоод зам) тул Unitel build дээр байгаа
- * хэрэглэгч `/univision` рүү орж чадна — тэр үед "Univision" тодрох ёстой.
- * `owner === BRAND` гэж шүүвэл нөгөө брэнд ХЭЗЭЭ Ч тодрохгүй болно.
+ * ⚠️ `owner`-оор ШҮҮХГҮЙ: хоёр брэнд НЭГ Next.js апп дотор амьдардаг тул
+ * нэг build дээр байгаа хэрэглэгч нөгөө брэндийн зам руу орж чадна — тэр үед
+ * тэр цэс тодрох ёстой. `owner === BRAND` гэж шүүвэл нөгөө брэнд ХЭЗЭЭ Ч
+ * тодрохгүй болно.
+ *
+ * ⚠️ Unitel · Univision · LookTV нь ОДООГООР `#` (хуудас нь устсан) тул
+ * 1-р шат тэднийг ХЭЗЭЭ Ч сонгохгүй — `base` хоосон болж шүүгддэг. Тэд
+ * зөвхөн 2-р шатаар (build-ийн домэйн) тодорно. Бодит зам сэргэмэгц
+ * ямар ч засваргүйгээр дахин ажиллана.
  *
  * Desktop (`CategoryNav`), mobile таб (`BrandTab`), burger, доод tab bar —
  * БҮГД үүнийг уншина тул давхаргууд хооронд зөрөхгүй.
@@ -100,7 +105,7 @@ export function useActiveNavName(items: EcosystemLink[]): string {
  *
  * `aria-current="page"`-д ЯГ ҮҮНИЙГ хэрэглэнэ: нүүр (`/`) хуудсанд домэйны
  * цэс нь ХАРАГДАХ тодотголтой байж болох ч тэр нь "одоогийн хуудас" БИШ —
- * screen reader-т ийм гэж хэлбэл хэрэглэгч `/unitel` дээр байна гэж
+ * screen reader-т ийм гэж хэлбэл хэрэглэгч тэр хуудсан дээр байна гэж
  * төөрөгдөнө.
  */
 export function useCurrentNavName(items: EcosystemLink[]): string | null {
@@ -121,26 +126,66 @@ export function useCurrentNavName(items: EcosystemLink[]): string | null {
 }
 
 /**
- * Цэсний урамшуулал — PLACEHOLDER. Урамшуулал бүр ӨӨРИЙН гарчиг (title) ба
- * өөрийн CTA-тай: өмнө нь нэг ерөнхий бичвэр дээр хоёр товч зэрэгцэж байсан
- * тул аль товч аль урамшууллынх нь болох нь тодорхойгүй байв.
+ * Цэсний урамшууллын баганын ГАРЧИГ — багана бүхэлдээ юу болохыг НЭГ УДАА
+ * тайлбарлана.
+ *
+ * Өмнө нь гарчиг нь "Урамшуулал" байж, мөр бүр дээр "…урамшуулал 1 энд
+ * байрлана", "…урамшуулал 2 энд байрлана" гэж ДАВТАГДАЖ байв. Тэр нь
+ * placeholder-ын бичвэрийг агуулга мэт харагдуулж, мөр нэмэх бүрд шинэ
+ * дугаар зохиох шаардлага үүсгэдэг байлаа. Одоо тайлбар нь ДЭЭР нэг л удаа,
+ * мөрүүд нь өөрсдийн үүргээр (гарчиг + CTA) л ярина.
+ */
+export const MENU_PROMOS_HEADING =
+  "Энэ цэстэй холбоотой урамшуулалууд энд байрлана /Онцлох урамшуулал гэсэн title байна/";
+
+/**
+ * Цэсний урамшуулал — PLACEHOLDER. Мөр бүрийн БҮТЭЦ нь screenshot-ийн дагуу:
+ *
+ *   ( ◯ дугуй зураг )   Урамшууллын гарчиг
+ *                       → CTA
  *
  * Desktop (`BrandMegaPanel`) ба mobile (`MenuPromoTeaser`) ХОЁУЛАА эндээс
  * уншина тул тоо, бичвэр зөрөхгүй. Жинхэнэ урамшууллын data гарахад энэ
  * жагсаалт цэсээс хамаарч динамик болно.
+ *
+ * ⚠️ `title` · `ctaLabel` нь ЕРӨНХИЙ шошго — жинхэнэ маркетингийн үг ЗОХИОХГҮЙ.
+ * `image` талбар ОДООГООР байхгүй: зураг бэлэн болоход энд `image: string`
+ * нэмээд `PromoAvatar` дотор `next/image` болгоно. Түүнийг хүртэл дугуй нь
+ * дүрстэй placeholder.
  */
 export const MENU_PROMOS: { title: string; ctaLabel: string; href: string }[] = [
   {
-    title: "Энэ цэстэй холбоотой урамшуулал 1 энд байрлана.",
-    ctaLabel: "Sample CTA 1",
+    title: "Урамшууллыг илтгэх highlight хийх title энд байрлана",
+    ctaLabel: "Дэлгэрэнгүй",
     href: "/campaigns",
   },
   {
-    title: "Энэ цэстэй холбоотой урамшуулал 2 энд байрлана.",
-    ctaLabel: "Sample CTA 2",
+    title: "Урамшууллыг илтгэх highlight хийх title энд байрлана",
+    ctaLabel: "Дэлгэрэнгүй",
     href: "/campaigns",
   },
 ];
+
+/**
+ * Урамшууллын ДУГУЙ ЗУРАГ — одоогоор placeholder.
+ *
+ * ХЭМЖЭЭ: `size-14` (56px) нь header-ийн мөрний өндөртэй (56–64px) тэнцүү —
+ * screenshot дээрх дугуй ч мөрний өндрийн хэрээр байна. Үүнээс томсговол
+ * хоёр урамшуулал панелийн зүүн баганаас (Unitel = 6 мөр) илүү өндөр болж,
+ * панел сунана.
+ *
+ * `shrink-0` — гарчиг хоёр мөр болоход дугуй зууван болохоос сэргийлнэ.
+ */
+function PromoAvatar() {
+  return (
+    <span
+      aria-hidden="true"
+      className="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center rounded-full"
+    >
+      <Gift className="size-6" />
+    </span>
+  );
+}
 
 // =====================================================================
 // MEGA MENU — hover-оор задардаг панелийн төлөв
@@ -294,8 +339,10 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
     // хуудасны агуулгатай зааглагдах зай хэрэгтэй.
     <div className="mx-auto max-w-300 px-4 pt-4 pb-8">
       {/* ХУРДАН ҮЙЛДЭЛ — ГАРЧИГГҮЙ дээд мөр, доогуураа зааглана.
-          Байхгүй брэнд (Univision · Дэлгүүр · LookTV) дээр мөр бүхэлдээ
-          рендерлэгдэхгүй — хоосон зай гаргахгүй. */}
+          `quickActions` өгөөгүй цэс дээр мөр бүхэлдээ рендерлэгдэхгүй —
+          хоосон зай гаргахгүй. (Одоо панелтай хоёр цэс — Unitel · Univision —
+          хоёулаа өгсөн байгаа тул энэ салаа ажиллахгүй, гэхдээ шинэ цэс
+          нэмэхэд хамгаалалт болж үлдэнэ.) */}
       {menu.quickActions && menu.quickActions.length > 0 && (
         // pill-ийн padding явсан тул элементүүд хоорондоо `gap-x-6`-аар
         // амьсгална — эс бөгөөс текстүүд нэг урт мөр шиг нийлж уншигдана.
@@ -339,40 +386,39 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
           </ul>
         </div>
 
-        {/* Багана 3 — УРАМШУУЛАЛ.
-            Өмнө `currentPromos`-ийн "Sample 1 / Sample 2" картууд байсан. Тэднийг
-            mobile-д аль хэдийн байгаа PLACEHOLDER бичвэрээр солив — жинхэнэ
-            урамшуулал нь тухайн ЦЭСТЭЙ холбоотой байх ёстой бөгөөд тэр data
-            хараахан байхгүй. Хоёр давхарга (desktop/mobile) нэг бичвэр
-            хэрэглэснээр аль хэдийн байгаа зөрөх шалтгаан үлдэхгүй. */}
-        {/* ӨРГӨН: `w-72` (288px) байсан нь 13px гарчгийг ХОЁР мөр болгож
-            байв. Одоо `w-fit` — багана нь агуулгынхаа (хамгийн урт гарчгийн)
-            хэмжээгээр яг тохирно, гарчиг НЭГ мөрөнд байна.
-            `max-w-100` (400px) нь хамгаалалт: жинхэнэ урамшууллын урт бичвэр
-            орвол багана хязгааргүй тэлж зүүн баганыг шахахгүй. */}
-        <div className="ml-auto w-fit max-w-100 shrink-0">
-          <h3 className={cn(navType.groupLabel, "mb-4")}>Урамшуулал</h3>
-          {/* Урамшуулал бүр = ӨӨРИЙН гарчиг + ӨӨРИЙН CTA. `gap-5` нь хоёр
-              блокийг тод салгана — эс бөгөөс гарчиг, товч солбицож уншигдана.
-              `items-start` — товч агуулгынхаа өргөнөөр, баганын бүтэн
-              өргөнөөр сунахгүй. */}
+        {/* Багана 3 — УРАМШУУЛАЛ. Мөр бүр = дугуй зураг + гарчиг + CTA
+            (screenshot-ийн бүтэц). Баганын ерөнхий тайлбар нь ДЭЭР нэг л удаа
+            (`MENU_PROMOS_HEADING`) — мөр бүр дээр давтагдахгүй.
+
+            ӨРГӨН: `w-fit` нь дугуй + текстийн баганаас бүрдэх мөрөнд ТОХИРОХГҮЙ
+            (агуулга нь өөрөө өргөнөө тогтоох гэж зууван болно). Тиймээс `w-76`
+            (304px) — дугуй 56px + зай 16px ⇒ текстэд ~230px үлдэнэ, ерөнхий
+            гарчиг хоёр мөрөнд багтана. */}
+        <div className="ml-auto w-76 shrink-0">
+          <h3 className={cn(navType.groupLabel, "mb-4")}>{MENU_PROMOS_HEADING}</h3>
+
+          {/* `gap-5` — хоёр урамшууллыг тод салгана, эс бөгөөс нэгний CTA
+              нөгөөгийн гарчигтай солбицож уншигдана. */}
           <div className="flex flex-col gap-5">
-            {MENU_PROMOS.map((promo) => (
-              <div key={promo.ctaLabel} className="flex flex-col items-start">
-                {/* `whitespace-nowrap` — гарчиг заавал НЭГ мөр. `w-fit`-тэй
-                    хамт баганын өргөнийг ЭНЭ мөр шийднэ. Mobile-д (`MenuPromoTeaser`)
-                    ХЭРЭГЛЭХГҮЙ — тэнд өргөн 375px тул халина. */}
-                <p className={cn(navType.body, "text-muted-foreground whitespace-nowrap")}>
-                  {promo.title}
-                </p>
-                <Link
-                  href={promo.href}
-                  onClick={onNavigate}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 mt-2.5 inline-flex h-9 items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold transition-colors"
-                >
-                  {promo.ctaLabel}
-                  <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
-                </Link>
+            {MENU_PROMOS.map((promo, i) => (
+              // Гарчиг/CTA нь ХОЁУЛАА placeholder тул `key`-д давтагдашгүй
+              // зүйл алга — index хэрэглэв. Жинхэнэ data орж ирэхэд promo.id.
+              <div key={i} className="flex items-center gap-4">
+                <PromoAvatar />
+                {/* `min-w-0` — flex хүүхэд нь анхдагчаар агуулгынхаа доод
+                    өргөнөөс шахагддаггүй; үүнгүйгээр урт гарчиг баганаас
+                    халина. */}
+                <div className="flex min-w-0 flex-col items-start">
+                  <p className={cn(navType.secondaryLink, "text-foreground")}>{promo.title}</p>
+                  <Link
+                    href={promo.href}
+                    onClick={onNavigate}
+                    className="text-primary hover:text-primary/80 mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+                  >
+                    <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
+                    {promo.ctaLabel}
+                  </Link>
+                </div>
               </div>
             ))}
           </div>

@@ -101,7 +101,7 @@ const unitelQuestions: AssistantQuestion[] = [
       planIds: ["plus-16", "priority-24", "premium-88"],
       note: "Бүрдүүлэх зүйл: иргэний үнэмлэх",
     },
-    cta: { label: "Багц бүгдийг харах", href: "/unitel#postpaid" },
+    cta: { label: "Багц бүгдийг харах", href: "#" },
   },
 ];
 

@@ -7,7 +7,7 @@
  *            (Apple-ийн нүүрний tile grid маяг)
  *
  * Зураг одоогоор ашиглахгүй — карт бүр "Photo N" placeholder талбайтай
- * (brand-pages-тэй ижил хэв маяг). Бодит зураг гарахаар холбоно.
+ * Бодит зураг гарахаар холбоно.
  */
 
 export type HomeHeroCta = {
@@ -77,7 +77,7 @@ export const unitelEntryTiles: EntryTile[] = [
   {
     title: "Олон улсын үйлчилгээ",
     description: "Олон улсын дуудлага - хилийн чанадад ч холбоотой.",
-    href: "/unitel#addons",
+    href: "#",
     ctaLabel: "Үйлчилгээ харах",
     icon: "globe",
     tint: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
@@ -85,7 +85,7 @@ export const unitelEntryTiles: EntryTile[] = [
   {
     title: "Урьдчилсан төлбөрт",
     description: "Дата, ярианы нэгжээ хүссэн үедээ цэнэглэ.",
-    href: "/unitel#prepaid",
+    href: "#",
     ctaLabel: "Багц харах",
     icon: "smartphone",
     tint: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
@@ -93,7 +93,7 @@ export const unitelEntryTiles: EntryTile[] = [
   {
     title: "TourSim",
     description: "SIM and eSIM for Visitors to Mongolia",
-    href: "/unitel#devices",
+    href: "#",
     ctaLabel: "Дэлгэрэнгүй",
     icon: "plane",
     tint: "bg-red-500/10 text-red-600 dark:text-red-400",
@@ -105,7 +105,7 @@ export const univisionEntryTiles: EntryTile[] = [
   {
     title: "Single internet",
     description: "Зөвхөн интернэт — дан холболтын багцууд.",
-    href: "/univision#single",
+    href: "#",
     ctaLabel: "Багц харах",
     icon: "wifi",
     tint: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
@@ -121,7 +121,7 @@ export const univisionEntryTiles: EntryTile[] = [
   {
     title: "HBO Max",
     description: "Дэлхийн шилдэг кино, цуврал, шоу нэвтрүүлэг нэг дор.",
-    href: "/univision#entertainment",
+    href: "#",
     ctaLabel: "Контент үзэх",
     icon: "clapperboard",
     tint: "bg-violet-500/10 text-violet-600 dark:text-violet-400",

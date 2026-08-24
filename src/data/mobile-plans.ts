@@ -44,7 +44,7 @@ export const mobilePlans: MobilePlan[] = [
     data: "12GB",
     tier: "plus",
     price: "28'000₮",
-    detailHref: "/unitel#postpaid",
+    detailHref: "#",
     features: [{ title: "Сүлжээндээ хязгааргүй", description: "ярих эрх" }],
     extras: ["MMusic & MBook 60% хөнгөлөлт"],
   },
@@ -54,7 +54,7 @@ export const mobilePlans: MobilePlan[] = [
     data: "16GB",
     tier: "plus",
     price: "32'000₮",
-    detailHref: "/unitel#postpaid",
+    detailHref: "#",
     features: [{ title: "Сүлжээндээ хязгааргүй", description: "ярих эрх" }],
     extras: ["LookTV | Basic багц", "MMusic & MBook 6 сарын эрх"],
   },
@@ -65,7 +65,7 @@ export const mobilePlans: MobilePlan[] = [
     tier: "priority",
     price: "55'000₮",
     recommended: true,
-    detailHref: "/unitel#postpaid",
+    detailHref: "#",
     features: [
       {
         title: "Priority хурд",
@@ -85,7 +85,7 @@ export const mobilePlans: MobilePlan[] = [
     data: "48GB",
     tier: "priority",
     price: "73'000₮",
-    detailHref: "/unitel#postpaid",
+    detailHref: "#",
     features: [
       {
         title: "Priority хурд",
@@ -106,7 +106,7 @@ export const mobilePlans: MobilePlan[] = [
     data: "88GB",
     tier: "premium",
     price: "100'000₮",
-    detailHref: "/unitel#postpaid",
+    detailHref: "#",
     features: [
       {
         title: "Premium үйлчилгээ",
