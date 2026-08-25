@@ -1,68 +1,25 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Lock, Trophy, Clapperboard, type LucideIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-import {
-  promotionCards,
-  promotionsSection,
-  type PromotionCard,
-  type PromotionTone,
-} from "@/data/promotions";
-import { ACCENT } from "@/lib/brand";
-
-// =====================================================================
-// TONE MAP — зураг байхгүй үеийн gradient fallback + чимэглэлийн icon.
-// =====================================================================
-const TONES: Record<
-  PromotionTone,
-  {
-    /** Зураг байхгүй үеийн gradient background */
-    card: string;
-    icon: LucideIcon;
-  }
-> = {
-  violet: {
-    card: "bg-gradient-to-br from-[#3B0A6B] via-[#4C1D95] to-[#1E1B4B]",
-    icon: Lock,
-  },
-  green: {
-    card: "bg-gradient-to-br from-[#064E3B] via-[#047857] to-[#0A3D2E]",
-    icon: Trophy,
-  },
-  amber: {
-    card: "bg-gradient-to-br from-[#7C2D12] via-[#B45309] to-[#3F1D0B]",
-    icon: Clapperboard,
-  },
-};
+import { promotionCards, promotionsSection, type PromotionCard } from "@/data/promotions";
 
 export function Promotions() {
   return (
     <section aria-labelledby="promotions-title" className="bg-background w-full">
       <div className="mx-auto w-full max-w-[1200px] px-4 py-8 lg:py-12">
-        {/* ============ HEADER — Singtel-маягийн том гарчиг ============ */}
+        {/* ============ HEADER — гарчиг + нэг мөр тайлбар ============
+            Хэмжээ/эгнүүлэлт нь `RecommendedPlans` · `RecommendedServices`-тэй
+            НЭГ: `text-center` + `text-3xl md:text-4xl lg:text-5xl`. Нүүрний
+            section-ууд нэг хэмнэлтэй байх ёстой тул гурвыг зэрэг өөрчил. */}
         <div className="mx-auto max-w-3xl text-center">
-          <div
-            className="flex items-center justify-center gap-2 text-xs font-bold tracking-[0.18em] uppercase"
-            style={{ color: ACCENT }}
-          >
-            <span
-              className="size-2 rounded-full"
-              style={{ backgroundColor: ACCENT }}
-              aria-hidden="true"
-            />
-            {promotionsSection.eyebrow}
-          </div>
-
           <h2
             id="promotions-title"
-            className="text-foreground mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl"
+            className="text-foreground text-3xl font-extrabold tracking-tight text-balance md:text-4xl lg:text-5xl"
           >
-            {promotionsSection.titlePre}
-            <span style={{ color: ACCENT }}>{promotionsSection.titleAccent}</span>
-            {promotionsSection.titlePost}
+            {promotionsSection.title}
           </h2>
 
-          <p className="text-muted-foreground mx-auto mt-5 max-w-xl text-base leading-relaxed md:text-lg">
+          <p className="text-muted-foreground mx-auto mt-3 max-w-2xl text-base text-pretty md:mt-4 md:text-lg">
             {promotionsSection.description}
           </p>
         </div>
@@ -92,69 +49,57 @@ export function Promotions() {
 }
 
 // =====================================================================
-// PROMOTION TILE — бүхэлдээ даргддаг link. Background нь жинхэнэ
-// урамшууллын зураг (`card.image`); зураг байхгүй бол tone gradient.
-// Текст уншигдахуйц байхын тулд доороос дээш бараан scrim тавина.
+// PROMOTION TILE — PLACEHOLDER хэлбэр: ӨНГӨГҮЙ, саарал.
+//
+// ⚠️ ӨМНӨ нь карт бүр өөрийн ӨНГӨТ байсан (violet / green / amber gradient
+// эсвэл жинхэнэ урамшууллын зураг + бараан scrim, дээр нь цагаан текст).
+// Контент нь бүхэлдээ placeholder болсон үед тэр өнгө нь картуудыг хуудсын
+// хамгийн тод элемент болгож, "энэ бодит санал уу?" гэсэн эргэлзээ
+// төрүүлж байв. Одоо `bg-card` — `promo-banner.tsx`-ийн
+// `PromoBannerPlaceholder`-тай ЯГ ижил саарал гадарга.
+//
+// Хасагдсан зүйлс: `TONES` gradient map, чимэглэлийн icon (Lock / Trophy /
+// Clapperboard — тэдгээр нь агуулгын УТГА дамжуулдаг тул placeholder-т
+// зохисгүй), зургийн салаа, бараан scrim, `next/image` import.
+// Жинхэнэ урамшуулал холбогдох үед git түүхээс сэргээнэ.
+//
+// ТЕКСТИЙН ӨНГӨ: туслах мөрүүдэд `text-muted-foreground` БИШ
+// `text-foreground/70`. Шалтгаан: dark theme-д `--text-2` нь
+// `rgba(184,184,184,0.6)` бөгөөд `bg-card` (#1c202d) дээр ойролцоогоор
+// 3.8:1 болдог — 11-12px жижиг текстэд WCAG AA (4.5:1) хүрэхгүй.
+// `foreground/70` нь light 6.4:1, dark 8.6:1 өгнө.
 // =====================================================================
 function PromotionTile({ card }: { card: PromotionCard }) {
-  const tone = TONES[card.tone];
-  const Icon = tone.icon;
-
   return (
     <Link
       href={card.ctaHref}
       aria-label={`${card.title} — ${card.ctaText}`}
-      className={`group focus-visible:ring-offset-background relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-3xl p-7 shadow-xl ring-1 ring-black/10 transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:outline-none ${tone.card}`}
+      className="group bg-card ring-border focus-visible:ring-ring focus-visible:ring-offset-background relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-3xl p-7 ring-1 transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
     >
-      {card.image ? (
-        <>
-          {/* Жинхэнэ урамшууллын зураг — background */}
-          <Image
-            src={card.image}
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-          />
-          {/* Бараан scrim — цагаан текстийг уншигдахуйц болгох */}
-          <div
-            className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/25"
-            aria-hidden="true"
-          />
-        </>
-      ) : (
-        /* Зураг байхгүй үед — gradient дээр бүдэг чимэглэлийн icon */
-        <Icon
-          className="pointer-events-none absolute -right-4 -bottom-4 size-36 text-white/10 transition-transform duration-500 ease-out group-hover:scale-110 group-hover:text-white/15"
-          aria-hidden="true"
-          strokeWidth={1.5}
-        />
-      )}
-
       {/* Дээд эгнээ — badge pill + price bubble */}
       <div className="relative flex items-start justify-between gap-3">
-        <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+        <span className="bg-muted text-foreground/70 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
           {card.badge}
         </span>
 
-        <div className="shrink-0 rounded-2xl bg-black/35 px-3 py-2 text-right backdrop-blur-sm">
-          <div className="text-lg leading-none font-extrabold text-white">{card.price}</div>
-          <div className="mt-1 text-[11px] font-medium text-white/70">{card.priceNote}</div>
+        <div className="bg-muted shrink-0 rounded-2xl px-3 py-2 text-right">
+          <div className="text-foreground text-lg leading-none font-extrabold">{card.price}</div>
+          <div className="text-foreground/70 mt-1 text-[11px] font-medium">{card.priceNote}</div>
         </div>
       </div>
 
       {/* Title + description */}
       <div className="relative mt-6 flex flex-1 flex-col justify-end">
-        <h3 className="text-[1.2rem] font-bold tracking-tight text-white">{card.title}</h3>
-        <p className="mt-3 max-w-sm text-[0.7rem] leading-relaxed text-white/85">
+        <h3 className="text-foreground text-[1.2rem] font-bold tracking-tight">{card.title}</h3>
+        <p className="text-foreground/70 mt-3 max-w-sm text-[0.7rem] leading-relaxed">
           {card.description}
         </p>
       </div>
 
       {/* Доод эгнээ — хүчинтэй хугацаа + CTA */}
-      <div className="relative mt-6 flex items-center justify-between gap-3 border-t border-white/20 pt-4">
-        <span className="text-xs font-medium text-white/70">{card.validity}</span>
-        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white">
+      <div className="border-border relative mt-6 flex items-center justify-between gap-3 border-t pt-4">
+        <span className="text-foreground/70 text-xs font-medium">{card.validity}</span>
+        <span className="text-foreground inline-flex items-center gap-1.5 text-sm font-semibold">
           {card.ctaText}
           <ArrowRight
             className="size-4 transition-transform duration-300 group-hover:translate-x-1"

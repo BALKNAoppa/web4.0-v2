@@ -6,6 +6,7 @@ import {
   Package,
   Smartphone,
   Users,
+  Wifi,
   type LucideIcon,
 } from "lucide-react";
 
@@ -19,7 +20,8 @@ import { cn } from "@/lib/utils";
  * ганц хэсэг. Дүрс нь өнгөт дугуйвтар дөрвөлжинд, доор нь шошго; hover дээр
  * зөөлөн дээш хөвнө.
  *
- * ⚠️ ОДООГООР ХААНА Ч ДУУДАГДААГҮЙ — байрлах хуудсаа хүлээж байна.
+ * Нүүр хуудсанд "Санал болгох үйлчилгээ" section-оор БАЙРЛАСАН
+ * ([recommended-services.tsx]). Өмнө нь хаана ч дуудагдаагүй байв.
  *
  * Дүрсийг НЭРЭЭР (`icon: "smartphone"`) өгдөг болохоос component дамжуулдаггүй:
  * data давхарга (`brand-ribbon.ts`) нь `lucide-react`-аас хамаарахгүй байх
@@ -32,14 +34,21 @@ const RIBBON_ICONS: Record<BrandRibbonIcon, LucideIcon> = {
   layers: Layers,
   gift: Gift,
   package: Package,
+  wifi: Wifi,
 };
 
 export function BrandRibbon({ items, label }: { items: BrandRibbonItem[]; label: string }) {
   return (
-    // `overflow-x-auto` — нарийн дэлгэцэнд хэвтээ гүйлгэнэ (мөр таслахгүй),
-    // өргөн дэлгэцэнд төвлөрнө.
+    // `overflow-x-auto` — нарийн дэлгэцэнд хэвтээ гүйлгэнэ (мөр таслахгүй).
+    // `lg:justify-between` — товч нь ХЭДЭН Ч БАЙСАН хүрээний хоёр ирмэг рүү
+    // тэлж, завсрын зайг тэнцүү хуваана — эхнийх нь зүүн, сүүлийнх нь баруун
+    // ирмэгт цулгуй наалдана. Гарчиг нь ТӨВД боловч мөр нь хүрээгээ бүтнээр
+    // эзэлдэг тул зөрчилдөхгүй.
+    //
+    // ⚠️ lg-ээс ДООШ идэвхгүй: 7 товч (7×128 + завсар) нь ~968px шаарддаг тул
+    // түүнээс нарийн дэлгэцэнд мөр нь хэвтээ ГҮЙЛГЭЭ болж зүүнээс эхэлнэ.
     <nav aria-label={label} className="mx-auto max-w-[1200px] px-4 py-10">
-      <ul className="flex items-start gap-3 overflow-x-auto pb-2 lg:justify-center lg:gap-7">
+      <ul className="flex items-start gap-3 overflow-x-auto pb-2 lg:justify-between">
         {items.map((item) => {
           const Icon = RIBBON_ICONS[item.icon];
           return (
@@ -49,18 +58,18 @@ export function BrandRibbon({ items, label }: { items: BrandRibbonItem[]; label:
                   учир `next/link`-ээр client-side navigation болгов. */}
               <Link
                 href={item.href}
-                className="group flex w-24 flex-col items-center gap-2.5 text-center"
+                className="group flex w-32 flex-col items-center gap-3 text-center"
               >
                 <span
                   className={cn(
-                    "flex size-16 items-center justify-center rounded-2xl",
+                    "flex size-20 items-center justify-center rounded-2xl",
                     "transition-transform duration-700 ease-out group-hover:-translate-y-1",
                     item.tint,
                   )}
                 >
-                  <Icon className="size-7" strokeWidth={1.75} aria-hidden="true" />
+                  <Icon className="size-9" strokeWidth={1.75} aria-hidden="true" />
                 </span>
-                <span className="text-xs font-medium">{item.label}</span>
+                <span className="text-sm font-medium">{item.label}</span>
                 {item.badge && (
                   <span className="-mt-2 text-[10px] font-semibold text-red-500">{item.badge}</span>
                 )}

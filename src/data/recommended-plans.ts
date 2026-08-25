@@ -1,18 +1,19 @@
 /**
  * "САНАЛ БОЛГОХ БАГЦ" — нүүрний БҮРЭН ХЭМЖЭЭНИЙ section-ий data.
  *
- * ⚠️ АГУУЛГА БҮХЭЛДЭЭ PLACEHOLDER. Картын БҮТЦИЙГ л үзүүлнэ:
+ * Картын БҮТЭЦ хоёр брэндэд ИЖИЛ:
  *
  *   [ Card photo ]        ← зургийн слот
  *   Title                 ← багцын нэр
  *   ✓ Highlight 1…4       ← онцлох эрхүүд
  *   [ CTA ]               ← бүтэн өргөний товч
  *
- * Бодит багцын жагсаалт `mobile-plans.ts > mobilePlans`-д ХЭВЭЭР байгаа —
- * агуулга батлагдахад эндээс тэр рүү холбоно.
+ * ⚠️ АГУУЛГА нь брэнд бүрд ӨӨР. `AppPromo`-той ижил зарчим: НЭГ компонент,
+ * `content` prop-оор data өгнө. Ингэснээр хоёр section хожим зөрөх
+ * боломжгүй, гэхдээ доторх багц нь брэндийнхээ бодит контексттэй байна.
  *
- * ⚠️ Энэ section нь өмнө hero-гийн доод 40%-д шахагдаж байсан. Одоо ТУСДАА,
- * өндрийн хязгааргүй section болсон тул карт нь бүтэн хэмжээгээрээ гарна.
+ *   Unitel    — бүхэлдээ PLACEHOLDER (мобайл багцын агуулга батлагдаагүй)
+ *   Univision — БОДИТ багцууд (`plans.ts`-ийн M+ · L+ · XL+)
  */
 
 export type PlanTabId = "recommended" | "other";
@@ -38,23 +39,18 @@ export type PlanCardContent = {
   recommended?: boolean;
 };
 
-/**
- * Section-ий толгой. Бичвэр нь PLACEHOLDER — жинхэнэ маркетингийн "trigger"
- * үг шийдэгдээгүй тул слотыг нэрлэсэн шошго л тавьсан.
- */
-export const plansHeading = {
-  title: "Санал болгох багц",
-  subtitle: "Энд онцлох trigger үг байрлана",
+export type RecommendedPlansContent = {
+  heading: { title: string; subtitle: string };
+  tabs: PlanTab[];
+  cards: Record<PlanTabId, PlanCardContent[]>;
 };
 
-/** Санал болгож буй картын баруун дээд булангийн тэмдэг */
+/** Санал болгож буй картын баруун дээд булангийн тэмдэг — хоёр брэндэд ижил */
 export const RECOMMENDED_BADGE = "САНАЛ БОЛГОХ";
 
-/** Хоёр таб. Нэрс нь ТОДОРХОЙ — доторх карт нь placeholder. */
-export const planTabs: PlanTab[] = [
-  { id: "recommended", label: "Танд санал болгох багц" },
-  { id: "other", label: "Бусад багцууд" },
-];
+// =====================================================================
+// UNITEL — бүхэлдээ PLACEHOLDER (wireframe)
+// =====================================================================
 
 /**
  * Карт бүр ИЖИЛ placeholder-тай — энэ нь wireframe тул ялгаа нь агуулгад биш,
@@ -63,7 +59,7 @@ export const planTabs: PlanTab[] = [
  * `count` — highlight-ийн тоо. 3 ба 4 хоёулаа зөв харагдахыг үзүүлэхээр
  * зориуд ХОЛИСОН (жинхэнэ багцууд ч ижил тооны эрхтэй байх албагүй).
  */
-const card = (id: string, count: 3 | 4, recommended = false): PlanCardContent => ({
+const placeholderCard = (id: string, count: 3 | 4, recommended = false): PlanCardContent => ({
   id,
   photoLabel: "Card photo",
   title: "Title",
@@ -73,7 +69,61 @@ const card = (id: string, count: 3 | 4, recommended = false): PlanCardContent =>
   recommended,
 });
 
-export const planCards: Record<PlanTabId, PlanCardContent[]> = {
-  recommended: [card("rec-1", 3), card("rec-2", 4, true), card("rec-3", 4)],
-  other: [card("other-1", 3), card("other-2", 3), card("other-3", 4)],
+export const unitelRecommendedPlans: RecommendedPlansContent = {
+  // Бичвэр нь PLACEHOLDER — жинхэнэ маркетингийн "trigger" үг шийдэгдээгүй
+  // тул слотыг нэрлэсэн шошго л тавьсан.
+  heading: { title: "Санал болгох багц", subtitle: "Энд онцлох trigger үг байрлана" },
+  tabs: [
+    { id: "recommended", label: "Танд санал болгох багц" },
+    { id: "other", label: "Бусад багцууд" },
+  ],
+  cards: {
+    recommended: [
+      placeholderCard("rec-1", 3),
+      placeholderCard("rec-2", 4, true),
+      placeholderCard("rec-3", 4),
+    ],
+    other: [
+      placeholderCard("other-1", 3),
+      placeholderCard("other-2", 3),
+      placeholderCard("other-3", 4),
+    ],
+  },
+};
+
+// =====================================================================
+// UNIVISION — картын агуулга ч PLACEHOLDER
+//
+// ⚠️ Эхлээд `plans.ts`-ээс M+ · L+ · XL+-ийн БОДИТ үзүүлэлтийг (хурд, дата
+// эрх, кино эрх, HBO Max) хуулж тавьсан байсныг ХАСАВ. Хоёр шалтгаан:
+//   1. Тоо давхардаж бичигдэж, тариф өөрчлөгдөхөд хоёр файл зөрөх эрсдэлтэй
+//   2. Нүүрний бусад бүх блок placeholder байхад ганц энэ нь бодит тоотой
+//      байвал "аль нь батлагдсан вэ" гэдэг нь харагчид эргэлзээтэй болно
+// Бодит үзүүлэлт `/main-packages` хуудсанд ХЭВЭЭР байгаа.
+//
+// ТАБЫН НЭРС нь Univision-ынхаараа хэвээр — тэр нь хуурамч тоо биш,
+// бүтээгдэхүүний БҮТЭЦ (гурвалсан = интернэт + ТВ + суурин утас).
+// =====================================================================
+
+export const univisionRecommendedPlans: RecommendedPlansContent = {
+  heading: {
+    title: "Санал болгох багц",
+    subtitle: "Энд онцлох trigger үг байрлана",
+  },
+  tabs: [
+    { id: "recommended", label: "Гурвалсан багц" },
+    { id: "other", label: "Бусад үйлчилгээ" },
+  ],
+  cards: {
+    recommended: [
+      placeholderCard("uv-rec-1", 3),
+      placeholderCard("uv-rec-2", 4, true),
+      placeholderCard("uv-rec-3", 4),
+    ],
+    other: [
+      placeholderCard("uv-other-1", 3),
+      placeholderCard("uv-other-2", 3),
+      placeholderCard("uv-other-3", 4),
+    ],
+  },
 };

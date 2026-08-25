@@ -23,67 +23,94 @@ export type PromotionCard = {
   validity: string;
   ctaText: string;
   ctaHref: string;
-  /** Өнгөний схем — зураг байхгүй үеийн gradient fallback */
+  /**
+   * Өнгөний схем.
+   * ⚠️ ОДООГООР ХЭРЭГЛЭГДЭХГҮЙ — карт бүгд саарал placeholder тул
+   * `promotions.tsx` нь өнгө уншихаа больсон. Жинхэнэ урамшуулал орох үед
+   * өнгөт хувилбарыг сэргээхэд бэлэн байлгахын тулд талбарыг үлдээв.
+   */
   tone: PromotionTone;
   /**
    * Card-ны background зураг — `public/promotions/{id}.jpg`.
-   * Хоосон бол `tone` gradient-ээр харагдана.
+   * ⚠️ ОДООГООР ХЭРЭГЛЭГДЭХГҮЙ (`tone`-той ижил шалтгаанаар).
    */
   image?: string;
 };
 
+/**
+ * SECTION-ий ТОЛГОЙ.
+ *
+ * ⚠️ ӨМНӨ нь `eyebrow` + `titlePre`/`titleAccent`/`titlePost` гэсэн 4 хэсэгтэй
+ * байв ("Онцлох урамшуулал" eyebrow, доор нь "50% хямдрал, 1000% cashback —
+ * бүгд нэг дор." гэсэн маркетингийн гарчиг). Одоо screenshot-ийн загварын
+ * дагуу ЭНГИЙН гарчиг + нэг мөр тайлбар болов: eyebrow нь гарчигтайгаа
+ * давхардаж байсан тул ХАСАГДСАН.
+ *
+ * ⚠️ ХОЁР НҮҮР ХУВААЛЦАНА — Unitel (`page.tsx`) ба Univision
+ * (`univision-home.tsx`) хоёул энэ section-ийг дууддаг тул энд бичсэн текст
+ * ХОЁУЛАНД нь харагдана. Тиймээс брэндийн нэр агуулаагүй, ерөнхий үг сонгов.
+ */
 export const promotionsSection = {
-  eyebrow: "Онцлох урамшуулал",
-  titlePre: "50% хямдрал, ",
-  titleAccent: "1000% cashback",
-  titlePost: " — бүгд нэг дор.",
-  description:
-    "Univision-ий апп болон контентын онцлох урамшууллыг яг одоо идэвхжүүлээрэй.",
+  title: "Онцлох урамшуулал",
+  description: "Танд зориулсан шинэ урамшуулал, онцлох саналууд.",
   ctaText: "Бүх урамшуулал үзэх",
   ctaHref: "/campaigns",
 };
 
+/**
+ * КАРТУУД — БҮГД PLACEHOLDER.
+ *
+ * Танилцуулгад хуурамч маркетингийн тоо (үнэ, cashback %, хугацаа) нь
+ * анхаарлыг агуулгаас сарниулж, "энэ бодит санал уу?" гэсэн эргэлзээ
+ * төрүүлдэг тул зориуд утгагүй болгосон. `promo-banner.tsx`-ийн
+ * `PromoBannerPlaceholder`-тэй ижил зарчим.
+ *
+ * ⚠️ `image` БҮГДЭЭС ХАСАГДСАН. Зураг өөрөө мэдээлэл дамжуулдаг (лого, багц,
+ * үнийн бичээс) тул placeholder-ийн зорилгыг эвдэнэ. Зураггүй үед card нь
+ * `tone` gradient-ээр буудаг — энэ нь аль хэдийн бэлэн fallback (доорх
+ * `PromotionCard.image` тайлбарыг үз).
+ *
+ * Бичвэрийн УРТЫГ жинхэнэ контенттой ойролцоо байлгав — эс бөгөөс card-ны
+ * өндөр хумигдаж, бодит агуулга орох үед layout зөрнө.
+ *
+ * Жинхэнэ урамшуулал гарахад: `id`, бичвэрүүд, `image`-г солино. Бүтэц,
+ * `tone`, `ctaHref` хэвээр үлдэж болно.
+ */
 export const promotionCards: PromotionCard[] = [
   {
-    id: "movie-cashback",
-    badge: "1000% Cashback",
-    title: "Кино багц",
-    description:
-      "9,900₮-өөр идэвхжүүлж, М банкны апп-аар 1000% буцаан олголтоо аваарай.",
-    price: "9,900₮",
-    priceNote: "1000% cashback",
-    validity: "2026.06.27 хүртэл",
-    ctaText: "Идэвхжүүлэх",
+    id: "sample-1",
+    badge: "Badge 1",
+    title: "Урамшуулал 1",
+    description: "Энэ картын урамшууллын тайлбар энд байрлана. Хоёр мөр орчим урттай.",
+    price: "0,000₮",
+    priceNote: "Үнийн тэмдэглэл",
+    validity: "0000.00.00 хүртэл",
+    ctaText: "Sample CTA",
     ctaHref: "/campaigns",
     tone: "amber",
-    image: "/cashback.jpg",
   },
   {
-    id: "secret-room",
-    badge: "Шинэ апп",
-    title: "Нууц өрөө апп",
-    description:
-      "Шинэ апп-аа 50% хөнгөлөлттэйгээр идэвхжүүлэх онцгой боломж — зөвхөн хязгаарлагдмал хугацаанд.",
-    price: "9,950₮",
-    priceNote: "50% хямдралтай",
-    validity: "2026.08.31 хүртэл",
-    ctaText: "Идэвхжүүлэх",
+    id: "sample-2",
+    badge: "Badge 2",
+    title: "Урамшуулал 2",
+    description: "Энэ картын урамшууллын тайлбар энд байрлана. Хоёр мөр орчим урттай.",
+    price: "0,000₮",
+    priceNote: "Үнийн тэмдэглэл",
+    validity: "0000.00.00 хүртэл",
+    ctaText: "Sample CTA",
     ctaHref: "/campaigns",
     tone: "violet",
-    image: "/adult-app.png",
   },
   {
-    id: "sports-apps",
-    badge: "Спорт",
-    title: "Спортын дэд апп-ууд",
-    description:
-      "Английн Премьер Лиг болон Үндэсний Дээд Лигийг тус бүр ердөө 1,500₮-өөр үзээрэй.",
-    price: "1,500₮",
-    priceNote: "лиг тус бүр",
-    validity: "2026.12.31 хүртэл",
-    ctaText: "Дэлгэрэнгүй",
+    id: "sample-3",
+    badge: "Badge 3",
+    title: "Урамшуулал 3",
+    description: "Энэ картын урамшууллын тайлбар энд байрлана. Хоёр мөр орчим урттай.",
+    price: "0,000₮",
+    priceNote: "Үнийн тэмдэглэл",
+    validity: "0000.00.00 хүртэл",
+    ctaText: "Sample CTA",
     ctaHref: "/campaigns",
     tone: "green",
-    image: "/sport-app.jpg",
   },
 ];

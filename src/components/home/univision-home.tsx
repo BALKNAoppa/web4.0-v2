@@ -1,40 +1,72 @@
-import { UnivisionPlansBanner } from "@/components/sections/univision-plans-banner";
-import { ProductEntryGrid } from "@/components/sections/product-entry-grid";
-import { TrustOrbit } from "@/components/sections/trust-orbit";
+import { RecommendedPlans } from "@/components/sections/recommended-plans";
+import { FeaturedServices } from "@/components/sections/featured-services";
+import { FeaturedMarquee } from "@/components/sections/featured-marquee";
 import { Promotions } from "@/components/sections/promotions";
+import { TrustBuild } from "@/components/sections/trust-build";
 import { AppPromo } from "@/components/sections/app-promo";
-import { univisionEntryTiles } from "@/data/home";
-import { univisionGoApp } from "@/data/app-promo";
+import { TrustOrbit } from "@/components/sections/trust-orbit";
+import { unitelApp } from "@/data/app-promo";
+import { univisionRecommendedPlans } from "@/data/recommended-plans";
 
 /**
- * Univision нүүрний hero доорх хэсэг — үндсэн багц, контент болон гэрийн
- * шийдэл. Unitel-ийн мобайл контент энд ОРОХГҮЙ.
+ * Univision нүүрний AI туслахаас доош бүх хэсэг.
  *
- * ЧУХАЛ: Fragment буцаана — `<div>` ороолгож БОЛОХГҮЙ. SectionSnapScroller
- * нь `#main-content > section` гэж шууд хүүхдийг хайдаг.
+ * ДАРААЛАЛ (батлагдсан):
+ *   1. `PromoBanner`  ─┐ энэ хоёр нь `page.tsx`-д, эхний дэлгэцийн төлөө
+ *   2. `ChatHero`     ─┘
+ *   3. `RecommendedPlans`     — Санал болгох багц (Univision-ы M+ · L+ · XL+)
+ *   4. `FeaturedServices`     — Онцлох / эрэлттэй үйлчилгээ  ← ШИНЭ
+ *   5. `Promotions`           — Урамшуулал
+ *   6. `FeaturedMarquee`     — Энтертайнмэнт (v1-ээс, зураггүй)
+ *   7. `TrustBuild`          — Итгэл төрүүлэх, 3 блок (Jio загвар)
+ *   8. `AppPromo`             — Апп татах
+ *
+ * ⚠️ `TrustOrbit` (wifi pulse) ТҮР ИДЭВХГҮЙ. Устгаагүй — компонент бүрэн
+ * хэвээр, доорх `void` нь TypeScript-ийн "unused" анхааруулгыг дардаг
+ * (`promo-banner.tsx`, `page.tsx`-тэй ижил арга). Буцаах бол 7-р байрны
+ * `<TrustBuild />`-ийг `<TrustOrbit />`-ээр солино.
+ *
+ * ЧУХАЛ: Fragment буцаана — `<div>` ороолгож БОЛОХГҮЙ. Section-ууд
+ * `#main-content`-ийн ШУУД хүүхэд байх ёстой.
  */
+void TrustOrbit;
+
 export function UnivisionHome() {
   return (
     <>
-      {/* Үндсэн бүтээгдэхүүн — M+, L+, XL+ */}
-      <UnivisionPlansBanner />
+      {/* 3 — Санал болгох багц */}
+      <RecommendedPlans content={univisionRecommendedPlans} />
 
-      {/* Single internet, Univision Go, HBO Max, Mesh */}
-      <ProductEntryGrid tiles={univisionEntryTiles} />
+      {/* 4 — Онцлох / эрэлттэй үйлчилгээ. Хэрэглэгчид хамгийн их авдаг зүйл
+          БОЛОН байгууллагын түлхэхийг хүсэж буй үйлчилгээ. Жагсаалт нь
+          `data/featured-services.ts`-д гараар эрэмбэлэгдэнэ. */}
+      <FeaturedServices />
 
-      {/* Найдвартай байдлын орбит */}
-      <TrustOrbit />
-
-      {/* Онцлох урамшуулал — Univision-ий апп, контентын cashback (3 карт) */}
+      {/* 5 — Урамшуулал (агуулга нь одоогоор placeholder) */}
       <Promotions />
 
-      {/* Univision GO app — QR + store badge (entry tile-тай зориуд давхардуулсан).
-          `AppPromo` нь Unitel-ийн апп section-тэй НЭГ компонент — зөвхөн data өөр. */}
-      <AppPromo content={univisionGoApp} />
+      {/* 6 — Энтертайнмэнт. `web4-sample` (v1)-ийн `FeaturedMarquee`:
+          хоёр center-peek carousel (том = апп, жижиг = кино), 5 сек тутам
+          автоматаар шилжинэ, pause/play удирдлагатай.
 
-      {/* Тусламжийн блок ("Танд тусламж хэрэгтэй юу?") нүүрнээс ХАСАГДСАН.
-          `Faq` компонент болон /support хуудас хэвээр байгаа тул хэрэгтэй
-          үед энд буцааж нэмж болно. */}
+          ⚠️ ЗУРАГГҮЙ. `marquee-items.ts`-ийн `image` талбарууд ЗОРИУД
+          хоосон — компонент нь зураг байхгүй үед `shade` дэвсгэр + нэрийн
+          том бүдэг бичээсээр placeholder буулгадаг. Жинхэнэ зураг бэлэн
+          болмогц зөвхөн data-д `image` нэмнэ, компонент хөндөгдөхгүй. */}
+      <FeaturedMarquee />
+
+      {/* 7 — Trust build. Jio-гийн нүүрний загвараар гурван блок, текст ↔
+          медиа эргэлдэж байрлана. Медиа нь ВИДЕОны байр (одоогоор
+          "Video N" шошготой), гарчиг/тайлбар/CTA бүгд placeholder.
+          `TrustOrbit` (wifi pulse) -ийг ЗОРИУД хэрэглээгүй, арай өөр үед. */}
+      <TrustBuild />
+
+      {/* 8 — Апп татах.
+          ⚠️ `unitelApp` (Univision GO БИШ) — Unitel апп нь Юнивишний төлбөр
+          төлөх, нэгж/дата авах үйлчилгээг ч агуулдаг тул Univision нүүрэнд
+          түүнийг санал болгож байна. Univision GO рүү буцаах бол
+          `univisionGoApp` -г import хийж энд солино. */}
+      <AppPromo content={unitelApp} />
     </>
   );
 }

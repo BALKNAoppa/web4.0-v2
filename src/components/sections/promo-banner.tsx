@@ -81,9 +81,20 @@ function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
   }, [api]);
 
   return (
+    // ⚠️ АЛДАА ЗАССАН: өмнө нь `fill ? "flex h-full items-stretch" : "py-8"`
+    // байсан. `fill` БАЙХГҮЙ үед (Univision нүүр) өндөр нь хаанаас ч
+    // ирэхгүй байв — доорх carousel-ийн бүх давхарга (`CarouselContent`,
+    // `CarouselItem`, `PromoSlide`) `h-full` хэрэглэдэг ба `h-full` нь
+    // эцгээсээ өндөр авдаг тул хэлхээний ТОЛГОЙД бодит өндөр байх ёстой.
+    // Тэр байхгүй тул слайд агуулгынхаа хэмжээнд (~110px) хумигдаж байлаа.
+    //
+    // `bannerBox(fill)` нь `fill` үед `h-full` (эцгээс), эс бөгөөс
+    // `min-h-[…svh]` (өөрөө) өгнө. Функц аль хэдийн байсан ч ЗӨВХӨН
+    // `PromoBannerFull`-д дуудагдаж, идэвхтэй placeholder түүнийг
+    // хэрэглээгүй байв.
     <section
       aria-label="Онцлох урамшуулал"
-      className={cn("w-full", fill ? "flex h-full items-stretch" : "py-8")}
+      className={cn("flex w-full items-stretch", bannerBox(fill))}
     >
       {/* FULL WIDTH — `max-w-300` (1200px) хязгаарыг ЗОРИУДААР ЦУЦАЛСАН.
           Promo нь дэлгэцийн бүтэн өргөнийг эзэлнэ; идэвхтэй panel нь

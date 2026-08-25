@@ -9,6 +9,8 @@ import { mobilePlans } from "@/data/mobile-plans";
 import {
   assistantQuestions,
   matchQuestion,
+  TRENDING_TOPIC_COUNT,
+  trendingTopicLabel,
   type AssistantQuestion,
   type AssistantResult,
   type DiagnosticResult,
@@ -17,47 +19,15 @@ import {
   type TimelineResult,
 } from "@/data/hero-assistant";
 import { cn } from "@/lib/utils";
-
-/** Neon gradient (input-ийн хүрээ/гэрэлд) — брэнд ногоон → cyan → violet */
 const NEON = "linear-gradient(90deg,#45c700,#2ad4ff,#a855f7,#45c700)";
-
-/** "Боловсруулж байна" мэдрэмж өгөх завсар. Сүлжээ байхгүй тул бид хянана. */
 const LOADING_MS = 700;
 
 type Block = {
   key: number;
-  /** Хэрэглэгчийн бичсэн эх текст */
   asked: string;
   matched: AssistantQuestion | null;
   status: "loading" | "ready";
 };
-
-/**
- * Google-ийн хайлтын хуудас шиг: input-ийн доороос үр дүнгийн блок ургана.
- * Асуулт бүр өөрийн гэсэн өрөлттэй (багц харьцуулалт / оношилгоо / алхмууд /
- * ажилтан руу шилжүүлэх). Блокууд овоологдож, өмнөх нь автоматаар хумигдана.
- *
- * AI байхгүй — бэлдсэн асуулт → бэлдсэн хариулт ([hero-assistant.ts]).
- * Өргөн нь input-ээс хэтрэхгүй: бүгд нэг `max-w-3xl` хүрээнд.
- *
- * Хоёр брэндийн асуултыг хоёулаа таньдаг: Univision дээр Unitel-ийн асуулт
- * асуувал хариулт гарч, CTA нь `SmartLink`-ээр Unitel-ийн домэйн руу шилжинэ —
- * header-тэй яг ижил зарчим.
- */
-/**
- * `heroRest` — туслах нь эхний дэлгэцийн ҮЛДСЭН хэсгийг эзэлнэ.
- *
- *   md+    — 40%. `UnitelHero` нь `(100svh − header) × 0.6` авдаг тул
- *            header + promo + туслах = ЯГ нэг дэлгэц.
- *   мобайл — 28%. Тооцоогоор 40% нь ч багтдаг ч бодит утсан дээр хөтчийн
- *            доод самбар үлдсэн зайг залгидаг (доорх тайлбарыг үз).
- *
- * ЯАГААД PROP БОЛГОВ: доорх `34/44/46svh` нь туслах promo banner-тай НЭГ
- * дэлгэц ХУВААЛЦАЖ байсан үеийн ТААМАГЛАЛ. 1280×720 дээр тэр нь 331px
- * болж, header 78 + promo 385-тай нийлээд 794px = дэлгэцээс 74px халдаг
- * байв. Агуулга нь ердөө ~180–200px тул хумихад алдах зүйл алга.
- * Univision-ы нүүр хуучин бүтэцтэй хэвээр тул prop өгөхгүй.
- */
 export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
   const questions = assistantQuestions;
 
@@ -77,7 +47,6 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
         ...prev,
         { key, asked, matched: matchQuestion(asked, questions), status: "loading" },
       ]);
-      // Шинэ блок нээлттэй, өмнөх бүгд хумигдана
       setExpandedKey(key);
       setInput("");
 
@@ -88,7 +57,6 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
     [questions],
   );
 
-  // Шинэ блок гарч ирэхэд зөөлөн гулсаж харагдана
   useEffect(() => {
     if (blocks.length === 0) return;
     latestRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -99,73 +67,39 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
       aria-label="Ухаалаг сонголт"
       className="bg-background animate-in fade-in relative w-full overflow-hidden duration-1000 ease-out"
     >
-      {/* Background — MagicUI Interactive Grid Pattern (hover-оор нүд бүр гэрэлтэнэ).
-          Төв рүү харагдаж, захаараа бүдгэрэх radial mask-тай. */}
       <InteractiveGridPattern
         width={40}
         height={40}
         squares={[42, 24]}
         className="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]"
       />
-
-      {/* Өндөр — promo banner-тай ХАМТ первый дэлгэцэнд багтах ёстой тул
-          68vh → 44/46svh болгож хумив. `svh` нь мобайлын URL bar хураагдахаас
-          үл хамаарсан жижиг viewport — `vh` бол бодит харагдахаас өндөр
-          гарч, асуултын мөрийг доош түлхдэг. */}
-      {/* `[@media(max-height:720px)]` — намхан дэлгэц (iPhone SE ~667px) дээр
-          агуулга нь min-h-ээс өндөр болж асуултын мөрийг доош түлхдэг тул
-          босоо зайг нэмж хумина. Өндөр дэлгэцэнд энэ үйлчлэхгүй. */}
-      {/* МОБАЙЛ: банерт илүү зай өгөхийн тулд туслахыг хумив — 44→34svh.
-          Гэхдээ min-h ганцаараа хангалтгүй: агуулга нь өөрөө 44svh-ээс өндөр
-          байсан тул доорх гарчиг/тайлбар/зайнуудыг ч мобайл дээр багасгав.
-          `sm:`-ээс дээш бүх хэмжээ хуучнаараа. */}
       <div
         className={cn(
-          "relative z-10 mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-5 text-center sm:py-8 md:py-10 [@media(max-height:720px)]:py-3",
+          "relative z-10 mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-5 text-center sm:py-8 md:py-10 [@media(max-height:1024px)]:py-1",
           heroRest
-            ? // МОБАЙЛ 28% · md+ 40% (promo-гийн 60%-ийн хос).
-              //
-              // ⚠️ Мобайлд ЯАГААД 40% БИШ ГЭЖ: тооцоогоор 40% нь `svh`-д
-              // багтдаг (412×915 дээр 908/915). Гэвч БОДИТ утсан дээр хөтчийн
-              // доод самбар `svh`-гийн үлдээсэн зайг залгиж, асуултын мөр
-              // ирмэгт наалдаж эсвэл дор нь оршдог байв (S22 Ultra, iPhone
-              // 17 Pro Max дээр илэрсэн).
-              //
-              // Туслахын АГУУЛГА ердөө ~198px тул 40% (346px) нь 148px цэвэр
-              // хоосон зай байв — хумихад алдах зүйл алга. 28% нь ~242px
-              // өгч, агуулгаас дээгүүр хэвээр үлдэнэ.
-              "min-h-[calc((100svh-var(--header-h))*0.28)] md:min-h-[calc((100svh-var(--header-h))*0.4)]"
+            ? "min-h-[calc((100svh-var(--header-h))*0.28)] md:min-h-[calc((100svh-var(--header-h))*0.4)]"
             : "min-h-[34svh] sm:min-h-[44svh] md:min-h-[46svh]",
         )}
       >
-        {/* ЗОРИЛГО: энэ туслах нь ГОМДОЛ/АСУУДАЛ шийддэг support бот БИШ.
-            Хэрэглэгчид эко-системд юу байгааг ТАНИУЛЖ (awareness), судалж
-            (explore), өөрт тохирохыг СОНГОХОД (choice) чиглэсэн. Тиймээс
-            "туслах вэ?" гэсэн асуудал-шийдвэрлэх өнгө аясыг "тохирох вэ?"
-            гэсэн сонголт-нээлтийн өнгө аясаар сольсон. */}
         <span className="border-border bg-card/60 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur">
           <Sparkles className="text-primary size-3.5" aria-hidden="true" />
           Highlight keyword байна
         </span>
 
-        <h1 className="text-foreground mt-4 text-2xl font-extrabold tracking-tight text-balance sm:mt-6 sm:text-3xl md:text-4xl [@media(max-height:720px)]:mt-3">
+        <h1 className="text-foreground mt-4 text-2xl font-extrabold tracking-tight text-balance sm:mt-6 sm:text-3xl md:text-4xl [@media(max-height:1024px)]:mt-2">
           AI <span className="from-primary bg-clip-text text-[#45c700]">assistant</span>
         </h1>
-        <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media(max-height:720px)]:mt-2">
-          Ai assistant-н Capability-г сайн тододгосон text энд байрлана.
+        <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media(max-height:1024px)]:mt-1.5">
+          Ai assistant-н Capability-г сайн госон text энд байрлана.
         </p>
-
-        {/* Chat input — neon gradient хүрээ + гэрэл (радиус томруулсан) */}
-        <div className="relative mt-5 w-full sm:mt-8 [@media(max-height:720px)]:mt-4">
-          {/* Ард талын бүдэг гэрэл (glow) */}
+        <div className="relative mt-5 w-full sm:mt-8 [@media(max-height:1024px)]:mt-3">
           <div
             aria-hidden
-            className="animate-neon-pan pointer-events-none absolute -inset-1 rounded-[2rem] opacity-60 blur-xl"
+            className="animate-neon-pan pointer-events-none absolute -inset-1 rounded-4xl opacity-60 blur-xl"
             style={{ background: NEON, backgroundSize: "200% 100%" }}
           />
-          {/* Gradient хүрээ */}
           <div
-            className="animate-neon-pan relative rounded-[1.75rem] p-[2px] shadow-lg"
+            className="animate-neon-pan relative rounded-[1.75rem] p-0.5 shadow-lg"
             style={{ background: NEON, backgroundSize: "200% 100%" }}
           >
             <form
@@ -198,7 +132,11 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
           </div>
         </div>
 
-        {/* Үр дүн — input-ийн доороос ургана. Өргөн нь input-тэй яг ижил. */}
+        {/* Их хайгдсан сэдвүүд — зөвхөн хоосон төлөвт. Асуулт асуумагц үр дүн
+            нь гол болох тул мөр замаас гарч, өндрөө буцааж өгнө. */}
+        {blocks.length === 0 && <TrendingTopics />}
+
+        {/*Хэрэглэгчийн хайж байгаа topic-д тулгуурлаад хариалтууд dynamic байдлаар suggest хийнэ*/}
         {blocks.length > 0 && (
           <div className="mt-4 w-full space-y-3">
             {blocks.map((block, i) => (
@@ -216,6 +154,50 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
         )}
       </div>
     </section>
+  );
+}
+
+// =====================================================================
+// TRENDING TOPICS — input-ийн доорх "их хайгдсан сэдэв"-ийн ХОЁР МӨР
+// =====================================================================
+/**
+ * ЯГ 2 МӨР, хэвтээ гүйлгээгүй. `grid` (`flex-wrap` БИШ) — wrap нь өргөнөөс
+ * хамаарч мөрөө үсэргэдэг, мобайл дээр 5 чип нь 5 мөр болно. Grid нь баганыг
+ * хатуу тогтоодог тул мөр ямагт 2, зөвхөн харагдах чипний тоо өөрчлөгдөнө:
+ * мобайл эхний 2 · sm эхний 4 · md+ бүх 5. Багана 2/4/6, чип бүр 2 багана
+ * эзэлнэ — ингэснээр md-ийн 2 дахь мөрийн 2 чипийг хагас баганаар голлуулж
+ * болно (`md:col-start-2`).
+ *
+ * ⚠️ 2 мөр = 60px, 1 мөрөөс ~34px илүү. Үүнийг багтаахын тулд босоо зай
+ * хумих `max-height` босгыг 720 → 1024px болгосон. 3 дахь мөрийн зай АЛГА.
+ *
+ * ⚠️ Дарагдахгүй (`<li>`, товч БИШ) — шошго нь placeholder тул `ask()` дуудвал
+ * "таньсангүй" fallback гарна. Бодит сэдэв ирэхэд товч болно.
+ */
+function TrendingTopics() {
+  return (
+    // `aria-hidden` — ижил placeholder-ийг 5 удаа уншуулах нь SR-д утгагүй.
+    <ul
+      aria-hidden="true"
+      className="mt-2.5 grid w-full grid-cols-2 gap-2 sm:mt-3 sm:grid-cols-4 md:grid-cols-6 [@media(max-height:1024px)]:mt-1.5"
+    >
+      {Array.from({ length: TRENDING_TOPIC_COUNT }, (_, i) => (
+        <li
+          key={i}
+          className={cn(
+            "border-border bg-card/70 text-muted-foreground col-span-2 flex items-center justify-center rounded-full border px-3 py-1 text-xs whitespace-nowrap backdrop-blur",
+            // 2 мөрийг барих нуулт — нэг мөрд: мобайл 1, sm 2, md 3 чип.
+            i >= 2 && i < 4 && "hidden sm:flex",
+            i >= 4 && "hidden md:flex",
+            // md дээр 2 дахь мөр ердөө 2 чиптэй (5 нь 3-т жигд хуваагдахгүй) тул
+            // 4 дэх чипийг ХАГАС баганаар түлхэж мөрийг ГОЛЛУУЛНА.
+            i === 3 && "md:col-start-2",
+          )}
+        >
+          {trendingTopicLabel(i + 1)}
+        </li>
+      ))}
+    </ul>
   );
 }
 

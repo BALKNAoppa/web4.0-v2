@@ -6,11 +6,10 @@ import { Check, ImageIcon } from "lucide-react";
 
 import {
   RECOMMENDED_BADGE,
-  planCards,
-  planTabs,
-  plansHeading,
   type PlanCardContent,
+  type PlanTab,
   type PlanTabId,
+  type RecommendedPlansContent,
 } from "@/data/recommended-plans";
 import { ACCENT } from "@/lib/brand";
 import { cn } from "@/lib/utils";
@@ -38,9 +37,9 @@ import { cn } from "@/lib/utils";
  * ⚠️ `<section>` байх ЁСТОЙ бөгөөд `#main-content`-ийн ШУУД хүүхэд —
  * `SectionSnapScroller` тэгж хайдаг.
  */
-export function RecommendedPlans() {
+export function RecommendedPlans({ content }: { content: RecommendedPlansContent }) {
   const [tab, setTab] = useState<PlanTabId>("recommended");
-  const cards = planCards[tab];
+  const cards = content.cards[tab];
 
   return (
     // ДЭЭД зай нь ДООДООС бага — энэ section нь AI туслахын ШУУД дараа
@@ -51,18 +50,20 @@ export function RecommendedPlans() {
       className="bg-background w-full pt-6 pb-14 md:pt-8 md:pb-20 lg:pt-10 lg:pb-24"
     >
       <div className="mx-auto max-w-300 px-4">
-        {/* ТОЛГОЙ — төвд */}
+        {/* ТОЛГОЙ — ТӨВД. Зүүн эгнүүлэлтийг туршаад БУЦААСАН: section бүр өөр
+            өргөнтэй (туслах 768px · багц/үйлчилгээ 1200px) тул зүүн ирмэг нь
+            зөрж, хуудас замбараагүй харагдаж байв. */}
         <h2
           id="plans-title"
           className="text-foreground text-center text-3xl font-extrabold tracking-tight text-balance md:text-4xl lg:text-5xl"
         >
-          {plansHeading.title}
+          {content.heading.title}
         </h2>
         <p className="text-muted-foreground mx-auto mt-3 max-w-2xl text-center text-base text-pretty md:mt-4 md:text-lg">
-          {plansHeading.subtitle}
+          {content.heading.subtitle}
         </p>
 
-        <PlanTabs value={tab} onChange={setTab} />
+        <PlanTabs tabs={content.tabs} value={tab} onChange={setTab} />
 
         {/* МОБАЙЛ: босоо жагсаалт, хуудсаараа доош урсана (дотоод гүйлгэлтгүй).
             md+: 3 тэнцүү багана. `items-stretch` — картууд ижил өндөртэй
@@ -86,11 +87,19 @@ export function RecommendedPlans() {
  * tabindex шаарддаг. Энэ нь ердөө хоёр товч тул `aria-pressed`-ээр
  * илэрхийлсэн нь дэлгэц уншигчид ойлгомжтой бөгөөд буруу амлалт өгөхгүй.
  */
-function PlanTabs({ value, onChange }: { value: PlanTabId; onChange: (v: PlanTabId) => void }) {
+function PlanTabs({
+  tabs,
+  value,
+  onChange,
+}: {
+  tabs: PlanTab[];
+  value: PlanTabId;
+  onChange: (v: PlanTabId) => void;
+}) {
   return (
     <div className="mt-7 flex justify-center md:mt-8">
       <div className="border-border bg-muted/50 flex gap-1 rounded-full border p-1">
-        {planTabs.map((t) => {
+        {tabs.map((t) => {
           const active = t.id === value;
           return (
             <button

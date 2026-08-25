@@ -1,7 +1,13 @@
 import { PromoBanner } from "@/components/sections/promo-banner";
 
 /**
- * UNITEL НҮҮРНИЙ HERO — ЗӨВХӨН promo carousel.
+ * НҮҮРНИЙ PROMO HERO — ЗӨВХӨН promo carousel. ХОЁР БРЭНД ХУВААЛЦАНА.
+ *
+ * ⚠️ Өмнө нь `UnitelHero` нэртэй, ЗӨВХӨН Unitel-д хэрэглэгддэг байв.
+ * Univision нь `<PromoBanner />`-ыг ШУУД дуудаж, banner нь өөрийн
+ * `min-h-[38svh]` (≈296px) өндрөө хэрэглэдэг байсан — Unitel-ийн 60%
+ * (≈500px)-аас хамаагүй намхан. Хоёр нүүрний эхний дэлгэц зөрж байсан
+ * тул hero-г брэнд-нейтрал болгож НЭГ формул болгосон.
  *
  *   ┌─────────────────────────────┐
  *   │  header (хөндөөгүй)         │  ← `relative`, sticky БИШ
@@ -35,7 +41,7 @@ import { PromoBanner } from "@/components/sections/promo-banner";
  * ⚠️ `<section>` байх ЁСТОЙ: `SectionSnapScroller` нь `#main-content > section`
  * гэж шууд хүүхдийг хайдаг — `<div>` болговол snap ажиллахгүй.
  */
-export function UnitelHero() {
+export function PromoHero() {
   return (
     <section
       aria-label="Онцлох санал"
