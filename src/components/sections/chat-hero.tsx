@@ -73,9 +73,17 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
         squares={[42, 24]}
         className="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]"
       />
+      {/* ⚠️ БОСОО ЗАЙГ ХУМИХ нөхцөл нь `min-width: 768px`-ТЭЙ ХОСЛОНО.
+          Өмнө нь зөвхөн `max-height: 1024px` байсан — тэр нь НАМХАН ЗӨӨВРИЙН
+          дэлгэцэд (1280×720) зориулагдсан ч, МОБАЙЛ утас (жишээ нь 375×812)
+          ч мөн 1024px-ээс намхан тул утсан дээр БАС идэвхжиж, аль хэдийн
+          нарийхан дэлгэц дээр `py-5`-ыг `py-1` (4px) болгож хумьдаг байв.
+          Үр дүнд AI туслах promo banner-т наалдаж, хооронд нь ердөө 4px
+          зай үлдэнэ. Өргөний хамгаалалт нэмснээр мобайл `py-5`-аа хэвээр
+          авч, намхан desktop дээрх хумилт өөрчлөгдөөгүй хэвээр ажиллана. */}
       <div
         className={cn(
-          "relative z-10 mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-5 text-center sm:py-8 md:py-10 [@media(max-height:1024px)]:py-1",
+          "relative z-10 mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-5 text-center sm:py-8 md:py-10 [@media_(min-width:768px)_and_(max-height:1024px)]:py-1",
           heroRest
             ? "min-h-[calc((100svh-var(--header-h))*0.28)] md:min-h-[calc((100svh-var(--header-h))*0.4)]"
             : "min-h-[34svh] sm:min-h-[44svh] md:min-h-[46svh]",
@@ -86,13 +94,13 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
           Highlight keyword байна
         </span>
 
-        <h1 className="text-foreground mt-4 text-2xl font-extrabold tracking-tight text-balance sm:mt-6 sm:text-3xl md:text-4xl [@media(max-height:1024px)]:mt-2">
+        <h1 className="text-foreground mt-4 text-2xl font-extrabold tracking-tight text-balance sm:mt-6 sm:text-3xl md:text-4xl [@media_(min-width:768px)_and_(max-height:1024px)]:mt-2">
           AI <span className="from-primary bg-clip-text text-[#45c700]">assistant</span>
         </h1>
-        <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media(max-height:1024px)]:mt-1.5">
+        <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
           Ai assistant-н Capability-г сайн госон text энд байрлана.
         </p>
-        <div className="relative mt-5 w-full sm:mt-8 [@media(max-height:1024px)]:mt-3">
+        <div className="relative mt-5 w-full sm:mt-8 [@media_(min-width:768px)_and_(max-height:1024px)]:mt-3">
           <div
             aria-hidden
             className="animate-neon-pan pointer-events-none absolute -inset-1 rounded-4xl opacity-60 blur-xl"
@@ -158,18 +166,30 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
 }
 
 // =====================================================================
-// TRENDING TOPICS — input-ийн доорх "их хайгдсан сэдэв"-ийн ХОЁР МӨР
+// TRENDING TOPICS — input-ийн доорх "их хайгдсан сэдэв"-ийн чипүүд
 // =====================================================================
 /**
- * ЯГ 2 МӨР, хэвтээ гүйлгээгүй. `grid` (`flex-wrap` БИШ) — wrap нь өргөнөөс
- * хамаарч мөрөө үсэргэдэг, мобайл дээр 5 чип нь 5 мөр болно. Grid нь баганыг
- * хатуу тогтоодог тул мөр ямагт 2, зөвхөн харагдах чипний тоо өөрчлөгдөнө:
- * мобайл эхний 2 · sm эхний 4 · md+ бүх 5. Багана 2/4/6, чип бүр 2 багана
- * эзэлнэ — ингэснээр md-ийн 2 дахь мөрийн 2 чипийг хагас баганаар голлуулж
- * болно (`md:col-start-2`).
+ * Чип бүр ӨӨРИЙН БИЧВЭРИЙН ӨРГӨНӨӨР тавигдаж, мөрөнд багтсанаараа
+ * 2-3-уулаа зэрэгцэнэ (`flex-wrap`, голлуулсан).
  *
- * ⚠️ 2 мөр = 60px, 1 мөрөөс ~34px илүү. Үүнийг багтаахын тулд босоо зай
- * хумих `max-height` босгыг 720 → 1024px болгосон. 3 дахь мөрийн зай АЛГА.
+ * ⚠️ ӨМНӨ НЬ `grid` байсан: `grid-cols-2/4/6` дээр чип бүр `col-span-2`.
+ * Grid-ийн нүд нь чипийг БҮТЭН өргөндөө СУНГАДАГ тул мобайл дээр чип бүр
+ * дэлгэцийн бүтэн өргөнтэй, хоорондоо яг ижил хэмжээтэй болж "хиймэл"
+ * харагддаг байв. Бодит хайлтын сэдэв урт богино янз бүр байдаг тул
+ * агуулгынх нь өргөнөөр тавих нь зөв.
+ *
+ * "`flex-wrap` бол мобайл дээр 5 чип 5 мөр болно" гэсэн өмнөх эргэлзээ нь
+ * шошго ХЭТ УРТ (32 тэмдэгт) байснаас үүдэлтэй байв. Шошгыг богиносгосон
+ * (`TRENDING_TOPIC_PLACEHOLDER`) тул одоо мөр бүрд 2-3 чип багтаж, нийт
+ * 2 мөр хэвээр үлдэнэ:
+ *   мобайл (<640px) — мөрөнд 2, харагдах чип 4 (5 дахь нь нуугдана)
+ *   sm+            — мөрөнд 3, бүх 5 чип → 3 + 2
+ *
+ * ⚠️ `sm:max-w-lg` — чипний бөөгнөрөл нь ДЭЭРХ input-ээс НАРИЙХАН байна.
+ * Үүнгүй бол 5 чип 736px өргөн мөрөнд БҮГД багтаж, input-ийн бүтэн өргөнийг
+ * ирмэгээс ирмэг хүртэл дүүргэсэн нэг зурвас болж, дахиад "сунгасан" мэдрэмж
+ * төрүүлдэг. Бодит дата (урт богино янз бүр) ирэхэд ч энэ хязгаар нь мөрийг
+ * 2-3 чипээр хуваасаар байна.
  *
  * ⚠️ Дарагдахгүй (`<li>`, товч БИШ) — шошго нь placeholder тул `ask()` дуудвал
  * "таньсангүй" fallback гарна. Бодит сэдэв ирэхэд товч болно.
@@ -179,19 +199,17 @@ function TrendingTopics() {
     // `aria-hidden` — ижил placeholder-ийг 5 удаа уншуулах нь SR-д утгагүй.
     <ul
       aria-hidden="true"
-      className="mt-2.5 grid w-full grid-cols-2 gap-2 sm:mt-3 sm:grid-cols-4 md:grid-cols-6 [@media(max-height:1024px)]:mt-1.5"
+      className="mt-2.5 flex w-full flex-wrap items-center justify-center gap-2 sm:mt-3 sm:max-w-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5"
     >
       {Array.from({ length: TRENDING_TOPIC_COUNT }, (_, i) => (
         <li
           key={i}
           className={cn(
-            "border-border bg-card/70 text-muted-foreground col-span-2 flex items-center justify-center rounded-full border px-3 py-1 text-xs whitespace-nowrap backdrop-blur",
-            // 2 мөрийг барих нуулт — нэг мөрд: мобайл 1, sm 2, md 3 чип.
-            i >= 2 && i < 4 && "hidden sm:flex",
-            i >= 4 && "hidden md:flex",
-            // md дээр 2 дахь мөр ердөө 2 чиптэй (5 нь 3-т жигд хуваагдахгүй) тул
-            // 4 дэх чипийг ХАГАС баганаар түлхэж мөрийг ГОЛЛУУЛНА.
-            i === 3 && "md:col-start-2",
+            // `px-2.5 sm:px-3` — хамгийн нарийн утсанд (320px) хоёр чип нэг мөрд
+            // багтаах зайг гаргана; `px-3` дээр 290 > 288 болж 1 мөрд 1 чип үлддэг.
+            "border-border bg-card/70 text-muted-foreground flex items-center rounded-full border px-2.5 py-1 text-xs whitespace-nowrap backdrop-blur sm:px-3",
+            // Мобайл дээр 2 мөрд барих нуулт: 2 + 2 = 4 чип. sm+ дээр бүгд.
+            i >= 4 && "hidden sm:flex",
           )}
         >
           {trendingTopicLabel(i + 1)}

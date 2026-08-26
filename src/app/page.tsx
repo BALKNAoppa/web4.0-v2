@@ -4,6 +4,8 @@ import { HeaderHeightVar } from "@/components/layout/header-height-var";
 import { RecommendedPlans } from "@/components/sections/recommended-plans";
 import { unitelRecommendedPlans } from "@/data/recommended-plans";
 import { RecommendedServices } from "@/components/sections/recommended-services";
+import { AppPromo } from "@/components/sections/app-promo";
+import { unitelApp } from "@/data/app-promo";
 import { PromoHero } from "@/components/home/promo-hero";
 import { UnitelHome } from "@/components/home/unitel-home";
 import { UnivisionHome } from "@/components/home/univision-home";
@@ -73,10 +75,23 @@ export default function Home() {
 
           <RecommendedServices />
 
-          {/* ⚠️ ТҮР ИДЭВХГҮЙ — `UnitelHome` (MobilePlans · ProductEntryGrid ·
-              AppPromo). Нүүр одоогоор "Санал болгох үйлчилгээ"-гээр төгсөнө.
-              Буцаах бол дараах мөрийн `//`-г л авна. Компонент өөрөө
-              хөндөгдөөгүй тул устгасан зүйл АЛГА. */}
+          {/* Unitel апп — том гарчиг + store badge + QR.
+              ⚠️ Энэ section нь `UnitelHome`-ийн ДОТОР байсан тул түүнийг
+              идэвхгүй болгоход хамт алга болсон. Үр дүнд Unitel дээр апп
+              татах CTA НЭГ Ч ГАЗАР үлдээгүй байв: footer-ийн "Апп татах"
+              блокийг `SHOW_APP_DOWNLOAD = BRAND !== "unitel"`
+              ([footer-shared.tsx]) зориуд нуудаг — яг энэ section нүүрэнд
+              байгаа гэсэн үндэслэлээр. Тиймээс `UnitelHome`-ийг бүхэлд нь
+              сэргээхгүйгээр зөвхөн үүнийг тусад нь гаргав. */}
+          <AppPromo content={unitelApp} />
+
+          {/* ⚠️ ТҮР ИДЭВХГҮЙ — `UnitelHome`-ийн ҮЛДСЭН хоёр section
+              (MobilePlans · ProductEntryGrid). Компонент өөрөө хөндөгдөөгүй
+              тул устгасан зүйл АЛГА.
+              Буцаах бол дараах мөрийн `//`-г авна — ГЭХДЭЭ `UnitelHome`
+              дотроо `AppPromo`-г БАС дууддаг тул дээрх `<AppPromo />` мөрийг
+              ЗААВАЛ устгана. Эс бөгөөс апп section хоёр удаа гарч,
+              `id="unitel-app"` давхардана. */}
           {/* <UnitelHome /> */}
         </>
       )}

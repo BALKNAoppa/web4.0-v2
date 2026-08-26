@@ -238,6 +238,10 @@ function CategoryNav({
               // түүнийг тогтмол болгоно (шинэ элемент нэмэхгүй).
               "text-foreground after:scale-x-100"
             : "text-foreground/75 hover:text-foreground",
+          // LookTV — RGB glitch (`globals.css` → `.glitch-text`). Зөвхөн
+          // `text-shadow` хөдөлдөг тул элементийн ӨРГӨН өөрчлөгдөхгүй,
+          // хажуугийн ангиллууд хөдлөхгүй.
+          item.name === "LookTV" && "glitch-text",
         );
 
         // appleMegaMenus-д бичлэгтэй ангилал — hover дээр панел задарна

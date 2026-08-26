@@ -48,6 +48,23 @@ export const classifierSegments: AudienceSegment[] = [
     external: true,
     icon: "building",
   },
+  /**
+   * Группын корпорэйт сайт. `brands` талбар АЛГА тул `AudienceSwitchTabs` нь
+   * үүнийг dropdown биш, ↗ сумтай ШУУД линк болгож буулгана — "Байгууллага"-
+   * тай яг ижил зан.
+   *
+   * Icon нь `building` БИШ `info`: хажуудаа зогсох "Байгууллага" аль хэдийн
+   * `building` (Building2) хэрэглэж байгаа тул давхарлавал хоёр нь нүдэнд
+   * ялгарахгүй. `customerSegments`-ийн "Бидний тухай" гэсэн группын линк ч
+   * мөн `info` хэрэглэдэг — тэр жишгийг дагав.
+   */
+  {
+    id: "group",
+    label: "Unitel Group",
+    href: "https://unitelgroup.mn/",
+    external: true,
+    icon: "info",
+  },
 ];
 
 // =====================================================================

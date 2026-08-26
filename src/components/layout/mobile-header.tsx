@@ -115,8 +115,16 @@ const BURGER_CATEGORIES: Record<MobileVariant, EcosystemLink[]> = {
   2: appleNavCategories,
 };
 
-/** Байгууллага — дэд цэсгүй, дарвал ШУУД Nexmind руу (`classifierSegments`). */
-const BUSINESS = classifierSegments.find((s) => s.id === "business");
+/**
+ * Burger-ийн ШУУД линкүүд — `classifierSegments`-ийн дэд цэсгүй (`brands`-гүй)
+ * БҮХ сегмент: Байгууллага → Nexmind, Unitel Group → unitelgroup.mn.
+ *
+ * ⚠️ Өмнө нь `find((s) => s.id === "business")` гэж ЗӨВХӨН Байгууллага-г
+ * нэрээр нь сугалдаг байв. Тиймээс desktop-ийн L1-д шинэ сегмент нэмэхэд
+ * (Unitel Group) мобайл burger-т ГАРАХГҮЙ үлдэж, хоёр header чимээгүй зөрж
+ * байсан. Шүүлтүүр болгосноор L1-д нэмсэн ЯМАР Ч шууд линк burger-т
+ * автоматаар орно — цаашид гараар синк хийх шаардлагагүй. */
+const DIRECT_SEGMENTS = classifierSegments.filter((s) => !s.brands?.length);
 
 // =====================================================================
 // ROUTER — хувилбараар салгана
@@ -321,6 +329,10 @@ function BrandTab({
         // энд анимаци шаардлагагүй тул шууд `underline`.
         "text-foreground underline underline-offset-4"
       : "text-foreground/75 group-hover/tab:text-foreground",
+    // LookTV — RGB glitch (`globals.css` → `.glitch-text`).
+    // ⚠️ `text-shadow` нь layout-д өргөн НЭМДЭГГҮЙ тул дээрх табын өргөний
+    // тооцоо (375px дээр 5 таб = 284px, нөөц 38px) хөндөгдөхгүй.
+    tab.name === "LookTV" && "glitch-text",
   );
 
   const label = (
@@ -686,19 +698,22 @@ function MobileMenuSheet({ variant }: { variant: MobileVariant }) {
           </div>
         )}
 
-        {/* ── 2. Байгууллага — шууд Nexmind руу ────────────────────── */}
-        {BUSINESS && (
-          <div className="border-border mt-4 border-t pt-4">
-            <a
-              href={BUSINESS.href}
-              target={BUSINESS.external ? "_blank" : undefined}
-              rel={BUSINESS.external ? "noopener noreferrer" : undefined}
-              onClick={close}
-              className={rowClass}
-            >
-              {BUSINESS.label}
-              <ArrowUpRight className="ml-auto size-4 shrink-0 opacity-60" aria-hidden="true" />
-            </a>
+        {/* ── 2. Шууд линкүүд — Байгууллага · Unitel Group ──────────── */}
+        {DIRECT_SEGMENTS.length > 0 && (
+          <div className="border-border mt-4 space-y-0.5 border-t pt-4">
+            {DIRECT_SEGMENTS.map((seg) => (
+              <a
+                key={seg.id}
+                href={seg.href}
+                target={seg.external ? "_blank" : undefined}
+                rel={seg.external ? "noopener noreferrer" : undefined}
+                onClick={close}
+                className={rowClass}
+              >
+                {seg.label}
+                <ArrowUpRight className="ml-auto size-4 shrink-0 opacity-60" aria-hidden="true" />
+              </a>
+            ))}
           </div>
         )}
 

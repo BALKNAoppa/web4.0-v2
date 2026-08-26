@@ -393,6 +393,110 @@
   will-change: background-position;
 }
 
+/* ============================================
+   GLITCH — nav-ийн "LookTV" ⇄ слоган "Илүүг Үз"
+   ============================================
+   6 сек тутам нэг удаа: LookTV нь RGB-split-ээр гацаад, слоган руу солигдож
+   ~1.1 сек тод зогсоно, дараа нь буцаад LookTV болно.
+
+   ХАМГИЙН БАГА ӨРТӨГӨӨР зохиосон:
+     · JS АЛГА, зураг АЛГА, нэмэлт DOM элемент АЛГА — 2 keyframe + 1 класс.
+       Слоган нь `::before`-ийн `content` (шинэ node үүсгэхгүй).
+     · Зөвхөн `text-shadow` ба `opacity` хөдөлнө. Хоёулаа LAYOUT-д
+       НӨЛӨӨЛӨХГҮЙ — nav-ийн өргөн, mobile табын нягт тооцоо хөндөгдөхгүй.
+     · `steps(1, end)` — утга дундуур ИНТЕРПОЛЯЦЛАХГҮЙ, зөвхөн keyframe
+       солигдох мөчид үсэрнэ. 6 секундэд ердөө ~10 удаа л дахин буддаг
+       (жигд анимаци бол секундэд 60 удаа). Мөн энэ хатуу үсрэлт нь
+       glitch-ийн ЖИНХЭНЭ хэлбэр — зөөлөн уусалт биш.
+     · Мөчлөгийн ~85%-д `text-shadow: none` тул тайван үедээ будалт үүсэхгүй.
+
+   ⚠️ КЛАССЫН НЭР `animate-` -ЭЭР ЭХЭЛЖ БОЛОХГҮЙ. Эхлээд `.animate-glitch`
+   гэж нэрлэсэн боловч Tailwind v4 нь `animate-*` -ийг ӨӨРИЙН utility-ийн
+   нэрийн орон зай гэж үзээд гар бичсэн энэ дүрмийг гаралтаас ЧИМЭЭГҮЙ
+   ХАСЧ байв — класс нь DOM дээр байгаа мөртлөө CSS дүрэм нь stylesheet-д
+   ОГТ ОРОХГҮЙ (файлын дараах `aurora-a` гэх мэт бусад бүх keyframe ордог
+   байхад). Алдааны мессеж гарахгүй тул олоход хэцүү. */
+@keyframes glitch-rgb {
+  0%,
+  47%,
+  64%,
+  100% {
+    text-shadow: none;
+  }
+  44% {
+    text-shadow:
+      -1px 0 #ff0035,
+      1px 0 #00fff0;
+  }
+  45% {
+    text-shadow:
+      1px 0 #ff0035,
+      -1px 0 #00fff0;
+  }
+  46% {
+    text-shadow:
+      -2px 0 #ff0035,
+      2px 0 #00fff0;
+  }
+  62% {
+    text-shadow:
+      2px 0 #ff0035,
+      -2px 0 #00fff0;
+  }
+  63% {
+    text-shadow:
+      -1px 0 #ff0035,
+      1px 0 #00fff0;
+  }
+}
+
+/* Слоганы давхарга нээгдэх/хаагдах мөч. `glitch-rgb`-тэй НЭГ мөчлөгтэй тул
+   45%-д слоган нь split-тэйгээ хамт гарч, 47%-д цэвэр болж тогтоно. */
+@keyframes glitch-swap {
+  0%,
+  63%,
+  100% {
+    opacity: 0;
+  }
+  45%,
+  62% {
+    opacity: 1;
+  }
+}
+
+.glitch-text {
+  /* mobile табын `<span>`-д `relative` байхгүй тул энд өгнө (desktop-ийн
+     линкэд аль хэдийн бий — давхцахад асуудалгүй). */
+  position: relative;
+  animation: glitch-rgb 6s steps(1, end) infinite;
+}
+
+.glitch-text::before {
+  /* `/ ""` — SR-т УНШИГДАХГҮЙ alt текст. Үүнгүй бол цэсний хүртээмжит нэр
+     "Илүүг Үз LookTV" болж уншигдана. */
+  content: "Илүүг Үз" / "";
+  position: absolute;
+  /* `inset: 0` — суурь текстийг ЯГ таарч бүтээнэ. Слоган нь LookTV-ээс
+     ~9px (desktop) / ~8px (mobile) өргөн тул хоёр тийш тэгш хэмтэй халина;
+     тэр халилт нь хажуугийн ангиллын ЗАЙ дотор багтдаг (20px / 4px). */
+  inset: 0;
+  display: grid;
+  place-items: center;
+  white-space: nowrap;
+  /* Доорх LookTV-г бүрэн далдлана. Тем солиход хувьсагч дагана. */
+  background-color: var(--background);
+  opacity: 0;
+  animation: glitch-swap 6s steps(1, end) infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glitch-text,
+  .glitch-text::before {
+    animation: none !important;
+  }
+}
+
 /* Aurora — хязгааргүй хөвөгч өнгөт манан (chat-hero background). Толбо бүр өөр
    замаар удаан хөвж, уусна. */
 @keyframes aurora-a {

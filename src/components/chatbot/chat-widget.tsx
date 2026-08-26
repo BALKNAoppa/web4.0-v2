@@ -27,37 +27,39 @@ const QUICK_REPLIES = [
   "Ажилтантай холбогдох",
 ];
 
-const SUGGESTION_TEXT = "Танд тусламж хэрэгтэй юу? 😊";
-const SUGGESTION_DELAY_MS = 1500;
-
 // =====================================================================
-// ЧИРЖ ЗӨӨХ (drag) — хөвөгч товч бусад элементтэй (жишээ нь нүүрний AI
-// туслахын илгээх товч) давхцах үед хэрэглэгч өөрөө зөөж чадна.
+// ИРМЭГИЙН ТАБ (edge tab) — Xfinity-н "Live chat"-ийн загвар
 // =====================================================================
-
-/** Хөвөгч товчны хэмжээ (`size-14` = 56px) — байрлал тооцоход хэрэгтэй */
-const FAB_SIZE = 56;
-/** Дэлгэцийн ирмэгээс үлдээх хамгийн бага зай */
-const EDGE_GAP = 8;
-/** Үүнээс бага хөдөлгөөнийг чирэлт биш, ЗҮГЭЭР ДАРСАН гэж үзнэ */
-const DRAG_THRESHOLD = 4;
 /**
- * Панелийн өндөр — доорх `h-[...]` класстай ЯГ ижил илэрхийлэл байх ёстой.
- * Товчийг дээш чирэхэд панелийн дээд ирмэг дэлгэцээс гарахгүй байлгахад
- * хэрэглэнэ.
+ * ⚠️ ӨМНӨХ ХУВИЛБАР ЮУ БАЙСАН БЭ: баруун доод буланд ХӨВӨГЧ дугуй товч (FAB)
+ * + "Танд тусламж хэрэгтэй юу? 😊" гэсэн bubble. Хоёулаа агуулгын ДЭЭГҮҮР
+ * хөвдөг тул нүүрний AI туслахын input, гарчигтай давхцаж, ялангуяа мобайл
+ * дээр зодолддог байв. Тэр үед товчийг ГАРААР ЧИРЖ ЗӨӨХ (drag) логик
+ * нэмэгдсэн нь шинжийг нь дарсан болохоос шалтгааныг нь заасангүй.
+ *
+ * ОДОО: дэлгэцийн баруун ирмэгт наалдсан НИМГЭН БОСОО ТАБ. Ирмэгээс ~34px л
+ * эзэлдэг, голын агуулгыг хэзээ ч халхлахгүй тул:
+ *   · AI туслахтай зодолдохоо болино
+ *   · чирж зөөх шаардлагагүй болсон (drag логикийг УСТГАВ)
+ *   · тусдаа "санал болгох" bubble ч хэрэггүй (УСТГАВ) — табын гарч ирэх
+ *     хөдөлгөөн өөрөө анхаарал татах үүргийг гүйцэтгэнэ
+ *
+ * Буцаах шаардлага гарвал git түүхээс (энэ өөрчлөлтийн өмнөх
+ * `chat-widget.tsx`) бүрэн эхээр нь авах боломжтой.
  */
-const PANEL_H = "min(580px, calc(100svh - 15rem))";
 
-/** Хөвөгч товчны байрлал — дэлгэцийн баруун/доод ирмэгээс px-ээр */
-type Pos = { right: number; bottom: number };
+/**
+ * Таб гарч ирэх хүртэлх хугацаа. Хуудас нээгдмэгц ШУУД биш — хэрэглэгч эхний
+ * дэлгэцээ уншиж амжсаны дараа ирмэгээс гулсаж гарна (Xfinity-тэй ижил зан).
+ */
+const TAB_REVEAL_MS = 6000;
 
-/** Товчийг дэлгэцээс гаргахгүй барина */
-function clampPos(p: Pos): Pos {
-  return {
-    right: Math.min(Math.max(p.right, EDGE_GAP), window.innerWidth - FAB_SIZE - EDGE_GAP),
-    bottom: Math.min(Math.max(p.bottom, EDGE_GAP), window.innerHeight - FAB_SIZE - EDGE_GAP),
-  };
-}
+/**
+ * Табын босоо байрлал — дэлгэцийн дээд талаас хувиар. Голоос БАГА ЗЭРЭГ
+ * ДЭЭШ (50% биш 38%): доод хэсэгт мобайл хөтчийн хаягийн мөр, мөн нүүрний
+ * AI туслахын input орших тул тэднээс зайцуулав.
+ */
+const TAB_TOP = "38%";
 
 /**
  * Хэрэглэгч хамгийн сүүлд харилцан яриа эхлүүлсэн (мессеж илгээсэн) огноог
@@ -80,9 +82,10 @@ function getBotReply(): string {
 export function ChatWidget() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  // Таб гарч ирсэн эсэх. `false` үед ирмэгт юу ч алга — дэлгэц цэвэр хэвээр.
+  const [revealed, setRevealed] = useState(false);
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
-  const [showSuggestion, setShowSuggestion] = useState(false);
   // Анхны зочлолтод мэндчилгээг typing анимациар бичнэ
   const [typeGreeting, setTypeGreeting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -90,18 +93,9 @@ export function ChatWidget() {
   // Monotonic ID counter — render-ийн гадна өсдөг pure counter
   const nextIdRef = useRef(INITIAL_MESSAGES.length + 1);
 
-  // ───── Чирж зөөх төлөв ─────
-  // `null` = CSS-ийн анхны байрлал (`right-5 bottom-28`). ЗӨВХӨН чирсний
-  // дараа inline style-аар дарж бичнэ — ингэснээр server/client-ийн эхний
-  // render ижил хэвээр үлдэж hydration зөрөхгүй.
-  const [pos, setPos] = useState<Pos | null>(null);
-  const dragRef = useRef<{ x: number; y: number; from: Pos; moved: boolean } | null>(null);
-  /** Чирэлт дууссаны дараа дагаж ирэх `click`-ийг залгихад */
-  const draggedRef = useRef(false);
-
-  // Suggestion bubble — хуудас уншигдсаны дараа богино delay-тэйгээр гарна
+  // Таб — хуудас уншигдсанаас хойш TAB_REVEAL_MS-ийн дараа ирмэгээс гулсана
   useEffect(() => {
-    const t = setTimeout(() => setShowSuggestion(true), SUGGESTION_DELAY_MS);
+    const t = setTimeout(() => setRevealed(true), TAB_REVEAL_MS);
     return () => clearTimeout(t);
   }, []);
 
@@ -130,14 +124,6 @@ export function ChatWidget() {
       // localStorage хориотой орчинд (private mode гэх мэт) шууд текст харуулна
     }
   }, [isOpen]);
-
-  // Дэлгэц (эсвэл цонх) хэмжээгээ өөрчлөхөд зөөсөн товч гадна үлдэж болзошгүй
-  // тул дахин ирмэг дотор татна. `pos === null` үед юу ч хийхгүй.
-  useEffect(() => {
-    const onResize = () => setPos((p) => (p ? clampPos(p) : p));
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
 
   // ESC товч дарвал хаах
   useEffect(() => {
@@ -182,71 +168,21 @@ export function ChatWidget() {
     }, 700);
   };
 
-  const openChat = () => {
-    setIsOpen(true);
-    setShowSuggestion(false);
-  };
-
-  // ───── Чирэх — pointer event (хулгана + хуруу нэг ижил замаар) ─────
-  const onDragStart = (e: React.PointerEvent<HTMLButtonElement>) => {
-    // Хулганы зөвхөн ЗҮҮН товч. Хуруу/цахим үзэг бол шалгахгүй.
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    dragRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      // Одоогийн БОДИТ байрлалаас эхэлнэ — `pos` хоосон (CSS-ийн анхны
-      // байрлал) байсан ч зөв утга гарна.
-      from: {
-        right: window.innerWidth - rect.right,
-        bottom: window.innerHeight - rect.bottom,
-      },
-      moved: false,
-    };
-    // Хуруу/хулгана товчноос гарсан ч event үргэлжлүүлэн энд ирнэ
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-
-  const onDragMove = (e: React.PointerEvent<HTMLButtonElement>) => {
-    const d = dragRef.current;
-    if (!d) return;
-    const dx = e.clientX - d.x;
-    const dy = e.clientY - d.y;
-    // Босго давах хүртэл хөдөлгөөнгүй — чичрэх хуруу дарахад саад болохгүй
-    if (!d.moved && Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
-    d.moved = true;
-    // right/bottom нь ирмэгээс хэмжигддэг тул хөдөлгөөнийг ХАСНА
-    setPos(clampPos({ right: d.from.right - dx, bottom: d.from.bottom - dy }));
-  };
-
-  const onDragEnd = () => {
-    const d = dragRef.current;
-    dragRef.current = null;
-    // Чирсэн бол дараагийн click-ийг залгина (chat санамсаргүй нээгдэхээс)
-    draggedRef.current = d?.moved ?? false;
-  };
-
-  const onFabClick = () => {
-    if (draggedRef.current) {
-      draggedRef.current = false;
-      return;
-    }
-    setIsOpen((v) => !v);
-  };
-
   // Support хуудасны Ask bar-аас ирэх асуултыг хүлээн авч chat нээгээд хариулна
   useEffect(() => {
     const onAsk = (e: Event) => {
       const question = (e as CustomEvent<{ question?: string }>).detail?.question;
       if (!question) return;
       setIsOpen(true);
-      setShowSuggestion(false);
+      // Гаднаас нээсэн бол хүлээх хугацааг алгасаж табыг "гарсан" болгоно —
+      // ингэснээр chat-ыг хаахад ирмэг хоосон үлдэхгүй.
+      setRevealed(true);
       sendMessage(question);
     };
     // "Ажилтантай холбогдох" гэх мэт газраас зүгээр л chat-ыг нээнэ (асуултгүй)
     const onOpen = () => {
       setIsOpen(true);
-      setShowSuggestion(false);
+      setRevealed(true);
     };
     window.addEventListener("univision:chat-ask", onAsk);
     window.addEventListener("univision:chat-open", onOpen);
@@ -263,81 +199,28 @@ export function ChatWidget() {
 
   return (
     <>
-      {/* ============ SUGGESTION BUBBLE — Floating button-ий хажууд ============ */}
-      {showSuggestion && !isOpen && (
-        <div
-          role="status"
-          aria-live="polite"
-          // Байрлал: хөвөгч товчны ДЭЭР (өмнө нь ЗҮҮН талд байсан). Товчийг
-          // чирсэн үед `style` нь класст өгсөн байрлалыг дарж дагана.
-          // `bottom-44` = товчны дээд ирмэг (28+14=42) + 8px завсар.
-          style={
-            pos
-              ? {
-                  right: pos.right,
-                  bottom: `min(${pos.bottom + FAB_SIZE + 8}px, calc(100svh - 5rem))`,
-                }
-              : undefined
-          }
-          className="bg-card text-foreground border-border animate-in fade-in slide-in-from-bottom-2 fixed right-5 bottom-44 z-50 flex max-w-55 items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium shadow-lg duration-500 lg:right-6"
+      {/* ============ ИРМЭГИЙН ТАБ ============ */}
+      {/* Chat нээлттэй үед таб алга — панель өөрөө хаах товчтой. */}
+      {revealed && !isOpen && (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          aria-haspopup="dialog"
+          aria-label="Онлайн чат нээх"
+          style={{ top: TAB_TOP }}
+          // `right-0` + `rounded-l-xl` — ирмэгт бүрэн наалдаж, зөвхөн дотогш
+          // харсан тал нь мурийна (Xfinity-тэй ижил). `slide-in-from-right`
+          // нь ирмэгээс гулсаж гарах хөдөлгөөнийг өгнө.
+          className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring animate-in slide-in-from-right-8 fade-in fixed right-0 z-50 flex flex-col items-center gap-2 rounded-l-xl px-2 py-4 shadow-lg transition-colors duration-500 ease-out focus-visible:ring-2 focus-visible:outline-none"
         >
-          <button
-            type="button"
-            onClick={openChat}
-            className="text-left leading-snug"
-            aria-label="Chat нээх"
-          >
-            {SUGGESTION_TEXT}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSuggestion(false)}
-            aria-label="Сэрэмжлүүлэг хаах"
-            className="text-muted-foreground hover:text-foreground -mr-1 flex size-5 shrink-0 items-center justify-center rounded-full transition-colors"
-          >
-            <X className="size-3.5" aria-hidden="true" />
-          </button>
-          {/* Speech-bubble сум (tail) — ДООШ харна, товчны төв рүү чиглэнэ */}
-          <span
-            aria-hidden="true"
-            className="bg-card border-border absolute right-6 -bottom-1.5 size-3 rotate-45 border-r border-b"
-          />
-        </div>
+          <BotMessageSquare className="size-5 shrink-0" aria-hidden="true" />
+          {/* Босоо бичиглэл — табыг нимгэн байлгах цорын ганц арга.
+              `vertical-rl` = дээрээс доош уншигдана. */}
+          <span className="text-xs font-semibold tracking-wide [writing-mode:vertical-rl]">
+            Chat widget
+          </span>
+        </button>
       )}
-
-      {/* ============ FLOATING BUTTON ============ */}
-      <button
-        type="button"
-        onClick={onFabClick}
-        onPointerDown={onDragStart}
-        onPointerMove={onDragMove}
-        onPointerUp={onDragEnd}
-        onPointerCancel={onDragEnd}
-        aria-label={isOpen ? "Chat хаах" : "Chat нээх"}
-        aria-expanded={isOpen}
-        aria-controls="chat-panel"
-        title="Дарж нээнэ · чирж зөөнө"
-        style={pos ? { right: pos.right, bottom: pos.bottom } : undefined}
-        // `touch-none` — хуруугаар чирэхэд хуудас гүйлгэхгүй (drag л болно).
-        // `transition-[transform,background-color]` — `transition-all` байсныг
-        // сольсон: right/bottom-д анимаци тавибал чирэлт хоцорч мэдрэгддэг.
-        className={`bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring fixed right-5 bottom-28 z-50 flex size-14 cursor-grab touch-none items-center justify-center rounded-full shadow-lg transition-[transform,background-color] select-none hover:scale-105 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:cursor-grabbing lg:right-6 lg:bottom-28 ${
-          isOpen ? "rotate-90" : ""
-        }`}
-      >
-        {isOpen ? (
-          <X className="size-6" aria-hidden="true" />
-        ) : (
-          <>
-            <BotMessageSquare className="size-6" aria-hidden="true" />
-            {/* Pulse ring decoration */}
-            <span
-              aria-hidden="true"
-              className="bg-primary absolute inset-0 -z-10 animate-ping rounded-full opacity-30"
-            />
-          </>
-        )}
-      </button>
 
       {/* ============ CHAT PANEL ============ */}
       {isOpen && (
@@ -346,18 +229,9 @@ export function ChatWidget() {
           role="dialog"
           aria-modal="false"
           aria-labelledby="chat-title"
-          // Товчийг чирсэн үед панель дагана. `min(...)` нь товчийг дээш
-          // зөөхөд панелийн ДЭЭД ирмэг дэлгэцээс гарахаас сэргийлнэ —
-          // хамгийн ихдээ `100svh − панелийн өндөр − 8px` хүртэл л дээшилнэ.
-          style={
-            pos
-              ? {
-                  right: pos.right,
-                  bottom: `min(${pos.bottom + FAB_SIZE + 12}px, calc(100svh - ${PANEL_H} - 8px))`,
-                }
-              : undefined
-          }
-          className="bg-card border-border fixed right-5 bottom-47 z-50 flex h-[min(580px,calc(100svh-15rem))] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border shadow-2xl lg:right-6 lg:bottom-34"
+          // Баруун доод булан — ТОГТМОЛ байрлал. (Өмнө нь хөвөгч товчийг
+          // дагаж `style`-аар тооцогддог байсныг хассан: товч байхаа больсон.)
+          className="bg-card border-border animate-in fade-in slide-in-from-bottom-4 fixed right-4 bottom-4 z-50 flex h-[min(580px,calc(100svh-6rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border shadow-2xl duration-300 ease-out lg:right-6 lg:bottom-6"
         >
           {/* Header */}
           <div className="bg-primary text-primary-foreground flex items-center justify-between gap-3 px-4 py-3">
