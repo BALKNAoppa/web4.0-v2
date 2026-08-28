@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   ArrowUp,
@@ -47,6 +48,7 @@ import {
   type TimelineResult,
 } from "@/data/hero-assistant";
 import type { Owner } from "@/lib/brand";
+import { ASSISTANT_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 const NEON = "linear-gradient(90deg,#45c700,#2ad4ff,#a855f7,#45c700)";
 /**
@@ -54,6 +56,25 @@ const NEON = "linear-gradient(90deg,#45c700,#2ad4ff,#a855f7,#45c700)";
  * дуустал хүлээнэ. Алхам нэмэх/хасахад хугацаа өөрөө дагана.
  */
 const LOADING_MS = THINKING_STEPS.length * THINKING_STEP_MS;
+
+/**
+ * Оролтыг дэлгэцийн доод ирмэгээс ХЭР ЗАЙД зогсоох вэ.
+ *
+ * ⚠️ ТОГТМОЛ ТОО БОЛОХГҮЙ. Мобайл хөтчүүд доод талд ХӨВӨГЧ элемент
+ * (хаягийн мөр, товчны зурвас) харуулдаг бөгөөд эдгээр нь `visualViewport`
+ * -ын өндрийг ҮРГЭЛЖ хумьдаггүй — зарим нь зүгээр л агуулгын ДЭЭГҮҮР хөвнө.
+ * Тиймээс 32px зай хангалтгүй байж, оролт тэдгээрийн доор ордог байв.
+ *
+ * Дэлгэцийн өндрийн 12% нь төхөөрөмж бүрд харьцангуй тогтвортой цэвэр зай
+ * өгнө. Доод хязгаар 56px (жижиг дэлгэц), дээд хязгаар 120px (том дэлгэц
+ * дээр хэт их хоосон зай үлдээхгүй):
+ *   375×667  → 80px
+ *   390×844  → 101px
+ *   1440×900 → 108px
+ */
+function bottomGap(viewportHeight: number): number {
+  return Math.min(Math.max(viewportHeight * 0.12, 56), 120);
+}
 
 type Block = {
   key: number;
@@ -67,19 +88,57 @@ type Block = {
    */
   answers: Record<string, string>;
 };
-export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
+export function ChatHero({
+  heroRest = false,
+  mode = "hero",
+  initialQuestions = [],
+}: {
+  heroRest?: boolean;
+  /**
+   * `hero` — нүүрэн дээр. ГАНЦ хариулт харуулна, хоёр дахь асуултад
+   *          `/assistant` руу шилжинэ.
+   * `page` — `/assistant` дээр. Бүтэн яриа, оролт доод талдаа.
+   */
+  mode?: "hero" | "page";
+  /** `page` горимд URL-ээс ирсэн яриа */
+  initialQuestions?: string[];
+} = {}) {
   const questions = assistantQuestions;
+  const router = useRouter();
+  const isPage = mode === "page";
 
   const [input, setInput] = useState("");
-  const [blocks, setBlocks] = useState<Block[]>([]);
-  const [expandedKey, setExpandedKey] = useState<number | null>(null);
-  const nextKey = useRef(0);
+  // URL-ээс ирсэн яриаг ЭХНИЙ render дээр шууд босгоно (effect-гүй) —
+  // ингэснээр server ба client ижил зүйл render хийж, hydration зөрөхгүй.
+  const [blocks, setBlocks] = useState<Block[]>(() =>
+    initialQuestions.map((asked, index) => ({
+      key: index,
+      asked,
+      matched: matchQuestion(asked, assistantQuestions),
+      status: "ready" as const,
+      answers: {},
+    })),
+  );
+  const [expandedKey, setExpandedKey] = useState<number | null>(
+    initialQuestions.length ? initialQuestions.length - 1 : null,
+  );
+  const nextKey = useRef(initialQuestions.length);
   const latestRef = useRef<HTMLElement | null>(null);
 
   const ask = useCallback(
     (text: string) => {
       const asked = text.trim();
       if (!asked) return;
+
+      // HERO дээр яриа ОВООЛОХГҮЙ. Эхний асуулт энд хариулагдана; хоёр дахиас
+      // эхлээд бүтэн яриаг URL-д хийж `/assistant` руу шилжүүлнэ.
+      if (!isPage && blocks.length > 0) {
+        const thread = [...blocks.map((b) => b.asked), asked];
+        const query = thread.map((q) => `q=${encodeURIComponent(q)}`).join("&");
+        setInput("");
+        router.push(`${ASSISTANT_PATH}?${query}`);
+        return;
+      }
 
       const key = nextKey.current++;
       setBlocks((prev) => [
@@ -93,7 +152,7 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
         setBlocks((prev) => prev.map((b) => (b.key === key ? { ...b, status: "ready" } : b)));
       }, LOADING_MS);
     },
-    [questions],
+    [questions, isPage, blocks, router],
   );
 
   /**
@@ -105,10 +164,177 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
     setBlocks((prev) => prev.map((b) => (b.key === key ? { ...b, answers: next } : b)));
   }, []);
 
+  /**
+   * Эхнээс эхлэх — хариултуудыг цэвэрлэж, том оролт руу буцна.
+   * `/assistant` дээр бол URL-ийн яриаг ч цэвэрлэнэ (эс бөгөөс дахин
+   * ачаалахад хуучин яриа буцаж ирнэ).
+   */
+  const startOver = useCallback(() => {
+    setBlocks([]);
+    setExpandedKey(null);
+    setInput("");
+    if (isPage) router.replace(ASSISTANT_PATH);
+  }, [isPage, router]);
+
+  /**
+   * Дараагийн асуултын оролт. ХОЁР байрлалд ижил агуулгатай гарна:
+   *   embedded — хариултын картын ДОТОР, доод хэсэгт нь наалдаж НЭГ хайрцаг
+   *              болно (карт + оролт хоёр тусдаа хайрцаг байх нь тасархай
+   *              харагддаг байв)
+   *   standalone — хариулт байхгүй үед (`/assistant` дээр цэвэрлэсний дараа)
+   *
+   * Ялгаа нь ЗӨВХӨН гадна хүрээ — дотоод бүтэц ижил тул хоёр хувилбар
+   * хоорондоо зөрөх боломжгүй.
+   */
+  const followUpForm = (embedded: boolean) => (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        ask(input);
+      }}
+      className={cn(
+        "animate-in fade-in slide-in-from-bottom-2 text-left duration-500 ease-out",
+        embedded
+          ? "border-border bg-background mx-auto w-full max-w-2xl rounded-2xl border px-4 py-3 shadow-sm"
+          : "border-border bg-card/80 mx-auto w-full max-w-xl rounded-2xl border px-4 py-3 shadow-sm backdrop-blur",
+      )}
+    >
+      <label htmlFor="chat-hero-input" className="sr-only">
+        Дараагийн асуултаа бичнэ үү
+      </label>
+      <input
+        id="chat-hero-input"
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Дараагийн асуултаа бичнэ үү"
+        className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
+      />
+      <div className="mt-2 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={startOver}
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+        >
+          <RotateCcw className="size-3.5" aria-hidden="true" />
+          Дахин эхлэх
+        </button>
+        <button
+          type="submit"
+          aria-label="Илгээх"
+          disabled={!input.trim()}
+          className="text-muted-foreground hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <ArrowUp className="size-4" aria-hidden="true" />
+        </button>
+      </div>
+    </form>
+  );
+
+  /** Сүүлийн блокийн төлөв — хариулт бэлэн болмогц дахин байрлуулахад */
+  const lastStatus = blocks[blocks.length - 1]?.status;
+
+  /**
+   * Хамгийн сүүлийн хариултыг хэрэглэгчид ӨӨРӨӨ ХАРУУЛНА — гараар гүйлгэх
+   * шаардлагагүй.
+   *
+   * ⚠️ ЯАГААД ГАНЦ УДААГИЙН `scrollIntoView` ХҮРЭЛЦЭХГҮЙ: хариулт нь ҮЕ
+   * ШАТТАЙГААР ургадаг —
+   *     skeleton → тойм үсэглэн бичигдэнэ → бие (bullet, карт) гарна
+   *     → ↳ санал, 👍👎 нэмэгдэнэ
+   * Эхний байрлуулалт нь ЗӨВХӨН skeleton-ий өндрөөр тооцогдох тул агуулга
+   * ургамагц хариулт дэлгэцээс доошоо гарч, хэрэглэгч гараар гүйлгэхэд
+   * хүрдэг байв. Тиймээс `ResizeObserver`-оор өндрийг нь ажиглаж, өссөн
+   * бүрд дахин байрлуулна.
+   *
+   * ⚠️ ХЭРЭГЛЭГЧИЙГ ЧИРЭХГҮЙ: өөрөө гүйлгэж эхэлмэгц дагахаа болино.
+   * Уншиж байгаа хүнийг байрлалаас нь татах нь хамгийн эвгүй зан. Мөн 5
+   * секундын дараа ямар ч тохиолдолд салдаг — хэзээ ч мөнхөд дагахгүй.
+   */
   useEffect(() => {
-    if (blocks.length === 0) return;
-    latestRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [blocks.length]);
+    const el = latestRef.current;
+    if (!el) return;
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const place = () => {
+      /**
+       * Зорилт нь хариултын карт БИШ, ОРОЛТ. Хэрэглэгчийн дараагийн үйлдэл
+       * тэнд болох тул түүнийг харагдуулах хүртэл гүйлгэнэ.
+       *
+       * `block: "end"` — оролтын доод ирмэгийг дэлгэцийн доод ирмэгт
+       * зэрэгцүүлнэ. Ингэснээр хариулт нь дээшээ, оролт нь доод хэсэгт
+       * бэлэн зогсоно.
+       *
+       * ⚠️ Хариултын карт руу гүйлгэдэг байсныг СОЛИВ: карт нь голдоо
+       * тавигдахад оролт нь дэлгэцээс доош гарч, хэрэглэгч дахин гараар
+       * гүйлгэхэд хүрдэг байв.
+       */
+      // ⚠️ `<input>` БИШ, БҮТЭН ФОРМ. Оролтын ДООР "↻ Дахин эхлэх / ↑" мөр
+      // байдаг тул зөвхөн input-ийг зэрэгцүүлбэл тэр мөр доош гарна.
+      const field = document.getElementById("chat-hero-input");
+      const target = field?.closest("form") ?? el;
+      const rect = target.getBoundingClientRect();
+
+      /**
+       * ⚠️ `scrollIntoView({ block: "end" })` ХЭРЭГЛЭХГҮЙ — тэр нь элементийн
+       * доод ирмэгийг дэлгэцийн доод ирмэгт ЯГ нааж, мобайл хөтчийн доод
+       * мөр (хаягийн талбар, товчнууд) оролтыг халхалдаг байв.
+       *
+       * `visualViewport.height` нь ЖИНХЭНЭ харагдах өндрийг өгнө
+       * (`innerHeight` нь хөтчийн мөрийг оруулж тоолдог). Түүн дээр
+       * `bottomGap()` зай нэмж, оролтыг ирмэгээс тодорхой дээгүүр зогсооно.
+       */
+      const viewportH = window.visualViewport?.height ?? window.innerHeight;
+      const delta = rect.bottom - (viewportH - bottomGap(viewportH));
+
+      // Аль хэдийн байрандаа байвал хөдөлгөхгүй — ResizeObserver давтан
+      // дуудахад дэлгэц чичрэхээс сэргийлнэ.
+      if (Math.abs(delta) < 2) return;
+
+      window.scrollBy({ top: delta, behavior: reduce ? "auto" : "smooth" });
+    };
+
+    place();
+
+    // Өндөр өөрчлөгдөх бүрд БИШ, тогтсоны нь дараа байрлуулна. Үсэг бүрд
+    // гүйлгэвэл дэлгэц чичирнэ.
+    let settle = 0;
+    const schedule = () => {
+      window.clearTimeout(settle);
+      settle = window.setTimeout(place, 150);
+    };
+
+    const observer = new ResizeObserver(schedule);
+    observer.observe(el);
+
+    const stop = () => {
+      observer.disconnect();
+      window.clearTimeout(settle);
+    };
+
+    /**
+     * Хэрэглэгчийн өөрийн гүйлгэлт — дагахаа болино.
+     *
+     * ⚠️ ЖИЖИГ ЧИЧРЭЛТЭЭР таслахгүй: trackpad дээр санамсаргүй нэг хүрэлт ч
+     * `wheel` үүсгэдэг тул урьд нь дагалт эрт тасарч, оролт хагас
+     * харагддаг байв. Мэдэгдэхүйц (>30px) гүйлгэлт л зогсооно.
+     * (Программын `scrollIntoView` нь `wheel`/`touchmove` үүсгэдэггүй тул
+     * өөрийгөө зогсоохгүй.)
+     */
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > 30) stop();
+    };
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("touchmove", stop, { passive: true });
+    const giveUp = window.setTimeout(stop, 5000);
+
+    return () => {
+      stop();
+      window.clearTimeout(giveUp);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchmove", stop);
+    };
+  }, [blocks.length, lastStatus]);
 
   return (
     <section
@@ -140,64 +366,30 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
             : "min-h-[34svh] sm:min-h-[44svh] md:min-h-[46svh]",
         )}
       >
-        <span className="border-border bg-card/60 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur">
-          <Sparkles className="text-primary size-3.5" aria-hidden="true" />
-          Highlight keyword байна
-        </span>
+        {/* Нүүрний гарчиг — `/assistant` хуудсанд ХЭРЭГГҮЙ (тэнд хуудас өөрөө
+            гарчигтай, оролт нь доод талдаа байна). */}
+        {!isPage && (
+          <>
+            <span className="border-border bg-card/60 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur">
+              <Sparkles className="text-primary size-3.5" aria-hidden="true" />
+              Highlight keyword байна
+            </span>
 
-        <h1 className="text-foreground mt-4 text-2xl font-extrabold tracking-tight text-balance sm:mt-6 sm:text-3xl md:text-4xl [@media_(min-width:768px)_and_(max-height:1024px)]:mt-2">
-          AI <span className="from-primary bg-clip-text text-[#45c700]">assistant</span>
-        </h1>
-        <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
-          Ai assistant-н Capability-г сайн госон text энд байрлана.
-        </p>
-        <div className="relative mt-5 w-full sm:mt-8 [@media_(min-width:768px)_and_(max-height:1024px)]:mt-3">
-          <div
-            aria-hidden
-            className="animate-neon-pan pointer-events-none absolute -inset-1 rounded-4xl opacity-60 blur-xl"
-            style={{ background: NEON, backgroundSize: "200% 100%" }}
-          />
-          <div
-            className="animate-neon-pan relative rounded-[1.75rem] p-0.5 shadow-lg"
-            style={{ background: NEON, backgroundSize: "200% 100%" }}
-          >
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                ask(input);
-              }}
-              className="bg-card/85 flex w-full items-center gap-3 rounded-[calc(1.75rem-2px)] px-4 py-2.5 backdrop-blur"
-            >
-              <Sparkles className="text-primary size-5 shrink-0" aria-hidden="true" />
-              <label htmlFor="chat-hero-input" className="sr-only">
-                Асуултаа бичнэ үү
-              </label>
-              <input
-                id="chat-hero-input"
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="CTA чиглүүлсэн placeholder той байна"
-                className="text-foreground placeholder:text-muted-foreground h-8 flex-1 bg-transparent text-sm outline-none md:text-base"
-              />
-              <button
-                type="submit"
-                aria-label="Илгээх"
-                className="bg-primary text-primary-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-2xl transition-transform duration-300 hover:scale-105"
-              >
-                <ArrowUp className="size-5" aria-hidden="true" />
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Их хайгдсан сэдвүүд — зөвхөн хоосон төлөвт. Асуулт асуумагц үр дүн
-            нь гол болох тул мөр замаас гарч, өндрөө буцааж өгнө. */}
-        {blocks.length === 0 && <TrendingTopics />}
-
-        {/*Хэрэглэгчийн хайж байгаа topic-д тулгуурлаад хариалтууд dynamic байдлаар suggest хийнэ*/}
+            <h1 className="text-foreground mt-4 text-2xl font-extrabold tracking-tight text-balance sm:mt-6 sm:text-3xl md:text-4xl [@media_(min-width:768px)_and_(max-height:1024px)]:mt-2">
+              AI <span className="from-primary bg-clip-text text-[#45c700]">assistant</span>
+            </h1>
+            <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
+              Ai assistant-н Capability-г сайн госон text энд байрлана.
+            </p>
+          </>
+        )}
+        {/* ХАРИУЛТ — оролтын ДЭЭР.
+            ⚠️ DOM-ийн дараалал ҮРГЭЛЖ ижил (хариулт → оролт). Өмнө нь
+            `order`-оор солидог байсан нь оролтыг нэг агшинд өөр байрлал руу
+            ҮСРҮҮЛЖ, хатуу мэдрэгддэг байв. Одоо оролт хэзээ ч байрлалаа
+            солихгүй — хариулт дээр нь гарч ирээд доошоо ТҮЛХЭНЭ. */}
         {blocks.length > 0 && (
-          <div className="mt-4 w-full space-y-3">
+          <div className="w-full space-y-3">
             {blocks.map((block, i) => (
               <ResultBlock
                 key={block.key}
@@ -208,10 +400,66 @@ export function ChatHero({ heroRest = false }: { heroRest?: boolean } = {}) {
                 questions={questions}
                 onPick={ask}
                 onAnswers={(next) => setAnswers(block.key, next)}
+                footer={i === blocks.length - 1 ? followUpForm(true) : undefined}
               />
             ))}
           </div>
         )}
+
+        {/* ОРОЛТ — хоёр хувилбар:
+              эхлэл  — ТОМ, неон хүрээтэй. Анхаарал татах нь гол үүрэг.
+              дараа  — ЖИЖИГ follow-up хайрцаг. Хариулт гарсны дараа гол дүр нь
+                       ХАРИУЛТ болох тул оролт өөрийгөө татаж, нарийн болно.
+            Хувилбар солигдоход шинээр mount хийгддэг тул `animate-in`-ээр
+            зөөлөн гарч ирнэ — гэнэт солигдсон мэт харагдахгүй. */}
+        {blocks.length === 0 &&
+          (isPage ? (
+            followUpForm(false)
+          ) : (
+            <div className="relative mt-5 w-full sm:mt-8 [@media_(min-width:768px)_and_(max-height:1024px)]:mt-3">
+              <div
+                aria-hidden
+                className="animate-neon-pan pointer-events-none absolute -inset-1 rounded-4xl opacity-60 blur-xl"
+                style={{ background: NEON, backgroundSize: "200% 100%" }}
+              />
+              <div
+                className="animate-neon-pan relative rounded-[1.75rem] p-0.5 shadow-lg"
+                style={{ background: NEON, backgroundSize: "200% 100%" }}
+              >
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    ask(input);
+                  }}
+                  className="bg-card/85 flex w-full items-center gap-3 rounded-[calc(1.75rem-2px)] px-4 py-2.5 backdrop-blur"
+                >
+                  <Sparkles className="text-primary size-5 shrink-0" aria-hidden="true" />
+                  <label htmlFor="chat-hero-input" className="sr-only">
+                    Асуултаа бичнэ үү
+                  </label>
+                  <input
+                    id="chat-hero-input"
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="CTA чиглүүлсэн placeholder той байна"
+                    className="text-foreground placeholder:text-muted-foreground h-8 flex-1 bg-transparent text-sm outline-none md:text-base"
+                  />
+                  <button
+                    type="submit"
+                    aria-label="Илгээх"
+                    className="bg-primary text-primary-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-2xl transition-transform duration-300 hover:scale-105"
+                  >
+                    <ArrowUp className="size-5" aria-hidden="true" />
+                  </button>
+                </form>
+              </div>
+            </div>
+          ))}
+
+        {/* Их хайгдсан сэдвүүд — зөвхөн хоосон төлөвт. Асуулт асуумагц үр дүн
+            нь гол болох тул мөр замаас гарч, өндрөө буцааж өгнө. */}
+        {!isPage && blocks.length === 0 && <TrendingTopics />}
       </div>
     </section>
   );
@@ -282,6 +530,7 @@ function ResultBlock({
   questions,
   onPick,
   onAnswers,
+  footer,
 }: {
   ref?: React.Ref<HTMLElement>;
   block: Block;
@@ -290,6 +539,12 @@ function ResultBlock({
   questions: AssistantQuestion[];
   onPick: (question: string) => void;
   onAnswers: (next: Record<string, string>) => void;
+  /**
+   * Картын ДООД хэсэгт наалдах агуулга — дараагийн асуултын оролт.
+   * Хумих/дэлгэхээс ХАМААРАХГҮЙ: блок хумигдсан ч оролт нь харагдсаар байх
+   * ёстой, эс бөгөөс хэрэглэгч бичих газраа алдана.
+   */
+  footer?: React.ReactNode;
 }) {
   return (
     <article
@@ -322,6 +577,11 @@ function ResultBlock({
           )}
         </div>
       )}
+
+      {/* Оролт нь картын ирмэгээс ЗАЙТАЙ, өөрийн хүрээтэй хайрцаг —
+          зүгээр нэг мөр биш. Ингэснээр "энд бичнэ" гэдэг нь нүдэнд шууд
+          тусна (Verizon-ы жишээтэй ижил). */}
+      {footer && <div className="px-4 pb-4">{footer}</div>}
     </article>
   );
 }

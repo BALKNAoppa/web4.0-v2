@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { ASSISTANT_PATH } from "@/lib/routes";
 import { BotMessageSquare, X, Send, Sparkles } from "lucide-react";
 
 import { TypingAnimation } from "@/components/ui/typing-animation";
@@ -37,7 +40,7 @@ const QUICK_REPLIES = [
  * дээр зодолддог байв. Тэр үед товчийг ГАРААР ЧИРЖ ЗӨӨХ (drag) логик
  * нэмэгдсэн нь шинжийг нь дарсан болохоос шалтгааныг нь заасангүй.
  *
- * ОДОО: дэлгэцийн баруун ирмэгт наалдсан НИМГЭН БОСОО ТАБ. Ирмэгээс ~34px л
+ * ОДОО: дэлгэцийн ЗҮҮН ирмэгт наалдсан НИМГЭН БОСОО ТАБ. Ирмэгээс ~34px л
  * эзэлдэг, голын агуулгыг хэзээ ч халхлахгүй тул:
  *   · AI туслахтай зодолдохоо болино
  *   · чирж зөөх шаардлагагүй болсон (drag логикийг УСТГАВ)
@@ -200,18 +203,20 @@ export function ChatWidget() {
   return (
     <>
       {/* ============ ИРМЭГИЙН ТАБ ============ */}
-      {/* Chat нээлттэй үед таб алга — панель өөрөө хаах товчтой. */}
+      {/* ⚠️ Таб нь ЖИЖИГ ПАНЕЛЬ нээхээ БОЛЬЖ, `/assistant` яриаы хуудас руу
+          аваачдаг болов. Шалтгаан: нэг чатын газар байх — панель, hero,
+          хуудас гурав зэрэг оршвол хэрэглэгч аль нь "жинхэнэ" яриа болохыг
+          мэдэхгүй. Панель нь `univision:chat-ask` event-ээр (support-ийн ask
+          bar, escalate) нээгдсээр байна. */}
       {revealed && !isOpen && (
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          aria-haspopup="dialog"
-          aria-label="Онлайн чат нээх"
+        <Link
+          href={ASSISTANT_PATH}
+          aria-label="AI туслах руу очих"
           style={{ top: TAB_TOP }}
-          // `right-0` + `rounded-l-xl` — ирмэгт бүрэн наалдаж, зөвхөн дотогш
-          // харсан тал нь мурийна (Xfinity-тэй ижил). `slide-in-from-right`
-          // нь ирмэгээс гулсаж гарах хөдөлгөөнийг өгнө.
-          className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring animate-in slide-in-from-right-8 fade-in fixed right-0 z-50 flex flex-col items-center gap-2 rounded-l-xl px-2 py-4 shadow-lg transition-colors duration-500 ease-out focus-visible:ring-2 focus-visible:outline-none"
+          // `left-0` + `rounded-r-xl` — ЗҮҮН ирмэгт бүрэн наалдаж, зөвхөн
+          // дотогш харсан (баруун) тал нь мурийна. `slide-in-from-left` нь
+          // ирмэгээс гулсаж гарах хөдөлгөөнийг өгнө.
+          className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring animate-in slide-in-from-left-8 fade-in fixed left-0 z-50 flex flex-col items-center gap-2 rounded-r-xl px-2 py-4 shadow-lg transition-colors duration-500 ease-out focus-visible:ring-2 focus-visible:outline-none"
         >
           <BotMessageSquare className="size-5 shrink-0" aria-hidden="true" />
           {/* Босоо бичиглэл — табыг нимгэн байлгах цорын ганц арга.
@@ -219,7 +224,7 @@ export function ChatWidget() {
           <span className="text-xs font-semibold tracking-wide [writing-mode:vertical-rl]">
             Chat widget
           </span>
-        </button>
+        </Link>
       )}
 
       {/* ============ CHAT PANEL ============ */}
@@ -229,9 +234,10 @@ export function ChatWidget() {
           role="dialog"
           aria-modal="false"
           aria-labelledby="chat-title"
-          // Баруун доод булан — ТОГТМОЛ байрлал. (Өмнө нь хөвөгч товчийг
+          // ЗҮҮН доод булан — таб зүүн ирмэгт байдаг тул панель ч мөн тэндээс
+          // нээгдэнэ (нээгдэх цэг нь дарсан цэгтэйгээ ойрхон байх нь зөв). (Өмнө нь хөвөгч товчийг
           // дагаж `style`-аар тооцогддог байсныг хассан: товч байхаа больсон.)
-          className="bg-card border-border animate-in fade-in slide-in-from-bottom-4 fixed right-4 bottom-4 z-50 flex h-[min(580px,calc(100svh-6rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border shadow-2xl duration-300 ease-out lg:right-6 lg:bottom-6"
+          className="bg-card border-border animate-in fade-in slide-in-from-left-4 fixed bottom-4 left-4 z-50 flex h-[min(580px,calc(100svh-6rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border shadow-2xl duration-300 ease-out lg:bottom-6 lg:left-6"
         >
           {/* Header */}
           <div className="bg-primary text-primary-foreground flex items-center justify-between gap-3 px-4 py-3">
