@@ -6,9 +6,7 @@ import {
   ArrowRight,
   ArrowUp,
   Check,
-  ChevronDown,
   Headphones,
-  CornerDownRight,
   Loader2,
   Pencil,
   ThumbsDown,
@@ -119,9 +117,6 @@ export function ChatHero({
       answers: {},
     })),
   );
-  const [expandedKey, setExpandedKey] = useState<number | null>(
-    initialQuestions.length ? initialQuestions.length - 1 : null,
-  );
   const nextKey = useRef(initialQuestions.length);
   const latestRef = useRef<HTMLElement | null>(null);
 
@@ -145,7 +140,6 @@ export function ChatHero({
         ...prev,
         { key, asked, matched: matchQuestion(asked, questions), status: "loading", answers: {} },
       ]);
-      setExpandedKey(key);
       setInput("");
 
       window.setTimeout(() => {
@@ -171,7 +165,6 @@ export function ChatHero({
    */
   const startOver = useCallback(() => {
     setBlocks([]);
-    setExpandedKey(null);
     setInput("");
     if (isPage) router.replace(ASSISTANT_PATH);
   }, [isPage, router]);
@@ -187,48 +180,53 @@ export function ChatHero({
    * хоорондоо зөрөх боломжгүй.
    */
   const followUpForm = (embedded: boolean) => (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        ask(input);
-      }}
+    <NeonFrame
+      rounded="rounded-2xl"
       className={cn(
-        "animate-in fade-in slide-in-from-bottom-2 text-left duration-500 ease-out",
-        embedded
-          ? "border-border bg-background mx-auto w-full max-w-2xl rounded-2xl border px-4 py-3 shadow-sm"
-          : "border-border bg-card/80 mx-auto w-full max-w-xl rounded-2xl border px-4 py-3 shadow-sm backdrop-blur",
+        // `fade-in-0` — 0-ээс эхэлнэ. `duration-700` + `slide-in-from-bottom-4`
+        // нь 500ms/2px байсныг тодруулсан.
+        "animate-in fade-in-0 slide-in-from-bottom-4 mx-auto w-full duration-700 ease-out",
+        embedded ? "max-w-2xl" : "max-w-xl",
       )}
     >
-      <label htmlFor="chat-hero-input" className="sr-only">
-        Дараагийн асуултаа бичнэ үү
-      </label>
-      <input
-        id="chat-hero-input"
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Дараагийн асуултаа бичнэ үү"
-        className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
-      />
-      <div className="mt-2 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={startOver}
-          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
-        >
-          <RotateCcw className="size-3.5" aria-hidden="true" />
-          Дахин эхлэх
-        </button>
-        <button
-          type="submit"
-          aria-label="Илгээх"
-          disabled={!input.trim()}
-          className="text-muted-foreground hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <ArrowUp className="size-4" aria-hidden="true" />
-        </button>
-      </div>
-    </form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          ask(input);
+        }}
+        className="bg-background rounded-2xl px-4 py-3 text-left"
+      >
+        <label htmlFor="chat-hero-input" className="sr-only">
+          Дараагийн асуултаа бичнэ үү
+        </label>
+        <input
+          id="chat-hero-input"
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Дараагийн асуултаа бичнэ үү"
+          className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
+        />
+        <div className="mt-2 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={startOver}
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+          >
+            <RotateCcw className="size-3.5" aria-hidden="true" />
+            Дахин эхлэх
+          </button>
+          <button
+            type="submit"
+            aria-label="Илгээх"
+            disabled={!input.trim()}
+            className="text-muted-foreground hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ArrowUp className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+      </form>
+    </NeonFrame>
   );
 
   /** Сүүлийн блокийн төлөв — хариулт бэлэн болмогц дахин байрлуулахад */
@@ -395,8 +393,6 @@ export function ChatHero({
                 key={block.key}
                 ref={i === blocks.length - 1 ? latestRef : undefined}
                 block={block}
-                expanded={expandedKey === block.key}
-                onToggle={() => setExpandedKey(expandedKey === block.key ? null : block.key)}
                 questions={questions}
                 onPick={ask}
                 onAnswers={(next) => setAnswers(block.key, next)}
@@ -416,45 +412,39 @@ export function ChatHero({
           (isPage ? (
             followUpForm(false)
           ) : (
-            <div className="relative mt-5 w-full sm:mt-8 [@media_(min-width:768px)_and_(max-height:1024px)]:mt-3">
-              <div
-                aria-hidden
-                className="animate-neon-pan pointer-events-none absolute -inset-1 rounded-4xl opacity-60 blur-xl"
-                style={{ background: NEON, backgroundSize: "200% 100%" }}
-              />
-              <div
-                className="animate-neon-pan relative rounded-[1.75rem] p-0.5 shadow-lg"
-                style={{ background: NEON, backgroundSize: "200% 100%" }}
+            <NeonFrame
+              rounded="rounded-[1.75rem]"
+              glow
+              className="mt-5 w-full sm:mt-8 [@media_(min-width:768px)_and_(max-height:1024px)]:mt-3"
+            >
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  ask(input);
+                }}
+                className="bg-card flex w-full items-center gap-3 rounded-[calc(1.75rem-1px)] px-4 py-2.5"
               >
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    ask(input);
-                  }}
-                  className="bg-card/85 flex w-full items-center gap-3 rounded-[calc(1.75rem-2px)] px-4 py-2.5 backdrop-blur"
+                <Sparkles className="text-primary size-5 shrink-0" aria-hidden="true" />
+                <label htmlFor="chat-hero-input" className="sr-only">
+                  Асуултаа бичнэ үү
+                </label>
+                <input
+                  id="chat-hero-input"
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="CTA чиглүүлсэн placeholder той байна"
+                  className="text-foreground placeholder:text-muted-foreground h-8 flex-1 bg-transparent text-sm outline-none md:text-base"
+                />
+                <button
+                  type="submit"
+                  aria-label="Илгээх"
+                  className="bg-primary text-primary-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-2xl transition-transform duration-300 hover:scale-105"
                 >
-                  <Sparkles className="text-primary size-5 shrink-0" aria-hidden="true" />
-                  <label htmlFor="chat-hero-input" className="sr-only">
-                    Асуултаа бичнэ үү
-                  </label>
-                  <input
-                    id="chat-hero-input"
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="CTA чиглүүлсэн placeholder той байна"
-                    className="text-foreground placeholder:text-muted-foreground h-8 flex-1 bg-transparent text-sm outline-none md:text-base"
-                  />
-                  <button
-                    type="submit"
-                    aria-label="Илгээх"
-                    className="bg-primary text-primary-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-2xl transition-transform duration-300 hover:scale-105"
-                  >
-                    <ArrowUp className="size-5" aria-hidden="true" />
-                  </button>
-                </form>
-              </div>
-            </div>
+                  <ArrowUp className="size-5" aria-hidden="true" />
+                </button>
+              </form>
+            </NeonFrame>
           ))}
 
         {/* Их хайгдсан сэдвүүд — зөвхөн хоосон төлөвт. Асуулт асуумагц үр дүн
@@ -525,8 +515,6 @@ function TrendingTopics() {
 function ResultBlock({
   ref,
   block,
-  expanded,
-  onToggle,
   questions,
   onPick,
   onAnswers,
@@ -534,8 +522,6 @@ function ResultBlock({
 }: {
   ref?: React.Ref<HTMLElement>;
   block: Block;
-  expanded: boolean;
-  onToggle: () => void;
   questions: AssistantQuestion[];
   onPick: (question: string) => void;
   onAnswers: (next: Record<string, string>) => void;
@@ -546,42 +532,112 @@ function ResultBlock({
    */
   footer?: React.ReactNode;
 }) {
+  /**
+   * Тойм бичигдэж дуусах хүртэл хариултын бие БОЛОН доорх оролт хоёулаа
+   * хүлээнэ. Өмнө нь оролт нь блоктой ЗЭРЭГ mount хийгддэг байсан — өөрөөр
+   * хэлбэл туслах бодож байх үед аль хэдийн харагдаж, гарч ирэх fade нь
+   * мэдэгдэхгүй байв.
+   */
+  const [introDone, setIntroDone] = useState(false);
+
+  /**
+   * Оролтыг тоймын дараа ШУУД биш, богино завсрын дараа гаргана.
+   *
+   * ⚠️ Яагаад завсар хэрэгтэй: хариулт бүрэн болох агшинд автомат гүйлгэлт
+   * ажилладаг. Оролт яг тэр мөчид гарвал fade нь гүйлгэлтийн хөдөлгөөнд
+   * дарагдаж, огт мэдэгдэхгүй өнгөрдөг. 260ms завсар нь гүйлгэлт тогтсоны
+   * дараа оролтыг ӨӨРИЙН мөчид гаргана.
+   *
+   * `setState` нь effect-ийн биед БИШ, `setTimeout`-ийн callback дотор.
+   */
+  const [inputReady, setInputReady] = useState(false);
+
+  useEffect(() => {
+    if (!introDone) return;
+    const timer = window.setTimeout(() => setInputReady(true), 260);
+    return () => window.clearTimeout(timer);
+  }, [introDone]);
+
   return (
     <article
       ref={ref}
       className="border-border bg-card/70 animate-in fade-in slide-in-from-top-2 w-full overflow-hidden rounded-3xl border text-left backdrop-blur duration-700 ease-out"
     >
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={expanded}
-        className="hover:bg-muted/40 flex w-full items-start gap-3 px-5 py-4 text-left transition-colors"
-      >
-        <Sparkles className="text-primary mt-0.5 size-4 shrink-0" aria-hidden="true" />
-        <span className="text-foreground flex-1 text-sm font-semibold">{block.asked}</span>
-        <ChevronDown
-          className={cn(
-            "text-muted-foreground mt-0.5 size-4 shrink-0 transition-transform duration-500 ease-out",
-            expanded && "rotate-180",
-          )}
-          aria-hidden="true"
-        />
-      </button>
+      {/* ⚠️ ХУМИХ/ДЭЛГЭХ БОЛИВ. Өмнө нь гарчиг нь товч байж, хариултыг
+          нээж хаадаг байсан — хэрэглэгч хариултаа уншихын тулд нэмэлт
+          үйлдэл хийх шаардлагагүй, мөн хаагдсан блок нь хоосон мөр болж
+          яриаг тасалдуулдаг байв. Одоо хариулт үргэлж нээлттэй.
 
-      {expanded && (
-        <div className="border-border/60 border-t px-5 pt-4 pb-5">
-          {block.status === "loading" ? (
-            <ThinkingTrace steps={THINKING_STEPS} />
-          ) : (
-            <Answer block={block} questions={questions} onPick={onPick} onAnswers={onAnswers} />
+          Тусгаарлагч зураас (`border-t`) ч мөн хасагдсан — гарчиг ба
+          хариулт хоёр нэг урсгал болно. */}
+      <div className="flex items-start gap-3 px-5 pt-4 pb-1">
+        <Sparkles className="text-primary mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        <p className="text-muted-foreground flex-1 text-sm">
+          Таны хайсан сэдэв{" "}
+          {/* `1.2em` — эцгийн `text-sm` (14px)-ээс ЯГ 20% том (16.8px).
+              `em` учир нь эцэг өөрчлөгдвөл харьцаа хэвээр үлдэнэ. */}
+          <span className="text-foreground text-[1.2em] font-semibold">«{block.asked}»</span>
+        </p>
+      </div>
+
+      <div className="px-5 pt-2 pb-5">
+        {block.status === "loading" ? (
+          <ThinkingTrace steps={THINKING_STEPS} />
+        ) : (
+          <Answer
+            block={block}
+            questions={questions}
+            onPick={onPick}
+            onAnswers={onAnswers}
+            introDone={introDone}
+            onIntroDone={() => setIntroDone(true)}
+          />
+        )}
+      </div>
+
+      {/* Оролт нь хариулт ГАРСНЫ ДАРАА fade-ээр орж ирнэ.
+          `!block.matched` — таниагүй асуултад тойм бичигдэхгүй тул
+          `introDone` хэзээ ч үнэн болохгүй; тэр тохиолдолд шууд харуулна. */}
+      {footer && block.status === "ready" && (inputReady || !block.matched) && (
+        <div className="px-4 pb-4">
+          {/* САНАЛ БОЛГОХ АСУУЛТУУД — оролтын ДЭЭР, чип хэлбэрээр.
+              ⚠️ Өмнө нь хариултын дотор "↳" мөрүүд болж байрладаг байсан —
+              тэр нь хариултын нэг хэсэг мэт харагдаж, дараагийн АЛХАМ гэдэг
+              нь ойлгогдохгүй байв. Оролтын яг дээр тавьснаар "эдгээрээс
+              сонгож болно, эсвэл өөрөө бич" гэсэн холбоо ил гарна.
+              Байхгүй id-г ШҮҮЖ хаяна: хуурамч affordance гаргахгүй. */}
+          {block.matched?.followUps && block.matched.followUps.length > 0 && (
+            <div className="mx-auto mb-2 w-full max-w-2xl">
+              <div className="text-muted-foreground mb-1.5 text-xs font-semibold">
+                Санал болгох асуултууд
+              </div>
+              {/* НЭГ ЭГНЭЭ — багтахгүй бол хажуу тийш гүйнэ (мөр хугарахгүй).
+                  `no-scrollbar` нь зурвасыг харагдуулахгүй. */}
+              <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
+                {block.matched.followUps.map((id) => {
+                  const next = questions.find((item) => item.id === id);
+                  if (!next) return null;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => onPick(next.question)}
+                      // Хүрээгүй: оролт нь өөрөө хүрээтэй тул чипүүд ч хүрээтэй
+                      // байвал хоёр хүрээ дараалж, хэсэг нь хүнд харагдана.
+                      // Зөөлөн дэвсгэр нь дарагдах боломжийг хангалттай илэрхийлнэ.
+                      className="bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition-colors"
+                    >
+                      {next.question}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
+
+          {footer}
         </div>
       )}
-
-      {/* Оролт нь картын ирмэгээс ЗАЙТАЙ, өөрийн хүрээтэй хайрцаг —
-          зүгээр нэг мөр биш. Ингэснээр "энд бичнэ" гэдэг нь нүдэнд шууд
-          тусна (Verizon-ы жишээтэй ижил). */}
-      {footer && <div className="px-4 pb-4">{footer}</div>}
     </article>
   );
 }
@@ -656,22 +712,22 @@ function Answer({
   questions,
   onPick,
   onAnswers,
+  introDone,
+  onIntroDone,
 }: {
   block: Block;
   questions: AssistantQuestion[];
   onPick: (question: string) => void;
   onAnswers: (next: Record<string, string>) => void;
+  /** Тойм бичигдэж дууссан уу — үүнээс хойш хариултын бие гарна */
+  introDone: boolean;
+  onIntroDone: () => void;
 }) {
   const matched = block.matched;
 
-  /**
-   * Тойм бичигдэж ДУУСТАЛ доорх бие гарахгүй — аажим задрах (progressive
-   * disclosure). Бүгд нэг дор дүрсхийвэл "урьдчилан бэлдсэн" мэт харагдана.
-   *
-   * `TypingAnimation` нь reduced-motion үед шууд дуусдаг тул тэр тохиолдолд
-   * бие ч мөн шууд гарна — хүлээлт үүсэхгүй.
-   */
-  const [introDone, setIntroDone] = useState(false);
+  // Тоймын бичилт дууссан эсэх — ЭНД биш, `ResultBlock`-д хадгалагдана:
+  // оролтын хайрцаг ч мөн энэ мөчийг хүлээдэг тул хоёулаа НЭГ эх сурвалжаас
+  // уншина ([ResultBlock]-ийн `footer`).
 
   if (!matched) {
     return (
@@ -679,17 +735,21 @@ function Answer({
         <p className="text-muted-foreground text-sm leading-relaxed">
           Уучлаарай, энэ асуултыг таньсангүй. Доорхоос сонгоно уу.
         </p>
+        {/* ЗӨВХӨН үндсэн сэдвүүд. Бүгдийг жагсвал сонголт хэт олон болж,
+            хэрэглэгч юунаас эхлэхээ мэдэхгүй болно. */}
         <div className="mt-3 flex flex-col gap-2">
-          {questions.map((q) => (
-            <button
-              key={q.id}
-              type="button"
-              onClick={() => onPick(q.question)}
-              className="border-border hover:border-primary/50 hover:bg-muted/40 text-foreground rounded-xl border px-3 py-2 text-left text-sm transition-colors"
-            >
-              {q.question}
-            </button>
-          ))}
+          {questions
+            .filter((q) => q.featured)
+            .map((q) => (
+              <button
+                key={q.id}
+                type="button"
+                onClick={() => onPick(q.question)}
+                className="border-border hover:border-primary/50 hover:bg-muted/40 text-foreground rounded-xl border px-3 py-2 text-left text-sm transition-colors"
+              >
+                {q.question}
+              </button>
+            ))}
         </div>
       </div>
     );
@@ -697,11 +757,11 @@ function Answer({
 
   return (
     <div className="animate-in fade-in duration-700 ease-out">
-      {/* AI мэдэгдэл — агуулга урьдчилан бэлдсэн ч түүнийг НУУХГҮЙ. */}
-      <p className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs">
-        <Sparkles className="text-primary size-3.5" aria-hidden="true" />
-        {AI_DISCLOSURE}
-      </p>
+      {/* AI мэдэгдэл — агуулга урьдчилан бэлдсэн ч түүнийг НУУХГҮЙ.
+          ⚠️ Icon-гүй: `ResultBlock`-ийн гарчгийн мөрөнд аль хэдийн нэг
+          Sparkles байгаа тул хоёр дараалсан мөрөнд ижил дүрс давхардаж
+          байв. */}
+      <p className="text-muted-foreground mb-2 text-xs">{AI_DISCLOSURE}</p>
 
       {/* Тойм нь ҮСЭГ ҮСГЭЭР бичигдэнэ — бэлэн текст дүрсхийж гарахаас
           илүү "хариулж байгаа" мэдрэмж өгнө. `TypingAnimation` нь
@@ -710,7 +770,7 @@ function Answer({
         {/* duration/delay — НИЙТ хүлээлтийг барихаар сонгосон: бодох трэйс
             ~1.26с + тойм ~0.7с ≈ 2с. Үүнээс урт бол "удаан", богино бол
             "бодоогүй" мэт санагдана. */}
-        <TypingAnimation duration={12} delay={0} onComplete={() => setIntroDone(true)}>
+        <TypingAnimation duration={12} delay={0} onComplete={onIntroDone}>
           {matched.summary}
         </TypingAnimation>
       </p>
@@ -738,32 +798,6 @@ function Answer({
           />
         )}
       </div>
-
-      {/* ↳ ДАРААГИЙН САНАЛУУД — хариултыг хаалттай төгсгөл болгохгүй.
-          Байхгүй id-г ШҮҮЖ хаяна: хуурамч affordance гаргахгүй. */}
-      {introDone && matched.followUps && matched.followUps.length > 0 && (
-        <ul className="border-border/60 mt-5 border-t">
-          {matched.followUps.map((id) => {
-            const next = questions.find((item) => item.id === id);
-            if (!next) return null;
-            return (
-              <li key={id} className="border-border/60 border-b last:border-b-0">
-                <button
-                  type="button"
-                  onClick={() => onPick(next.question)}
-                  className="text-foreground hover:text-primary flex w-full items-start gap-2.5 py-2.5 text-left text-sm transition-colors"
-                >
-                  <CornerDownRight
-                    className="text-muted-foreground mt-0.5 size-4 shrink-0"
-                    aria-hidden="true"
-                  />
-                  {next.question}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
 
       {introDone && <AnswerFeedback questionId={matched.id} />}
 
@@ -1295,13 +1329,33 @@ void AnswerSkeleton;
 function OfferView({ result, owner }: { result: OfferResult; owner: Owner }) {
   const { openLogin, isAuthenticated } = useAuth();
 
+  /**
+   * ХЯМДРАЛТАЙ КАРТ ЭХЭНД. Хэрэглэгчийн хамгийн түрүүнд харах ёстой зүйл нь
+   * хямдрал — тэр нь жагсаалтын сүүлд байвал (ялангуяа мобайл дээр хэвтээ
+   * гүйдэг тул) огт харагдахгүй өнгөрч болзошгүй.
+   *
+   * Дата дотор гараар эрэмбэлэхийн оронд ЛОГИКООР шийдэв: `oldPrice` талбар
+   * бүхий карт автоматаар түрүүлнэ. Ингэснээр аль ч кейст, шинэ хямдрал
+   * нэмэхэд ч дараалал өөрөө зөв болно.
+   *
+   * `sort` нь ES2019-ээс ТОГТВОРТОЙ тул хямдралгүй картуудын анхны дараалал
+   * хэвээр хадгалагдана.
+   */
+  // `result.personalize` шууд ашиглавал closure (onClick) дотор TypeScript
+  // нарийсгаж чадахгүй — хувьсагчид гаргаж авна.
+  const personalize = result.personalize;
+
+  const cards = [...result.cards].sort(
+    (a, b) => Number(Boolean(b.oldPrice)) - Number(Boolean(a.oldPrice)),
+  );
+
   return (
     <div>
       {/* BULLET ЖАГСААЛТ — гол хариулт нь ТЕКСТ. Нэр тод, гол тоо хажууд нь.
           Картууд доор нь давтагдана: жагсаалт нь ХУРДАН УНШИХАД, карт нь
           ҮЙЛДЭХЭД зориулагдсан (Verizon-ы жишээ ч ингэж давхардуулдаг). */}
       <ul className="mb-4 space-y-1.5">
-        {result.cards.map((card) => {
+        {cards.map((card) => {
           const { headline, subline, price } = resolveOfferCard(card);
           const detail = [subline, price].filter(Boolean).join(", ");
           return (
@@ -1326,8 +1380,13 @@ function OfferView({ result, owner }: { result: OfferResult; owner: Owner }) {
       {/* Мобайл — ХЭВТЭЭ ГҮЙЛТ (Verizon-ы жишээ шиг): 3 карт нарийн дэлгэц
           рүү шахагдахын оронд хажуу тийш гүйнэ, дараагийнх нь ирмэгээс
           цухуйж гүйх боломжтойг илэрхийлнэ. sm+ дээр энгийн грид. */}
-      <div className="no-scrollbar mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0">
-        {result.cards.map((card) => {
+      {/* ⚠️ `pt-2` ЗААВАЛ: `overflow-x-auto` тавихад CSS нь нөгөө тэнхлэгийг
+          ч `visible` байлгахаа больж ТАЙРДАГ. Картын `badge` нь картаас 8px
+          ДЭЭШ гардаг (`-top-2`) тул дээд талаасаа тайрагдаж, хагас
+          харагддаг байв. sm+ дээр грид болж `overflow-visible` болдог тул
+          тэнд нэмэлт зай хэрэггүй. */}
+      <div className="no-scrollbar mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pt-2 pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pt-0 sm:pb-0">
+        {cards.map((card) => {
           // `planId` өгсөн бол үнэ, датаг `mobile-plans.ts`-ээс уншина —
           // тэдгээрийг кейсийн дата дотор давхардуулж бичихгүй.
           const { headline, subline, price } = resolveOfferCard(card);
@@ -1398,17 +1457,17 @@ function OfferView({ result, owner }: { result: OfferResult; owner: Owner }) {
         })}
       </div>
 
-      {/* ── Хувийн санал — нэвтэрсэн хүнд харуулах шаардлагагүй ── */}
-      {!isAuthenticated && (
+      {/* ── Хувийн санал — нэвтэрсэн хүнд, мөн урилгагүй кейст харуулахгүй ── */}
+      {personalize && !isAuthenticated && (
         <div className="border-border mt-4 flex flex-col gap-3 rounded-2xl border border-dashed p-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-muted-foreground text-sm leading-relaxed">{result.personalize.text}</p>
+          <p className="text-muted-foreground text-sm leading-relaxed">{personalize.text}</p>
           <button
             type="button"
-            onClick={() => openLogin(result.personalize.reason)}
+            onClick={() => openLogin(personalize.reason)}
             className="border-primary text-primary hover:bg-primary/10 inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors"
           >
             <User className="size-4" aria-hidden="true" />
-            {result.personalize.ctaLabel}
+            {personalize.ctaLabel}
           </button>
         </div>
       )}
@@ -1479,6 +1538,57 @@ function AnswerFeedback({ questionId }: { questionId: string }) {
       >
         <ThumbsDown className="size-3.5" aria-hidden="true" />
       </button>
+    </div>
+  );
+}
+
+// =====================================================================
+// NEON FRAME — оролтын градиент хүрээ
+// =====================================================================
+/**
+ * ⚠️ Өмнө нь ЗӨВХӨН нүүрний том оролт градиенттай, follow-up оролт нь энгийн
+ * саарал хүрээтэй байв — хоёр нь өөр өөр бүтээгдэхүүн мэт харагддаг. Одоо
+ * ХОЁУЛАА энэ нэг хүрээг хэрэглэнэ.
+ *
+ * ⚠️ ЭФФЕКТИЙГ БАГАСГАВ:
+ *     хүрээ      2px  → 1px   (`p-0.5` → `p-px`)
+ *     гэрэлтэлт  60%  → 25%   (`opacity-60` → `opacity-25`)
+ *     бүдгэрэлт  xl   → lg
+ * Өмнөх хүч нь оролтын АГУУЛГААС илүү анхаарал татдаг байв.
+ *
+ * `glow` — гаднах бүдэг туяа. Зөвхөн нүүрний ЭХНИЙ том оролтод; follow-up
+ * оролт нь хариултын дотор сууддаг тул тэнд туяа илүүдэл болно.
+ */
+function NeonFrame({
+  children,
+  rounded,
+  glow = false,
+  className,
+}: {
+  children: React.ReactNode;
+  /** Хүрээ ба доторх агуулгын дугуйрал — хоёулаа ижил байх ёстой */
+  rounded: string;
+  glow?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={cn("relative", className)}>
+      {glow && (
+        <div
+          aria-hidden
+          className={cn(
+            "animate-neon-pan pointer-events-none absolute -inset-1 opacity-25 blur-lg",
+            rounded,
+          )}
+          style={{ background: NEON, backgroundSize: "200% 100%" }}
+        />
+      )}
+      <div
+        className={cn("animate-neon-pan relative p-px", rounded)}
+        style={{ background: NEON, backgroundSize: "200% 100%" }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
