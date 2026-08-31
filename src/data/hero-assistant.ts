@@ -19,6 +19,16 @@
  * Асуулт солих = зөвхөн энэ файлыг засах.
  */
 import type { Owner } from "@/lib/brand";
+import { plans } from "./plans";
+import { wifiOptions, type WifiOption } from "./wifi-options";
+// ⚠️ `tvod-movies.ts` нь ~35KB (50 кино, англи тайлбартай). Нүүрний
+// оролт нь client component тул тэр дата нүүрний bundle-д нэмэгдэнэ.
+// Гараар 3 нэр хуулбарлахаас ЭНЭ нь зөв: шинэ кино нэмэгдэхэд туслах
+// өөрөө шинэчлэгдэнэ. Хэмжээ асуудал болбол зөвхөн шаардлагатай
+// талбаруудыг тусад нь гаргасан жижиг файл үүсгэнэ.
+import { tvodMovies, type TvodMovie } from "./tvod-movies";
+import { tvodPackages } from "./tvod-packages";
+import { univisionGoApp } from "./app-promo";
 
 // =====================================================================
 // TYPES
@@ -56,13 +66,45 @@ export type EscalateResult = {
   handoffMs: number;
 };
 
+// =====================================================================
+// CONTENT SEARCH — "тухайн контент манайд байна уу?" гэсэн ХАЙЛТЫН гарц
+// =====================================================================
+/**
+ * Чипээр биш, ЧӨЛӨӨТ ТЕКСТЭЭР асуудаг цорын ганц хэлбэр. Хэрэглэгч киноны нэр,
+ * төрөл, сэдэв бичихэд каталогоос хайж ХОЁР гарцын нэгийг харуулна.
+ *
+ * Бүх бичвэр ЭНД (компонентод БИШ) — агуулга нь датанд байх зарчим.
+ */
+export type ContentSearchResult = {
+  kind: "content-search";
+  /** ГЭРЭЭНИЙ ЛОГИК — асуултын шууд хариулт, оролтын ӨМНӨ гарна */
+  notes: string[];
+  prompt: string;
+  placeholder: string;
+  /** ОЛДООГҮЙ гарц — нэг мэдэгдэл, нэвтрэх урилгатай */
+  missing: { title: string; body: string; ctaLabel: string; authReason: string };
+  /** ОЛДСОН гарц — блокуудын гарчиг ба тайлбар */
+  found: {
+    matchTitle: string;
+    rentLabel: string;
+    similarTitle: string;
+    packagesTitle: string;
+    /** Багц идэвхжүүлэхэд ЮУ дагалдах */
+    includes: string[];
+    packagesNote: string;
+  };
+  /** UNIVISION GO — идэвхжүүлсний дараа хаанаас ч үзэх боломж */
+  app: { title: string; body: string; ctaLabel: string; href: string };
+};
+
 export type AssistantResult =
   | OfferResult
   | PlansResult
   | DiagnosticResult
   | TimelineResult
   | EscalateResult
-  | ClarifyResult;
+  | ClarifyResult
+  | ContentSearchResult;
 
 export type AssistantQuestion = {
   id: string;
@@ -132,6 +174,12 @@ export type OfferCard = {
   planId?: string;
   /** Картын ГОЛ үзүүлэлт, хамгийн том бичигдэнэ ("60GB", "Mesh цэг") */
   headline?: string;
+  /**
+   * Гарчиг нь ТОО/ҮЗҮҮЛЭЛТ биш, НЭР үед `true`. Кино, багцын нэр урт байдаг
+   * тул ("Demon Slayer: Kimetsu no Yaiba Infinity Castle") үзүүлэлтийн том
+   * хэвээр тавибал 5-6 мөр болж, картын өндөр эвдэрнэ.
+   */
+  longHeadline?: boolean;
   /** Голын доорх тодотгол ("30 хоног", "1-5 ажилтан") */
   subline?: string;
   /** Тогтмол үнэгүй шийдэлд БАЙХГҮЙ байж болно */
@@ -147,7 +195,27 @@ export type OfferCard = {
   badge?: string;
   /** 1-2 богино контекст. Тооноос ГАРГАСАН баримт бич, зар сурталчилгаа биш. */
   highlights?: string[];
-  cta: { label: string; href: string };
+  /**
+   * ⚠️ `authReason` өгвөл товч нь ЛИНК БИШ, НЭВТРЭХ ДИАЛОГ нээнэ
+   * (`useAuth().openLogin(reason)`). Идэвхжүүлэх, түрээслэх зэрэг данстай
+   * холбоотой үйлдэлд — хуурамч линк рүү явуулахаас нэвтрүүлэх нь зөв.
+   */
+  cta: { label: string; href: string; authReason?: string };
+};
+
+/**
+ * ГАРЧИГТАЙ КАРТ БҮЛЭГ — нэг хариулт дотор хэд хэдэн зурвас дараалуулна
+ * (жишээ нь дээр нь "Санал болгох багц", доор нь "Шаардлагатай төхөөрөмж").
+ *
+ * Яагаад `OfferResult`-д биш: тэр нь НЭГ зурвасын шууд хариулт (persona 2, 3).
+ * Хоёр бүлэг хэрэгтэй кейс нь тодруулах асуулттай тул `clarify` руу оров
+ * (`ClarifyResult.layout: "offer"` · `Solution.groups`).
+ */
+export type OfferGroup = {
+  title: string;
+  cards: OfferCard[];
+  /** Бүлгийн доорх нэг мөр тэмдэглэл — нөхцөл, тоо хэмжээ */
+  note?: string;
 };
 
 export type OfferResult = {
@@ -223,6 +291,8 @@ export type Solution = {
   planIds?: string[];
   /** `layout: "steps"` үед — дугаарлаж харуулах алхмууд */
   steps?: { title: string; hint: string }[];
+  /** `layout: "offer"` үед — гарчигтай карт бүлгүүд */
+  groups?: OfferGroup[];
   cta?: { label: string; href: string };
 };
 
@@ -241,8 +311,9 @@ export type ClarifyResult = {
    *   solution — нэг зөвлөмж карт + онцлохууд
    *   plans    — багцын харьцуулалт (`Solution.planIds`)
    *   steps    — дугаарласан алхмууд (`Solution.steps`)
+   *   offer    — гарчигтай карт бүлгүүд (`Solution.groups`)
    */
-  layout: "solution" | "plans" | "steps";
+  layout: "solution" | "plans" | "steps" | "offer";
   steps: ClarifyStep[];
   solutions: Solution[];
 };
@@ -330,6 +401,7 @@ const DETAIL_LEAD: Record<ClarifyResult["layout"], string> = {
   plans: "доорх багцуудыг харьцууллаа",
   steps: "доор алхам алхмаар нь жагсаалаа",
   solution: "доор дэлгэрэнгүйг нь харууллаа",
+  offer: "доор багц, төхөөрөмжийг нь бүрдүүлж тавилаа",
 };
 
 /**
@@ -400,7 +472,6 @@ export const RESOLVING_STEPS = [
  * боловч хэрэглэгчид "туслах бэлтгэсэн" гэдгийг ил хэлэх нь шударга бөгөөд
  * Verizon зэрэг жишээнд ч стандарт болсон.
  */
-export const AI_DISCLOSURE = "AI-аар бэлтгэсэн. Шаардлагатай бол шалгаарай.";
 
 /** Алхам бүр хэдэн ms харагдах вэ. Хэт хурдан бол "бодсон" мэдрэмж алга. */
 export const THINKING_STEP_MS = 420;
@@ -551,7 +622,7 @@ const phoneLeasingCase: AssistantQuestion = {
       },
     ],
     personalize: {
-      text: "Та өөрийн дугаараар нэвтэрвэл лизингийн эрх, боломжит хязгаарыг тань шалгаад яг батлагдах загваруудыг харуулна.",
+      text: "Та өөрийн дугаараар нэвтэрвэл лизингийн эрх, боломжит хязгаарыг тань шалгаад таньд тохирох загваруудыг харуулна.",
       ctaLabel: "Дугаараар нэвтрэх",
       reason: "Лизингийн эрхийг тань шалгахын тулд дугаараа баталгаажуулна уу.",
     },
@@ -603,6 +674,374 @@ const businessNexmindCase: AssistantQuestion = {
       },
     ],
     // `personalize` ЗОРИУД байхгүй — дээрх тайлбарыг үз.
+  },
+};
+
+// ── PERSONA 4: UNIVISION-Д ШИНЭЭР ХОЛБОГДОХ ──────────────────────────
+/**
+ * Шинэ хэрэглэгчид ХОЁР зүйл ЗЭРЭГ хэрэгтэй: БАГЦ ба ТӨХӨӨРӨМЖ. Тиймээс энэ
+ * кейс нэг зурвас карт биш, ХОЁР бүлэгтэй (`layout: "offer"`).
+ *
+ * Багц нь бүх хэрэглэгчид ИЖИЛ — M+ · L+ · XL+, L+ дээр "ЭРЭЛТТЭЙ" тэмдэг.
+ * Харин ТӨХӨӨРӨМЖ нь гэрийн хэмжээнээс хамаарна: том талбайд Wi-Fi нэг
+ * цэгээс хүрэхгүй тул Mesh нэмэгдэнэ. Тиймээс ганц тодруулах асуулт асууна.
+ *
+ * ⚠️ Хэмжээ ↔ төхөөрөмжийн ДҮРЭМ нь `wifi-options.ts`-д АЛЬ ХЭДИЙН бодитоор
+ * бүртгэлтэй (нүүрний "Интернэт шийдэлүүд" section үүнийг ашигладаг). Энд
+ * ДАВХАРДУУЛЖ бичихгүй — тэндээс уншина. Дүрэм өөрчлөгдвөл нэг газарт л засна.
+ *
+ * ⚠️ Багцын үнэ, хурд, дата эрх нь `plans.ts`-аас. Энд тоо бичээгүй.
+ */
+
+/**
+ * `plans.ts`-ийн багцыг картын хэлбэрт буулгана.
+ *   subline    — Интернэт группын утгууд ("100Mbps* хүртэл · 1 TB")
+ *   highlights — багцуудыг ЯЛГАДАГ хэсэг л. Интернэт нь subline-д гарсан,
+ *                суурин утас нь гурвуулаа ижил тул хоёуланг нь алгасна.
+ */
+function univisionPlanCard(name: string, badge?: string): OfferCard | null {
+  const plan = plans.find((item) => item.name === name);
+  if (!plan) return null;
+
+  const internet = plan.groups.find((group) => group.title === "Интернэт");
+
+  return {
+    id: `univision-plan-${plan.id}`,
+    headline: plan.name,
+    subline: internet?.features.map((feature) => feature.value).join(" · "),
+    price: plan.price,
+    note: "сард · НӨАТ-тай",
+    badge,
+    highlights: plan.groups
+      .filter((group) => group.title !== "Интернэт" && group.title !== "Суурин утас")
+      .flatMap((group) => group.features.map((feature) => `${feature.label} — ${feature.value}`)),
+    cta: { label: "Дэлгэрэнгүй", href: plan.detailHref },
+  };
+}
+
+/**
+ * ЭРЭЛТТЭЙ тэмдэг ЗӨВХӨН L+ дээр — `plans.ts`-д `recommended: true` байгаатай
+ * тааруулав. Онцолсон нь ХАМГИЙН ЭХЭНД: мобайл дээр карт зурвас хэвтээ гүйдэг
+ * тул голд эсвэл сүүлд байрлавал огт харагдалгүй өнгөрч болзошгүй.
+ */
+const univisionPlanCards = [
+  univisionPlanCard("L+", "ЭРЭЛТТЭЙ"),
+  univisionPlanCard("M+"),
+  univisionPlanCard("XL+"),
+].filter((card): card is OfferCard => card !== null);
+
+/**
+ * ТӨХӨӨРӨМЖИЙН КАРТ — багцын картаас ЗОРИУД ялгаатай:
+ *   badge АЛГА       — хоёулаа заавал хэрэгтэй, аль нэгийг нь онцлох утгагүй
+ *   subline нь ӨГҮҮЛБЭР — юу хийдэг төхөөрөмж бэ гэдгийг нэг мөрөөр
+ *
+ * ⚠️ ҮНЭ нь ХОЁР МӨР: дээр нь лизингийн сарын төлбөр (`price`), доор нь
+ * шууд худалдан авах үндсэн үнэ (`note`). Холбогдох мөчид хэрэглэгчийн
+ * төлөх тоо нь ДЭЭД мөр тул тэр нь том бичигдэнэ. 36 сарын хугацаа ба
+ * "нэг ширхэгийн үнэ" гэдэг нь бүлгийн доод тэмдэглэлд — картыг бүү ачаалл.
+ */
+const homeGatewayCard: OfferCard = {
+  id: "device-hg1",
+  headline: "HG1 HomeGateway",
+  subline:
+    "IPTV төхөөрөмжийг интернэтэд холбож, гэр дотор утасгүй сүлжээ үүсгэнэ. Wi-Fi 6, 2.4 ба 5GHz, 4 LAN оролт.",
+  price: "8’000₮ / сард",
+  note: "288’000₮ үндсэн үнэ",
+  cta: { label: "Дэлгэрэнгүй", href: "#" },
+};
+
+const stbCard: OfferCard = {
+  id: "device-x5-stb",
+  headline: "X5 STB",
+  subline:
+    "Юнивишний телевиз, контентын үйлчилгээ, нэмэлт аппликейшнүүдийг ашиглах IPTV төхөөрөмж. AndroidTV 14, 4K дүрс.",
+  price: "11’000₮ / сард",
+  note: "396’000₮ үндсэн үнэ",
+  cta: { label: "Дэлгэрэнгүй", href: "#" },
+};
+
+/** Mesh нь ЗӨВХӨН хэмжээ шаардвал гарна — тоо нь `wifi-options.ts`-аас. */
+function meshCard(option: WifiOption): OfferCard {
+  const amount = option.hasOverflow ? "давхар тус бүрд нэг" : `${option.meshCount} ширхэг`;
+
+  return {
+    id: "device-mesh",
+    headline: "HomeGateway Mesh",
+    subline: `Wi-Fi хамрах хүрээг тэлэх нэмэлт төхөөрөмж — Aginet апп, эцэг эхийн хяналттай. Танайд ${amount} тохиромжтой.`,
+    price: "7’000₮ / сард",
+    note: "252’000₮ үндсэн үнэ",
+    cta: { label: "Дэлгэрэнгүй", href: "#" },
+  };
+}
+
+/**
+ * Тодруулах ГАНЦ асуулт. Сонголтууд нь `wifi-options.ts`-ийн 4 ангиллыг ЯГ
+ * дагана — тиймээс `favors` нь тухайн ангиллын id-г шууд заана.
+ *
+ * Шошгод `name` биш `description`-ийг авав: асуулт нь ХЭМЖЭЭ асууж байгаа тул
+ * хариулт нь хэмжээг хэлэх ёстой, мөн хариулсны дараах хураангуй мөр нь урт
+ * шошгонд асуултаа шахдаг. Хувийн сууц нь m²-ээр биш давхраар хэмжигддэг тул
+ * тэр нэгэнд нь нэрийг нь үлдээв.
+ */
+const homeSizeStep: ClarifyStep = {
+  id: "home-size",
+  prompt: "Танай гэр ойролцоогоор ямар хэмжээтэй вэ?",
+  options: wifiOptions.map((option) => ({
+    id: option.id,
+    label:
+      option.illustration === "house"
+        ? `${option.name}, ${option.description}`
+        : option.description,
+    favors: [option.id],
+  })),
+};
+
+/**
+ * Ангилал тус бүрд НЭГ шийдэл. Багцын бүлэг бүгдэд нь ижил (`univisionPlanCards`
+ * нэг л удаа бүтээгдсэн), төхөөрөмжийн бүлэг нь Mesh-ээрээ ялгарна.
+ *
+ * ⚠️ CTA АЛГА. Persona 2-ийн "дугаараар нэвтрэх" энд буруу (шинэ хэрэглэгчид
+ * данс байхгүй), "хаяг шалгах" ч илүүц: хэрэглэгч дараагийн асуултаа бичихэд
+ * яриа `/assistant` руу өөрөө үргэлжилдэг. Карт бүр өөрийн "Дэлгэрэнгүй"
+ * товчтой тул үйлдлийн зам аль хэдийн нээлттэй.
+ */
+const univisionHomeSolutions: Solution[] = wifiOptions.map((option) => ({
+  id: option.id,
+  title: `${option.name} — ${option.devices}`,
+  description: option.previewText,
+  groups: [
+    {
+      title: "Санал болгох багц",
+      cards: univisionPlanCards,
+      note: "L+ нь хамгийн эрэлттэй — хурд, кино эрх, HBO Max-ын тэнцвэрээрээ.",
+    },
+    {
+      title: "Танд шаардлагатай төхөөрөмжүүд",
+      cards:
+        option.meshCount > 0
+          ? [homeGatewayCard, stbCard, meshCard(option)]
+          : [homeGatewayCard, stbCard],
+      note: `Танай хэмжээнд: ${option.devices}. Дээрх үнэ нь төхөөрөмж тус бүрийн 36 сарын лизингийн сарын төлбөр.`,
+    },
+  ],
+}));
+
+const univisionNewCase: AssistantQuestion = {
+  id: "univision-new-customer",
+  owner: "univision",
+  featured: true,
+  question: "Гэртээ интернэт, телевиз шинээр холбуулах",
+  summary:
+    "Та Univision үйлчилгээний шинэ хэрэглэгч болохын тулд өөрийн хэрэглээнд " +
+    "тохирсон багц болон төхөөрөмжүүдээс сонголтоо хийн захиалга өгнө үү. Түгээмэл " +
+    "сонгогддог багц болон төхөөрөмжийг танд санал болгож байна. Та өөрийн " +
+    "хэрэглээг тодорхой оруулаад илүү нарийвчилсан мэдээлэл авах боломжтой.",
+  result: {
+    kind: "clarify",
+    layout: "offer",
+    steps: [homeSizeStep],
+    solutions: univisionHomeSolutions,
+  },
+};
+
+// ── PERSONA 5: CONTENT — "шинэ кино нэмэгддэг юм уу?" ─────────────────
+/**
+ * ЭНЭ КЕЙС ХАЙЛТААР ажиллана — чипээр БИШ. Шалтгаан: "шинэ кино нэмэгддэг юм
+ * уу?" гэсэн асуултын бодит хариулт нь тухайн хүний хайж байгаа контентоос
+ * шалтгаална. Тиймээс туслах эхлээд ЕРӨНХИЙ ЛОГИКИЙГ хэлнэ (контент нь эрхийн
+ * ГЭРЭЭТЭЙ ирдэг — гэрээ дуусвал хасагдана, шинээр байгуулбал нэмэгдэнэ),
+ * дараа нь "юу сонирхож байна?" гэж АСУУНА.
+ *
+ * ХОЁР ГАРЦ:
+ *   ОЛДСОН   — хайсан контент + төстэй контент + багцууд + Univision GO
+ *   ОЛДООГҮЙ — "одоогоор байхгүй" + нэмэгдэхэд мэдэгдэх урилга
+ *
+ * ⚠️ Хайлт нь ЛОКАЛ, API-гүй (`findTvodMovies`). `/api/semantic-search` нь
+ * OPENAI_API_KEY шаарддаг тул ХЭРЭГЛЭХГҮЙ — "бодит AI ашиглахгүй" зарчим хэвээр.
+ *
+ * ⚠️ КИНО ↔ БАГЦЫН ХАРГАЛЗАА ДАТАНД АЛГА. `tvod-movies.ts`-д тухайн кино аль
+ * багцад агуулагдахыг заасан талбар БАЙХГҮЙ. Тиймээс олдсон үед гурван багцыг
+ * бүгдийг харуулж, "аль нь дагалдах" гэдгийг ТААМГААР шийдэхгүй — таамгаар
+ * нэгийг сонговол хэрэглэгчид БУРУУ мэдээлэл болно. Харгалзаа гармагц
+ * `packagesNote`-ыг сольж, зөвхөн тохирохыг нь харуулна.
+ */
+
+/** Багцын тайлбар 3-4 өгүүлбэр тул картад ЭХНИЙ өгүүлбэрийг л авна. */
+function firstSentence(text: string): string {
+  const end = text.indexOf(". ");
+  return end === -1 ? text : text.slice(0, end + 1);
+}
+
+/**
+ * Багцын карт. Товч нь ЛИНК БИШ — `authReason` тул нэвтрэх диалог нээнэ
+ * (идэвхжүүлэх нь данстай холбоотой үйлдэл).
+ */
+function tvodPackageCard(id: string): OfferCard | null {
+  const pkg = tvodPackages.find((item) => item.id === id);
+  if (!pkg) return null;
+
+  return {
+    id: `tvod-pkg-${pkg.id}`,
+    headline: pkg.name,
+    longHeadline: true,
+    subline: firstSentence(pkg.description),
+    cta: {
+      label: "Идэвхжүүлэх",
+      href: pkg.detailHref,
+      authReason: `${pkg.name}-ийг идэвхжүүлэхийн тулд нэвтэрнэ үү.`,
+    },
+  };
+}
+
+/** Гурван онцлох багц — олдсон гарцад бүгд харагдана. */
+export const tvodPackageCards: OfferCard[] = ["mongol", "hit-series", "asia"]
+  .map((id) => tvodPackageCard(id))
+  .filter((card): card is OfferCard => card !== null);
+
+/**
+ * МОНГОЛ → АНГЛИ төрлийн нэрс. `tvod-movies.ts`-ийн дата бүхэлдээ АНГЛИ
+ * (semantic search-д зориулагдсан) тул монголоор бичсэн query шууд
+ * таарахгүй — хэрэглэгч "аймшгийн кино" гэж бичихэд "Horror" олдох ёстой.
+ *
+ * ⚠️ Энэ нь ОРЧУУЛГЫН хүснэгт, ШИНЭ дата БИШ. Зөвхөн `tvodGenres`-д БОДИТООР
+ * байгаа 10 төрлийн монгол нэрийг бүртгэв — байхгүй төрөл зохиогоогүй.
+ */
+const GENRE_SYNONYMS: Record<string, string> = {
+  экшн: "Action",
+  тулаан: "Action",
+  "адал явдал": "Adventure",
+  анимэ: "Animation",
+  хүүхэлдэй: "Animation",
+  инээдэм: "Comedy",
+  хошин: "Comedy",
+  "гэмт хэрэг": "Crime",
+  детектив: "Crime",
+  драм: "Drama",
+  аймшиг: "Horror",
+  аймшгийн: "Horror",
+  романтик: "Romance",
+  хайр: "Romance",
+  "шинжлэх ухаан": "Sci-Fi",
+  фантастик: "Sci-Fi",
+  триллер: "Thriller",
+};
+
+/**
+ * Кино хайлт — ЛОКАЛ substring таарал: гарчиг, төрөл, keyword, сэдэв.
+ *
+ * ХОЁР ТҮВШИН:
+ *   1. Монгол ТӨРЛИЙН нэр таарвал — ЗӨВХӨН `genres`-ээр шүүнэ. Бүтэн
+ *      haystack-аар шүүвэл "инээдэм" нь Parasite-ийн keyword-д таарч,
+ *      Drama/Thriller кино гарч ирдэг байв — хэрэглэгчид эндүүрэл болно.
+ *   2. Эх query — гарчиг, төрөл, keyword, сэдэв БҮГДЭЭР. Киноны нэр
+ *      латинаар бичигдсэн байж болох тул эх query-г хасахгүй.
+ *
+ * Таарсан хэд хэдэн байвал ҮНЭЛГЭЭГЭЭР дээгүүрхийг сонгоно: төрлөөр хайхад
+ * файлын дараалал биш, хамгийн сайныг харуулах нь зөв.
+ *
+ * ⚠️ Огт таарахгүй бол "байхгүй" гарц гарна. Энэ нь БУРУУ биш — бодит
+ * каталогт ч байхгүй байж болох тул "нэмэгдсэн үед мэдэгдэнэ" гэсэн хариулт
+ * нь зөв хариулт.
+ */
+export function findTvodMovies(query: string, limit = 1): TvodMovie[] {
+  const q = normalizeQuestion(query);
+  if (q.length < 2) return [];
+
+  const genreTerms: string[] = [];
+  for (const [mn, en] of Object.entries(GENRE_SYNONYMS)) {
+    if (q.includes(mn)) genreTerms.push(normalizeQuestion(en));
+  }
+
+  const genresOf = (movie: TvodMovie) => normalizeQuestion(movie.genres.join(" "));
+  const haystack = (movie: TvodMovie) =>
+    normalizeQuestion(
+      [movie.title, ...movie.genres, ...(movie.keywords ?? []), ...(movie.themes ?? [])].join(" "),
+    );
+
+  return tvodMovies
+    .filter((movie) => {
+      if (genreTerms.some((term) => genresOf(movie).includes(term))) return true;
+      return haystack(movie).includes(q);
+    })
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, limit);
+}
+
+/** Төстэй контент — төрөл давхцсан, үнэлгээгээр буурахаар. */
+export function similarTvodMovies(movie: TvodMovie, limit: number): TvodMovie[] {
+  return tvodMovies
+    .filter((item) => item.id !== movie.id && item.genres.some((g) => movie.genres.includes(g)))
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, limit);
+}
+
+/**
+ * Кино → карт. `longHeadline` — киноны нэр урт байдаг ("Demon Slayer: Kimetsu
+ * no Yaiba Infinity Castle") тул үзүүлэлтийн том хэвээр тавибал картын өндөр
+ * эвдэрнэ. Түрээслэх товч нь нэвтрэх диалог нээнэ.
+ */
+export function tvodMovieCard(movie: TvodMovie, ctaLabel: string): OfferCard {
+  return {
+    id: `tvod-movie-${movie.id}`,
+    headline: movie.title,
+    longHeadline: true,
+    subline: `${movie.year} · ${movie.genres.slice(0, 2).join(", ")}`,
+    note: `★ ${movie.rating}`,
+    cta: {
+      label: ctaLabel,
+      href: `/entertainment/movie/${movie.id}`,
+      authReason: `«${movie.title}»-г түрээслэхийн тулд нэвтэрнэ үү.`,
+    },
+  };
+}
+
+const tvodContentCase: AssistantQuestion = {
+  id: "tvod-content-search",
+  owner: "univision",
+  featured: true,
+  question: "Танайд шинэ кино нэмэгддэг юм уу ер нь",
+  summary:
+    "Тийм — контентын сан шинэчлэгддэг. Гэхдээ ТУХАЙН кино байгаа эсэх нь эрхийн " +
+    "гэрээнээс шалтгаална. Та юу сонирхож байгаагаа бичвэл манайд байгаа эсэхийг " +
+    "шалгаад хэрхэн үзэхийг харуулна.",
+  result: {
+    kind: "content-search",
+    notes: [
+      "Кино, цуврал бүр эрхийн ГЭРЭЭТЭЙ ирдэг — гэрээ нь хугацаатай.",
+      "Гэрээний хугацаа дуусвал тухайн контент сангаас ХАСАГДАНА.",
+      "Шинээр гэрээ байгуулагдвал контент НЭМЭГДЭНЭ.",
+    ],
+    prompt: "Ямар төрлийн контент сонирхож байна вэ? Дэлгэрэнгүй бичнэ үү.",
+    placeholder: "Киноны нэр, төрөл эсвэл сэдэв…",
+    missing: {
+      title: "Энэ контент одоогоор манайд байхгүй байна",
+      body:
+        "Бид үйлчилгээнийхээ чанарыг сайжруулахын тулд кино контентоо тасралтгүй " +
+        "шинэчилж ажилладаг. Тухайн контент нэмэгдсэн үед бид танд мэдээлэл хүргэх болно.",
+      ctaLabel: "Нэмэгдэхэд мэдэгдэх",
+      authReason:
+        "Контент нэмэгдэхэд мэдэгдэхийн тулд нэвтэрч, холбоо барих хаягаа баталгаажуулна уу.",
+    },
+    found: {
+      matchTitle: "Таны хайсан контент",
+      rentLabel: "Түрээслэх",
+      similarTitle: "Төстэй контент",
+      packagesTitle: "Харгалзах багцууд",
+      includes: [
+        "Идэвхжүүлснээр тухайн багцын контентыг үзэх эрх нээгдэнэ.",
+        "Univision GO аппаас утас, таблет, ТВ-нээс ч үзнэ.",
+      ],
+      // ⚠️ Кино ↔ багцын харгалзаа датанд байхгүйг НУУХГҮЙ — дээрх тайлбарыг үз.
+      packagesNote:
+        "Тухайн кино аль багцад дагалдахыг багцын дэлгэрэнгүй хуудаснаас шалгана уу — багцын бүрэлдэхүүн шинэчлэгддэг.",
+    },
+    app: {
+      title: "Хаанаас ч үзэх",
+      // Апп-ын тайлбарыг `app-promo.ts`-аас — нүүрний section-тэй ИЖИЛ текст.
+      body: univisionGoApp.description,
+      ctaLabel: "Univision GO татах",
+      href: "/univision-go",
+    },
   },
 };
 
@@ -917,6 +1356,8 @@ export const assistantQuestions: AssistantQuestion[] = [
   dataOfferCase,
   phoneLeasingCase,
   businessNexmindCase,
+  univisionNewCase,
+  tvodContentCase,
   familyCase,
   youthCase,
   officeCase,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -23,20 +23,25 @@ import { TypingAnimation } from "@/components/ui/typing-animation";
 import { mobilePlans } from "@/data/mobile-plans";
 import {
   assistantQuestions,
-  AI_DISCLOSURE,
   buildFollowUp,
   buildNarrative,
   CLARIFY_INTRO,
+  findTvodMovies,
   matchQuestion,
   resolveClarify,
   RESOLVING_STEPS,
   THINKING_STEP_MS,
+  similarTvodMovies,
   THINKING_STEPS,
   TRENDING_TOPIC_COUNT,
+  tvodMovieCard,
+  tvodPackageCards,
   trendingTopicLabel,
   type AssistantQuestion,
   type AssistantResult,
+  type ClarifyOutcome,
   type ClarifyResult,
+  type ContentSearchResult,
   type DiagnosticResult,
   type OfferCard,
   type OfferResult,
@@ -170,6 +175,16 @@ export function ChatHero({
   }, [isPage, router]);
 
   /**
+   * САНАЛ БОЛГОХ АСУУЛТУУД — ЗӨВХӨН СҮҮЛИЙН хариултынх. Оролт нь яриа дотор
+   * нэг л удаа, сүүлийн блокийн дор гардаг тул чипүүд ч тэндхийн контекстээс
+   * гарна. Байхгүй id-г ШҮҮЖ хаяна: хуурамч affordance гаргахгүй.
+   */
+  const suggestions = (blocks[blocks.length - 1]?.matched?.followUps ?? []).flatMap((id) => {
+    const next = questions.find((item) => item.id === id);
+    return next ? [next] : [];
+  });
+
+  /**
    * Дараагийн асуултын оролт. ХОЁР байрлалд ижил агуулгатай гарна:
    *   embedded — хариултын картын ДОТОР, доод хэсэгт нь наалдаж НЭГ хайрцаг
    *              болно (карт + оролт хоёр тусдаа хайрцаг байх нь тасархай
@@ -178,6 +193,16 @@ export function ChatHero({
    *
    * Ялгаа нь ЗӨВХӨН гадна хүрээ — дотоод бүтэц ижил тул хоёр хувилбар
    * хоорондоо зөрөх боломжгүй.
+   *
+   * БҮТЭЦ: дээр нь бичих талбай, доор нь ХЯНАЛТЫН МӨР (дахин эхлэх · санал
+   * болгох чипүүд · илгээх). Хоёрын хооронд зай авснаар хайрцаг өндөр болж,
+   * "бичих орон зай" нь ил харагдана.
+   *
+   * ⚠️ Санал болгох чипүүд нь ОРОЛТЫН ДОТОР. Өмнө нь хайрцгийн ГАДНА, дээр
+   * талд, "Санал болгох асуултууд" гэсэн гарчигтай байв — тэр нь хариултын
+   * нэг хэсэг мэт харагдаж, оролттой холбоо нь тасардаг байсан. Дотор
+   * оруулснаар "эдгээрээс дар, эсвэл өөрөө бич" гэдэг нь гарчиггүйгээр
+   * ойлгогдоно.
    */
   const followUpForm = (embedded: boolean) => (
     <NeonFrame
@@ -199,28 +224,42 @@ export function ChatHero({
         <label htmlFor="chat-hero-input" className="sr-only">
           Дараагийн асуултаа бичнэ үү
         </label>
-        <input
-          id="chat-hero-input"
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Дараагийн асуултаа бичнэ үү"
-          className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
-        />
-        <div className="mt-2 flex items-center justify-between">
+
+        {/* ⚠️ `<input>` хэвээр, `<textarea>` БИШ: Enter нь формыг ИЛГЭЭХ ёстой,
+            textarea дээр Enter нь шинэ мөр болно. Өндрийг доод мөрийн зайгаар
+            авсан тул placeholder нь ДЭЭД зүүн буланд сууна. */}
+        <div className="flex items-start gap-2">
+          <Sparkles className="text-primary mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <input
+            id="chat-hero-input"
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Дараагийн асуултаа бичнэ үү"
+            className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm outline-none"
+          />
+        </div>
+
+        <div className="mt-5 flex items-center gap-2 sm:mt-8">
+          {/* Мобайл дээр шошгыг нууна — чипүүдэд орон зай хэрэгтэй. Дүрс нь
+              өөрөө ойлгомжтой, `aria-label` нь SR-д бүтэн уншина. */}
           <button
             type="button"
             onClick={startOver}
-            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
+            aria-label="Дахин эхлэх"
+            className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1.5 text-xs transition-colors"
           >
             <RotateCcw className="size-3.5" aria-hidden="true" />
-            Дахин эхлэх
+            <span className="hidden sm:inline">Дахин эхлэх</span>
           </button>
+
+          <SuggestionChips items={suggestions} onPick={ask} />
+
           <button
             type="submit"
             aria-label="Илгээх"
             disabled={!input.trim()}
-            className="text-muted-foreground hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+            className="bg-primary text-primary-foreground inline-flex size-8 shrink-0 items-center justify-center rounded-xl transition-opacity duration-300 hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ArrowUp className="size-4" aria-hidden="true" />
           </button>
@@ -368,17 +407,40 @@ export function ChatHero({
             гарчигтай, оролт нь доод талдаа байна). */}
         {!isPage && (
           <>
-            <span className="border-border bg-card/60 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur">
-              <Sparkles className="text-primary size-3.5" aria-hidden="true" />
-              Highlight keyword байна
-            </span>
+            {/* ТАНИЛЦУУЛГА — badge ба чадварын тайлбар нь ЗӨВХӨН хэрэглэгч
+                асуухаас ӨМНӨ гарна. Асуулт орсны дараа гол дүр нь ХАРИУЛТ болох
+                тул эдгээр нь зөвхөн зай эзэлж, агуулгыг доош түлхэнэ.
+                ⚠️ Текстийг нь хоослох БИШ, ЭЛЕМЕНТИЙГ нь бүхэлд нь хасна — эс
+                бөгөөс margin нь үлдэж, хоосон зай гацна. Гарчгийн ДЭЭД margin ч
+                мөн зөвхөн танилцуулгатай үедээ утгатай. */}
+            {blocks.length === 0 && (
+              <span className="border-border bg-card/60 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur">
+                <Sparkles className="text-primary size-3.5" aria-hidden="true" />
+                Highlight keyword байна
+              </span>
+            )}
 
-            <h1 className="text-foreground mt-4 text-2xl font-extrabold tracking-tight text-balance sm:mt-6 sm:text-3xl md:text-4xl [@media_(min-width:768px)_and_(max-height:1024px)]:mt-2">
+            <h1
+              className={cn(
+                "text-foreground text-2xl font-extrabold tracking-tight text-balance sm:text-3xl md:text-4xl",
+                blocks.length === 0
+                  ? "mt-4 sm:mt-6 [@media_(min-width:768px)_and_(max-height:1024px)]:mt-2"
+                  : // Танилцуулга алга болсон тул гарчиг ДЭЭД, ДООД зайгаа ӨӨРӨӨ
+                    // авна: дээшээ promo banner-т, доошоо хариултад наалдахгүй.
+                    // Дээд зай нь танилцуулгатай үеийнхтэй ижил (`mt-4 sm:mt-6`)
+                    // тул асуулт орох/эс орохоос үл хамааран гарчиг нэг л
+                    // байрлалд суусан мэт харагдана.
+                    "mt-4 mb-5 sm:mt-6 sm:mb-6",
+              )}
+            >
               AI <span className="from-primary bg-clip-text text-[#45c700]">assistant</span>
             </h1>
-            <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
-              Ai assistant-н Capability-г сайн госон text энд байрлана.
-            </p>
+
+            {blocks.length === 0 && (
+              <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
+                Ai assistant-н Capability-г сайн госон text энд байрлана.
+              </p>
+            )}
           </>
         )}
         {/* ХАРИУЛТ — оролтын ДЭЭР.
@@ -599,44 +661,7 @@ function ResultBlock({
           `!block.matched` — таниагүй асуултад тойм бичигдэхгүй тул
           `introDone` хэзээ ч үнэн болохгүй; тэр тохиолдолд шууд харуулна. */}
       {footer && block.status === "ready" && (inputReady || !block.matched) && (
-        <div className="px-4 pb-4">
-          {/* САНАЛ БОЛГОХ АСУУЛТУУД — оролтын ДЭЭР, чип хэлбэрээр.
-              ⚠️ Өмнө нь хариултын дотор "↳" мөрүүд болж байрладаг байсан —
-              тэр нь хариултын нэг хэсэг мэт харагдаж, дараагийн АЛХАМ гэдэг
-              нь ойлгогдохгүй байв. Оролтын яг дээр тавьснаар "эдгээрээс
-              сонгож болно, эсвэл өөрөө бич" гэсэн холбоо ил гарна.
-              Байхгүй id-г ШҮҮЖ хаяна: хуурамч affordance гаргахгүй. */}
-          {block.matched?.followUps && block.matched.followUps.length > 0 && (
-            <div className="mx-auto mb-2 w-full max-w-2xl">
-              <div className="text-muted-foreground mb-1.5 text-xs font-semibold">
-                Санал болгох асуултууд
-              </div>
-              {/* НЭГ ЭГНЭЭ — багтахгүй бол хажуу тийш гүйнэ (мөр хугарахгүй).
-                  `no-scrollbar` нь зурвасыг харагдуулахгүй. */}
-              <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
-                {block.matched.followUps.map((id) => {
-                  const next = questions.find((item) => item.id === id);
-                  if (!next) return null;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => onPick(next.question)}
-                      // Хүрээгүй: оролт нь өөрөө хүрээтэй тул чипүүд ч хүрээтэй
-                      // байвал хоёр хүрээ дараалж, хэсэг нь хүнд харагдана.
-                      // Зөөлөн дэвсгэр нь дарагдах боломжийг хангалттай илэрхийлнэ.
-                      className="bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition-colors"
-                    >
-                      {next.question}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {footer}
-        </div>
+        <div className="px-4 pb-4">{footer}</div>
       )}
     </article>
   );
@@ -757,12 +782,6 @@ function Answer({
 
   return (
     <div className="animate-in fade-in duration-700 ease-out">
-      {/* AI мэдэгдэл — агуулга урьдчилан бэлдсэн ч түүнийг НУУХГҮЙ.
-          ⚠️ Icon-гүй: `ResultBlock`-ийн гарчгийн мөрөнд аль хэдийн нэг
-          Sparkles байгаа тул хоёр дараалсан мөрөнд ижил дүрс давхардаж
-          байв. */}
-      <p className="text-muted-foreground mb-2 text-xs">{AI_DISCLOSURE}</p>
-
       {/* Тойм нь ҮСЭГ ҮСГЭЭР бичигдэнэ — бэлэн текст дүрсхийж гарахаас
           илүү "хариулж байгаа" мэдрэмж өгнө. `TypingAnimation` нь
           reduced-motion үед шууд бүтнээр нь харуулдаг. */}
@@ -788,6 +807,14 @@ function Answer({
         )}
         {introDone && matched.result.kind === "escalate" && (
           <EscalateView result={matched.result} asked={block.asked} />
+        )}
+        {introDone && matched.result.kind === "content-search" && (
+          <ContentSearchView
+            result={matched.result}
+            answers={block.answers}
+            onAnswers={onAnswers}
+            owner={matched.owner}
+          />
         )}
         {introDone && matched.result.kind === "clarify" && (
           <ClarifyView
@@ -994,6 +1021,13 @@ function ClarifyView({
   const outcome = done ? resolveClarify(result, answers) : null;
 
   /**
+   * Хариултуудын "хурууны хээ". Энэ солигдоход `SolutionPanel` ДАХИН
+   * холбогдож, бичилт эхнээсээ дахин эхэлнэ — өмнөх зөвлөмжийн төлөв шинэ
+   * хариулт руу дамжихгүй.
+   */
+  const answerKey = result.steps.map((step) => answers[step.id] ?? "").join("|");
+
+  /**
    * Сүүлийн хариултын дараа зөвлөмжийг ШУУД бус, богино "бодох" үе
    * дамжуулж гаргана — тэгэхгүй бол хариулт нь урьдчилан бэлдсэн мэт
    * санагдана.
@@ -1092,47 +1126,151 @@ function ClarifyView({
       )}
 
       {outcome && !resolving && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 mt-4 duration-700 ease-out">
-          <div className="border-primary/60 bg-primary/5 rounded-2xl border p-4">
-            <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
-              Танд тохирох шийдэл
-            </div>
+        <SolutionPanel
+          key={answerKey}
+          result={result}
+          outcome={outcome}
+          owner={owner}
+          onReset={() => onAnswers({})}
+        />
+      )}
+    </div>
+  );
+}
 
-            {/* ЯРИАНЫ ХАРИУЛТ — бүтэцтэй дэлгэрэнгүйн ӨМНӨ. Хэрэглэгчийн
-                хэлсэнг иш татаж, яагаад ийм дүгнэлтэд хүрснийг нэг
-                өгүүлбэрээр хэлнэ. Үсэглэн бичигдэнэ. */}
-            <p className="text-foreground mt-2 text-sm leading-relaxed">
-              <TypingAnimation duration={12} delay={0}>
-                {buildNarrative(result, outcome)}
-              </TypingAnimation>
-            </p>
+// =====================================================================
+// SOLUTION PANEL — зөвлөмжийг ДЭЭРЭЭС ДООШ дараалан ил гаргана
+// =====================================================================
+/**
+ * Хэсэг бүр өмнөхөө дуусмагц гарна — уншигч НЭГ мөрийг л дагана. Урьд нь бүх
+ * агуулга бичилтийн ЯГ ЭХЭНД аль хэдийн байрлачихсан байсан тул "бодож бичиж
+ * байна" гэсэн мэдрэмж алдагдаж, доод хэсэг нь хөшиж тогтсон харагддаг байв.
+ *
+ * ⚠️ Төлвөө ӨӨРӨӨ эзэмшинэ. Тиймээс хариулт солигдоход эцэг нь үүнийг `key`-
+ * ээр ДАХИН холбох ёстой (`ClarifyView > answerKey`) — эс бөгөөс `narrativeDone`
+ * хуучин утгаараа үлдэж, шинэ зөвлөмж бичигдэхээсээ ӨМНӨ бүтнээрээ дүрсхийнэ.
+ */
+function SolutionPanel({
+  result,
+  outcome,
+  owner,
+  onReset,
+}: {
+  result: ClarifyResult;
+  outcome: ClarifyOutcome;
+  owner: Owner;
+  onReset: () => void;
+}) {
+  const [narrativeDone, setNarrativeDone] = useState(false);
+  // `TypingAnimation`-ы `onComplete` нь түүний effect-ийн dependency — render
+  // бүрд ШИНЭ функц өгвөл бичилт нь дахин эхэлнэ.
+  const handleNarrativeDone = useCallback(() => setNarrativeDone(true), []);
 
-            <div className="text-foreground mt-4 text-base font-bold">{outcome.best.title}</div>
-            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-              {outcome.best.description}
-            </p>
+  /**
+   * ЯРИАНЫ ХАРИУЛТ ХААНА БИЧИГДЭХ ВЭ — `layout` шийднэ.
+   *
+   *   offer  — ХААЛТ болж ХАМГИЙН ДООР, ногоон хайрцгийн ГАДНА. Хэрэглэгч
+   *            багц, төхөөрөмжөө аль хэдийн харчихсан байх тул "яагаад ингэж
+   *            санал болгов" нь удиртгал БИШ, ДҮГНЭЛТ болж уншигдана. Үйлдлийн
+   *            товч нь түүнтэй ХАМТ — хоёулаа хариултын төгсгөл. Энэ горимд
+   *            `buildFollowUp`-ийн "харьцуулж болно" мөр ГАРАХГҮЙ (ярианы
+   *            хариулт яг ТҮҮНИЙ ОРОНД орсон), "Бусад боломж" ч мөн адил.
+   *   бусад  — ӨМНӨ нь, хайрцаг дотроо. Тэдгээр кейст бүтэц бага тул ярианы
+   *            мөр нь удиртгал болж илүү зохимжтой.
+   *
+   * ⚠️ Хоёуланд нь ил гарах ДАРААЛАЛ ДЭЭРЭЭС ДООШ: бичилт дуустал түүний
+   * ДАРААХ хэсэг харагдахгүй.
+   */
+  const narrativeAtEnd = result.layout === "offer";
 
-            <SolutionBody solution={outcome.best} layout={result.layout} />
+  // Доод горимд бичилт нь картын блок буучихсаны ДАРАА эхэлнэ — эс бөгөөс хоёр
+  // хөдөлгөөн давхцаж, аль аль нь мэдэгдэхгүй өнгөрнө.
+  const narrative = (
+    <TypingAnimation
+      duration={12}
+      delay={narrativeAtEnd ? 320 : 0}
+      onComplete={handleNarrativeDone}
+    >
+      {buildNarrative(result, outcome)}
+    </TypingAnimation>
+  );
 
-            {/* ⚠️ Өмнөх "Яагаад: …" мөрийг ХАСАВ — ярианы хариулт дотор
-                хэрэглэгчийн хариултууд аль хэдийн иш татагдсан тул давхардна. */}
+  const cta = outcome.best.cta ? (
+    <SmartLink
+      href={outcome.best.cta.href}
+      owner={owner}
+      className="bg-primary text-primary-foreground mt-4 inline-flex h-10 items-center justify-center gap-1.5 rounded-full px-5 text-sm font-semibold transition-opacity duration-300 hover:opacity-85"
+    >
+      {outcome.best.cta.label}
+      <ArrowRight className="size-4" aria-hidden="true" />
+    </SmartLink>
+  ) : null;
 
-            {outcome.best.cta && (
-              <SmartLink
-                href={outcome.best.cta.href}
-                owner={owner}
-                className="bg-primary text-primary-foreground mt-4 inline-flex h-10 items-center justify-center gap-1.5 rounded-full px-5 text-sm font-semibold transition-opacity duration-300 hover:opacity-85"
-              >
-                {outcome.best.cta.label}
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </SmartLink>
+  // Зөвлөмжийн БҮТЭЦ — гарчиг, тайлбар, картууд.
+  const body = (
+    <>
+      <div className="text-foreground mt-4 text-base font-bold">{outcome.best.title}</div>
+      <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+        {outcome.best.description}
+      </p>
+      <SolutionBody solution={outcome.best} layout={result.layout} owner={owner} />
+    </>
+  );
+
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-2 mt-4 duration-700 ease-out">
+      {/* ⚠️ `offer` горимд ХҮРЭЭ, ДЭВСГЭР АЛГА. Тэнд хариулт нь яриаг
+          үргэлжлүүлж байгаа мэт унших ёстой — хайрцаглавал "тэмдэглэл" болж,
+          ярианы урсгалаас тасарна. Бусад layout дээр хайрцаг ХЭВЭЭР: тэдгээрт
+          зөвлөмж нь бүтэц багатай тул орчноосоо ялгарах шаардлагатай. */}
+      <div
+        className={cn(!narrativeAtEnd && "border-primary/60 bg-primary/5 rounded-2xl border p-4")}
+      >
+        <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+          Танд тохирох шийдэл
+        </div>
+
+        {narrativeAtEnd ? (
+          body
+        ) : (
+          <>
+            {/* ЯРИАНЫ ХАРИУЛТ — бүтэцтэй дэлгэрэнгүйн ӨМНӨ. Хэрэглэгчийн хэлсэнг
+                иш татаж, яагаад ийм дүгнэлтэд хүрснийг нэг өгүүлбэрээр хэлнэ. */}
+            <p className="text-foreground mt-2 text-sm leading-relaxed">{narrative}</p>
+
+            {narrativeDone && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out">
+                {body}
+                {cta}
+              </div>
             )}
-          </div>
+          </>
+        )}
+      </div>
 
-          {/* Бусад боломж — зөвлөмжийг "хар хайрцаг" болгохгүйн тулд. Хаалттай
-              эхэлнэ: сонирхсон хүн л дэлгэнэ. `<details>` нь JS-гүй, гар,
-              screen reader-т ажиллана. */}
-          {/* Дараагийн алхмын санал — яриаг хаалттай төгсгөл болгохгүй */}
+      {/* ── ХААЛТ (зөвхөн `offer`) — ярианы дүгнэлт, дараа нь үйлдлийн товч ── */}
+      {narrativeAtEnd && (
+        <>
+          {/* Үндсэн чатны хариулттай ЯГ ИЖИЛ хэв (`text-muted-foreground text-sm`)
+              — энэ нь тусдаа тэмдэглэл БИШ, ярианы ҮРГЭЛЖЛЭЛ. */}
+          <p className="text-muted-foreground mt-4 text-sm leading-relaxed">{narrative}</p>
+          {narrativeDone && cta && (
+            <div className="animate-in fade-in duration-500 ease-out">{cta}</div>
+          )}
+        </>
+      )}
+
+      {/* Бичилт дуустал доод хэсэг ч хүлээнэ — эс бөгөөс "дараагийн алхам" нь
+          өөрийнх нь зөвлөмжөөс ӨМНӨ харагдана.
+
+          ⚠️ `offer` горимд ЭНЭ БҮХЭН ГАРАХГҮЙ. Тэнд хариулт нь ярианы
+          дүгнэлтээр төгсдөг: 👉 мөрийг ярианы хариулт орлосон, "Бусад
+          боломж" нь сонголтыг сарниулна, "Дахин эхлэх" нь оролтын мөрөнд
+          аль хэдийн байдаг тул давхардана. */}
+      {!narrativeAtEnd && narrativeDone && (
+        <div className="animate-in fade-in duration-500 ease-out">
+          {/* Дараагийн алхмын санал — яриаг хаалттай төгсгөл болгохгүй. `offer`
+              горимд ярианы хариулт нь ЯГ энэ мөрийн оронд орсон тул давхардуулахгүй. */}
           {buildFollowUp(outcome) && (
             <p className="text-muted-foreground mt-3 text-xs leading-relaxed">
               <span aria-hidden="true">👉 </span>
@@ -1140,6 +1278,14 @@ function ClarifyView({
             </p>
           )}
 
+          {/* Бусад боломж — зөвлөмжийг "хар хайрцаг" болгохгүйн тулд. Хаалттай
+              эхэлнэ: сонирхсон хүн л дэлгэнэ. `<details>` нь JS-гүй, гар,
+              screen reader-т ажиллана.
+
+              ⚠️ `offer` горимд ГАРАХГҮЙ: тэнд хариулт нь багц, төхөөрөмжийн
+              БҮРЭН бүрдэл тул доор нь "бусад хувилбар" нэмбэл сонголтыг
+              сарниулна. Хэмжээгээ буруу сонгосон бол дээрх хариултын мөр
+              дээр дарж засна. */}
           {outcome.alternatives.length > 0 && (
             <details className="border-border mt-2 rounded-xl border px-3 py-2">
               <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-xs font-semibold">
@@ -1158,7 +1304,7 @@ function ClarifyView({
 
           <button
             type="button"
-            onClick={() => onAnswers({})}
+            onClick={onReset}
             className="text-muted-foreground hover:text-foreground mt-3 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
           >
             <RotateCcw className="size-3.5" aria-hidden="true" />
@@ -1178,6 +1324,7 @@ function ClarifyView({
  * зөвлөмжийн ГАРЧИГ, ТАЙЛБАР, CTA нь бүгдэд ижил ч ДУНД нь орох бие нь
  * `layout`-аар солигдоно:
  *
+ *   offer    — гарчигтай карт бүлгүүд (`Solution.groups`) — багц + төхөөрөмж
  *   plans    — багцын харьцуулалт. Үнэ, датаг `mobilePlans`-аас уншина
  *              (`Solution.planIds`), энд давхардуулж бичихгүй.
  *   steps    — дугаарласан алхмууд (`Solution.steps`)
@@ -1189,10 +1336,34 @@ function ClarifyView({
 function SolutionBody({
   solution,
   layout,
+  owner,
 }: {
   solution: Solution;
   layout: ClarifyResult["layout"];
+  owner: Owner;
 }) {
+  // Гарчигтай карт бүлгүүд — багц, төхөөрөмж гэх мэт хэд хэдэн зурвас.
+  // Карт нь `offer` хариулттай ЯГ нэг renderer-ээр гарна.
+  if (layout === "offer" && solution.groups?.length) {
+    return (
+      <div className="mt-4 space-y-5">
+        {solution.groups.map((group) => (
+          <div key={group.title}>
+            <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+              {group.title}
+            </div>
+            <div className="mt-3">
+              <OfferCardGrid cards={group.cards} owner={owner} />
+            </div>
+            {group.note && (
+              <p className="text-muted-foreground mt-2 text-xs leading-relaxed">{group.note}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (layout === "plans" && solution.planIds?.length) {
     const byId = new Map(mobilePlans.map((plan) => [plan.id, plan]));
     const picked = solution.planIds.flatMap((id) => {
@@ -1377,84 +1548,8 @@ function OfferView({ result, owner }: { result: OfferResult; owner: Owner }) {
         {result.cardsTitle}
       </div>
 
-      {/* Мобайл — ХЭВТЭЭ ГҮЙЛТ (Verizon-ы жишээ шиг): 3 карт нарийн дэлгэц
-          рүү шахагдахын оронд хажуу тийш гүйнэ, дараагийнх нь ирмэгээс
-          цухуйж гүйх боломжтойг илэрхийлнэ. sm+ дээр энгийн грид. */}
-      {/* ⚠️ `pt-2` ЗААВАЛ: `overflow-x-auto` тавихад CSS нь нөгөө тэнхлэгийг
-          ч `visible` байлгахаа больж ТАЙРДАГ. Картын `badge` нь картаас 8px
-          ДЭЭШ гардаг (`-top-2`) тул дээд талаасаа тайрагдаж, хагас
-          харагддаг байв. sm+ дээр грид болж `overflow-visible` болдог тул
-          тэнд нэмэлт зай хэрэггүй. */}
-      <div className="no-scrollbar mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pt-2 pb-1 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pt-0 sm:pb-0">
-        {cards.map((card) => {
-          // `planId` өгсөн бол үнэ, датаг `mobile-plans.ts`-ээс уншина —
-          // тэдгээрийг кейсийн дата дотор давхардуулж бичихгүй.
-          const { headline, subline, price } = resolveOfferCard(card);
-
-          return (
-            <div
-              key={card.id}
-              className={cn(
-                "border-border relative flex w-[78%] shrink-0 snap-start flex-col rounded-2xl border p-4 sm:w-auto sm:shrink",
-                card.badge && "border-primary/60 bg-primary/5",
-              )}
-            >
-              {card.badge && (
-                <span className="bg-primary text-primary-foreground absolute -top-2 left-4 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider">
-                  {card.badge}
-                </span>
-              )}
-
-              {/* Гол үзүүлэлт — нэг харцаар уншигдана */}
-              <div className="text-foreground text-2xl leading-none font-extrabold">{headline}</div>
-              {subline && <div className="text-muted-foreground mt-1 text-xs">{subline}</div>}
-
-              {/* Үнэ — тогтмол үнэгүй шийдэлд байхгүй байж болно.
-                  `oldPrice` байвал зураастай хуучин үнэ ЭХЭНД нь орно. */}
-              {price && (
-                <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                  {card.oldPrice && (
-                    <span className="text-muted-foreground text-sm line-through">
-                      {card.oldPrice}
-                    </span>
-                  )}
-                  <span className="text-foreground text-lg leading-none font-extrabold">
-                    {price}
-                  </span>
-                </div>
-              )}
-
-              {/* Нэмэлт тэмдэглэл ("x3 хурд") — брэндийн өнгөөр онцолно */}
-              {card.note && (
-                <div className="text-primary mt-1.5 text-xs font-semibold">{card.note}</div>
-              )}
-
-              {card.highlights && card.highlights.length > 0 && (
-                <ul className="mt-3 space-y-1">
-                  {card.highlights.map((highlight) => (
-                    <li
-                      key={highlight}
-                      className="text-muted-foreground flex items-start gap-1.5 text-xs"
-                    >
-                      <Check className="text-primary mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-                      {highlight}
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {/* `mt-auto` — картуудын өндөр зөрсөн ч товчнууд нэг шугамд суумаар */}
-              <SmartLink
-                href={card.cta.href}
-                owner={owner}
-                className="bg-primary text-primary-foreground mt-auto inline-flex h-10 items-center justify-center gap-1.5 rounded-full px-4 pt-0 text-sm font-semibold transition-opacity duration-300 hover:opacity-85"
-              >
-                {card.cta.label}
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </SmartLink>
-            </div>
-          );
-        })}
+      <div className="mt-3">
+        <OfferCardGrid cards={result.cards} owner={owner} />
       </div>
 
       {/* ── Хувийн санал — нэвтэрсэн хүнд, мөн урилгагүй кейст харуулахгүй ── */}
@@ -1472,6 +1567,343 @@ function OfferView({ result, owner }: { result: OfferResult; owner: Owner }) {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * КАРТ ЗУРВАС — `offer` хариулт БА `clarify > layout: "offer"` ХОЁУЛАА үүнийг
+ * дуудна. Нэг газарт бичсэн тул badge, хямдрал, CTA-ийн хэв хоёр урсгалд
+ * ЗӨРӨХ БОЛОМЖГҮЙ.
+ *
+ * ХЯМДРАЛТАЙ КАРТ ЭХЭНД: `oldPrice` талбартай карт автоматаар түрүүлнэ.
+ * Мобайл дээр хэвтээ гүйдэг тул сүүлд байсан хямдрал огт харагдахгүй өнгөрч
+ * болзошгүй. `sort` нь ES2019-ээс ТОГТВОРТОЙ тул үлдсэн картуудын анхны
+ * дараалал хэвээр хадгалагдана.
+ *
+ * Мобайл — ХЭВТЭЭ ГҮЙЛТ (Verizon-ы жишээ шиг): картууд нарийн дэлгэц рүү
+ * шахагдахын оронд хажуу тийш гүйнэ, дараагийнх нь ирмэгээс цухуйж гүйх
+ * боломжтойг илэрхийлнэ. sm+ дээр энгийн грид.
+ *
+ * ⚠️ `pt-2` ЗААВАЛ: `overflow-x-auto` тавихад CSS нь нөгөө тэнхлэгийг ч
+ * `visible` байлгахаа больж ТАЙРДАГ. Картын `badge` нь картаас 8px ДЭЭШ
+ * гардаг (`-top-2`) тул дээд талаасаа тайрагдаж, хагас харагддаг байв. sm+
+ * дээр грид болж `overflow-visible` болдог тул тэнд нэмэлт зай хэрэггүй.
+ */
+function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
+  const ordered = [...cards].sort(
+    (a, b) => Number(Boolean(b.oldPrice)) - Number(Boolean(a.oldPrice)),
+  );
+
+  return (
+    <div
+      className={cn(
+        "no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pt-2 pb-1 sm:grid sm:overflow-visible sm:pt-0 sm:pb-0",
+        // Багана нь картын ТООГООР — 2 карттай бүлэг 3 баганад хоосон нүх
+        // үлдээх ёсгүй (төхөөрөмжийн бүлэг Mesh-гүй үедээ 2 карттай), 1
+        // карттай бүлэг (хайлтын ЯГ таарсан контент) бүтэн өргөнөө авна.
+        ordered.length === 1
+          ? "sm:grid-cols-1"
+          : ordered.length === 2
+            ? "sm:grid-cols-2"
+            : "sm:grid-cols-3",
+      )}
+    >
+      {ordered.map((card) => {
+        // `planId` өгсөн бол үнэ, датаг `mobile-plans.ts`-ээс уншина —
+        // тэдгээрийг кейсийн дата дотор давхардуулж бичихгүй.
+        const { headline, subline, price } = resolveOfferCard(card);
+
+        return (
+          <div
+            key={card.id}
+            className={cn(
+              "border-border relative flex shrink-0 snap-start flex-col rounded-2xl border p-4 sm:w-auto sm:shrink",
+              // Мобайл: хажуугийнх нь цухуйж, гүйх боломжтойг илэрхийлнэ.
+              // ГАНЦ карттай бүлэгт гүйх юм байхгүй тул бүтэн өргөн.
+              ordered.length === 1 ? "w-full" : "w-[78%]",
+              card.badge && "border-primary/60 bg-primary/5",
+            )}
+          >
+            {card.badge && (
+              <span className="bg-primary text-primary-foreground absolute -top-2 left-4 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider">
+                {card.badge}
+              </span>
+            )}
+
+            {/* Гол үзүүлэлт — нэг харцаар уншигдана. НЭР (кино, багц) нь урт
+                тул жижиг хэвээр — `longHeadline`. */}
+            <div
+              className={cn(
+                "text-foreground font-extrabold",
+                card.longHeadline ? "text-base leading-snug" : "text-2xl leading-none",
+              )}
+            >
+              {headline}
+            </div>
+            {subline && <div className="text-muted-foreground mt-1 text-xs">{subline}</div>}
+
+            {/* Үнэ — тогтмол үнэгүй шийдэлд байхгүй байж болно.
+                `oldPrice` байвал зураастай хуучин үнэ ЭХЭНД нь орно. */}
+            {price && (
+              <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                {card.oldPrice && (
+                  <span className="text-muted-foreground text-sm line-through">
+                    {card.oldPrice}
+                  </span>
+                )}
+                <span className="text-foreground text-lg leading-none font-extrabold">{price}</span>
+              </div>
+            )}
+
+            {/* Нэмэлт тэмдэглэл ("x3 хурд") — брэндийн өнгөөр онцолно */}
+            {card.note && (
+              <div className="text-primary mt-1.5 text-xs font-semibold">{card.note}</div>
+            )}
+
+            {card.highlights && card.highlights.length > 0 && (
+              <ul className="mt-3 space-y-1">
+                {card.highlights.map((highlight) => (
+                  <li
+                    key={highlight}
+                    className="text-muted-foreground flex items-start gap-1.5 text-xs"
+                  >
+                    <Check className="text-primary mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                    {highlight}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* `mt-auto` — картуудын өндөр зөрсөн ч товчнууд нэг шугамд суумаар */}
+            <OfferCardCta cta={card.cta} owner={owner} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// =====================================================================
+// CONTENT SEARCH — киноны хайлт: ОЛДСОН / ОЛДООГҮЙ хоёр гарц
+// =====================================================================
+/**
+ * ⚠️ Хайлтын query нь блокийн `answers`-д (`answers.query`) хадгалагдана —
+ * clarify-ийн хариултуудтай ИЖИЛ сав. Ингэснээр шинэ state сав хэрэггүй,
+ * "дахин хайх" нь `onAnswers({})` л болно, `/assistant` дээр ч ижил ажиллана.
+ *
+ * Хоёр гарц ЗОРИУД өөр урттай: олдоогүй нь НЭГ мэдэгдэл (уншаад дуусна),
+ * олдсон нь дөрвөн блок (контент → төстэй → багц → апп).
+ */
+function ContentSearchView({
+  result,
+  answers,
+  onAnswers,
+  owner,
+}: {
+  result: ContentSearchResult;
+  answers: Record<string, string>;
+  onAnswers: (next: Record<string, string>) => void;
+  owner: Owner;
+}) {
+  const { openLogin } = useAuth();
+  const [draft, setDraft] = useState("");
+
+  const query = answers.query ?? "";
+  const match = query ? findTvodMovies(query)[0] : undefined;
+  const similar = match ? similarTvodMovies(match, 3) : [];
+  const missing = result.missing;
+
+  return (
+    <div className="animate-in fade-in duration-500 ease-out">
+      {/* ГЭРЭЭНИЙ ЛОГИК — "нэмэгддэг үү?" гэдгийн ШУУД хариулт. Хайлтаас ӨМНӨ
+          гарна: хэрэглэгч бичихээсээ ч өмнө ЯАГААД гэдгийг мэдэх ёстой. */}
+      <ul className="space-y-1.5">
+        {result.notes.map((note) => (
+          <li key={note} className="text-foreground flex gap-2 text-sm leading-relaxed">
+            <span className="text-muted-foreground select-none" aria-hidden="true">
+              •
+            </span>
+            <span>{note}</span>
+          </li>
+        ))}
+      </ul>
+
+      {!query && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const text = draft.trim();
+            if (text) onAnswers({ query: text });
+          }}
+          className="mt-4"
+        >
+          <label htmlFor="tvod-search" className="text-foreground block text-sm font-semibold">
+            {result.prompt}
+          </label>
+          <div className="border-border bg-background mt-2 flex items-center gap-2 rounded-2xl border px-3 py-2">
+            <input
+              id="tvod-search"
+              type="text"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder={result.placeholder}
+              className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm outline-none"
+            />
+            <button
+              type="submit"
+              aria-label="Шалгах"
+              disabled={!draft.trim()}
+              className="bg-primary text-primary-foreground inline-flex size-8 shrink-0 items-center justify-center rounded-xl transition-opacity duration-300 hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ArrowUp className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+        </form>
+      )}
+
+      {query && (
+        <div className="mt-4">
+          {/* Хайсныг эргүүлж иш татна — дарвал эхнээс дахин хайна. Clarify-ийн
+              "хариулсан алхам" мөртэй ижил хэв: хэрэглэгч юу гэж хэлснээ
+              хармагц засах боломжтой байх нь ижил зарчим. */}
+          <button
+            type="button"
+            onClick={() => onAnswers({})}
+            className="border-border hover:border-primary/50 hover:bg-muted/40 mb-4 flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-left transition-colors"
+          >
+            <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
+              Таны хайсан
+            </span>
+            <span className="text-foreground shrink-0 text-sm font-semibold">«{query}»</span>
+            <Pencil className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
+          </button>
+
+          {match ? (
+            <div className="space-y-5">
+              <ContentBlock title={result.found.matchTitle}>
+                <OfferCardGrid
+                  cards={[tvodMovieCard(match, result.found.rentLabel)]}
+                  owner={owner}
+                />
+              </ContentBlock>
+
+              {similar.length > 0 && (
+                <ContentBlock title={result.found.similarTitle}>
+                  <OfferCardGrid
+                    cards={similar.map((movie) => tvodMovieCard(movie, result.found.rentLabel))}
+                    owner={owner}
+                  />
+                </ContentBlock>
+              )}
+
+              <ContentBlock title={result.found.packagesTitle} note={result.found.packagesNote}>
+                <OfferCardGrid cards={tvodPackageCards} owner={owner} />
+                <ul className="mt-3 space-y-1">
+                  {result.found.includes.map((item) => (
+                    <li
+                      key={item}
+                      className="text-muted-foreground flex items-start gap-1.5 text-xs"
+                    >
+                      <Check className="text-primary mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </ContentBlock>
+
+              {/* UNIVISION GO — идэвхжүүлсний дараа ХААНААС Ч үзэх боломж.
+                  Тасархай хүрээтэй: карт БИШ, НЭМЭЛТ боломжийн мэдэгдэл. */}
+              <div className="border-border rounded-2xl border border-dashed p-4">
+                <div className="text-foreground text-sm font-bold">{result.app.title}</div>
+                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                  {result.app.body}
+                </p>
+                <SmartLink
+                  href={result.app.href}
+                  owner={owner}
+                  className="border-primary text-primary hover:bg-primary/10 mt-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors"
+                >
+                  {result.app.ctaLabel}
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </SmartLink>
+              </div>
+            </div>
+          ) : (
+            /* ОЛДООГҮЙ — НЭГ мэдэгдэл. Багц, төстэй кино ХАРУУЛАХГҮЙ: хайсан
+               зүйл байхгүй байхад өөр юм түлхэх нь хариултыг зар болгоно.
+               Зөвхөн "нэмэгдэхэд мэдэгдье" гэсэн урилга. */
+            <div className="border-border rounded-2xl border border-dashed p-4">
+              <div className="text-foreground text-sm font-bold">{missing.title}</div>
+              <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">{missing.body}</p>
+              <button
+                type="button"
+                onClick={() => openLogin(missing.authReason)}
+                className="border-primary text-primary hover:bg-primary/10 mt-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors"
+              >
+                <User className="size-4" aria-hidden="true" />
+                {missing.ctaLabel}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Гарчигтай блок — хайлтын дөрвөн хэсэг ижил хэвтэй байхын тулд. */
+function ContentBlock({
+  title,
+  note,
+  children,
+}: {
+  title: string;
+  note?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+        {title}
+      </div>
+      <div className="mt-3">{children}</div>
+      {note && <p className="text-muted-foreground mt-2 text-xs leading-relaxed">{note}</p>}
+    </div>
+  );
+}
+
+/**
+ * Картын товч. `authReason` өгсөн карт нь ЛИНК БИШ — НЭВТРЭХ ДИАЛОГ нээнэ
+ * (идэвхжүүлэх, түрээслэх нь данстай холбоотой үйлдэл; хуурамч линк рүү
+ * явуулахаас нэвтрүүлэх нь зөв).
+ *
+ * ⚠️ Тусдаа бүрэлдэхүүн болгосон шалтгаан: `useAuth().openLogin`-ийг
+ * `OfferCardGrid`-ийн `.map` дотроос шууд closure болгон хийвэл
+ * `react-hooks/refs` дүрэм зөрчигдөж болзошгүй. Мөн товчны хэв НЭГ л газарт
+ * үлдэнэ — линк ба товч хувилбар хоорондоо зөрөх боломжгүй.
+ */
+function OfferCardCta({ cta, owner }: { cta: OfferCard["cta"]; owner: Owner }) {
+  const { openLogin } = useAuth();
+  const reason = cta.authReason;
+  // Мобайл дээр карт нарийхан тул товч нь картаа дүүргэж хэт бүдүүн
+  // харагддаг байв — sm+ дээр л бүтэн хэмжээндээ ордог.
+  const className =
+    "bg-primary text-primary-foreground mt-auto inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3 pt-0 text-xs font-semibold transition-opacity duration-300 hover:opacity-85 sm:h-10 sm:px-4 sm:text-sm";
+
+  if (reason) {
+    return (
+      <button type="button" onClick={() => openLogin(reason)} className={className}>
+        {cta.label}
+        <ArrowRight className="size-3.5 sm:size-4" aria-hidden="true" />
+      </button>
+    );
+  }
+
+  return (
+    <SmartLink href={cta.href} owner={owner} className={className}>
+      {cta.label}
+      <ArrowRight className="size-3.5 sm:size-4" aria-hidden="true" />
+    </SmartLink>
   );
 }
 
@@ -1538,6 +1970,46 @@ function AnswerFeedback({ questionId }: { questionId: string }) {
       >
         <ThumbsDown className="size-3.5" aria-hidden="true" />
       </button>
+    </div>
+  );
+}
+
+// =====================================================================
+// SUGGESTION CHIPS — оролтын хяналтын мөрөнд гарах дараагийн асуултууд
+// =====================================================================
+/**
+ * НЭГ ЭГНЭЭ — багтахгүй бол хажуу тийш гүйнэ. Мөр хугарахгүй тул оролтын
+ * өндөр чипний тооноос үл хамааран ТОГТМОЛ хэвээр.
+ *
+ * ⚠️ Тусдаа бүрэлдэхүүн болгосон шалтгаан: `ask` нь `useRef` уншдаг
+ * `useCallback`. Түүнийг `followUpForm`-ийн БИЕД, render-ийн үед
+ * ажилладаг `.map` дотроос шууд closure болгон хийвэл `react-hooks/refs`
+ * дүрэм зөрчигдөнө (compiler нь ref-ийг render-д уншиж магадгүй гэж
+ * дүгнэдэг). Prop-оор дамжуулбал хил тодорхой болно.
+ *
+ * Хүрээгүй: оролт нь өөрөө хүрээтэй тул чипүүд ч хүрээтэй байвал хоёр
+ * хүрээ дараалж, хэсэг нь хүнд харагдана. Зөөлөн дэвсгэр нь дарагдах
+ * боломжийг хангалттай илэрхийлнэ.
+ */
+function SuggestionChips({
+  items,
+  onPick,
+}: {
+  items: AssistantQuestion[];
+  onPick: (question: string) => void;
+}) {
+  return (
+    <div className="no-scrollbar flex min-w-0 flex-1 gap-1.5 overflow-x-auto">
+      {items.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          onClick={() => onPick(item.question)}
+          className="bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 rounded-full px-2.5 py-1 text-xs whitespace-nowrap transition-colors"
+        >
+          {item.question}
+        </button>
+      ))}
     </div>
   );
 }
