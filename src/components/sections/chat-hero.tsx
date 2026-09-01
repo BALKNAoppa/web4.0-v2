@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -24,7 +25,7 @@ import { mobilePlans } from "@/data/mobile-plans";
 import {
   assistantQuestions,
   buildFollowUp,
-  buildNarrative,
+  CLARIFY_OUTRO,
   CLARIFY_INTRO,
   findTvodMovies,
   matchQuestion,
@@ -33,15 +34,15 @@ import {
   THINKING_STEP_MS,
   similarTvodMovies,
   THINKING_STEPS,
-  TRENDING_TOPIC_COUNT,
+  personaShortcuts,
   tvodMovieCard,
   tvodPackageCards,
-  trendingTopicLabel,
   type AssistantQuestion,
   type AssistantResult,
   type ClarifyOutcome,
   type ClarifyResult,
   type ContentSearchResult,
+  type TroubleshootResult,
   type DiagnosticResult,
   type OfferCard,
   type OfferResult,
@@ -124,11 +125,38 @@ export function ChatHero({
   );
   const nextKey = useRef(initialQuestions.length);
   const latestRef = useRef<HTMLElement | null>(null);
+  /** Persona товч дарахад оролтыг бөглөөд ФОКУС өгнө — Enter дарахад бэлэн. */
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  /**
+   * `clarify` урсгалын хариултуудыг солино. Сонгох, засах, эхнээс эхлэх —
+   * гурвуулаа ЭНД ирнэ: `ClarifyView` дараагийн бүтэн map-аа өөрөө бодож
+   * илгээдэг тул энд ганц л оноолт үлдэнэ.
+   */
+  const setAnswers = useCallback((key: number, next: Record<string, string>) => {
+    setBlocks((prev) => prev.map((b) => (b.key === key ? { ...b, answers: next } : b)));
+  }, []);
 
   const ask = useCallback(
     (text: string) => {
       const asked = text.trim();
       if (!asked) return;
+
+      /**
+       * ⚠️ КОНТЕНТ ХАЙЛТ ХҮЛЭЭЖ БАЙВАЛ — бичсэнийг ШИНЭ асуулт БИШ, тэр блокийн
+       * ХАЙЛТ болгоно. Эс бөгөөс киноны нэр нь ямар ч кейстэй таарахгүй тул
+       * "таньсангүй" гэсэн хариулт гарч, урсгал тасарна.
+       */
+      const last = blocks[blocks.length - 1];
+      if (
+        last?.status === "ready" &&
+        last.matched?.result.kind === "content-search" &&
+        !last.answers.query
+      ) {
+        setAnswers(last.key, { query: asked });
+        setInput("");
+        return;
+      }
 
       // HERO дээр яриа ОВООЛОХГҮЙ. Эхний асуулт энд хариулагдана; хоёр дахиас
       // эхлээд бүтэн яриаг URL-д хийж `/assistant` руу шилжүүлнэ.
@@ -151,17 +179,8 @@ export function ChatHero({
         setBlocks((prev) => prev.map((b) => (b.key === key ? { ...b, status: "ready" } : b)));
       }, LOADING_MS);
     },
-    [questions, isPage, blocks, router],
+    [questions, isPage, blocks, router, setAnswers],
   );
-
-  /**
-   * `clarify` урсгалын хариултуудыг солино. Сонгох, засах, эхнээс эхлэх —
-   * гурвуулаа ЭНД ирнэ: `ClarifyView` дараагийн бүтэн map-аа өөрөө бодож
-   * илгээдэг тул энд ганц л оноолт үлдэнэ.
-   */
-  const setAnswers = useCallback((key: number, next: Record<string, string>) => {
-    setBlocks((prev) => prev.map((b) => (b.key === key ? { ...b, answers: next } : b)));
-  }, []);
 
   /**
    * Эхнээс эхлэх — хариултуудыг цэвэрлэж, том оролт руу буцна.
@@ -173,6 +192,15 @@ export function ChatHero({
     setInput("");
     if (isPage) router.replace(ASSISTANT_PATH);
   }, [isPage, router]);
+
+  /**
+   * Persona товчны үйлдэл: оролтыг БӨГЛӨНӨ, ИЛГЭЭХГҮЙ. Хэрэглэгч өөрөө уншиж,
+   * хүсвэл засаад Enter дарна.
+   */
+  const fillInput = useCallback((text: string) => {
+    setInput(text);
+    inputRef.current?.focus();
+  }, []);
 
   /**
    * САНАЛ БОЛГОХ АСУУЛТУУД — ЗӨВХӨН СҮҮЛИЙН хариултынх. Оролт нь яриа дотор
@@ -412,11 +440,13 @@ export function ChatHero({
                 тул эдгээр нь зөвхөн зай эзэлж, агуулгыг доош түлхэнэ.
                 ⚠️ Текстийг нь хоослох БИШ, ЭЛЕМЕНТИЙГ нь бүхэлд нь хасна — эс
                 бөгөөс margin нь үлдэж, хоосон зай гацна. Гарчгийн ДЭЭД margin ч
-                мөн зөвхөн танилцуулгатай үедээ утгатай. */}
+                мөн зөвхөн танилцуулгатай үедээ утгатай.
+                ⚠️ Шошго нь PLACEHOLDER: жинхэнэ онцлох үг (кампанит ажил,
+                улирлын санал г.м.) шийдэгдээгүй тул слотыг нь нэрлэсэн хэвээр. */}
             {blocks.length === 0 && (
               <span className="border-border bg-card/60 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur">
                 <Sparkles className="text-primary size-3.5" aria-hidden="true" />
-                Highlight keyword байна
+                Highlight Keyword
               </span>
             )}
 
@@ -433,12 +463,13 @@ export function ChatHero({
                     "mt-4 mb-5 sm:mt-6 sm:mb-6",
               )}
             >
-              AI <span className="from-primary bg-clip-text text-[#45c700]">assistant</span>
+              Ухаалаг <span className="from-primary bg-clip-text text-[#45c700]">туслах</span>
             </h1>
 
             {blocks.length === 0 && (
-              <p className="text-muted-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
-                Ai assistant-н Capability-г сайн госон text энд байрлана.
+              <p className="text-foreground mt-3 max-w-xl text-sm text-pretty sm:mt-4 sm:text-base md:text-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
+                Unitel Group-ийн хэмжээнд бүтээгдэхүүн, үйлчилгээний талаар лавлаад{" "}
+                <strong className="font-bold">ХАМТДАА</strong> шийдвэрээ гаргаарай.
               </p>
             )}
           </>
@@ -491,11 +522,12 @@ export function ChatHero({
                   Асуултаа бичнэ үү
                 </label>
                 <input
+                  ref={inputRef}
                   id="chat-hero-input"
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="CTA чиглүүлсэн placeholder той байна"
+                  placeholder="Асуултаа бичнэ үү"
                   className="text-foreground placeholder:text-muted-foreground h-8 flex-1 bg-transparent text-sm outline-none md:text-base"
                 />
                 <button
@@ -511,63 +543,43 @@ export function ChatHero({
 
         {/* Их хайгдсан сэдвүүд — зөвхөн хоосон төлөвт. Асуулт асуумагц үр дүн
             нь гол болох тул мөр замаас гарч, өндрөө буцааж өгнө. */}
-        {!isPage && blocks.length === 0 && <TrendingTopics />}
+        {!isPage && blocks.length === 0 && <PersonaShortcuts onFill={fillInput} />}
       </div>
     </section>
   );
 }
 
-// =====================================================================
-// TRENDING TOPICS — input-ийн доорх "их хайгдсан сэдэв"-ийн чипүүд
-// =====================================================================
 /**
- * Чип бүр ӨӨРИЙН БИЧВЭРИЙН ӨРГӨНӨӨР тавигдаж, мөрөнд багтсанаараа
- * 2-3-уулаа зэрэгцэнэ (`flex-wrap`, голлуулсан).
+ * PERSONA ТОВЧНУУД — оролтын доор, дугаарын дарааллаар.
  *
- * ⚠️ ӨМНӨ НЬ `grid` байсан: `grid-cols-2/4/6` дээр чип бүр `col-span-2`.
- * Grid-ийн нүд нь чипийг БҮТЭН өргөндөө СУНГАДАГ тул мобайл дээр чип бүр
- * дэлгэцийн бүтэн өргөнтэй, хоорондоо яг ижил хэмжээтэй болж "хиймэл"
- * харагддаг байв. Бодит хайлтын сэдэв урт богино янз бүр байдаг тул
- * агуулгынх нь өргөнөөр тавих нь зөв.
+ * ⚠️ Товч нь асуултыг ИЛГЭЭХГҮЙ, зөвхөн оролтыг БӨГЛӨНӨ (`onFill`). Хэрэглэгч
+ * өөрөө уншиж, хүсвэл засаад Enter дарна. Автоматаар илгээвэл юу асуусан нь
+ * харагдалгүй өнгөрч, "туслах өөрөө шийдчихлээ" гэсэн мэдрэмж төрүүлнэ.
  *
- * "`flex-wrap` бол мобайл дээр 5 чип 5 мөр болно" гэсэн өмнөх эргэлзээ нь
- * шошго ХЭТ УРТ (32 тэмдэгт) байснаас үүдэлтэй байв. Шошгыг богиносгосон
- * (`TRENDING_TOPIC_PLACEHOLDER`) тул одоо мөр бүрд 2-3 чип багтаж, нийт
- * 2 мөр хэвээр үлдэнэ:
- *   мобайл (<640px) — мөрөнд 2, харагдах чип 4 (5 дахь нь нуугдана)
- *   sm+            — мөрөнд 3, бүх 5 чип → 3 + 2
+ * ⚠️ Тусдаа бүрэлдэхүүн: `onFill` нь ref (`inputRef`) хөнддөг тул `.map`
+ * дотроос шууд closure болгож болохгүй — `react-hooks/refs`.
  *
- * ⚠️ `sm:max-w-lg` — чипний бөөгнөрөл нь ДЭЭРХ input-ээс НАРИЙХАН байна.
- * Үүнгүй бол 5 чип 736px өргөн мөрөнд БҮГД багтаж, input-ийн бүтэн өргөнийг
- * ирмэгээс ирмэг хүртэл дүүргэсэн нэг зурвас болж, дахиад "сунгасан" мэдрэмж
- * төрүүлдэг. Бодит дата (урт богино янз бүр) ирэхэд ч энэ хязгаар нь мөрийг
- * 2-3 чипээр хуваасаар байна.
- *
- * ⚠️ Дарагдахгүй (`<li>`, товч БИШ) — шошго нь placeholder тул `ask()` дуудвал
- * "таньсангүй" fallback гарна. Бодит сэдэв ирэхэд товч болно.
+ * ⚠️ ЭНЭ нь "Их хайгдсан сэдэв" placeholder-ийг ОРЛОВ. Тэр датаг
+ * (`TRENDING_TOPIC_*`) устгаагүй — жинхэнэ хайлтын лог холбогдоход буцааж
+ * тавина.
  */
-function TrendingTopics() {
+function PersonaShortcuts({ onFill }: { onFill: (text: string) => void }) {
   return (
-    // `aria-hidden` — ижил placeholder-ийг 5 удаа уншуулах нь SR-д утгагүй.
-    <ul
-      aria-hidden="true"
-      className="mt-2.5 flex w-full flex-wrap items-center justify-center gap-2 sm:mt-3 sm:max-w-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5"
-    >
-      {Array.from({ length: TRENDING_TOPIC_COUNT }, (_, i) => (
-        <li
-          key={i}
-          className={cn(
-            // `px-2.5 sm:px-3` — хамгийн нарийн утсанд (320px) хоёр чип нэг мөрд
-            // багтаах зайг гаргана; `px-3` дээр 290 > 288 болж 1 мөрд 1 чип үлддэг.
-            "border-border bg-card/70 text-muted-foreground flex items-center rounded-full border px-2.5 py-1 text-xs whitespace-nowrap backdrop-blur sm:px-3",
-            // Мобайл дээр 2 мөрд барих нуулт: 2 + 2 = 4 чип. sm+ дээр бүгд.
-            i >= 4 && "hidden sm:flex",
-          )}
+    <div className="mt-2.5 flex w-full flex-wrap items-center justify-center gap-2 sm:mt-3 sm:max-w-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
+      {personaShortcuts.map((item) => (
+        <button
+          key={item.label}
+          type="button"
+          onClick={() => onFill(item.question)}
+          // Шошго нь БОГИНО тул нарийн утсанд ч мөрөнд 3 багтана. Асуултын
+          // бүтэн текстийг тавибал 6 товч 6 мөр болно.
+          title={item.question}
+          className="border-border bg-card/70 text-muted-foreground hover:border-primary hover:text-foreground flex items-center rounded-full border px-2.5 py-1 text-xs whitespace-nowrap backdrop-blur transition-colors sm:px-3"
         >
-          {trendingTopicLabel(i + 1)}
-        </li>
+          {item.label}
+        </button>
       ))}
-    </ul>
+    </div>
   );
 }
 
@@ -757,7 +769,7 @@ function Answer({
   if (!matched) {
     return (
       <div className="animate-in fade-in duration-700 ease-out">
-        <p className="text-muted-foreground text-sm leading-relaxed">
+        <p className="text-foreground text-sm leading-relaxed">
           Уучлаарай, энэ асуултыг таньсангүй. Доорхоос сонгоно уу.
         </p>
         {/* ЗӨВХӨН үндсэн сэдвүүд. Бүгдийг жагсвал сонголт хэт олон болж,
@@ -785,7 +797,7 @@ function Answer({
       {/* Тойм нь ҮСЭГ ҮСГЭЭР бичигдэнэ — бэлэн текст дүрсхийж гарахаас
           илүү "хариулж байгаа" мэдрэмж өгнө. `TypingAnimation` нь
           reduced-motion үед шууд бүтнээр нь харуулдаг. */}
-      <p className="text-muted-foreground text-sm leading-relaxed">
+      <p className="text-foreground text-sm leading-relaxed">
         {/* duration/delay — НИЙТ хүлээлтийг барихаар сонгосон: бодох трэйс
             ~1.26с + тойм ~0.7с ≈ 2с. Үүнээс урт бол "удаан", богино бол
             "бодоогүй" мэт санагдана. */}
@@ -808,6 +820,15 @@ function Answer({
         {introDone && matched.result.kind === "escalate" && (
           <EscalateView result={matched.result} asked={block.asked} />
         )}
+        {introDone && matched.result.kind === "troubleshoot" && (
+          <TroubleshootView
+            result={matched.result}
+            answers={block.answers}
+            onAnswers={onAnswers}
+            owner={matched.owner}
+            asked={block.asked}
+          />
+        )}
         {introDone && matched.result.kind === "content-search" && (
           <ContentSearchView
             result={matched.result}
@@ -828,7 +849,7 @@ function Answer({
 
       {introDone && <AnswerFeedback questionId={matched.id} />}
 
-      {matched.cta && (
+      {introDone && matched.cta && (
         <div className="mt-6 flex justify-center">
           {/* SmartLink — эзэн нь нөгөө брэнд бол тэр домэйн руу шинэ tab-аар.
               Харагдацаараа дотоод линкээс ялгарахгүй (эко-системийн зарчим). */}
@@ -1191,7 +1212,7 @@ function SolutionPanel({
       delay={narrativeAtEnd ? 320 : 0}
       onComplete={handleNarrativeDone}
     >
-      {buildNarrative(result, outcome)}
+      {CLARIFY_OUTRO}
     </TypingAnimation>
   );
 
@@ -1209,6 +1230,9 @@ function SolutionPanel({
   // Зөвлөмжийн БҮТЭЦ — гарчиг, тайлбар, картууд.
   const body = (
     <>
+      {/* Зөвлөмжийн УДИРТГАЛ — гарчгийн ӨМНӨ. Хэрэглэгчийн хариултуудтай
+          холбож, доорх картууд руу чиглүүлнэ. Кейс бүрд байх шаардлагагүй. */}
+      {result.lead && <p className="text-foreground mt-4 text-sm leading-relaxed">{result.lead}</p>}
       <div className="text-foreground mt-4 text-base font-bold">{outcome.best.title}</div>
       <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
         {outcome.best.description}
@@ -1253,7 +1277,7 @@ function SolutionPanel({
         <>
           {/* Үндсэн чатны хариулттай ЯГ ИЖИЛ хэв (`text-muted-foreground text-sm`)
               — энэ нь тусдаа тэмдэглэл БИШ, ярианы ҮРГЭЛЖЛЭЛ. */}
-          <p className="text-muted-foreground mt-4 text-sm leading-relaxed">{narrative}</p>
+          <p className="text-foreground mt-4 text-sm leading-relaxed">{narrative}</p>
           {narrativeDone && cta && (
             <div className="animate-in fade-in duration-500 ease-out">{cta}</div>
           )}
@@ -1554,7 +1578,9 @@ function OfferView({ result, owner }: { result: OfferResult; owner: Owner }) {
 
       {/* ── Хувийн санал — нэвтэрсэн хүнд, мөн урилгагүй кейст харуулахгүй ── */}
       {personalize && !isAuthenticated && (
-        <div className="border-border mt-4 flex flex-col gap-3 rounded-2xl border border-dashed p-4 sm:flex-row sm:items-center sm:justify-between">
+        // ⚠️ Багана хэвээр (`sm:flex-row` ХАСАВ): товч нь өгүүлбэрийн ХАЖУУД биш,
+        // АРААС нь орох ёстой — эхлээд яагаад нэвтрэхээ уншаад дараа нь дардаг.
+        <div className="border-border mt-4 flex flex-col items-start gap-3 rounded-2xl border border-dashed p-4">
           <p className="text-muted-foreground text-sm leading-relaxed">{personalize.text}</p>
           <button
             type="button"
@@ -1598,12 +1624,12 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
     <div
       className={cn(
         "no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pt-2 pb-1 sm:grid sm:overflow-visible sm:pt-0 sm:pb-0",
-        // Багана нь картын ТООГООР — 2 карттай бүлэг 3 баганад хоосон нүх
-        // үлдээх ёсгүй (төхөөрөмжийн бүлэг Mesh-гүй үедээ 2 карттай), 1
-        // карттай бүлэг (хайлтын ЯГ таарсан контент) бүтэн өргөнөө авна.
+        // Багана нь картын ТООГООР: 1 → бүтэн өргөн (хайлтын яг таарсан
+        // контент), 2 ба 4 → хоёр багана (4 нь 3 баганад 3+1 болж унждаг
+        // тул 2×2 нь цэвэр), бусад → гурав.
         ordered.length === 1
           ? "sm:grid-cols-1"
-          : ordered.length === 2
+          : ordered.length === 2 || ordered.length === 4
             ? "sm:grid-cols-2"
             : "sm:grid-cols-3",
       )}
@@ -1628,6 +1654,24 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
               <span className="bg-primary text-primary-foreground absolute -top-2 left-4 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider">
                 {card.badge}
               </span>
+            )}
+
+            {/* БҮТЭЭГДЭХҮҮНИЙ ЗУРАГ — гарчгийн ДЭЭР, тогтмол өндөртэй хавтан.
+                ⚠️ `object-contain`: зурагнууд нь тунгалаг дэвсгэртэй бүтээгдэхүүний
+                зураг, харьцаа нь янз бүр (утас 1:2, роутер ~1:1.3). `cover`
+                тавибал утасны дээд доод хэсэг тайрагдана.
+                ⚠️ `alt=""`: гарчиг нь ЯГ доор нь байгаа тул дүрс нь чимэглэл —
+                screen reader-т нэрийг ХОЁР УДАА уншуулах нь шуугиан. */}
+            {card.image && (
+              <div className="bg-muted relative mb-3 h-32 w-full overflow-hidden rounded-xl">
+                <Image
+                  src={card.image}
+                  alt=""
+                  fill
+                  sizes="(min-width: 640px) 240px, 70vw"
+                  className="object-contain p-2"
+                />
+              </div>
             )}
 
             {/* Гол үзүүлэлт — нэг харцаар уншигдана. НЭР (кино, багц) нь урт
@@ -1684,6 +1728,118 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
 }
 
 // =====================================================================
+// TROUBLESHOOT — шалтгаан → сонголт → Mesh ЭСВЭЛ чат руу шилжих
+// =====================================================================
+/**
+ * ⚠️ Сонгосон зам нь блокийн `answers.path`-д хадгалагдана — clarify болон
+ * content-search-тай ИЖИЛ сав. Шинэ state сав хэрэггүй, "буцах" нь
+ * `onAnswers({})` л болно.
+ *
+ * ⚠️ Гомдлын зам нь `EscalateView`-г ДАХИН ашиглана — `complaint-billing`
+ * кейстэй ЯГ ИЖИЛ механизм (`univision:chat-ask` эвент). Хоёр газар өөр
+ * хэлбэрээр шилжвэл хэрэглэгчид өөр өөр туршлага болно.
+ */
+function TroubleshootView({
+  result,
+  answers,
+  onAnswers,
+  owner,
+  asked,
+}: {
+  result: TroubleshootResult;
+  answers: Record<string, string>;
+  onAnswers: (next: Record<string, string>) => void;
+  owner: Owner;
+  asked: string;
+}) {
+  const path = answers.path ?? "";
+  const label =
+    path === "device" ? result.deviceLabel : path === "complaint" ? result.complaintLabel : "";
+
+  return (
+    <div className="animate-in fade-in duration-500 ease-out">
+      {/* ШАЛТГААНУУД — сонголтоос ӨМНӨ. Хэрэглэгч юуг сонгохоо мэдэхийн тулд
+          эхлээд ЮУ болж байгааг ойлгох ёстой. */}
+      <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+        {result.causesTitle}
+      </div>
+      <ul className="mt-3 space-y-1.5">
+        {result.causes.map((cause) => (
+          <li key={cause} className="text-foreground flex gap-2 text-sm leading-relaxed">
+            <span className="text-muted-foreground select-none" aria-hidden="true">
+              •
+            </span>
+            <span>{cause}</span>
+          </li>
+        ))}
+      </ul>
+
+      {!path && (
+        <div className="animate-in fade-in slide-in-from-bottom-1 mt-4 duration-500 ease-out">
+          <p className="text-foreground text-sm font-semibold">{result.prompt}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onAnswers({ path: "device" })}
+              className="border-border hover:border-primary hover:bg-primary/10 text-foreground rounded-full border px-3.5 py-1.5 text-sm transition-colors"
+            >
+              {result.deviceLabel}
+            </button>
+            <button
+              type="button"
+              onClick={() => onAnswers({ path: "complaint" })}
+              className="border-border hover:border-primary hover:bg-primary/10 text-foreground rounded-full border px-3.5 py-1.5 text-sm transition-colors"
+            >
+              {result.complaintLabel}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {path && (
+        <div className="mt-4">
+          {/* Сонгосноо эргүүлж иш татна — дарвал буцаж сонгоно. Clarify болон
+              content-search-ийн "хариулсан алхам" мөртэй ИЖИЛ хэв. */}
+          <button
+            type="button"
+            onClick={() => onAnswers({})}
+            className="border-border hover:border-primary/50 hover:bg-muted/40 mb-4 flex w-full items-center gap-2 rounded-xl border px-3 py-2 text-left transition-colors"
+          >
+            <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
+              {result.prompt}
+            </span>
+            <span className="text-foreground shrink-0 text-sm font-semibold">{label}</span>
+            <Pencil className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
+          </button>
+
+          {path === "device" ? (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 ease-out">
+              <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+                {result.deviceTitle}
+              </div>
+              <div className="mt-3">
+                <OfferCardGrid cards={result.deviceCards} owner={owner} />
+              </div>
+              <p className="text-muted-foreground mt-2 text-xs leading-relaxed">
+                {result.deviceNote}
+              </p>
+            </div>
+          ) : (
+            /* Гомдол — `complaint-billing`-тэй ижил handoff. Энд ӨӨР юм
+               харуулахгүй: хэрэглэгч ажилтантай ярихаар шийдсэн тул нэмэлт
+               санал нь замд нь саад болно. */
+            <EscalateView
+              result={{ kind: "escalate", handoffMs: result.handoffMs }}
+              asked={asked}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =====================================================================
 // CONTENT SEARCH — киноны хайлт: ОЛДСОН / ОЛДООГҮЙ хоёр гарц
 // =====================================================================
 /**
@@ -1706,7 +1862,6 @@ function ContentSearchView({
   owner: Owner;
 }) {
   const { openLogin } = useAuth();
-  const [draft, setDraft] = useState("");
 
   const query = answers.query ?? "";
   const match = query ? findTvodMovies(query)[0] : undefined;
@@ -1728,37 +1883,13 @@ function ContentSearchView({
         ))}
       </ul>
 
+      {/* ⚠️ ДОТООД ОРОЛТ АЛГА. Хэрэглэгч ҮНДСЭН чат оролтод бичнэ — `ask()` нь
+          хайлт хүлээж буй блокийг таниад бичсэнийг query болгоно. Хоёр оролт
+          зэрэг харагдвал аль нь идэвхтэйг нь хэрэглэгч мэдэхгүй болно. */}
       {!query && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const text = draft.trim();
-            if (text) onAnswers({ query: text });
-          }}
-          className="mt-4"
-        >
-          <label htmlFor="tvod-search" className="text-foreground block text-sm font-semibold">
-            {result.prompt}
-          </label>
-          <div className="border-border bg-background mt-2 flex items-center gap-2 rounded-2xl border px-3 py-2">
-            <input
-              id="tvod-search"
-              type="text"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder={result.placeholder}
-              className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm outline-none"
-            />
-            <button
-              type="submit"
-              aria-label="Шалгах"
-              disabled={!draft.trim()}
-              className="bg-primary text-primary-foreground inline-flex size-8 shrink-0 items-center justify-center rounded-xl transition-opacity duration-300 hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <ArrowUp className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-        </form>
+        <p className="text-foreground animate-in fade-in mt-4 text-sm font-semibold duration-500">
+          {result.prompt}
+        </p>
       )}
 
       {query && (
@@ -1916,7 +2047,11 @@ function resolveOfferCard(card: OfferCard) {
   return {
     headline: card.headline ?? plan?.data ?? "",
     subline: card.subline ?? plan?.name,
-    price: card.price ?? plan?.price,
+    // ⚠️ `mobile-plans.ts`-ийн `price` нь САРЫН суурь хураамж. Багцын карт нь
+    // төхөөрөмжийн нэг удаагийн үнэтэй зэрэгцэж гарах тохиолдол байдаг тул
+    // "/сар"-гүй бол хоёрыг ялгахад хэцүү. Эх датаг хөндөхгүйгээр ЭНД
+    // тодотгов — үнийн тоо нь нэг л газарт үлдэнэ.
+    price: card.price ?? (plan ? `${plan.price}/сар` : undefined),
   };
 }
 

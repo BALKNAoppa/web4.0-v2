@@ -19,8 +19,9 @@
  * Асуулт солих = зөвхөн энэ файлыг засах.
  */
 import type { Owner } from "@/lib/brand";
+import { mobilePlans } from "./mobile-plans";
 import { plans } from "./plans";
-import { wifiOptions, type WifiOption } from "./wifi-options";
+import { wifiOptions, wifiSection, type WifiOption } from "./wifi-options";
 // ⚠️ `tvod-movies.ts` нь ~35KB (50 кино, англи тайлбартай). Нүүрний
 // оролт нь client component тул тэр дата нүүрний bundle-д нэмэгдэнэ.
 // Гараар 3 нэр хуулбарлахаас ЭНЭ нь зөв: шинэ кино нэмэгдэхэд туслах
@@ -80,7 +81,6 @@ export type ContentSearchResult = {
   /** ГЭРЭЭНИЙ ЛОГИК — асуултын шууд хариулт, оролтын ӨМНӨ гарна */
   notes: string[];
   prompt: string;
-  placeholder: string;
   /** ОЛДООГҮЙ гарц — нэг мэдэгдэл, нэвтрэх урилгатай */
   missing: { title: string; body: string; ctaLabel: string; authReason: string };
   /** ОЛДСОН гарц — блокуудын гарчиг ба тайлбар */
@@ -97,6 +97,43 @@ export type ContentSearchResult = {
   app: { title: string; body: string; ctaLabel: string; href: string };
 };
 
+// =====================================================================
+// TROUBLESHOOT — шалтгаан харуулаад ХОЁР ЗАМЫН нэгийг сонгуулна
+// =====================================================================
+/**
+ * Ганц асуулттай МӨЧЛӨГ: шалтгаан → сонголт → шийдэл ЭСВЭЛ ажилтан.
+ *
+ * `clarify`-аас ЯЛГААТАЙ нь: тэр нь оноогоор ШИЙДЭЛ сонгодог бол энэ нь
+ * ЗАМ салгадаг — нэг нь карт, нөгөө нь чат руу шилжилт. Оноо, `favors`
+ * хэрэггүй тул тусдаа төрөл болгов.
+ */
+export type TroubleshootResult = {
+  kind: "troubleshoot";
+  /** Богино шалтгаанууд — сонголтоос ӨМНӨ гарна */
+  causesTitle: string;
+  causes: string[];
+  /** Хоёр замын асуулт */
+  prompt: string;
+  /** ТӨХӨӨРӨМЖИЙН зам */
+  deviceLabel: string;
+  deviceTitle: string;
+  deviceCards: OfferCard[];
+  deviceNote: string;
+  /** ГОМДЛЫН зам — чат widget руу шилжинэ */
+  complaintLabel: string;
+  /** Progress дуусаад chat widget нээгдэх хүртэлх хугацаа (ms) */
+  handoffMs: number;
+};
+
+/**
+ * ЗӨВХӨН ТЕКСТ — карт, жагсаалт АЛГА. Хариулт нь `summary` дээр бүрэн дуусч,
+ * дараагийн алхам нь кейсийн ТҮВШНИЙ `cta` (ганц товч) байх үед.
+ *
+ * Яагаад хоосон `offer` биш: тэр нь `cardsTitle`-ээ хоосон грид дээр
+ * харуулж, доор нь юу ч байхгүй эвгүй зай үлдээнэ.
+ */
+export type NoticeResult = { kind: "notice" };
+
 export type AssistantResult =
   | OfferResult
   | PlansResult
@@ -104,7 +141,9 @@ export type AssistantResult =
   | TimelineResult
   | EscalateResult
   | ClarifyResult
-  | ContentSearchResult;
+  | ContentSearchResult
+  | TroubleshootResult
+  | NoticeResult;
 
 export type AssistantQuestion = {
   id: string;
@@ -172,6 +211,13 @@ export type OfferCard = {
    * уншигдана — үнэ, датаг хоёр газар давхардуулж бичихгүй.
    */
   planId?: string;
+  /**
+   * Бүтээгдэхүүний зураг — `public/`-ээс эхлэх зам. Гарчгийн ДЭЭР гарна.
+   *
+   * ⚠️ Зөвхөн БОДИТ бараанд (утас, роутер, STB). Багц, дата эрх зэрэг
+   * биет БУС зүйлд зураг тавихгүй — тэдгээрт тоо нь өөрөө дүрс.
+   */
+  image?: string;
   /** Картын ГОЛ үзүүлэлт, хамгийн том бичигдэнэ ("60GB", "Mesh цэг") */
   headline?: string;
   /**
@@ -266,6 +312,18 @@ export type ClarifyOption = {
    * цуглуулах зорилготой асуултад хэрэгтэй).
    */
   favors: string[];
+  /**
+   * Энэ хариулт аль шийдлийг БОЛОМЖГҮЙ болгох вэ (`Solution.id`).
+   *
+   * `favors`-аас ЯЛГААТАЙ: оноо нэмэхгүй, харин тухайн шийдлийг эрэмбээс
+   * БҮРМӨСӨН гаргана. Оноогоор өрсөлдүүлэх нь ХАТУУ шаардлагад БУРУУ:
+   * "бусад сүлжээнд ярьдаг" гэсэн хүнд PLUS багц нь тэр эрхийг ОЛГОДОГГҮЙ
+   * тул хэдэн оноо цуглуулснаас үл хамааран сонгогдох ёсгүй.
+   *
+   * ⚠️ БҮХ шийдэл хасагдвал хасалтыг ҮЛ ХЭРЭГСЭНЭ — хоосон хариулт
+   * харуулахаас хамгийн тохирохыг харуулах нь дээр.
+   */
+  excludes?: string[];
 };
 
 /** Туслахын тавих нэг тодруулах асуулт */
@@ -314,6 +372,15 @@ export type ClarifyResult = {
    *   offer    — гарчигтай карт бүлгүүд (`Solution.groups`)
    */
   layout: "solution" | "plans" | "steps" | "offer";
+  /**
+   * Шийдлийн ГАРЧГИЙН ӨМНӨ гарах нэг мөр — зөвлөмжийг хэрэглэгчийн
+   * хариултуудтай холбоно. Заавал БИШ.
+   *
+   * ⚠️ Хэрэглэгчийн сонголтыг ИШ ТАТАХГҮЙ (өмнөх "Та «X» гэж хариуллаа"
+   * хэлбэр хасагдсан — [[CLARIFY_OUTRO]]-ийн тайлбарыг үз), зөвхөн
+   * тооцоолол хийсэн гэдгийг ерөнхийд хэлнэ.
+   */
+  lead?: string;
   steps: ClarifyStep[];
   solutions: Solution[];
 };
@@ -358,6 +425,8 @@ export function resolveClarify(
 
   const reasonsBySolution: Record<string, string[]> = {};
   const picked: string[] = [];
+  /** ХАТУУ хасалт — оноотой өрсөлдөхгүй, эрэмбээс шууд гарна. */
+  const excluded = new Set<string>();
 
   for (const step of result.steps) {
     const pickedId = answers[step.id];
@@ -367,17 +436,31 @@ export function resolveClarify(
 
     picked.push(option.label);
 
+    for (const solutionId of option.excludes ?? []) {
+      if (solutionId in scores) excluded.add(solutionId);
+    }
+
     for (const solutionId of option.favors) {
       // Байхгүй шийдлийг зааж бичсэн бол чимээгүй алгасна — агуулгын
       // үсгийн алдаа нь бүх урсгалыг унагаах ёсгүй.
       if (!(solutionId in scores)) continue;
       scores[solutionId] += 1;
-      (reasonsBySolution[solutionId] ??= []).push(option.label);
+
+      // ⚠️ Оноо нэмэгдэх бүрд шошго нэмэхгүй: ЖИНЛЭСЭН сонголт нь нэг
+      // шийдлийг `favors` дотор ХЭД ХЭДЭН УДАА заадаг (тухайн алхмыг
+      // хүчтэй болгох арга). Оноо нь давхарлагдах ЁСТОЙ, шошго нь ҮГҮЙ.
+      const reasons = (reasonsBySolution[solutionId] ??= []);
+      if (!reasons.includes(option.label)) reasons.push(option.label);
     }
   }
 
+  // ⚠️ Хасалтыг ОНООНООС ӨМНӨ хэрэглэнэ. Бүгд хасагдвал үл хэрэгсэнэ —
+  // хоосон хариулт харуулахаас хамгийн тохирохыг харуулах нь дээр.
+  const allowed = result.solutions.filter((solution) => !excluded.has(solution.id));
+  const pool = allowed.length > 0 ? allowed : result.solutions;
+
   // Тогтвортой эрэмбэ: оноо буурахаар, тэнцвэл анхны дараалал хэвээр.
-  const ranked = result.solutions
+  const ranked = pool
     .map((solution, index) => ({ solution, index, score: scores[solution.id] }))
     .sort((a, b) => b.score - a.score || a.index - b.index)
     .map((entry) => entry.solution);
@@ -394,33 +477,25 @@ export function resolveClarify(
 }
 
 /**
- * Дэлгэрэнгүй рүү шилжүүлэх төгсгөлийн үг — `layout` бүрт өөр.
- * Ярианы хариултыг доорх БОДИТ агуулгатай холбож өгнө.
- */
-const DETAIL_LEAD: Record<ClarifyResult["layout"], string> = {
-  plans: "доорх багцуудыг харьцууллаа",
-  steps: "доор алхам алхмаар нь жагсаалаа",
-  solution: "доор дэлгэрэнгүйг нь харууллаа",
-  offer: "доор багц, төхөөрөмжийг нь бүрдүүлж тавилаа",
-};
-
-/**
- * ЯРИАНЫ ХЭЛБЭРИЙН ХАРИУЛТ — бүтэцтэй дэлгэрэнгүйн ӨМНӨ гарна.
+ * ЯРИАНЫ ХААЛТ — бүтэцтэй хариултын ДАРАА гарна.
  *
- * Яагаад тогтмол өгүүлбэр БИШ: хэрэглэгчийн ЯГ хэлсэн үгийг эргүүлж иш
- * татсан текст нь "уншсан, ойлгосон" мэдрэмж төрүүлдэг. Тодруулах хариулт
- * бүрд өөр текст гарна.
+ * ⚠️ ТОГТМОЛ өгүүлбэр, template БИШ. Өмнө нь хэрэглэгчийн сонгосон
+ * хариултуудыг ЯГ ТЭР ЧИГТ нь иш татаад ("Та «Стрим, тоглоом», «20-50GB» гэж
+ * хариуллаа. Үүнд тулгуурлавал … хамгийн тохиромжтой байна — доор …") гаргадаг
+ * байв. Гурван асуудалтай:
+ *   · хэрэглэгч өөрийнхөө дөнгөж дарсан хариултыг эргүүлж уншдаг — шинэ
+ *     мэдээлэл байхгүй
+ *   · "тиймээс ЭНЭ" гэсэн шалтгаан-үр дагаврын хэлбэр нь урьдчилан бэлдсэн
+ *     дүрмийг ил гаргаж, хариултыг механик болгодог
+ *   · `layout`-оор хуваарилагддаг төгсгөл нь persona хооронд ЗӨРДӨГ байв
+ *     (P1-д төхөөрөмж байхгүй атал "төхөөрөмжийг нь бүрдүүлж тавилаа" гардаг)
  *
- * ⚠️ Энэ нь LLM БИШ, template. Бодит модель холбогдоход зөвхөн энэ функцийг
- * модельийн бичсэн текстээр солино — UI хөндөгдөхгүй.
+ * Одоо: юу хийснээ хэлээд, яриаг НЭЭЛТТЭЙ үлдээнэ.
+ *
+ * ⚠️ "дээрх" — энэ мөр нь картуудын ДООР байрладаг (`SolutionPanel >
+ * narrativeAtEnd`). Байрлалыг өөрчилвөл энэ үгийг ч сольно.
  */
-export function buildNarrative(result: ClarifyResult, outcome: ClarifyOutcome): string {
-  const said = outcome.picked.map((label) => `«${label}»`).join(", ");
-  const lead = said
-    ? `Та ${said} гэж хариуллаа. Үүнд тулгуурлавал `
-    : "Таны хариултууд дээр үндэслэвэл ";
-  return `${lead}${outcome.best.title} хамгийн тохиромжтой байна — ${DETAIL_LEAD[result.layout]}.`;
-}
+export const CLARIFY_OUTRO = "Нэмэлт тодруулах зүйл байвал доорх оролтод бичээрэй.";
 
 /**
  * Дараагийн алхмын САНАЛ — яриаг үргэлжлүүлэх урилга. Хариултыг "хаалттай
@@ -557,11 +632,177 @@ const dataOfferCase: AssistantQuestion = {
         cta: { label: "Авах", href: "#" },
       },
     ],
-    personalize: {
-      text: "Та өөрийн дугаараар нэвтэрвэл бид таны бодит хэрэглээг тодорхойлж, яг танд тохирох багцыг санал болгоно.",
-      ctaLabel: "Дугаараар нэвтрэх",
-      reason: "Хэрэглээнд тань тохирсон дата багц санал болгохын тулд дугаараа баталгаажуулна уу.",
-    },
+    // ⚠️ `personalize` ХАСАГДСАН. Энэ кейс нь persona 1-ийн 2-р шат
+    // (`youth-new-plan > followUps`) — тэр хэрэглэгч нь ШИНЭЭР дугаар авах гэж
+    // байгаа тул нэвтрэх дугаар нь БАЙХГҮЙ. Нэвтрэх урилга нь замгүй хаалга
+    // болно. Одоо байгаа хэрэглэгчид зориулсан хувилбар хэрэгтэй бол тусад нь
+    // кейс болгоно.
+  },
+};
+
+// ── PERSONA 1: 18-22 ЗАЛУУ — шинээр дугаар авах ───────────────────────
+/**
+ * ХОЁР ШАТТАЙ persona. Эх даалгавар: "өөрт тохирсон багцыг санал болгоод,
+ * «дата худалдаж авъя» гэхэд нь дата багц санал болгоё".
+ *
+ *   1-р шат (ЭНД)      — хэрэглээг тодруулж, `mobile-plans.ts`-аас тохирох
+ *                        дараа төлбөрт багцыг санал болгоно.
+ *   2-р шат (`followUps`) — оролтын доорх "Дата багц авах" чип нь АЛЬ ХЭДИЙН
+ *                        бэлэн `data-package-offer` кейсийг дуудна (7GB ·
+ *                        15GB · 50GB хямдралтай). Тэнд ШИНЭ юм бичээгүй —
+ *                        бэлдсэн мэдээллийг ЯГ ТЭР ХЭВЭЭР нь ашиглав.
+ *
+ * ⚠️ 18-22 насны ОНЦГОЙ хөнгөлөлт, багц ДАТАНД АЛГА. Тиймээс насаар ялгасан
+ * үнэ ЗОХИОГООГҮЙ — залуучуудын ХЭРЭГЛЭЭ (сошиал · видео · стрим) дээр
+ * тулгуурлаж санал болгоно. Насны багц гарвал энд нэмнэ.
+ *
+ * ⚠️ Картын `planId` — үнэ, дата эрхийг `mobile-plans.ts`-ээс уншина, энд
+ * ДАВХАРДУУЛЖ бичихгүй. `highlights` нь тухайн багцын БОДИТ `extras`
+ * (LookTV, MMusic & MBook) — зар биш, багцад ДАГАЛДДАГ зүйл.
+ */
+const YOUTH_PLAN_IDS = ["plus-16", "priority-24", "premium-88"];
+
+/**
+ * Багцын бүлэг. Санал болгосон нь ЭХЭНД, тэмдэгтэй — мобайл дээр карт зурвас
+ * хэвтээ гүйдэг тул голд эсвэл сүүлд байвал огт харагдалгүй өнгөрч болзошгүй.
+ *
+ * Persona 4-өөс ЯЛГААТАЙ нь: тэнд тэмдэг нь ҮРГЭЛЖ L+ дээр байдаг бол энд
+ * хариултаас хамаарч ХӨДӨЛНӨ — гурван шийдэл, гурван өөр эрэмбэ.
+ */
+function youthPlanGroup(picked: string): OfferGroup {
+  const sorted = [picked, ...YOUTH_PLAN_IDS.filter((id) => id !== picked)];
+
+  return {
+    title: "Санал болгох багц",
+    cards: sorted.flatMap((id) => {
+      const plan = mobilePlans.find((item) => item.id === id);
+      if (!plan) return [];
+
+      return [
+        {
+          id: `youth-${plan.id}`,
+          planId: plan.id,
+          badge: id === picked ? "ТАНД ТОХИРНО" : undefined,
+          highlights: plan.extras.slice(0, 2),
+          cta: { label: "Багцын мэдээлэл харах", href: plan.detailHref },
+        },
+      ];
+    }),
+    note: "Үнэ нь сарын суурь хураамж, НӨАТ-гүй.",
+  };
+}
+
+/** `mobile-plans.ts`-ийн багцыг шийдэл болгоно — нэр, дата эрхийг ТЭНДЭЭС. */
+function youthSolution(id: string, description: string): Solution | null {
+  const plan = mobilePlans.find((item) => item.id === id);
+  if (!plan) return null;
+
+  return {
+    id,
+    title: `${plan.name} · ${plan.data}`,
+    description,
+    groups: [youthPlanGroup(id)],
+  };
+}
+
+/**
+ * ГУРВАН тодруулах асуулт — ЯРИА → ДАТА ЮУНД → ХЭД. Дараалал нь зорилготой:
+ * ярианы эрх нь багцын ЗААГ (PLUS зөвхөн сүлжээндээ, PRIORITY/PREMIUM бүх
+ * сүлжээнд), дараа нь дата ЮУНД хэрэглэгддэг, хамгийн сүүлд ХЭМЖЭЭ.
+ *
+ * ⚠️ Ярианы сонголтууд нь `mobile-plans.ts`-ийн БОДИТ `features`-т тулгуурласан:
+ *   PLUS      — "Сүлжээндээ хязгааргүй ярих эрх"
+ *   PRIORITY  — "Бүх сүлжээнд хязгааргүй ярих эрх"
+ *   PREMIUM   — "Бүх сүлжээнд хязгааргүй ярих, мессеж бичих"
+ * Тиймээс бусад сүлжээнд ярьдаг хүнд PLUS хүрэлцэхгүй — таамаг биш, дата.
+ */
+const youthSteps: ClarifyStep[] = [
+  {
+    id: "calls",
+    prompt: "Ярианы хэрэглээ тань ямар вэ?",
+    options: [
+      // Сүлжээндээ ярих эрх нь ГУРВУУЛАНД байгаа тул энэ хариулт багц
+      // сонгоход НӨЛӨӨЛӨХГҮЙ — хязгаарлалт биш.
+      { id: "in-network", label: "Сүлжээндээ ярьдаг", favors: [] },
+      {
+        id: "all-network",
+        label: "Бусад сүлжээнд ч ярьдаг",
+        favors: [],
+        // ⚠️ ОНОО БИШ, ХАСАЛТ. PLUS-д зөвхөн сүлжээндээ хязгааргүй эрх байдаг
+        // тул бусад сүлжээнд ярьдаг хүнд ТОХИРОХГҮЙ. Оноогоор өрсөлдүүлбэл
+        // "бусад сүлжээнд ярьдаг + 15GB" гэсэн хариулт PLUS-ыг гаргаж, байхгүй
+        // эрхийг санал болгоно.
+        excludes: ["plus-16"],
+      },
+      { id: "no-calls", label: "Бараг ярьдаггүй", favors: [] },
+    ],
+  },
+  {
+    id: "data-use",
+    prompt: "Датаа юунд хэрэглэдэг вэ?",
+    options: [
+      { id: "social", label: "Instagram, Facebook", favors: ["plus-16"] },
+      { id: "video", label: "Youtube, Streaming үзэх", favors: ["priority-24"] },
+      // Gaming ба онлайн хурал НЭГТГЭГДСЭН: хоёул тасралтгүй, хоцролтод
+      // мэдрэмтгий хэрэглээ тул ижил багц шаардана. Дээд багцыг дэмжинэ —
+      // PREMIUM-д Priority хурд бий, дата хамгийн их.
+      { id: "gaming-meeting", label: "Gaming, Online Meeting", favors: ["premium-88"] },
+    ],
+  },
+  {
+    id: "volume",
+    prompt: "Сард ойролцоогоор хэдэн GB хэрэглэдэг вэ?",
+    options: [
+      // ⚠️ ЭНЭ АЛХМЫН ЖИН ХОЁР ДАХИН — `favors`-т id-г ДАВХАР бичсэн
+      // (`resolveClarify` тохиолдол бүрд 1 оноо нэмдэг). Шалтгаан: тоо хэмжээ
+      // нь ХАТУУ хязгаар — сард 50GB хэрэглэдэг хүнд 16GB багц нь юунд
+      // хэрэглэдгээс ҮЛ ХАМААРАН хүрэхгүй.
+      // ⚠️ Хувиарлалт нь БАГЦЫН БОДИТ хэмжээнд тааруулагдсан (16 / 24 / 88GB).
+      // Өмнө нь "20-50GB" байсан нь PRIORITY-ийн 24GB-тай зөрч, 45GB
+      // хэрэглэдэг хүнд хүрэхгүй багц санал болгодог байв.
+      { id: "low", label: "15GB хүртэл", favors: ["plus-16", "plus-16"] },
+      { id: "mid", label: "15-24GB", favors: ["priority-24", "priority-24"] },
+      { id: "high", label: "24GB-аас их", favors: ["premium-88", "premium-88"] },
+      // ШИНЭ хэрэглэгч хэрэглээгээ мэдэхгүй байх нь ЗҮЙТЭЙ. Хуурамч сонголт
+      // өгөхөөс "мэдэхгүй" гэж хэлэх боломж өгөх нь зөв.
+      { id: "unknown", label: "Сайн мэдэхгүй", favors: [] },
+    ],
+  },
+];
+
+/**
+ * ⚠️ ЭХНИЙХ = fallback. Хэрэглэгчийн хариулт тодорхой заалт өгөөгүй үед хамгийн
+ * бага багцыг санал болгоно — илүү авахуулж дараа нь буулгахаас, бага авчихаад
+ * дараа нь нэмэх нь хэрэглэгчид зөв.
+ */
+const youthSolutions: Solution[] = [
+  youthSolution(
+    "plus-16",
+    "Сошиал, мессеж голлодог бол 16GB сарын турш хангалттай — илүүг төлөх шаардлагагүй.",
+  ),
+  youthSolution("priority-24", "Өдөр тутам видео үздэг бол 15-24GB танд хангалттай. Гэхдээ таны хэрэглээнээс хамаарч ихэсч болохыг анхаараарай"),
+  youthSolution(
+    "premium-88",
+    "Стрим, тоглоом их бол 88GB нь дата дуусах айдасгүй хэрэглэх боломж өгнө.",
+  ),
+].filter((solution): solution is Solution => solution !== null);
+
+const youthNewPlanCase: AssistantQuestion = {
+  id: "youth-new-plan",
+  owner: "unitel",
+  featured: true,
+  question: "Шинээр дугаар авъя, надад ямар багц тохирох вэ?",
+  summary:
+    "Та шинэ хэрэглэгч болохын тул өөрийн хэрэглээнд тохирсон сонголтуудаас багцаа " +
+    "бүтээх боломжтой. Таны гар утасны хэрэглээ хэр вэ? Хэдэн зүйл тодруулъя.",
+  // 2-р шат: оролтын доорх чипээр дата багц руу үргэлжилнэ.
+  followUps: ["data-package-offer", "data-long-term"],
+  result: {
+    kind: "clarify",
+    layout: "offer",
+    lead: "Таны хариултуудад тулгуурлан тооцоолол хийхэд танд дараах багцууд тохирох юм байна.",
+    steps: youthSteps,
+    solutions: youthSolutions,
   },
 };
 
@@ -585,7 +826,9 @@ const phoneLeasingCase: AssistantQuestion = {
   featured: true,
   question: "Гар утас лизингээр авах",
   summary:
-    "Гар утсаа 24 сарын лизингээр, урьдчилгаа төлбөргүй авах боломжтой — шинэ дугаар нээлгэх шаардлагатай. Доор хамгийн эрэлттэй гурван загварыг сарын төлбөртэй нь харууллаа.",
+    "Та гар утсыг бэлэн болон 12-36 сарын лизингийн хугацааны сонголттойгоор " +
+    "«Toki лизинг» үйлчилгээгээр авах боломжтой. Доор хамгийн эрэлттэй гурван " +
+    "загварыг сарын төлбөртэй нь харууллаа.",
   result: {
     kind: "offer",
     cardsTitle: "Лизингийн боломжтой загварууд",
@@ -593,6 +836,7 @@ const phoneLeasingCase: AssistantQuestion = {
       {
         id: "phone-iphone-17-pro",
         headline: "iPhone 17 Pro",
+        image: "/a28de-17-pro-deep-blue.png",
         subline: "256GB",
         oldPrice: "5’888’000₮",
         price: "5’538’000₮",
@@ -600,29 +844,31 @@ const phoneLeasingCase: AssistantQuestion = {
         // хамгийн чухал мэдээлэл тул тодруулав.
         note: "230’750₮ × 24 сар",
         highlights: ["Бэлэгтэй", "350’000₮ хямдарсан"],
-        cta: { label: "Лизингээр авах", href: "#" },
+        cta: { label: "Дэлгэрэнгүй мэдээлэл авах", href: "#" },
       },
       {
         id: "phone-galaxy-z-flip8",
         headline: "Galaxy Z Flip8",
+        image: "/096a9-galaxy-zflip8-graphite-back.png",
         badge: "ШИНЭ",
         price: "4’908’000₮",
         note: "204’500₮ × 24 сар",
         highlights: ["Бэлэгтэй"],
-        cta: { label: "Лизингээр авах", href: "#" },
+        cta: { label: "Дэлгэрэнгүй мэдээлэл авах", href: "#" },
       },
       {
         id: "phone-huawei-pura-80",
         headline: "Huawei Pura 80 Ultra",
+        image: "/c05fd-03.png",
         oldPrice: "5’888’000₮",
         price: "4’998’000₮",
         note: "208’250₮ × 24 сар",
         highlights: ["Бэлэгтэй", "890’000₮ хямдарсан"],
-        cta: { label: "Лизингээр авах", href: "#" },
+        cta: { label: "Дэлгэрэнгүй мэдээлэл авах", href: "#" },
       },
     ],
     personalize: {
-      text: "Та өөрийн дугаараар нэвтэрвэл лизингийн эрх, боломжит хязгаарыг тань шалгаад таньд тохирох загваруудыг харуулна.",
+      text: "Та өөрийн дугаараар нэвтэрснээр лизингийн эрхээ тооцоолуулж, өөрт тохирох илүү дэлгэрэнгүй мэдээлэл авах боломжтой.",
       ctaLabel: "Дугаараар нэвтрэх",
       reason: "Лизингийн эрхийг тань шалгахын тулд дугаараа баталгаажуулна уу.",
     },
@@ -649,32 +895,14 @@ const businessNexmindCase: AssistantQuestion = {
   featured: true,
   question: "Байгууллагадаа интернэт, IT шийдэл авах",
   summary:
-    "Байгууллагын сүлжээ, дата төв, IT шийдлийг Unitel Group-ийн охин компани Nexmind хариуцдаг. Жижиг үйлдвэрлэлийн орчинд хамгийн түгээмэл гурван чиглэлийг доор тавилаа — дэлгэрэнгүйг Nexmind-ийн сайтаас үзнэ үү.",
-  result: {
-    kind: "offer",
-    cardsTitle: "Nexmind-ийн үйлчилгээний чиглэлүүд",
-    cards: [
-      {
-        id: "nexmind-managed",
-        headline: "Managed network",
-        subline: "сүлжээний удирдлага",
-        cta: { label: "Nexmind дээр үзэх", href: "https://nexmind.mn/managednetwork" },
-      },
-      {
-        id: "nexmind-datacenter",
-        headline: "Дата төв",
-        subline: "сервер байршуулалт",
-        cta: { label: "Nexmind дээр үзэх", href: "https://nexmind.mn/" },
-      },
-      {
-        id: "nexmind-it",
-        headline: "IT шийдэл",
-        subline: "дэд бүтцийн зөвлөх",
-        cta: { label: "Nexmind дээр үзэх", href: "https://nexmind.mn/" },
-      },
-    ],
-    // `personalize` ЗОРИУД байхгүй — дээрх тайлбарыг үз.
-  },
+    "Байгууллагын дотоод сүлжээ, дата төв, IT шийдлийг Unitel Group-ийн байгууллагын " +
+    "үйлчилгээ, шийдлүүдийг нэвтрүүлэгч Nexmind-ийн вэб хуудаснаас дэлгэрэнгүй " +
+    "мэдээлэл авах боломжтой.",
+  // ⚠️ КАРТ АЛГА. Туслахын үүрэг нь энд ЗӨВ ГАЗАР РУУ ЧИГЛҮҮЛЭХ — үйлчилгээний
+  // жагсаалтыг өөрөө давтах биш. Гурван картыг ХАСАВ; жагсаалт нь Nexmind-ийн
+  // сайт дээр өөрөө байгаа бөгөөд тэнд ҮРГЭЛЖ шинэчлэгддэг.
+  cta: { label: "Веб хуудас руу шилжих", href: "https://nexmind.mn/" },
+  result: { kind: "notice" },
 };
 
 // ── PERSONA 4: UNIVISION-Д ШИНЭЭР ХОЛБОГДОХ ──────────────────────────
@@ -709,8 +937,10 @@ function univisionPlanCard(name: string, badge?: string): OfferCard | null {
     id: `univision-plan-${plan.id}`,
     headline: plan.name,
     subline: internet?.features.map((feature) => feature.value).join(" · "),
-    price: plan.price,
-    note: "сард · НӨАТ-тай",
+    // Сарын суурь хураамж гэдгийг үнэн дээр нь тодотгоно — доорх төхөөрөмжийн
+    // картуудтай зэрэгцэж гарах тул ялгаа нь ил байх ёстой.
+    price: `${plan.price}/сар`,
+    note: "НӨАТ-тай",
     badge,
     highlights: plan.groups
       .filter((group) => group.title !== "Интернэт" && group.title !== "Суурин утас")
@@ -743,6 +973,7 @@ const univisionPlanCards = [
 const homeGatewayCard: OfferCard = {
   id: "device-hg1",
   headline: "HG1 HomeGateway",
+  image: "/homegateway.png",
   subline:
     "IPTV төхөөрөмжийг интернэтэд холбож, гэр дотор утасгүй сүлжээ үүсгэнэ. Wi-Fi 6, 2.4 ба 5GHz, 4 LAN оролт.",
   price: "8’000₮ / сард",
@@ -753,6 +984,7 @@ const homeGatewayCard: OfferCard = {
 const stbCard: OfferCard = {
   id: "device-x5-stb",
   headline: "X5 STB",
+  image: "/androidbox.png",
   subline:
     "Юнивишний телевиз, контентын үйлчилгээ, нэмэлт аппликейшнүүдийг ашиглах IPTV төхөөрөмж. AndroidTV 14, 4K дүрс.",
   price: "11’000₮ / сард",
@@ -767,6 +999,7 @@ function meshCard(option: WifiOption): OfferCard {
   return {
     id: "device-mesh",
     headline: "HomeGateway Mesh",
+    image: "/hgwmesh.png",
     subline: `Wi-Fi хамрах хүрээг тэлэх нэмэлт төхөөрөмж — Aginet апп, эцэг эхийн хяналттай. Танайд ${amount} тохиромжтой.`,
     price: "7’000₮ / сард",
     note: "252’000₮ үндсэн үнэ",
@@ -1001,9 +1234,11 @@ const tvodContentCase: AssistantQuestion = {
   featured: true,
   question: "Танайд шинэ кино нэмэгддэг юм уу ер нь",
   summary:
-    "Тийм — контентын сан шинэчлэгддэг. Гэхдээ ТУХАЙН кино байгаа эсэх нь эрхийн " +
-    "гэрээнээс шалтгаална. Та юу сонирхож байгаагаа бичвэл манайд байгаа эсэхийг " +
-    "шалгаад хэрхэн үзэхийг харуулна.",
+    "Бид хэрэглэгчид хүргэж буй бүтээгдэхүүн, үйлчилгээнийхээ чанарыг тасралтгүй " +
+    "сайжруулан шинэчилж ажилладаг. ТУХАЙН кино контент байгаа эсэх нь эрх " +
+    "эзэмшигчийн гэрээнээс шалтгаалдаг. Та өөрийн хайж байгаа кино контентын " +
+    "талаарх мэдээллийг бичвэл би танд манай кино санд байгаа эсэхийг шалгаад " +
+    "өгч болно. Шалгуулах уу?",
   result: {
     kind: "content-search",
     notes: [
@@ -1011,8 +1246,7 @@ const tvodContentCase: AssistantQuestion = {
       "Гэрээний хугацаа дуусвал тухайн контент сангаас ХАСАГДАНА.",
       "Шинээр гэрээ байгуулагдвал контент НЭМЭГДЭНЭ.",
     ],
-    prompt: "Ямар төрлийн контент сонирхож байна вэ? Дэлгэрэнгүй бичнэ үү.",
-    placeholder: "Киноны нэр, төрөл эсвэл сэдэв…",
+    prompt: "Киноны нэр, төрөл эсвэл сэдвээ доорх оролтод бичээд илгээнэ үү.",
     missing: {
       title: "Энэ контент одоогоор манайд байхгүй байна",
       body:
@@ -1042,6 +1276,71 @@ const tvodContentCase: AssistantQuestion = {
       ctaLabel: "Univision GO татах",
       href: "/univision-go",
     },
+  },
+};
+
+// ── PERSONA 6: ИНТЕРНЭТ УДААН — Mesh эсвэл гомдол ─────────────────────
+/**
+ * Persona 4-ЭЭС ЯЛГААТАЙ ХИЛ: 4 нь ШИНЭЭР холбогдох (багц + төхөөрөмж), энэ нь
+ * АЛЬ ХЭДИЙН холбогдсон хэрэглэгч үйлчилгээгээ САЙЖРУУЛАХ. Тиймээс энд багц
+ * ОГТ харуулахгүй — зөвхөн хамрах хүрээний асуудал.
+ *
+ * УРСГАЛ (хэрэглэгчийн заасан):
+ *   1. Хурд удаашрах ТҮГМЭЛ шалтгаануудыг богиноор жагсаана.
+ *   2. ГАНЦ асуулт: нэмэлт төхөөрөмж сонирхох уу, эсвэл гомдол мэдүүлэх үү?
+ *   3a. Гомдол → чат руу ШИЛЖҮҮЛНЭ (`EscalateView`, `complaint-billing`-тэй
+ *       ИЖИЛ механизм: `univision:chat-ask` эвент).
+ *   3b. Төхөөрөмж → хэмжээгээр нь Mesh санал болгоно.
+ *
+ * ⚠️ Хэмжээ ↔ Mesh-ийн дүрэм `wifi-options.ts`-ээс. Persona 4 ч мөн тэндээс
+ * уншдаг — дүрэм НЭГ л газарт, хоёр persona зөрөх боломжгүй.
+ *
+ * ⚠️ Хэмжээг ДАХИН асуухгүй (persona 4 асуудаг). Оронд нь дөрвүүлэнг нь
+ * хүснэгт болгож харуулна — хэрэглэгч өөрийнхөө мөрийг олно. Ингэснээр энэ
+ * persona ГАНЦ асуулттай хэвээр үлдэнэ.
+ *
+ * ⚠️ Шалтгаанууд нь ЕРӨНХИЙ Wi-Fi шалтгаан — тухайн сүлжээний оношилгоо БИШ.
+ * Бодит хэмжилт хийхгүй тул "танайд ийм байна" гэж БАТАЛЖ хэлэхгүй.
+ */
+const meshSizeCards: OfferCard[] = wifiOptions.map((option) => ({
+  id: `slow-${option.id}`,
+  headline: option.name,
+  longHeadline: true,
+  subline: option.description,
+  // Гол хариулт нь ТӨХӨӨРӨМЖИЙН бүрдэл — брэндийн өнгөөр онцолно.
+  note: option.devices,
+  highlights: [option.previewText],
+  cta: { label: "Дэлгэрэнгүй", href: wifiSection.ctaHref },
+}));
+
+const internetSlowCase: AssistantQuestion = {
+  id: "internet-slow",
+  owner: "univision",
+  featured: true,
+  question: "Интернэтийн хурд удаан байна",
+  summary:
+    "Хурд удаашрах шалтгаан хэд хэдэн байж болно. Доор хэрэглэгчдэд тулгардаг " +
+    "түгээмэл тавыг нь харуулж байна.",
+  result: {
+    kind: "troubleshoot",
+    causesTitle: "Хурд удаашрах түгээмэл шалтгаан",
+    causes: [
+      "Роутераас хол, хана болон тавилга дамжсан",
+      "Олон төхөөрөмж зэрэг холбогдсон",
+      "2.4GHz давтамж хөршийн сүлжээтэй давхцсан",
+      "Багцын хурдны хязгаартаа хүрсэн",
+      "Роутер хуучирсан (Wi-Fi 6 биш)",
+    ],
+    prompt: "Цааш юу хийх вэ?",
+    deviceLabel: "Нэмэлт төхөөрөмж сонирхож байна",
+    deviceTitle: "Байрны хэмжээгээр",
+    deviceCards: meshSizeCards,
+    // Үнэ нь persona 4-ийн Mesh картынхтай ИЖИЛ эх сурвалжаас — хоёр газар
+    // өөр тоо гарах ёсгүй.
+    deviceNote:
+      "Mesh нэг ширхэг — 7’000₮ / сард, 36 сарын лизинг (үндсэн үнэ 252’000₮). Танай хэмжээнд аль нь тохирохыг дээрээс үзнэ үү.",
+    complaintLabel: "Гомдол мэдүүлье",
+    handoffMs: 1200,
   },
 };
 
@@ -1092,11 +1391,14 @@ const familyCase: AssistantQuestion = {
 
 // ── ЗАЛУУ — мобайл багц ───────────────────────────────────────────────
 const youthCase: AssistantQuestion = {
+  // ⚠️ `featured` БИШ: persona 1 (`youth-new-plan`) үүнийг ОРЛОВ. Устгаагүй
+  // шалтгаан — `plan-difference` энэ рүү `followUps`-оор заадаг. Ерөнхий
+  // цэвэрлэгээний үед хамт шийднэ.
   id: "youth-mobile-plan",
   owner: "unitel",
   summary:
     "Мобайл багцаа сарын дата хэрэглээ, ярианы хэрэгцээндээ тохируулж сонгоно. Голдуу мессеж, сошиал бол бага, өдөр тутам видео үздэг бол дунд, стрим тоглоом их бол өндөр багц тохиромжтой. Доор хамгийн их авдаг гурвыг нь тавилаа.",
-  featured: true,
+  featured: false,
   question: "Надад ямар мобайл багц тохирох вэ?",
   followUps: ["plan-difference", "data-package-offer"],
   result: {
@@ -1353,11 +1655,13 @@ const meshCountCase: AssistantQuestion = {
  * логиктой яг ижил (`resolveHref` / `SmartLink`).
  */
 export const assistantQuestions: AssistantQuestion[] = [
+  youthNewPlanCase,
   dataOfferCase,
   phoneLeasingCase,
   businessNexmindCase,
   univisionNewCase,
   tvodContentCase,
+  internetSlowCase,
   familyCase,
   youthCase,
   officeCase,
@@ -1367,6 +1671,35 @@ export const assistantQuestions: AssistantQuestion[] = [
   meshCountCase,
   complaintQuestion,
 ];
+
+// =====================================================================
+// PERSONA ТОВЧНУУД — нүүрний оролтын доор
+// =====================================================================
+/**
+ * Хэрэглэгчийн 6 persona-г ДУГААРЫН дарааллаар (2026-08-28-ны жагсаалт).
+ * Товч дарахад тухайн persona-гийн ТРИГГЕР асуултыг оролтод бөглөнө.
+ *
+ * ⚠️ Асуултын текстийг ЭНД давхардуулж бичихгүй — `assistantQuestions`-ээс
+ * id-гаар нь уншина. Асуулт өөрчлөгдвөл товч өөрөө дагаж шинэчлэгдэнэ.
+ *
+ * ⚠️ Байхгүй id-г ШҮҮЖ хаяна: кейс устгагдвал товч нь чимээгүй алга болно,
+ * хоосон товч үлдэхгүй.
+ */
+const PERSONA_IDS = [
+  "youth-new-plan",
+  "phone-leasing",
+  "business-nexmind",
+  "univision-new-customer",
+  "tvod-content-search",
+  "internet-slow",
+];
+
+export const personaShortcuts: { label: string; question: string }[] = PERSONA_IDS.flatMap(
+  (id, index) => {
+    const item = assistantQuestions.find((question) => question.id === id);
+    return item ? [{ label: `Persona ${index + 1}`, question: item.question }] : [];
+  },
+);
 
 // =====================================================================
 // ИХ ХАЙГДСАН СЭДВҮҮД — input-ийн ДООРХ мөр (PLACEHOLDER)

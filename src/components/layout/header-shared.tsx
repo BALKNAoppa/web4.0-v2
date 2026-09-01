@@ -551,9 +551,31 @@ export function AccountMenu() {
 }
 
 /** Icon-only ghost button */
-export function IconButton({ children, label }: { children: React.ReactNode; label: string }) {
+export function IconButton({
+  children,
+  label,
+  onClick,
+  active,
+}: {
+  children: React.ReactNode;
+  label: string;
+  /**
+   * Өгвөл БОДИТ товч болно. Өгөхгүй бол зөвхөн харагдац — жишээ нь
+   * "Хэл солих" нь i18n давхарга байхгүй тул одоогоор үйлдэлгүй.
+   */
+  onClick?: () => void;
+  /** Нээлттэй төлөв — дэвсгэрээр тодруулж, `aria-expanded` мөн тавина. */
+  active?: boolean;
+}) {
   return (
-    <Button variant="ghost" size="icon" aria-label={label}>
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={label}
+      aria-expanded={onClick ? active : undefined}
+      onClick={onClick}
+      className={cn(active && "bg-muted text-foreground")}
+    >
       {children}
     </Button>
   );

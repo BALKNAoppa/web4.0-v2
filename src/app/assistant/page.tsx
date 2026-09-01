@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { ChatHero } from "@/components/sections/chat-hero";
 
 export const metadata: Metadata = {
-  title: "AI туслах",
+  title: "Ухаалаг туслах",
   description: "Асуултаа бичээд танд тохирох багц, үйлчилгээг олоорой.",
 };
 
@@ -36,7 +36,7 @@ export default async function AssistantPage({
 
   return (
     <main id="main-content" className="min-h-screen">
-      <Breadcrumb items={[{ label: "AI туслах" }]} />
+      <Breadcrumb items={[{ label: "Ухаалаг туслах" }]} />
       <ChatHero mode="page" initialQuestions={initialQuestions} />
       <Footer />
     </main>
