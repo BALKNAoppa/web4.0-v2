@@ -39,7 +39,7 @@ export const wifiOptions: WifiOption[] = [
     id: "medium-apt",
     name: "Дунд зэргийн орон сууц",
     description: "3-4 өрөө, <100m²",
-    previewText: "Дунд зэргийн орон сууцанд нэг Mesh нэмэхэд алслагдсан өрөөнүүд ч тогтвортой холбогдоно.",
+    previewText: "Дунд зэргийн орон сууцанд нэг Mesh нэмэхэд гэрийн аль ч хэсэгт сүлжээ тогтвортой байна.",
     devices: "1 × HGW + 1 × Mesh",
     meshCount: 1,
     illustration: "medium", // 2 device — HGW + 1 Mesh

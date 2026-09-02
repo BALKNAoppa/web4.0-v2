@@ -42,6 +42,7 @@ import {
   type ClarifyOutcome,
   type ClarifyResult,
   type ContentSearchResult,
+  type NoticeResult,
   type TroubleshootResult,
   type DiagnosticResult,
   type OfferCard,
@@ -819,6 +820,9 @@ function Answer({
         )}
         {introDone && matched.result.kind === "escalate" && (
           <EscalateView result={matched.result} asked={block.asked} />
+        )}
+        {introDone && matched.result.kind === "notice" && (
+          <NoticeView result={matched.result} owner={matched.owner} />
         )}
         {introDone && matched.result.kind === "troubleshoot" && (
           <TroubleshootView
@@ -1616,14 +1620,24 @@ function OfferView({ result, owner }: { result: OfferResult; owner: Owner }) {
  * дээр грид болж `overflow-visible` болдог тул тэнд нэмэлт зай хэрэггүй.
  */
 function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
-  const ordered = [...cards].sort(
-    (a, b) => Number(Boolean(b.oldPrice)) - Number(Boolean(a.oldPrice)),
-  );
+  const ordered = [...cards].sort((a, b) => {
+    // ① ТЭМДЭГТЭЙ карт ЭХЭНД. Тэмдэг нь агуулга бичигчийн ИЛ онцлол
+    //    ("ШИНЭ", "ТАНД ТОХИРСОН БАГЦ") тул хямдралаас ч хүчтэй дохио.
+    const byBadge = Number(Boolean(b.badge)) - Number(Boolean(a.badge));
+    if (byBadge !== 0) return byBadge;
+
+    // ② Дараа нь ХЯМДРАЛТАЙ. Мобайл дээр карт хэвтээ гүйдэг тул сүүлд
+    //    байсан хямдрал огт харагдалгүй өнгөрч болзошгүй.
+    return Number(Boolean(b.oldPrice)) - Number(Boolean(a.oldPrice));
+  });
 
   return (
     <div
       className={cn(
-        "no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pt-2 pb-1 sm:grid sm:overflow-visible sm:pt-0 sm:pb-0",
+        // `sm:gap-4` — 3 карт зэрэгцэхэд 12px нь шахсан харагддаг байв. Мобайл
+        // дээр `gap-3` хэвээр: тэнд карт хажуу тийш гүйдэг тул дараагийнх нь
+        // ирмэгээс цухуйх зай нь өөрөө зааг болдог.
+        "no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pt-2 pb-1 sm:grid sm:gap-4 sm:overflow-visible sm:pt-0 sm:pb-0",
         // Багана нь картын ТООГООР: 1 → бүтэн өргөн (хайлтын яг таарсан
         // контент), 2 ба 4 → хоёр багана (4 нь 3 баганад 3+1 болж унждаг
         // тул 2×2 нь цэвэр), бусад → гурав.
@@ -1637,7 +1651,7 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
       {ordered.map((card) => {
         // `planId` өгсөн бол үнэ, датаг `mobile-plans.ts`-ээс уншина —
         // тэдгээрийг кейсийн дата дотор давхардуулж бичихгүй.
-        const { headline, subline, price } = resolveOfferCard(card);
+        const { headline, subline, price, priceNote } = resolveOfferCard(card);
 
         return (
           <div
@@ -1663,7 +1677,7 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
                 ⚠️ `alt=""`: гарчиг нь ЯГ доор нь байгаа тул дүрс нь чимэглэл —
                 screen reader-т нэрийг ХОЁР УДАА уншуулах нь шуугиан. */}
             {card.image && (
-              <div className="bg-muted relative mb-3 h-32 w-full overflow-hidden rounded-xl">
+              <div className="bg-muted relative mb-4 h-32 w-full overflow-hidden rounded-xl">
                 <Image
                   src={card.image}
                   alt=""
@@ -1684,28 +1698,31 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
             >
               {headline}
             </div>
-            {subline && <div className="text-muted-foreground mt-1 text-xs">{subline}</div>}
+            {subline && <div className="text-muted-foreground mt-1.5 text-xs">{subline}</div>}
 
             {/* Үнэ — тогтмол үнэгүй шийдэлд байхгүй байж болно.
                 `oldPrice` байвал зураастай хуучин үнэ ЭХЭНД нь орно. */}
             {price && (
-              <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                 {card.oldPrice && (
                   <span className="text-muted-foreground text-sm line-through">
                     {card.oldPrice}
                   </span>
                 )}
                 <span className="text-foreground text-lg leading-none font-extrabold">{price}</span>
+                {/* НӨАТ-ийн тодотгол — үнэтэйгээ ЗЭРЭГЦЭЖ, жижиг саарлаар.
+                    Эцэг нь `items-baseline` тул суурь шугам нь тэнцэнэ. */}
+                {priceNote && <span className="text-muted-foreground text-xs">({priceNote})</span>}
               </div>
             )}
 
             {/* Нэмэлт тэмдэглэл ("x3 хурд") — брэндийн өнгөөр онцолно */}
             {card.note && (
-              <div className="text-primary mt-1.5 text-xs font-semibold">{card.note}</div>
+              <div className="text-primary mt-2 text-xs font-semibold">{card.note}</div>
             )}
 
             {card.highlights && card.highlights.length > 0 && (
-              <ul className="mt-3 space-y-1">
+              <ul className="mt-4 space-y-1.5">
                 {card.highlights.map((highlight) => (
                   <li
                     key={highlight}
@@ -1718,11 +1735,82 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
               </ul>
             )}
 
-            {/* `mt-auto` — картуудын өндөр зөрсөн ч товчнууд нэг шугамд суумаар */}
+            {/* Товчны ДЭЭД зай. `mt-auto` нь үлдсэн зайг шингээж товчнуудыг
+                нэг шугамд суулгана, `h-4` нь хамгийн ӨНДӨР картад ч 16px зай
+                баталгаажуулна — эс бөгөөс бичвэрт наалдана.
+                ⚠️ Зайг товчны `mt-auto`-гоор өгч БОЛОХГҮЙ: `mt-auto` ба `mt-4`
+                хоёр нэг шинжийг тавьдаг тул зөрчилдөнө. */}
+            <div className="mt-auto h-4 shrink-0" aria-hidden="true" />
             <OfferCardCta cta={card.cta} owner={owner} />
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// =====================================================================
+// NOTICE — үйлчилгээний хүрээг нэрлээд эзэн сайт руу чиглүүлнэ
+// =====================================================================
+/**
+ * Карт БИШ, нэр + тайлбарын мөрүүд. `OfferCardGrid`-ээс ЯЛГААТАЙ нь: үнэ,
+ * badge, товч байхгүй — энэ нь ХУДАЛДАХ биш ЧИГЛҮҮЛЭХ хэлбэр.
+ *
+ * Линк нь жижиг, ХҮРЭЭТЭЙ (дүүрэн товч БИШ) бөгөөд жагсаалтын ДООР,
+ * зүүн ирмэгт. Дүүрэн товч нь үйлдлийн гол зам гэдгийг илэрхийлдэг —
+ * энд гол зам нь уншиж ойлгох, дараа нь хүсвэл цааш үзэх.
+ */
+function NoticeView({ result, owner }: { result: NoticeResult; owner: Owner }) {
+  return (
+    <div className="animate-in fade-in duration-500 ease-out">
+      {result.title && (
+        <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
+          {result.title}
+        </div>
+      )}
+
+      {result.items && result.items.length > 0 && (
+        <ul className="mt-3 space-y-2.5">
+          {result.items.map((item) => (
+            <li
+              key={item.name}
+              // Мобайл дээр босоо (нэр → тайлбар), sm+ дээр хоёр багана.
+              // `sm:w-44` — нэрсийн ирмэг тэгшилж, тайлбарууд нэг шугамаас
+              // эхэлнэ. Хамгийн урт нэр 15 тэмдэгт тул 176px хүрэлцээтэй.
+              className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3"
+            >
+              {/* `href` өгсөн бол НЭР нь линк. Товч БИШ: мөр бүр нь мэдээлэл,
+                  цаашид үзэх нь ЗААВАЛ биш. `SmartLink` нь гадаад хаягийг
+                  шинэ tab-аар нээнэ. */}
+              {item.href ? (
+                <SmartLink
+                  href={item.href}
+                  owner={owner}
+                  className="text-foreground hover:text-primary shrink-0 text-sm font-semibold underline decoration-dotted underline-offset-4 transition-colors sm:w-44"
+                >
+                  {item.name}
+                </SmartLink>
+              ) : (
+                <span className="text-foreground shrink-0 text-sm font-semibold sm:w-44">
+                  {item.name}
+                </span>
+              )}
+              <span className="text-muted-foreground text-sm leading-relaxed">{item.hint}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {result.cta && (
+        <SmartLink
+          href={result.cta.href}
+          owner={owner}
+          className="border-primary text-primary hover:bg-primary/10 mt-4 inline-flex h-9 items-center justify-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors"
+        >
+          {result.cta.label}
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </SmartLink>
+      )}
     </div>
   );
 }
@@ -2019,7 +2107,7 @@ function OfferCardCta({ cta, owner }: { cta: OfferCard["cta"]; owner: Owner }) {
   // Мобайл дээр карт нарийхан тул товч нь картаа дүүргэж хэт бүдүүн
   // харагддаг байв — sm+ дээр л бүтэн хэмжээндээ ордог.
   const className =
-    "bg-primary text-primary-foreground mt-auto inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3 pt-0 text-xs font-semibold transition-opacity duration-300 hover:opacity-85 sm:h-10 sm:px-4 sm:text-sm";
+    "bg-primary text-primary-foreground inline-flex h-8 items-center justify-center gap-1.5 rounded-full px-3 pt-0 text-xs font-semibold transition-opacity duration-300 hover:opacity-85 sm:h-10 sm:px-4 sm:text-sm";
 
   if (reason) {
     return (
@@ -2044,14 +2132,23 @@ function OfferCardCta({ cta, owner }: { cta: OfferCard["cta"]; owner: Owner }) {
  */
 function resolveOfferCard(card: OfferCard) {
   const plan = card.planId ? mobilePlans.find((item) => item.id === card.planId) : undefined;
+  /**
+   * ⚠️ Гарчгийг дата ӨӨРӨӨ өгсөн бол багцын нэрийг subline-д АВТОМАТААР
+   * нэмэхгүй. Эс бөгөөс гарчиг нь нэр байхад subline нь ч мөн нэр болж
+   * ДАВХАРДАНА. Гарчиг өгөөгүй үед хуучнаараа (дата эрх / багцын нэр) хос.
+   */
+  const headlineFromPlan = card.headline === undefined;
   return {
     headline: card.headline ?? plan?.data ?? "",
-    subline: card.subline ?? plan?.name,
+    subline: card.subline ?? (headlineFromPlan ? plan?.name : undefined),
     // ⚠️ `mobile-plans.ts`-ийн `price` нь САРЫН суурь хураамж. Багцын карт нь
     // төхөөрөмжийн нэг удаагийн үнэтэй зэрэгцэж гарах тохиолдол байдаг тул
     // "/сар"-гүй бол хоёрыг ялгахад хэцүү. Эх датаг хөндөхгүйгээр ЭНД
     // тодотгов — үнийн тоо нь нэг л газарт үлдэнэ.
     price: card.price ?? (plan ? `${plan.price}/сар` : undefined),
+    // `mobile-plans.ts`-ийн үнэ нь НӨАТ-ГҮЙ (тэр файлын тайлбарт заасан) тул
+    // `planId` картад автоматаар тавина. Дата өөрөө өгвөл түүнийг дагана.
+    priceNote: card.priceNote ?? (plan ? "НӨАТ-гүй" : undefined),
   };
 }
 
