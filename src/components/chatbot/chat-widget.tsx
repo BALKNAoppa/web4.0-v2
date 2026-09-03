@@ -52,14 +52,13 @@ const QUICK_REPLIES = [
  */
 
 /**
- * Таб гарч ирэх хүртэлх хугацаа. Хуудас нээгдмэгц ШУУД биш — хэрэглэгч эхний
- * дэлгэцээ уншиж амжсаны дараа ирмэгээс гулсаж гарна (Xfinity-тэй ижил зан).
+ * ⚠️ ХУГАЦААТ ГАРЦ ХАСАГДСАН (2026-09-03). Өмнө нь таб нь хуудас нээгдээд
+ * `TAB_REVEAL_MS`-ийн дараа ирмэгээс өөрөө гулсаж гардаг байв (6с → 20с →
+ * 200с гэж сунгасаар ирсэн нь өөрөө шинж тэмдэг байсан: тэр нь ҮРГЭЛЖ
+ * саад болж байсан гэсэн үг).
  *
- * ⚠️ 6с → 20с болгов. Хэрэглэгч AI туслахтай ажиллаж байх үед таб гарч ирээд
- * анхаарлыг сарниулдаг байв — 20 секунд нь эхний бүтэн харилцааг дуусгах зай
- * гаргаж өгнө.
+ * ОДОО таб нь ЗӨВХӨН гомдлын дараа гарна — доорх `revealed`-ийн тайлбарыг үз.
  */
-const TAB_REVEAL_MS = 200000;
 
 /**
  * Табын босоо байрлал — дэлгэцийн дээд талаас хувиар.
@@ -94,7 +93,19 @@ function getBotReply(): string {
 export function ChatWidget() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  // Таб гарч ирсэн эсэх. `false` үед ирмэгт юу ч алга — дэлгэц цэвэр хэвээр.
+  /**
+   * Таб гарч ирсэн эсэх. `false` үед ирмэгт ЮУ Ч АЛГА — дэлгэц цэвэр.
+   *
+   * ⚠️ ЗӨВХӨН ХОЁР эвент үүнийг нээнэ (доорх `onAsk` · `onOpen`):
+   *   · `univision:chat-ask`  — гомдол ажилтан руу шилжих үед (persona 6-ийн
+   *     гомдлын салаа ба `complaint-billing`; `EscalateView` нь `handoffMs`
+   *     дуусмагц асуултыг агуулсан эвент илгээнэ), мөн support хуудасны
+   *     ask bar-аас
+   *   · `univision:chat-open` — "Ажилтантай холбогдох" гэх мэт товчнуудаас
+   *
+   * Өөрөөр хэлбэл чат нь ХЭРЭГЛЭГЧИЙН ХҮСЭЛТЭЭР л гарна. Танилцуулгын
+   * үндсэн урсгал (нүүр → AI туслах → /assistant) дээр ирмэг цэвэр байна.
+   */
   const [revealed, setRevealed] = useState(false);
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
@@ -104,12 +115,6 @@ export function ChatWidget() {
   const inputRef = useRef<HTMLInputElement>(null);
   // Monotonic ID counter — render-ийн гадна өсдөг pure counter
   const nextIdRef = useRef(INITIAL_MESSAGES.length + 1);
-
-  // Таб — хуудас уншигдсанаас хойш TAB_REVEAL_MS-ийн дараа ирмэгээс гулсана
-  useEffect(() => {
-    const t = setTimeout(() => setRevealed(true), TAB_REVEAL_MS);
-    return () => clearTimeout(t);
-  }, []);
 
   // Шинэ мессеж нэмэгдэх бүрд хамгийн доош scroll хийнэ
   useEffect(() => {

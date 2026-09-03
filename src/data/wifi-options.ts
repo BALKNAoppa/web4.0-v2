@@ -39,7 +39,8 @@ export const wifiOptions: WifiOption[] = [
     id: "medium-apt",
     name: "Дунд зэргийн орон сууц",
     description: "3-4 өрөө, <100m²",
-    previewText: "Дунд зэргийн орон сууцанд нэг Mesh нэмэхэд гэрийн аль ч хэсэгт сүлжээ тогтвортой байна.",
+    previewText:
+      "Дунд зэргийн орон сууцанд нэг Mesh нэмэхэд гэрийн аль ч хэсэгт сүлжээ тогтвортой байна.",
     devices: "1 × HGW + 1 × Mesh",
     meshCount: 1,
     illustration: "medium", // 2 device — HGW + 1 Mesh
@@ -48,7 +49,8 @@ export const wifiOptions: WifiOption[] = [
     id: "large-apt",
     name: "Том хэмжээтэй орон сууц",
     description: "5+ өрөө, >130m²",
-    previewText: "Том хэмжээтэй орон сууцанд нэмэлтээр 2 Mesh нэмэх нь танд мэдрэгдэх интернет алдагдал багасна.",
+    previewText:
+      "Том хэмжээтэй орон сууцанд нэмэлтээр 2 Mesh нэмэх нь танд мэдрэгдэх интернет алдагдал багасна.",
     devices: "1 × HGW + 2 × Mesh",
     meshCount: 2,
     illustration: "small", // 3 device — HGW + 2 Mesh (SmallBuilding 3 device харуулна)
@@ -72,6 +74,22 @@ export const wifiSection = {
   descriptionPrefix: "Орон сууцны хэмжээгээ сонгоод ",
   descriptionHighlight: "хамгийн тохиромжтой",
   descriptionSuffix: " Wi-Fi шийдэлийг сонгоорой.",
-  ctaText: "Дэлгэрэнгүй",
-  ctaHref: "#",
+  /** `WifiOption.devices` мөрийн дээрх шошго */
+  devicesLabel: "Шаардлагатай төхөөрөмж",
+  /**
+   * ⚠️ Өмнө нь `#` байсан — хуудасны ЦОРЫН ГАНЦ үйлдэл хаана ч хүрэхгүй
+   * байв. Одоо `devices.ts`-ийн Mesh/FTTR картуудын `detailHref`-тэй ЯГ
+   * ижил зам (`groupNavV2`-д бүртгэлтэй `?type=` утга).
+   */
+  ctaText: "Төхөөрөмж харах",
+  ctaHref: "/devices?type=fttr",
+  /**
+   * Хоёрдогч үйлдэл — AI туслах руу. Асуулт нь `hero-assistant.ts`-ийн
+   * FEATURED `internet-slow` кейсийн `question`-тэй ЯГ ТААРНА (эс бөгөөс
+   * туслах "таньсангүй" гэж хариулна). Хуучин `mesh-count` кейс руу заавал
+   * БОЛОХГҮЙ: тэр нь цэвэрлэгээнд устах хүлээлттэй.
+   */
+  secondaryCtaText: "AI туслахаас асуух",
+  secondaryCtaHref:
+    "/assistant?q=%D0%98%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D1%8D%D1%82%D0%B8%D0%B9%D0%BD%20%D1%85%D1%83%D1%80%D0%B4%20%D1%83%D0%B4%D0%B0%D0%B0%D0%BD%20%D0%B1%D0%B0%D0%B9%D0%BD%D0%B0",
 };

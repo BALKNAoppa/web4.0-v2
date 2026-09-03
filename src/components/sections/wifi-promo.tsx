@@ -13,14 +13,19 @@ export function WifiPromo() {
   return (
     <section aria-labelledby="wifi-title" className="bg-background py-6 lg:py-11">
       <div className="container mx-auto px-4">
-        {/* Section гарчиг */}
+        {/* Section гарчиг.
+            ⚠️ `h1` — `h2` БИШ. `/mesh` хуудсанд өөр гарчиг байхгүй тул `h2`-
+            ээр эхлэхэд гарчгийн дараалал эвдэрч, axe нь "Heading order
+            invalid" гэж алдаа заадаг байв (dev-ийн "1 Issue" тэмдэг). Энэ
+            section нь ЗӨВХӨН `/mesh` дээр хэрэглэгддэг тул хуудасны үндсэн
+            гарчиг болох нь зөв. */}
         <div className="mb-10 text-center">
           <span className="text-foreground text-sm font-semibold tracking-wider uppercase">
             {wifiSection.eyebrow}
           </span>
-          <h2 id="wifi-title" className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+          <h1 id="wifi-title" className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
             {wifiSection.title}
-          </h2>
+          </h1>
           <p className="text-muted-foreground mx-auto mt-3 max-w-2xl text-base md:text-lg">
             {wifiSection.descriptionPrefix}
             <span className="text-foreground font-semibold">
@@ -55,8 +60,10 @@ export function WifiPromo() {
 
           {/* Баруун (1/3) — Apartment-ийн дэлгэрэнгүй (төв тэгшилсэн) */}
           <div className="flex flex-col items-center justify-between gap-6 p-8 text-center lg:p-10">
-            {/* Title */}
-            <h3 className="text-2xl font-bold tracking-tight">{selected.name}</h3>
+            {/* Title.
+                ⚠️ `h2` — `h3` БИШ. Хуудасны `h1`-ийн ДАРААХ түвшин байх ёстой;
+                `h3` бол түвшин алгасаж, axe нь "Heading order invalid" гэдэг. */}
+            <h2 className="text-2xl font-bold tracking-tight">{selected.name}</h2>
 
             {/* Device visualization */}
             <DeviceVisualization
@@ -64,19 +71,43 @@ export function WifiPromo() {
               hasOverflow={selected.hasOverflow}
             />
 
+            {/* ШААРДЛАГАТАЙ ТӨХӨӨРӨМЖ — `wifi-options.ts`-ийн `devices` мөр.
+                ⚠️ Энэ дата аль хэдийн бичигдсэн байсан ч ХААНА Ч харагддаггүй
+                байв: зөвхөн дүрсээр "хэдэн төхөөрөмж" гэдгийг тааж уншуулдаг
+                байсан. Шийдвэрт хэрэгтэй нь ТОО ба НЭР хоёр. */}
+            <div className="border-border w-full max-w-xs rounded-xl border border-dashed px-4 py-3">
+              {/* ⚠️ `text-foreground/75` — `text-muted-foreground` БИШ. 12px BOLD
+                  бичвэрт WCAG нь 4.5:1 шаарддаг бөгөөс muted нь бараан
+                  дэвсгэр дээр ердөө 2.82:1 (axe-ийн алдаа). */}
+              <div className="text-foreground/75 text-[11px] font-bold tracking-wider uppercase">
+                {wifiSection.devicesLabel}
+              </div>
+              <div className="text-foreground mt-1 text-sm font-semibold">{selected.devices}</div>
+            </div>
+
             {/* Description */}
             <p className="text-foreground max-w-xs text-sm leading-relaxed">
               {selected.previewText}
             </p>
 
-            {/* CTA — outlined */}
-            <Link
-              href={wifiSection.ctaHref}
-              className="border-primary text-primary hover:bg-primary/5 inline-flex h-11 items-center justify-center gap-2 rounded-md border-2 px-6 text-sm font-semibold transition-colors"
-            >
-              {wifiSection.ctaText}
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
+            {/* ҮЙЛДЭЛ — үндсэн нь төхөөрөмжийн каталог, хоёрдогч нь туслах.
+                Хоёулаа БОДИТ зам (өмнө нь `#` байсан). */}
+            <div className="flex w-full flex-col items-center gap-2">
+              <Link
+                href={wifiSection.ctaHref}
+                className="border-primary text-primary hover:bg-primary/5 inline-flex h-11 w-full max-w-xs items-center justify-center gap-2 rounded-md border-2 px-6 text-sm font-semibold transition-colors"
+              >
+                {wifiSection.ctaText}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href={wifiSection.secondaryCtaHref}
+                className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+              >
+                {wifiSection.secondaryCtaText}
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -125,9 +156,12 @@ function OptionCard({
         )}
       </span>
 
-      {/* Label + description */}
+      {/* Label + description.
+          ⚠️ ГАРЧИГ БИШ. Өмнө нь `h4` байсан: хуудасны `h1`-ийн дараа шууд
+          `h4` орж түвшин алгасдаг байв. Эдгээр нь radio товчны ШОШГО —
+          баримтын бүтцийн гарчиг биш тул `div` нь семантикаар ч зөв. */}
       <div className="min-w-0 flex-1">
-        <h4 className="text-sm font-semibold">{option.name}</h4>
+        <div className="text-sm font-semibold">{option.name}</div>
         <p className="text-muted-foreground mt-0.5 text-xs">{option.description}</p>
       </div>
     </button>
@@ -326,14 +360,7 @@ function WifiDevice({
           {/* Ноогоон LED цэг (right panel-той ижил primary color) */}
           <circle cx={x} cy={y - 22} r="1.3" fill="#22C55E" />
           {/* Доод порт зураас */}
-          <rect
-            x={x - 2}
-            y={y - 4.5}
-            width="4"
-            height="0.8"
-            rx="0.3"
-            fill="rgba(10,30,92,0.3)"
-          />
+          <rect x={x - 2} y={y - 4.5} width="4" height="0.8" rx="0.3" fill="rgba(10,30,92,0.3)" />
           {/* Зогсох суурь shadow */}
           <ellipse cx={x} cy={y + 1.5} rx="6" ry="1.5" fill="rgba(255,255,255,0.5)" />
         </g>
@@ -353,15 +380,7 @@ function WifiDevice({
             strokeWidth="0.4"
           />
           {/* Цэнхэр WiFi slot */}
-          <rect
-            x={x - 3}
-            y={y - 6}
-            width="6"
-            height="0.9"
-            rx="0.4"
-            fill="#0EA5E9"
-            opacity="0.75"
-          />
+          <rect x={x - 3} y={y - 6} width="6" height="0.9" rx="0.4" fill="#0EA5E9" opacity="0.75" />
           {/* Доод цэг */}
           <circle cx={x} cy={y - 2.5} r="0.7" fill="rgba(10,30,92,0.3)" />
           {/* Зогсох суурь shadow */}

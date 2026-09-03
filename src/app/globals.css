@@ -880,3 +880,84 @@ html[style*="--a11y-content"] li,
 html[style*="--a11y-content"] span {
   color: var(--a11y-content) !important;
 }
+
+/* =====================================================================
+   LIQUID GLASS — ТУРШИЛТ (2026-09-03), ЗӨВХӨН `/assistant`
+   =====================================================================
+   `ChatHero` нь `mode="page"` үед л section-д `data-glass` тавьдаг тул доорх
+   дүрмүүд нүүр хуудсанд ХЭРЭГЛЭГДЭХГҮЙ.
+
+   ⚠️ Энэ нь dashersw/liquid-glass-js-ийн WebGL хувилбар БИШ. Тэр сан нь
+   (1) npm дээр БАЙХГҮЙ — файлыг repo-д хуулж тавих шаардлагатай,
+   (2) html2canvas-аар дэвсгэрийн ЗУРАГ авч WebGL2-оор гажуудуулдаг тул
+       бичих анимаци, картын хэвтээ гүйлт үед snapshot нь хоцордог,
+   (3) `new Container()`-аар ӨӨРИЙН DOM үүсгэдэг, React wrapper нь алга.
+   Тиймээс ижил харагдацыг CSS-ээр гаргав: SSR-т ажиллана, картын тоо
+   хамаагүй, snapshot алга.
+
+   ГУРВАН ДАВХАРГА:
+     ① `.glass-glow`     — дэвсгэрийн зөөлөн ногоон гэрэлтүүлэг. Шил нь
+        ЯМАР Ч БАЙСАН доорхыгоо шүүж харуулдаг тул хавтгай бараан дэвсгэр
+        дээр эффект нь ҮЛ МЭДЭГДЭНЭ. Хүчийг нь `26%`/`18%` тоогоор тохируулна.
+     ② `backdrop-filter` — blur + saturate (шил), Chromium дээр нэмээд
+        `url(#glass-warp)` гажуудал.
+     ③ ирмэгийн гэрэл/сүүдэр ба налуу тусгал — шилний ЗУЗААН. */
+.glass-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      50% 40% at 22% 28%,
+      color-mix(in oklab, var(--primary) 26%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      45% 35% at 78% 62%,
+      color-mix(in oklab, var(--primary) 18%, transparent),
+      transparent 70%
+    );
+  filter: blur(30px);
+}
+
+[data-glass] .glass-surface {
+  /* 42% — доорх гэрэлтүүлэг, тор ХАРАГДАХ ёстой. 60%-аас дээш бол шил биш
+     хатуу карт болно, 30%-аас доош бол бичвэр уншихад хүндэрнэ. */
+  background-color: color-mix(in oklab, var(--card) 42%, transparent);
+  backdrop-filter: blur(12px) saturate(200%);
+  -webkit-backdrop-filter: blur(12px) saturate(200%);
+  border-color: color-mix(in oklab, var(--foreground) 20%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 30%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, white 6%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, black 18%, transparent),
+    0 14px 36px -20px rgb(0 0 0 / 0.6);
+}
+
+/* ТУСГАЛ — налуу гэрэл. `::after` нь агуулгын ДЭЭР суудаг тул альфа нь МАШ
+   бага: бичвэрийг угаахгүй, зөвхөн ирмэг дээр мэдэгдэнэ. */
+[data-glass] .glass-surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, white 16%, transparent) 0%,
+    transparent 30%,
+    transparent 72%,
+    color-mix(in oklab, white 7%, transparent) 100%
+  );
+}
+
+/* ГАЖУУДАЛ — liquid-glass-js-ийн refraction-той хамгийн ойр хэсэг.
+   `feDisplacementMap` нь ДЭВСГЭРИЙГ долгиолуулна (филтерийг `chat-hero.tsx`
+   рендерлэдэг). Chromium дэмждэг; Safari/Firefox дээр энэ блок биелэхгүй тул
+   ② давхарга нь blur-аараа хэвээр ажиллана. */
+@supports (backdrop-filter: url(#glass-warp)) {
+  [data-glass] .glass-surface {
+    backdrop-filter: url(#glass-warp) blur(12px) saturate(200%);
+  }
+}

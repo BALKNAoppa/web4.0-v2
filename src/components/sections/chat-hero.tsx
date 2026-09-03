@@ -92,6 +92,15 @@ type Block = {
    * мөн олон блок зэрэг задарсан ч хоорондоо хольцолдохгүй.
    */
   answers: Record<string, string>;
+  /**
+   * НҮҮРНЭЭС уламжлан ирсэн блок — хэрэглэгч АЛЬ ХЭДИЙН уншсан хариулт.
+   *
+   * Тойм нь үсэг үсгээр ДАХИН бичигдэхгүй, бодох трэйс ч гарахгүй: шууд
+   * бүтнээрээ, картуудтайгаа хамт харагдана. Эс бөгөөс нүүрэн дээр дуусч
+   * уншигдсан хариулт `/assistant` дээр эхнээсээ дахин "боддог" тул
+   * хэрэглэгчид АЛДАА мэт харагдана.
+   */
+  carried?: boolean;
 };
 export function ChatHero({
   heroRest = false,
@@ -115,14 +124,24 @@ export function ChatHero({
   const [input, setInput] = useState("");
   // URL-ээс ирсэн яриаг ЭХНИЙ render дээр шууд босгоно (effect-гүй) —
   // ингэснээр server ба client ижил зүйл render хийж, hydration зөрөхгүй.
+  /**
+   * URL-ийн ЯРИА → блокууд. ЭЦСИЙН асуулт нь ШИНЭ (нүүрэн дээр хэрэглэгч
+   * зүгээр бичээд шилжсэн, хариулт нь хараахан гараагүй) тул тэр нь
+   * "бодож байна" төлвөөс эхэлж, тоймоо бичнэ. Түүнээс өмнөх бүх блок нь
+   * нүүрэн дээр аль хэдийн уншигдсан — `carried`, шууд бүтнээрээ гарна.
+   */
   const [blocks, setBlocks] = useState<Block[]>(() =>
-    initialQuestions.map((asked, index) => ({
-      key: index,
-      asked,
-      matched: matchQuestion(asked, assistantQuestions),
-      status: "ready" as const,
-      answers: {},
-    })),
+    initialQuestions.map((asked, index) => {
+      const isLast = index === initialQuestions.length - 1;
+      return {
+        key: index,
+        asked,
+        matched: matchQuestion(asked, assistantQuestions),
+        status: isLast ? ("loading" as const) : ("ready" as const),
+        carried: !isLast,
+        answers: {},
+      };
+    }),
   );
   const nextKey = useRef(initialQuestions.length);
   const latestRef = useRef<HTMLElement | null>(null);
@@ -182,6 +201,33 @@ export function ChatHero({
     },
     [questions, isPage, blocks, router, setAnswers],
   );
+
+  /**
+   * URL-ЭЭС ИРСЭН ШИНЭ АСУУЛТ — бодох трэйсийг ЖИНХЭНЭ хугацаагаар дуусгаад
+   * хариулт руу гаргана. Блокийг `status: "loading"`-ээр босгосон нь server ба
+   * client ижил зүйл render хийхийн тулд (hydration зөрөхгүй); төлвийг
+   * зөвхөн ХӨТӨЧ дээр солино.
+   *
+   * ⚠️ ХАМГААЛАЛТЫГ REF-ЭЭР ТАВИЖ БОЛОХГҮЙ. Өмнө нь `pendingInitialKey`
+   * ref-ийг effect-ийн БИЕД null болгож байсан: React StrictMode (dev) нь
+   * effect-ийг mount дээр ХОЁР УДАА ажиллуулдаг бөгөөд ref нь хоёр
+   * ажиллалтын хооронд ХАДГАЛАГДДАГ. Тиймээс 1-р ажиллалт ref-ээ хааж
+   * timer тавьдаг → цэвэрлэгээ тэр timer-ийг цуцалдаг → 2-р ажиллалт нь
+   * ref нь null болсныг хараад ЮУ Ч ХИЙХГҮЙ гардаг. Үр дүнд блок
+   * `loading` дээр ҮҮРД гацаж, бодох трэйс нь дуусаад юу ч болдоггүй.
+   *
+   * Одоо хамгаалалт нь ТӨЛӨВ дээр: mount-ийн үеийн эцсийн key-г хааж авч,
+   * дахин ажиллавал ижил блокийг ижил төлөв рүү л оноодог (idempotent).
+   */
+  useEffect(() => {
+    if (initialQuestions.length === 0) return;
+    const key = initialQuestions.length - 1;
+
+    const timer = window.setTimeout(() => {
+      setBlocks((prev) => prev.map((b) => (b.key === key ? { ...b, status: "ready" } : b)));
+    }, LOADING_MS);
+    return () => window.clearTimeout(timer);
+  }, [initialQuestions.length]);
 
   /**
    * Эхнээс эхлэх — хариултуудыг цэвэрлэж, том оролт руу буцна.
@@ -405,13 +451,66 @@ export function ChatHero({
   return (
     <section
       aria-label="Ухаалаг сонголт"
+      // `data-glass` — LIQUID GLASS туршилтын хамрах хүрээ. `globals.css`-ийн
+      // `[data-glass] .glass-surface` дүрэм зөвхөн энэ дотор ажиллана тул
+      // нүүр хуудас хөндөгдөхгүй.
+      data-glass={isPage ? "true" : undefined}
       className="bg-background animate-in fade-in relative w-full overflow-hidden duration-1000 ease-out"
     >
+      {/* ШИЛНИЙ ГАЖУУДАЛ — `backdrop-filter: url(#glass-warp)`-аар дэвсгэрийг
+          долгиолуулна (`globals.css`, `@supports` дотор). Chromium дээр
+          ажиллана; бусад хөтөч дээр зөвхөн blur үлдэнэ.
+          ⚠️ Зөвхөн `/assistant` дээр рендерлэнэ — нүүрэн дээр хэрэглэгддэггүй
+          филтерийг DOM-д тавих шаардлагагүй. */}
+      {/* ГЭРЭЛТҮҮЛЭГ — шилэн карт доорхыгоо шүүж харуулдаг тул хавтгай
+          бараан дэвсгэр дээр эффект үл мэдэгдэнэ. Торны ДООР (түүнээс өмнө
+          рендерлэгдэж байгаа тул) суух нь зөв: тор нь гэрэл дээр хэвтэнэ. */}
+      {isPage && <div className="glass-glow" aria-hidden="true" />}
+
+      {isPage && (
+        <svg aria-hidden="true" focusable="false" className="pointer-events-none absolute size-0">
+          <defs>
+            <filter
+              id="glass-warp"
+              x="-20%"
+              y="-20%"
+              width="140%"
+              height="140%"
+              colorInterpolationFilters="sRGB"
+            >
+              {/* Бага давтамжтай шуугиан = том, зөөлөн долгион. Өндөр
+                  давтамж нь шил биш, хяруу шиг харагдана. */}
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.008 0.014"
+                numOctaves="2"
+                seed="7"
+                result="noise"
+              />
+              <feGaussianBlur in="noise" stdDeviation="2" result="soft" />
+              <feDisplacementMap
+                in="SourceGraphic"
+                in2="soft"
+                scale="14"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+            </filter>
+          </defs>
+        </svg>
+      )}
+
       <InteractiveGridPattern
         width={40}
         height={40}
         squares={[42, 24]}
-        className="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]"
+        className={cn(
+          "absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]",
+          // ⚠️ `/assistant` дээр дэвсгэрийг СУЛРУУЛНА. Тэнд хариулт нь
+          // хайрцаггүй тул бичвэр шууд торон дээр суудаг, мөн шилэн карт
+          // нь дэвсгэрээ шүүж харуулах тул тор хэт тод бол шуугиан болно.
+          isPage && "opacity-50",
+        )}
       />
       {/* ⚠️ БОСОО ЗАЙГ ХУМИХ нөхцөл нь `min-width: 768px`-ТЭЙ ХОСЛОНО.
           Өмнө нь зөвхөн `max-height: 1024px` байсан — тэр нь НАМХАН ЗӨӨВРИЙН
@@ -427,9 +526,15 @@ export function ChatHero({
           // Хариулт гармагц туслахын хэсэг ӨРГӨСӨНӨ — зөвлөмжийн карт,
           // багцын харьцуулалт зэрэг нь 3xl дотор шахагдахгүй.
           blocks.length > 0 && "max-w-5xl",
-          heroRest
-            ? "min-h-[calc((100svh-var(--header-h))*0.28)] md:min-h-[calc((100svh-var(--header-h))*0.4)]"
-            : "min-h-[34svh] sm:min-h-[44svh] md:min-h-[46svh]",
+          // ⚠️ `/assistant` дээр БОСОО ТӨВЛӨРҮҮЛЭЛТ ба доод хязгаар ХЭРЭГГҮЙ.
+          // Нүүрэн дээр эдгээр нь оролтыг дэлгэцийн голд суулгах үүрэгтэй.
+          // Хуудсан дээр яриа нь ДЭЭДЭЭСЭЭ уншигдах ёстой — эс бөгөөс эхний
+          // асуултын дээр 300px хоосон зай гарч, breadcrumb-аас тасарна.
+          isPage
+            ? "min-h-0 justify-start py-6 sm:py-8 md:py-8"
+            : heroRest
+              ? "min-h-[calc((100svh-var(--header-h))*0.28)] md:min-h-[calc((100svh-var(--header-h))*0.4)]"
+              : "min-h-[34svh] sm:min-h-[44svh] md:min-h-[46svh]",
         )}
       >
         {/* Нүүрний гарчиг — `/assistant` хуудсанд ХЭРЭГГҮЙ (тэнд хуудас өөрөө
@@ -481,7 +586,9 @@ export function ChatHero({
             ҮСРҮҮЛЖ, хатуу мэдрэгддэг байв. Одоо оролт хэзээ ч байрлалаа
             солихгүй — хариулт дээр нь гарч ирээд доошоо ТҮЛХЭНЭ. */}
         {blocks.length > 0 && (
-          <div className="w-full space-y-3">
+          // Ярианы хэлбэрт блокууд хайрцаггүй тул зааг нь ЗАЙ — `space-y-3`
+          // (12px) хүрэлцэхгүй, хариулт ба дараагийн асуулт нийлж харагдана.
+          <div className={cn("w-full", isPage ? "space-y-10 sm:space-y-12" : "space-y-3")}>
             {blocks.map((block, i) => (
               <ResultBlock
                 key={block.key}
@@ -491,6 +598,7 @@ export function ChatHero({
                 onPick={ask}
                 onAnswers={(next) => setAnswers(block.key, next)}
                 footer={i === blocks.length - 1 ? followUpForm(true) : undefined}
+                chat={isPage}
               />
             ))}
           </div>
@@ -585,8 +693,21 @@ function PersonaShortcuts({ onFill }: { onFill: (text: string) => void }) {
 }
 
 // =====================================================================
-// RESULT BLOCK — асуултын мөр (хумигддаг) + доор нь хариулт
+// RESULT BLOCK — асуулт + доор нь хариулт. ХОЁР ХЭЛБЭР.
 // =====================================================================
+/**
+ * `chat` (`/assistant`) — ЯРИАНЫ хэлбэр: асуулт нь баруун талд бөмбөлөг,
+ * хариулт нь зүүн талд ХАЙРЦАГГҮЙ урсгал.
+ *
+ * Яагаад: нүүрэн дээр хариулт ГАНЦ л байдаг тул хайрцаг нь түүнийг хуудсаас
+ * тусгаарлах үүрэгтэй. `/assistant` дээр харин 3-4 блок дараалахад ижилхэн
+ * хайрцаг, ижилхэн "Таны хайсан сэдэв" мөр, ижилхэн 👍👎 давхарлан гарч,
+ * аль нь хаана дуусахыг харахад хүндрэлтэй болно. Ярианы хэлбэрт асуулт
+ * бүр нь өөрөө зааг болно — нэмэлт хүрээ хэрэггүй.
+ *
+ * Хайрцаггүй хэлбэр (`panel` = false) нь нүүрэн дээр ХЭВЭЭР: тэнд ганц
+ * хариулт grid pattern дэвсгэр дээр тодрох хэрэгтэй.
+ */
 function ResultBlock({
   ref,
   block,
@@ -594,6 +715,7 @@ function ResultBlock({
   onPick,
   onAnswers,
   footer,
+  chat = false,
 }: {
   ref?: React.Ref<HTMLElement>;
   block: Block;
@@ -606,6 +728,8 @@ function ResultBlock({
    * ёстой, эс бөгөөс хэрэглэгч бичих газраа алдана.
    */
   footer?: React.ReactNode;
+  /** Ярианы хэлбэр — `/assistant` хуудсанд. Дээрх тайлбарыг үз. */
+  chat?: boolean;
 }) {
   /**
    * Тойм бичигдэж дуусах хүртэл хариултын бие БОЛОН доорх оролт хоёулаа
@@ -613,7 +737,10 @@ function ResultBlock({
    * хэлбэл туслах бодож байх үед аль хэдийн харагдаж, гарч ирэх fade нь
    * мэдэгдэхгүй байв.
    */
-  const [introDone, setIntroDone] = useState(false);
+  // ⚠️ `carried` блокт ТӨЛӨВ НЬ АЛЬ ХЭДИЙН ДУУССАН: тойм нь бичигдэхгүй тул
+  // `onComplete` хэзээ ч дуудагдахгүй, `false`-ээр эхэлбэл картууд хэзээ ч
+  // гарахгүй болно.
+  const [introDone, setIntroDone] = useState(block.carried ?? false);
 
   /**
    * Оролтыг тоймын дараа ШУУД биш, богино завсрын дараа гаргана.
@@ -632,6 +759,52 @@ function ResultBlock({
     const timer = window.setTimeout(() => setInputReady(true), 260);
     return () => window.clearTimeout(timer);
   }, [introDone]);
+
+  const body =
+    block.status === "loading" ? (
+      <ThinkingTrace steps={THINKING_STEPS} />
+    ) : (
+      <Answer
+        block={block}
+        questions={questions}
+        onPick={onPick}
+        onAnswers={onAnswers}
+        introDone={introDone}
+        onIntroDone={() => setIntroDone(true)}
+      />
+    );
+
+  /** Оролт — хариулт бүрэн гарсны дараа. Хоёр хэлбэрт ИЖИЛ нөхцөл. */
+  const footerReady = footer && block.status === "ready" && (inputReady || !block.matched);
+
+  if (chat) {
+    return (
+      <article ref={ref} className="animate-in fade-in w-full text-left duration-700 ease-out">
+        {/* АСУУСАН — баруун талд бөмбөлөг. Хайрцаггүй хариултаас ЯЛГАРАХ
+            цорын ганц дэвсгэртэй элемент тул яриа хаанаас шинээр эхэлснийг
+            нэг харцаар заана.
+            ⚠️ Хуучин "Таны хайсан сэдэв «…»" мөр ХАСАГДСАН — бөмбөлөг нь
+            өөрөө асуулт гэдгээ хэлж байгаа тул тэр нь давхардал болно.
+            `rounded-br-md` — бөмбөлгийн хэн хэлснийг заах чиглэл. */}
+        <div className="flex justify-end">
+          <div className="border-border bg-card text-foreground max-w-[88%] rounded-2xl rounded-br-md border px-4 py-2.5 text-sm font-semibold backdrop-blur sm:max-w-[75%]">
+            {block.asked}
+          </div>
+        </div>
+
+        {/* ХАРИУЛТ — зүүн талд, хүрээ ба дэвсгэргүй. ✦ дүрс нь эхний мөрийн
+            хажууд суух тул хариултын эх хэн болохыг заана. */}
+        <div className="mt-4 flex gap-2.5 sm:mt-5 sm:gap-3">
+          <Sparkles className="text-primary mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <div className="min-w-0 flex-1">{body}</div>
+        </div>
+
+        {/* Оролт нь ✦-ийн МӨРНӨӨС гадуур, бүтэн өргөнөөр — хариултаас
+            салангид, "одоо таны хэлэх дараалал" гэдгийг илэрхийлнэ. */}
+        {footerReady && <div className="mt-6 sm:mt-8">{footer}</div>}
+      </article>
+    );
+  }
 
   return (
     <article
@@ -655,27 +828,12 @@ function ResultBlock({
         </p>
       </div>
 
-      <div className="px-5 pt-2 pb-5">
-        {block.status === "loading" ? (
-          <ThinkingTrace steps={THINKING_STEPS} />
-        ) : (
-          <Answer
-            block={block}
-            questions={questions}
-            onPick={onPick}
-            onAnswers={onAnswers}
-            introDone={introDone}
-            onIntroDone={() => setIntroDone(true)}
-          />
-        )}
-      </div>
+      <div className="px-5 pt-2 pb-5">{body}</div>
 
       {/* Оролт нь хариулт ГАРСНЫ ДАРАА fade-ээр орж ирнэ.
           `!block.matched` — таниагүй асуултад тойм бичигдэхгүй тул
           `introDone` хэзээ ч үнэн болохгүй; тэр тохиолдолд шууд харуулна. */}
-      {footer && block.status === "ready" && (inputReady || !block.matched) && (
-        <div className="px-4 pb-4">{footer}</div>
-      )}
+      {footerReady && <div className="px-4 pb-4">{footer}</div>}
     </article>
   );
 }
@@ -799,12 +957,19 @@ function Answer({
           илүү "хариулж байгаа" мэдрэмж өгнө. `TypingAnimation` нь
           reduced-motion үед шууд бүтнээр нь харуулдаг. */}
       <p className="text-foreground text-sm leading-relaxed">
-        {/* duration/delay — НИЙТ хүлээлтийг барихаар сонгосон: бодох трэйс
+        {/* ⚠️ `carried` — нүүрнээс уламжилсан хариулт БҮТНЭЭРЭЭ гарна.
+            Дахин бичих нь (а) хэрэглэгч уншсан зүйлээ хүлээх, (б) хариулт
+            эхнээсээ боловсорч байгаа мэт харагдах хоёр алдаа болно.
+            duration/delay — НИЙТ хүлээлтийг барихаар сонгосон: бодох трэйс
             ~1.26с + тойм ~0.7с ≈ 2с. Үүнээс урт бол "удаан", богино бол
             "бодоогүй" мэт санагдана. */}
-        <TypingAnimation duration={12} delay={0} onComplete={onIntroDone}>
-          {matched.summary}
-        </TypingAnimation>
+        {block.carried ? (
+          matched.summary
+        ) : (
+          <TypingAnimation duration={12} delay={0} onComplete={onIntroDone}>
+            {matched.summary}
+          </TypingAnimation>
+        )}
       </p>
 
       <div className="mt-5">
@@ -1728,6 +1893,10 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
             key={card.id}
             className={cn(
               "border-border relative flex shrink-0 snap-start flex-col rounded-2xl border p-4 sm:w-auto sm:shrink",
+              // LIQUID GLASS — зөвхөн `[data-glass]` (`/assistant`) дотор
+              // хүчинтэй. Нүүрэн дээр класс нь байгаа ч дүрэм таарахгүй тул
+              // карт хуучнаараа тунгалаг хэвээр.
+              "glass-surface",
               // Мобайл: хажуугийнх нь цухуйж, гүйх боломжтойг илэрхийлнэ.
               // ГАНЦ карттай бүлэгт гүйх юм байхгүй тул бүтэн өргөн.
               ordered.length === 1 ? "w-full" : "w-[78%]",
