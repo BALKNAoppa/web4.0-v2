@@ -2,21 +2,26 @@
  * Univision Web 4.0 — TVOD онцлох багцууд
  *
  * Монгол, Хит цуврал, Ази — тус бүр нэг cover image-тэй hero card-ууд.
- * Зургийг picsum.photos-аас seeded placeholder татна.
+ * Cover нь багцын кинонуудын постеруудаас хийсэн КОЛЛАЖ, `public/`-д (405×446).
+ * Өмнө нь picsum.photos-ийн САНАМСАРГҮЙ placeholder байсан — тэр нь багцтай
+ * хамааралгүй зураг гаргадаг тул хаана ч ил тавигдаагүй.
  */
 export type TvodPackage = {
   id: string;
   name: string;
   description: string;
-  /** Багцын cover image */
+  /**
+   * Багцын cover — постерын коллаж, харьцаа нь БОСОО (405×446).
+   *
+   * ⚠️ `PackageCover` (entertainment хуудас) нь ХЭВТЭЭ хайрцагтай
+   * (`h-70 md:h-85`) тул `object-cover` нь дээд, доод хэсгийг тайрна.
+   * AI туслах дээр харин картын ДЭВСГЭР болж бүтнээр ажиллана
+   * (`OfferCard.imageShape: "background"`).
+   */
   cover?: string;
   /** Багцын дэлгэрэнгүй хуудас руу очих URL */
   detailHref: string;
 };
-
-function picsumCover(seed: string): string {
-  return `https://picsum.photos/seed/${seed}-pkg/900/600`;
-}
 
 export const tvodPackages: TvodPackage[] = [
   {
@@ -24,7 +29,7 @@ export const tvodPackages: TvodPackage[] = [
     name: "Монгол багц",
     description:
       "Манай улсынхаа кино урлагийн алтан үе нэг дор. Хуучин классикаас орчин үеийн хит хүртэл — Монголын хамгийн алдартай уран сайхны кино, цувралуудыг нэгтгэв. Хэрвээ та Монгол кино урлагийн сүүлийн зууны турш хэрхэн өөрчлөгдсөнийг харах хүсэлтэй бол энэхүү багцыг түрээслээд үзээрэй!",
-    cover: picsumCover("mongol"),
+    cover: "/tess7-mongol.png",
     detailHref: "#",
   },
   {
@@ -32,7 +37,7 @@ export const tvodPackages: TvodPackage[] = [
     name: "Хит цуврал багц",
     description:
       "Бидний зурагтын өмнө ойр дотныхонтойгоо тодорхой нэг цагт болзуулдаг байсан зүйл бол хит болж байсан цувралууд. Сүүлийн 20-иод жилийн турш гарсан олон хит цуврал кинонуудыг нэг дор хүссэн цагтаа үзээрэй! Хуанжу Гэг, Дэгүй нас, Сэргэлэн охин Ян Сун, Чингис хаан зэрэг олон гайхалтай цуврал танд хүлээж байна.",
-    cover: picsumCover("hit-series"),
+    cover: "/026de-hits.jpg",
     detailHref: "#",
   },
   {
@@ -40,7 +45,7 @@ export const tvodPackages: TvodPackage[] = [
     name: "Ази багц",
     description:
       "Сүүлийн жилүүдэд Дорнын кино урлаг барууны кино урлагийг гүйцэж ирээд байна. Солонгосын KBS, MBC, SBC зэрэг алдартай сувгуудын шилдэг контент, нэг ангит болон олон ангит кинонуудыг албан ёсны эрхтэйгээр, дуу дүрсний өндөр чанартайгаар үзэхийг хүсвэл Ази багцыг түрээслээрэй!",
-    cover: picsumCover("asia"),
+    cover: "/a897e-asian.png",
     detailHref: "#",
   },
 ];

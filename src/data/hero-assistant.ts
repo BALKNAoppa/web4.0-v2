@@ -94,7 +94,14 @@ export type ContentSearchResult = {
     packagesNote: string;
   };
   /** UNIVISION GO — идэвхжүүлсний дараа хаанаас ч үзэх боломж */
-  app: { title: string; body: string; ctaLabel: string; href: string };
+  app: {
+    title: string;
+    body: string;
+    ctaLabel: string;
+    href: string;
+    /** Аппын mockup зураг — бичвэрийн хажууд жижиг миниатюр болно */
+    image?: string;
+  };
 };
 
 // =====================================================================
@@ -229,12 +236,30 @@ export type OfferCard = {
    */
   planId?: string;
   /**
-   * Бүтээгдэхүүний зураг — `public/`-ээс эхлэх зам. Гарчгийн ДЭЭР гарна.
+   * Зураг — `public/`-ээс эхлэх зам. Байрлал нь `imageShape`-ээс хамаарна.
    *
-   * ⚠️ Зөвхөн БОДИТ бараанд (утас, роутер, STB). Багц, дата эрх зэрэг
-   * биет БУС зүйлд зураг тавихгүй — тэдгээрт тоо нь өөрөө дүрс.
+   * ⚠️ Зөвхөн БОДИТ бараа (утас, роутер, STB) ба КОНТЕНТ (киноны постер).
+   * Багц, дата эрх зэрэг биет БУС зүйлд зураг тавихгүй — тэдгээрт тоо нь
+   * өөрөө дүрс.
    */
   image?: string;
+  /**
+   * Зургийн ХЭЛБЭР. Байхгүй бол `"product"`.
+   *
+   * `"product"` — тунгалаг дэвсгэртэй бараа, харьцаа нь янз бүр (утас 1:2,
+   * роутер ~1:1.3). Гарчгийн ДЭЭР, бүтэн өргөн хавтан, `object-contain`.
+   *
+   * `"poster"` — киноны постер, харьцаа нь ҮРГЭЛЖ 2:3 (510×755). Бүтэн өргөн
+   * хавтанд тавибал ГАНЦ карттай бүлэгт (хайлтын яг таарсан контент) постер
+   * нь хэвтээ зурвас болж дунд хэсэг л харагдана. Тиймээс гарчгийн ХАЖУУД,
+   * нарийн 2:3 багана, `object-cover` (харьцаа таарсан тул тайрахгүй).
+   *
+   * `"background"` — картын БҮХ талбарыг дүүргэх дэвсгэр, доороосоо картын
+   * өнгө болтлоо бүдгэрнэ. Зураг нь ганц бүтээгдэхүүн БИШ, багцын АГУУЛГЫГ
+   * илэрхийлэх коллаж үед (TVOD багц) — тусдаа хавтанд тавибал коллажийн
+   * бяцхан постерууд хэт жижгэрч, юу ч уншигдахгүй болно.
+   */
+  imageShape?: "product" | "poster" | "background";
   /** Картын ГОЛ үзүүлэлт, хамгийн том бичигдэнэ ("60GB", "Mesh цэг") */
   headline?: string;
   /**
@@ -1204,6 +1229,9 @@ function firstSentence(text: string): string {
 /**
  * Багцын карт. Товч нь ЛИНК БИШ — `authReason` тул нэвтрэх диалог нээнэ
  * (идэвхжүүлэх нь данстай холбоотой үйлдэл).
+ *
+ * ДЭВСГЭР нь `tvod-packages.ts`-ийн `cover` — багцын кинонуудын постерын
+ * коллаж. Кино карт постертой болсон тул багц зураггүй бол зөрүүтэй харагдана.
  */
 function tvodPackageCard(id: string): OfferCard | null {
   const pkg = tvodPackages.find((item) => item.id === id);
@@ -1211,6 +1239,8 @@ function tvodPackageCard(id: string): OfferCard | null {
 
   return {
     id: `tvod-pkg-${pkg.id}`,
+    image: pkg.cover,
+    imageShape: "background",
     headline: pkg.name,
     longHeadline: true,
     subline: firstSentence(pkg.description),
@@ -1308,10 +1338,16 @@ export function similarTvodMovies(movie: TvodMovie, limit: number): TvodMovie[] 
  * Кино → карт. `longHeadline` — киноны нэр урт байдаг ("Demon Slayer: Kimetsu
  * no Yaiba Infinity Castle") тул үзүүлэлтийн том хэвээр тавибал картын өндөр
  * эвдэрнэ. Түрээслэх товч нь нэвтрэх диалог нээнэ.
+ *
+ * ПОСТЕР нь `tvod-movies.ts`-ийн `poster` талбараас (`/tvod/{id}.jpg`) —
+ * каталогийн 50 кино БҮГД зурагтай. Талбар нь заавал биш тул зураггүй кино
+ * нэмэгдвэл карт зүгээр зураггүй гарна, эвдрэхгүй.
  */
 export function tvodMovieCard(movie: TvodMovie, ctaLabel: string): OfferCard {
   return {
     id: `tvod-movie-${movie.id}`,
+    image: movie.poster,
+    imageShape: "poster",
     headline: movie.title,
     longHeadline: true,
     subline: `${movie.year} · ${movie.genres.slice(0, 2).join(", ")}`,
@@ -1366,11 +1402,23 @@ const tvodContentCase: AssistantQuestion = {
         "Тухайн кино аль багцад дагалдахыг багцын дэлгэрэнгүй хуудаснаас шалгана уу — багцын бүрэлдэхүүн шинэчлэгддэг.",
     },
     app: {
-      title: "Хаанаас ч үзэх",
-      // Апп-ын тайлбарыг `app-promo.ts`-аас — нүүрний section-тэй ИЖИЛ текст.
+      title: "Хаанаас ч үзэх боломжтой",
+      /**
+       * ГАНЦ өгүүлбэр — `app-promo.ts`-аас, нүүрний section-тэй ИЖИЛ текст,
+       * нэг л газарт бичигдэнэ.
+       *
+       * ⚠️ 09-03-нд Univision GO-ийн танилцуулгаас хоёрдугаар өгүүлбэр
+       * (түрээсэлсэн контентоо утаснаасаа үзэх · L+ багцад эрх дагалдах)
+       * нэмээд ХЭРЭГЛЭГЧ ХАСУУЛСАН — УРТ. Энэ блок нь хариултын ХАМГИЙН
+       * ДООД, нэмэлт боломжийн мэдэгдэл: дээр нь кино, төстэй кино, багц
+       * гурван зурвас уншсан хүн энд дахиад догол мөр уншихгүй. Дэлгэрэнгүйг
+       * `/univision-go` хуудас хариуцна — товч тэр рүү заана.
+       */
       body: univisionGoApp.description,
-      ctaLabel: "Univision GO татах",
+      ctaLabel: "Апп татах",
       href: "/univision-go",
+      // Зураг нь мөн `app-promo.ts`-аас — нүүрний section-тэй ИЖИЛ файл.
+      image: univisionGoApp.bannerImage,
     },
   },
 };
@@ -1421,11 +1469,11 @@ const internetSlowCase: AssistantQuestion = {
     kind: "troubleshoot",
     causesTitle: "Хурд удаашрах түгээмэл шалтгаан",
     causes: [
-      "Роутераас хол, хана болон тавилга дамжсан",
+      "Төхөөрөмжөөс хол, хана болон тавилга дамжсан",
       "Олон төхөөрөмж зэрэг холбогдсон",
       "2.4GHz давтамж хөршийн сүлжээтэй давхцсан",
       "Багцын хурдны хязгаартаа хүрсэн",
-      "Роутер хуучирсан (Wi-Fi 6 биш)",
+      "Интернэтийн төхөөрөмж хуучирсан (Wi-Fi 6 биш)",
     ],
     prompt: "Цааш юу хийх вэ?",
     deviceLabel: "Нэмэлт төхөөрөмж сонирхож байна",

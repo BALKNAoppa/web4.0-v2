@@ -1631,6 +1631,16 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
     return Number(Boolean(b.oldPrice)) - Number(Boolean(a.oldPrice));
   });
 
+  /**
+   * ПОСТЕРЫН ӨРГӨН — картын ТООНООС. Ганц карттай бүлэг нь бүтэн өргөн
+   * (хайлтын яг таарсан контент) тул тэнд 96px постер картан дээр төөрнө;
+   * харин 3 карттай грид дээр 144px нь бичвэрт зай үлдээхгүй.
+   */
+  const posterBox =
+    ordered.length === 1
+      ? { width: "w-28 sm:w-36", sizes: "(min-width: 640px) 144px, 112px" }
+      : { width: "w-20 sm:w-24", sizes: "(min-width: 640px) 96px, 80px" };
+
   return (
     <div
       className={cn(
@@ -1653,41 +1663,17 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
         // тэдгээрийг кейсийн дата дотор давхардуулж бичихгүй.
         const { headline, subline, price, priceNote } = resolveOfferCard(card);
 
-        return (
-          <div
-            key={card.id}
-            className={cn(
-              "border-border relative flex shrink-0 snap-start flex-col rounded-2xl border p-4 sm:w-auto sm:shrink",
-              // Мобайл: хажуугийнх нь цухуйж, гүйх боломжтойг илэрхийлнэ.
-              // ГАНЦ карттай бүлэгт гүйх юм байхгүй тул бүтэн өргөн.
-              ordered.length === 1 ? "w-full" : "w-[78%]",
-              card.badge && "border-primary/60 bg-primary/5",
-            )}
-          >
-            {card.badge && (
-              <span className="bg-primary text-primary-foreground absolute -top-2 left-4 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider">
-                {card.badge}
-              </span>
-            )}
+        // Гурван хэлбэр нь ӨӨР байрлалд гардаг тул ЭНД хуваана — ингэснээр
+        // доор `card.image!` гэж баталгаажуулах шаардлагагүй.
+        const shape = card.image ? (card.imageShape ?? "product") : undefined;
+        const poster = shape === "poster" ? card.image : undefined;
+        const background = shape === "background" ? card.image : undefined;
+        const productImage = shape === "product" ? card.image : undefined;
 
-            {/* БҮТЭЭГДЭХҮҮНИЙ ЗУРАГ — гарчгийн ДЭЭР, тогтмол өндөртэй хавтан.
-                ⚠️ `object-contain`: зурагнууд нь тунгалаг дэвсгэртэй бүтээгдэхүүний
-                зураг, харьцаа нь янз бүр (утас 1:2, роутер ~1:1.3). `cover`
-                тавибал утасны дээд доод хэсэг тайрагдана.
-                ⚠️ `alt=""`: гарчиг нь ЯГ доор нь байгаа тул дүрс нь чимэглэл —
-                screen reader-т нэрийг ХОЁР УДАА уншуулах нь шуугиан. */}
-            {card.image && (
-              <div className="bg-muted relative mb-4 h-32 w-full overflow-hidden rounded-xl">
-                <Image
-                  src={card.image}
-                  alt=""
-                  fill
-                  sizes="(min-width: 640px) 240px, 70vw"
-                  className="object-contain p-2"
-                />
-              </div>
-            )}
-
+        /* Картын БИЧВЭР — постертой үед постерын ХАЖУУД, эс бөгөөс зургийн
+           ДООР гарна. Хоёр байрлалд ижил бичвэр тул нэг л газарт бичив. */
+        const details = (
+          <>
             {/* Гол үзүүлэлт — нэг харцаар уншигдана. НЭР (кино, багц) нь урт
                 тул жижиг хэвээр — `longHeadline`. */}
             <div
@@ -1733,6 +1719,103 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
                   </li>
                 ))}
               </ul>
+            )}
+          </>
+        );
+
+        return (
+          <div
+            key={card.id}
+            className={cn(
+              "border-border relative flex shrink-0 snap-start flex-col rounded-2xl border p-4 sm:w-auto sm:shrink",
+              // Мобайл: хажуугийнх нь цухуйж, гүйх боломжтойг илэрхийлнэ.
+              // ГАНЦ карттай бүлэгт гүйх юм байхгүй тул бүтэн өргөн.
+              ordered.length === 1 ? "w-full" : "w-[78%]",
+              card.badge && "border-primary/60 bg-primary/5",
+              // ДЭВСГЭР ЗУРАГТАЙ КАРТ. `isolate` нь картыг stacking context
+              // болгож доорх `-z-10` зургийг картын ДОТОР хорино — эс бөгөөс
+              // хамгийн ойрын context руу гарч, панелийн дэвсгэрийн ард орох
+              // магадлалтай. `pt-32` нь зургийн дээд 128px-ийг бичвэрээс
+              // чөлөөлнө (`p-4`-ийн дээд зайг twMerge дарж бичнэ).
+              background && "isolate pt-32",
+            )}
+          >
+            {card.badge && (
+              <span className="bg-primary text-primary-foreground absolute -top-2 left-4 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider">
+                {card.badge}
+              </span>
+            )}
+
+            {/* ДЭВСГЭР ЗУРАГ — багцын постер коллаж, картыг бүтнээр дүүргэнэ.
+                ⚠️ `-z-10` тул бичвэр, товч, badge БҮГД дээр нь үлдэнэ: тэдэнд
+                `relative z-10` тавих, DOM-ыг хөндөх шаардлагагүй — товч нь flex
+                item хэвээрээ бүтэн өргөнөө хадгална.
+                ⚠️ Тайралт нь ЗУРГИЙН wrapper дээр, картын биен дээр БИШ:
+                картад `overflow-hidden` тавибал `-top-2` badge тайрагдана. */}
+            {background && (
+              <div
+                className="absolute inset-0 -z-10 overflow-hidden rounded-2xl"
+                aria-hidden="true"
+              >
+                <Image
+                  src={background}
+                  alt=""
+                  fill
+                  sizes="(min-width: 640px) 320px, 78vw"
+                  className="object-cover"
+                />
+                {/* СКРИМ — доороо картын өнгө хүртэл гүнзгийрч, бичвэрийг
+                    уншигдахуйц болгоно. Хар/цагаан БИШ, `card` token-оор —
+                    ингэснээр light ба dark хоёуланд ажиллана. */}
+                <div className="from-card via-card/95 to-card/20 absolute inset-0 bg-gradient-to-t" />
+              </div>
+            )}
+
+            {poster ? (
+              /* ПОСТЕР — гарчгийн ХАЖУУД, нарийн 2:3 багана.
+                 ⚠️ `object-cover` нь энд юу ч ТАЙРАХГҮЙ: каталогийн постер
+                 БҮГД 2:3 (510×755) тул хавтангийн харьцаатай яг таарна.
+                 ⚠️ `alt=""`: киноны нэр ЯГ хажууд нь байгаа тул дүрс нь
+                 чимэглэл — нэрийг ХОЁР УДАА уншуулах нь шуугиан. */
+              <div className="flex gap-3 sm:gap-4">
+                <div
+                  className={cn(
+                    "bg-muted relative aspect-[2/3] shrink-0 overflow-hidden rounded-xl",
+                    posterBox.width,
+                  )}
+                >
+                  <Image
+                    src={poster}
+                    alt=""
+                    fill
+                    sizes={posterBox.sizes}
+                    className="object-cover"
+                  />
+                </div>
+                {/* `min-w-0` — урт киноны нэр flex элементийг цухуйлгахгүй */}
+                <div className="min-w-0 flex-1">{details}</div>
+              </div>
+            ) : (
+              <>
+                {/* БҮТЭЭГДЭХҮҮНИЙ ЗУРАГ — гарчгийн ДЭЭР, тогтмол өндөртэй хавтан.
+                    ⚠️ `object-contain`: зурагнууд нь тунгалаг дэвсгэртэй бүтээгдэхүүний
+                    зураг, харьцаа нь янз бүр (утас 1:2, роутер ~1:1.3). `cover`
+                    тавибал утасны дээд доод хэсэг тайрагдана.
+                    ⚠️ `alt=""`: гарчиг нь ЯГ доор нь байгаа тул дүрс нь чимэглэл —
+                    screen reader-т нэрийг ХОЁР УДАА уншуулах нь шуугиан. */}
+                {productImage && (
+                  <div className="bg-muted relative mb-4 h-32 w-full overflow-hidden rounded-xl">
+                    <Image
+                      src={productImage}
+                      alt=""
+                      fill
+                      sizes="(min-width: 640px) 240px, 70vw"
+                      className="object-contain p-2"
+                    />
+                  </div>
+                )}
+                {details}
+              </>
             )}
 
             {/* Товчны ДЭЭД зай. `mt-auto` нь үлдсэн зайг шингээж товчнуудыг
@@ -2032,19 +2115,53 @@ function ContentSearchView({
 
               {/* UNIVISION GO — идэвхжүүлсний дараа ХААНААС Ч үзэх боломж.
                   Тасархай хүрээтэй: карт БИШ, НЭМЭЛТ боломжийн мэдэгдэл. */}
-              <div className="border-border rounded-2xl border border-dashed p-4">
-                <div className="text-foreground text-sm font-bold">{result.app.title}</div>
-                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  {result.app.body}
-                </p>
-                <SmartLink
-                  href={result.app.href}
-                  owner={owner}
-                  className="border-primary text-primary hover:bg-primary/10 mt-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors"
-                >
-                  {result.app.ctaLabel}
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </SmartLink>
+              {/* ХОЁР ТЭНЦҮҮ ХАГАС — зүүнд бичвэр ба товч, баруунд зураг.
+                  ⚠️ Өмнө нь зураг 160px нарийн миниатюр байсан бөгөөд гурван
+                  утасны АГУУЛГА (кино, аппын дэлгэц) огт уншигдахгүй байв.
+                  Хагас өргөн (~350px) дээр дэлгэц бүр ~100px болж танигдана.
+                  ⚠️ Мобайл дээр НЭГ БАГАНА болж зураг бүтэн өргөнөө авна —
+                  тэнд хажуу тийш хуваавал хоёулаа жижгэрнэ. */}
+              <div className="border-border grid gap-4 rounded-2xl border border-dashed p-4 sm:grid-cols-2 sm:items-center">
+                <div className="min-w-0">
+                  {/* Гарчиг нь блокийн ХЭМЖЭЭНД тохирсон томтой (`text-lg`):
+                      зураг нь одоо хагас өргөнөө авдаг тул `text-sm` гарчиг
+                      түүний хажууд дэндүү нарийхан харагдаж байв. */}
+                  <div className="text-foreground text-base font-bold sm:text-lg">
+                    {result.app.title}
+                  </div>
+                  <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">
+                    {result.app.body}
+                  </p>
+                  <SmartLink
+                    href={result.app.href}
+                    owner={owner}
+                    className="border-primary text-primary hover:bg-primary/10 mt-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors"
+                  >
+                    {result.app.ctaLabel}
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </SmartLink>
+                </div>
+
+                {/* АППЫН MOCKUP — багананхаа БҮТЭН өргөнөөр.
+                    ⚠️ `aspect-[5/3]` нь зургийн БОДИТ харьцаа (1995×1184) тул
+                    `object-cover` юу ч тайрахгүй, хүрээнд хоосон зай ч гарахгүй.
+                    ⚠️ `ring-1 ring-border` — mockup-ын дэвсгэр нь БАРААН
+                    ногоон тул dark theme-д картын өнгөтэй нийлж, ирмэг нь
+                    үл мэдэгдэх болно. Нимгэн хүрээ нь зургийн хил заана
+                    (картын хүрээтэй ИЖИЛ token).
+                    ⚠️ `alt=""` — `app-promo.tsx`-тэй ижил: зураг нь аппын
+                    дэлгэцийн чимэглэл, доор нь татах товч аль хэдийн бий. */}
+                {result.app.image && (
+                  <div className="ring-border relative aspect-[5/3] w-full overflow-hidden rounded-xl ring-1">
+                    <Image
+                      src={result.app.image}
+                      alt=""
+                      fill
+                      sizes="(min-width: 640px) 380px, 90vw"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           ) : (
