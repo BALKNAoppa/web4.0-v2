@@ -45,7 +45,11 @@ export function PromoHero() {
   return (
     <section
       aria-label="Онцлох санал"
-      className="h-[56svh] w-full pt-[clamp(1rem,3svh,2rem)] md:h-[calc((100svh-var(--header-h))*0.6)]"
+      // ⚠️ МОБАЙЛД ӨНДӨР ЗААГААГҮЙ (өмнө нь `h-[56svh]`). Загварын карт нь
+      // 342×456 = ЯГ 3:4 харьцаатай тул өндрийг нь өргөнөөс гаргах нь зөв:
+      // 390px дэлгэцэнд 456px гарна, бусад өргөнд харьцаагаа хадгална.
+      // svh-д тулгуурлавал өргөн дэлгэцэнд карт нь загвараас ТОВГОР болно.
+      className="w-full pt-[clamp(1rem,3svh,2rem)] md:h-[calc((100svh-var(--header-h))*0.6)]"
     >
       <PromoBanner fill />
     </section>

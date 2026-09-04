@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Pause, Play } from "lucide-react";
 
 import {
@@ -11,6 +11,7 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import { CarouselDots } from "@/components/ui/carousel-dots";
 import { SmartLink } from "@/components/layout/smart-link";
 import {
   promoBanners,
@@ -102,7 +103,17 @@ function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
           дараагийн banner харагдана.
           ⚠️ Доорх багцын хэсэг (`RecommendedPlans`) нь 1200px-дээ ХЭВЭЭР —
           зөвхөн promo нь full-bleed. */}
-      <div className="flex w-full">
+      {/* ── МОБАЙЛ (< md) — FADE BANNER ──
+          Peek БАЙХГҮЙ: слайд бүр картын БҮТЭН талбайг эзэлж, солигдохдоо
+          хөндлөн гүйхийн оронд ууж солигдоно. Ингэснээр өмнөх/дараагийн
+          banner-ийн ирмэг хэзээ ч харагдахгүй.
+          ⚠️ CSS-ээр солив (JS media query БИШ): `matchMedia` нь зөвхөн
+          хөтөч дээр утга өгдөг тул server ба client өөр зүйл render хийж
+          hydration зөрөх эрсдэлтэй. */}
+      <PromoFadeBanner cards={samplePromoCards} />
+
+      {/* ── DESKTOP (md+) — ХУУЧИН PEEK CAROUSEL, ХӨНДӨӨГҮЙ ── */}
+      <div className="hidden w-full md:flex">
         <Carousel
           setApi={setApi}
           opts={{ loop: true, align: "center" }}
@@ -165,6 +176,158 @@ function PromoSlide({ promo }: { promo: PromoCard }) {
       <Link
         href={promo.href}
         className="bg-primary text-primary-foreground focus-visible:ring-ring inline-flex h-[clamp(2.25rem,5svh,3rem)] items-center justify-center gap-2 rounded-full px-7 text-sm font-semibold transition-opacity duration-700 ease-out hover:opacity-85 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+      >
+        {promo.ctaLabel}
+        <ArrowRight className="size-4" aria-hidden="true" />
+      </Link>
+    </div>
+  );
+}
+
+// =====================================================================
+// МОБАЙЛ FADE BANNER — 3 санал, НЭГ картан дээр ууж солигдоно
+//
+// ЯАГААД ТУСДАА ХУВИЛБАР: desktop дээрх peek carousel (хажуугийн banner-ийн
+// ирмэг харагддаг) нь 375px дэлгэцэнд идэвхтэй картыг 26px-ээр хумьж,
+// "хагас зүсэгдсэн" мэдрэмж өгдөг. Мобайлд картыг бүтнээр нь харуулж,
+// байрлалыг доорх цэгээр л заана.
+//
+// ХӨДӨЛГӨӨН: cross-fade. Хөндлөн гүйлт (slide) нь мөн чанараараа хоёр
+// картыг ЗЭРЭГ харуулдаг тул "өмнөхийн сүүл, дараагийн эхлэл" харагдах
+// асуудлыг давтана. Fade-д тийм завсрын байдал БАЙХГҮЙ.
+// =====================================================================
+
+/** Слайд солигдох уусалтын хугацаа (ms) — `duration-500`-тай ижил байх ёстой */
+const FADE_MS = 500;
+/**
+ * ⚠️ АВТОМАТ ЭЭЛЖЛЭЛТ ХАСАГДСАН (хэрэглэгчийн шийдвэр). Өмнө нь 6 сек
+ * тутам өөрөө солигддог байсан бөгөөд WCAG 2.2.2 нь 5 сек-ээс урт
+ * автомат хөдөлгөөнд зогсоох боломж ШААРДДАГ тул цэгүүдийн хажууд
+ * pause/play товч байх шаардлагатай болдог байв. Тэр товч нь загварт
+ * байхгүй тул хоёуланг нь ХАМТ хаслаа — банер зөвхөн свайп эсвэл цэг
+ * дарахад солигдоно.
+ *
+ * Буцааж оруулах бол ХОЁУЛАНГ нь: timer БА зогсоох товч.
+ */
+/** Свайпыг зориудын гэж үзэх хамгийн бага зай (px) */
+const SWIPE_MIN = 40;
+
+function PromoFadeBanner({ cards }: { cards: PromoCard[] }) {
+  const total = cards.length;
+  const [index, setIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+
+  const go = useCallback((next: number) => setIndex(((next % total) + total) % total), [total]);
+
+  return (
+    <div className="flex w-full flex-col md:hidden">
+      {/* КАРТ — эцгийн үлдсэн бүх өндрийг эзэлнэ.
+          `min-h-0` — flex хүүхэд анхдагчаар агуулгаасаа доош хумигддаггүй тул
+          үүнгүй бол доорх цэгийн мөр section-ээс халина. */}
+      <div
+        // ЗАГВАР: X=24 · W=342 · H=456 · радиус 24 (390px frame).
+        //   `mx-6`        → хоёр талд 24px (390 − 24 − 24 = 342 ✓)
+        //   `aspect-[3/4]` → 342:456 нь яг 3:4, өндөр нь өргөнөөс гарна
+        //   `rounded-3xl`  → 24px
+        className="relative mx-6 aspect-[3/4] overflow-hidden rounded-3xl"
+        onTouchStart={(e) => {
+          touchStartX.current = e.touches[0].clientX;
+        }}
+        onTouchEnd={(e) => {
+          const start = touchStartX.current;
+          touchStartX.current = null;
+          if (start === null) return;
+          const dx = e.changedTouches[0].clientX - start;
+          if (Math.abs(dx) < SWIPE_MIN) return;
+          go(index + (dx < 0 ? 1 : -1));
+        }}
+      >
+        {cards.map((promo, i) => (
+          <PromoFadeSlide key={promo.id} promo={promo} active={i === index} />
+        ))}
+      </div>
+
+      {/* ⚠️ `mt-6` — заагч нь картын доод ирмэгт НААЛДАЖ байв. Мөрийн
+          өндөр 8px тул зайг ЭНД ил өгнө. */}
+      <CarouselDots total={total} index={index} onSelect={go} label="санал" className="mt-6" />
+    </div>
+  );
+}
+
+/**
+ * Нэг слайд — БҮГД зэрэг DOM-д байж, зөвхөн `opacity`-гоор солигдоно.
+ *
+ * ⚠️ `inert` — идэвхгүй слайдын товч, линк нь TAB-ийн дараалалд ОРОХГҮЙ.
+ * Зөвхөн `opacity-0` бол харагдахгүй товч дээр фокус үсэрч, хэрэглэгч
+ * "хаана байгаагаа" алддаг. `aria-hidden` нь дэлгэц уншигчид зориулсан.
+ *
+ * ⚠️ ЗУРАГ ХАРААХАН АЛГА. Доорх бүх слот нь ШОШГОТОЙ PLACEHOLDER —
+ * жинхэнэ зураг, гарчиг ирэхэд `promo-banner.ts`-ийн дата л солигдоно,
+ * энэ бүтэц хэвээр үлдэнэ.
+ */
+function PromoFadeSlide({ promo, active }: { promo: PromoCard; active: boolean }) {
+  return (
+    <div
+      aria-hidden={!active}
+      inert={!active}
+      className={cn(
+        // ЗАГВАРЫН ЗАЙ: CTA нь X=40, карт нь X=24 → зүүн 16px.
+        // CTA-гийн доод ирмэг 634, картын доод ирмэг 666 → доод 32px.
+        "absolute inset-0 isolate flex flex-col justify-end p-4 pb-8 transition-opacity ease-out",
+        promo.image ? "bg-foreground/5" : "bg-card",
+        active ? "opacity-100" : "pointer-events-none opacity-0",
+      )}
+      style={{ transitionDuration: `${FADE_MS}ms` }}
+    >
+      {/* ── ДЭВСГЭР ЗУРАГ ──
+          Загварын Fill = Image 100% + Linear 20%. Гарчиг, лого, тайлбар нь
+          БҮГД зургийн дотор байдаг тул энд давхар элемент БАЙХГҮЙ —
+          зөвхөн CTA л амьд үлдэнэ.
+
+          `-z-10` + эцгийн `isolate` — зураг картын ДОТООД stacking
+          context-д хоригдоно. `isolate` байхгүй бол зураг хамгийн ойрын
+          context руу гарч, картын дэвсгэрийн АРД орох эрсдэлтэй. */}
+      {promo.image ? (
+        <>
+          <Image
+            src={promo.image}
+            alt={promo.imageAlt ?? ""}
+            fill
+            // Нүүрний хамгийн дээд элемент тул идэвхтэй слайд нь LCP байх
+            // магадлалтай. Үлдсэнийг урьдчилж татвал LCP-тэй тэмцэлдэнэ.
+            priority={active}
+            sizes="100vw"
+            className="-z-10 object-cover"
+          />
+          {/* Linear 20% — загварын хоёр дахь fill. Доошоо л гүнзгийрнэ:
+              CTA нь доод зүүн буланд суудаг тул тэнд бага зэрэг тогтвор
+              хэрэгтэй, зургийн дээд 2/3 нь бүрэн тод үлдэнэ. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10 bg-gradient-to-t from-black/20 to-transparent"
+          />
+        </>
+      ) : (
+        /* Зураг хараахан алга — картын ТӨВД ганц шошго. Зураг тавьмагц
+           энэ бүхэлдээ алга болно. */
+        <span
+          aria-hidden="true"
+          className="text-foreground/75 absolute inset-0 flex items-center justify-center text-[11px] font-bold tracking-[0.18em] uppercase"
+        >
+          {promo.placeholderText}
+        </span>
+      )}
+
+      {/* CTA — картын ЦОРЫН ГАНЦ амьд элемент.
+          FIGMA: H 36 · радиус 28 · дотоод зай 12/8 · дүрс хоорондын зай 4 ·
+          өргөн нь агуулгаараа (Hug).
+          ⚠️ Шошгын өнгө нь `primary-foreground` (бараан) — загварт цагаан
+          боловч манай ногоон дээр цагаан ердөө 2.97:1 (dark theme-д 1.85:1)
+          болж WCAG AA 4.5:1-д хүрэхгүй. Бараан нь 7.07:1. */}
+      <Link
+        href={promo.href}
+        tabIndex={active ? undefined : -1}
+        className="bg-primary text-primary-foreground focus-visible:ring-ring inline-flex h-9 w-fit items-center justify-center gap-1 rounded-[28px] px-3 text-sm font-semibold transition-opacity duration-700 ease-out hover:opacity-85 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         {promo.ctaLabel}
         <ArrowRight className="size-4" aria-hidden="true" />

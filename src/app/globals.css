@@ -379,18 +379,37 @@
   will-change: transform;
 }
 
-/* Neon gradient — input-ийн ард гүйдэг өнгөт хүрээ/гэрэл (chat-hero, MagicUI-маягийн) */
-@keyframes neon-pan {
-  from {
-    background-position: 0% 50%;
-  }
+/* ============================================
+   NEON — оролтыг ТОЙРЧ эргэлдэх өнгөт хүрээ / гэрэл
+   ============================================
+   ⚠️ ӨМНӨ НЬ ХӨНДЛӨН ГҮЙДЭГ БАЙВ: `linear-gradient(90deg,…)`-ийн
+   `background-position`-ыг 0→200% болгодог байсан тул өнгө нь зүүнээс
+   баруун тийш ГУЛСДАГ — хүрээг тойрч эргэлдэх БИШ.
+
+   Одоо `conic-gradient` бөгөөд түүний ЭХЛЭХ ӨНЦГИЙГ 0→360° эргүүлнэ.
+   Ингэснээр өнгө нь дөрвөн ирмэгийг дараалан тойрно.
+
+   ⚠️ `@property` ЗААВАЛ. Ердийн custom property нь `<angle>` төрлөө
+   мэдэхгүй тул хөдөлгөөнт утга болж чаддаггүй — тэр үед анимаци
+   0deg дээр гацна. `@property` нь төрлийг зарласнаар браузер утгыг
+   интерполяци хийх боломжтой болгоно.
+   Дэмжлэг: Chromium 85+, Safari 16.4+, Firefox 128+. Дэмжихгүй хуучин
+   хөтөч дээр градиент нь ХӨДӨЛГӨӨНГҮЙ харагдана (эвдрэхгүй).
+
+   ⚠️ `background-size` ХЭРЭГГҮЙ болсон — conic нь хайрцгийн төвөөс
+   тархдаг тул давтагдах хэрэгцээгүй. */
+@property --neon-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes neon-spin {
   to {
-    background-position: 200% 50%;
+    --neon-angle: 360deg;
   }
 }
-.animate-neon-pan {
-  animation: neon-pan 5s linear infinite;
-  will-change: background-position;
+.animate-neon-spin {
+  animation: neon-spin 5s linear infinite;
 }
 
 /* ============================================

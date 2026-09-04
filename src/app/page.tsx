@@ -1,4 +1,5 @@
 import { Promotions } from "@/components/sections/promotions";
+import { PopularServices } from "@/components/sections/popular-services";
 import { ChatHero } from "@/components/sections/chat-hero";
 import { HeaderHeightVar } from "@/components/layout/header-height-var";
 import { RecommendedPlans } from "@/components/sections/recommended-plans";
@@ -66,6 +67,13 @@ export default function Home() {
               Prop-гүй бол 46svh (331px) болж 1280×720 дээр 74px халдаг. */}
           <ChatHero heroRest />
           <RecommendedPlans content={unitelRecommendedPlans} />
+
+          {/* "Эрэлттэй байгаа үйлчилгээ" — зурагтай 2 карт.
+              ⚠️ Доорх `Promotions` ("Онцлох урамшуулал") нь БҮХЭЛДЭЭ
+              placeholder хэвээр. Хоёр section хоёулаа "зурагтай карт"-ын
+              хэлбэртэй тул нэг нь нөгөөгөө орлох ёстой эсэхийг захиалагчаас
+              лавлана. Орлох бол доорх мөрийг л устгана. */}
+          <PopularServices />
 
           {/* "Онцлох урамшуулал" — `web4-sample` (v1)-ээс ирсэн section.
               Компонент нь энэ repo-д аль хэдийн байсан ч зөвхөн Univision

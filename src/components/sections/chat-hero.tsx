@@ -26,7 +26,6 @@ import {
   assistantQuestions,
   buildFollowUp,
   CLARIFY_OUTRO,
-  CLARIFY_INTRO,
   findTvodMovies,
   matchQuestion,
   resolveClarify,
@@ -55,7 +54,45 @@ import {
 import type { Owner } from "@/lib/brand";
 import { ASSISTANT_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
-const NEON = "linear-gradient(90deg,#45c700,#2ad4ff,#a855f7,#45c700)";
+/**
+ * Оролтын градиент хүрээ ба туяа.
+ *
+ * ⚠️ ХАТУУ НЕОНООС БҮДЭГ ПАСТЕЛЬ РУУ (`#45c700,#2ad4ff,#a855f7` байсан).
+ * Хуучин гурван өнгө нь бүрэн ханасан тул 1px хүрээ ч гэсэн оролтын
+ * АГУУЛГААС илүү анхаарал татдаг байв. Одоо голдоо цагаан орж, өнгө нь
+ * зөвхөн ирмэгийн хоёр талд бүдэг үлдэнэ — "гэрэл тусаж байгаа" мэт.
+ *
+ * ⚠️ ЗОГСООЛЫГ ХУВИАР БЭХЛЭВ. Жигд тархсан үед 2px хүрээнд өнгө бүр
+ * өөрийгөө таниулах зай аваагүй тул бүгд нэг нэгэндээ УУСДАГ байв.
+ *
+ * ⚠️ CONIC (LINEAR БИШ) — өнгө нь хүрээг ТОЙРЧ эргэлдэнэ. `linear` үед
+ * зүүнээс баруун тийш гулсдаг байв. Эргэлт нь `--neon-angle`-ээр
+ * (`globals.css`-ийн `@property` + `.animate-neon-spin`) хийгдэнэ.
+ *
+ * Эхний ба сүүлийн өнгө ИЖИЛ байх ЁСТОЙ — conic нь 360°-т эргэж
+ * хаагддаг тул зөрвөл тэр цэг дээр өнгө ҮСРЭНЭ.
+ */
+const NEON =
+  "conic-gradient(from var(--neon-angle),#8be06a,#c6efb6 14%,#ffffff 30%,#f3b6ea 54%,#accbf7 76%,#8be06a)";
+
+/**
+ * ⚠️ `--neon-angle`-ийг ЭНД БАС тавьж байгаа нь ЗААВАЛ.
+ *
+ * `globals.css`-ийн `@property` нь өнцгийг ХӨДӨЛГӨХ боломж олгодог ч,
+ * тэр дүрэм ямар нэг шалтгаанаар хүрч ирээгүй бол (хуучин хөтөч,
+ * dev server-ийн хуучирсан CSS хэсэг) `var(--neon-angle)` нь юу ч
+ * буцаахгүй → `conic-gradient(...)` бүхэлдээ ХҮЧИНГҮЙ болж
+ * `background-image: none` гарна. Өөрөөр хэлбэл ХҮРЭЭ БҮРЭН АЛГА БОЛНО.
+ *
+ * Inline утга нь fallback: хамгийн муудаа хүрээ нь ХӨДӨЛГӨӨНГҮЙ
+ * харагдана, харин хэзээ ч алга болохгүй. `@property` ажиллаж байвал
+ * анимаци энэ утгыг дарж бичнэ (keyframe нь inline style-аас илүү
+ * жинтэй).
+ */
+const NEON_STYLE = {
+  "--neon-angle": "0deg",
+  backgroundImage: NEON,
+} as React.CSSProperties;
 /**
  * Хариулт гарах хүртэлх хугацаа. ТОГТМОЛ тоо БИШ — бодох трэйсийн алхмууд
  * дуустал хүлээнэ. Алхам нэмэх/хасахад хугацаа өөрөө дагана.
@@ -500,18 +537,28 @@ export function ChatHero({
         </svg>
       )}
 
-      <InteractiveGridPattern
-        width={40}
-        height={40}
-        squares={[42, 24]}
-        className={cn(
-          "absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]",
-          // ⚠️ `/assistant` дээр дэвсгэрийг СУЛРУУЛНА. Тэнд хариулт нь
-          // хайрцаггүй тул бичвэр шууд торон дээр суудаг, мөн шилэн карт
-          // нь дэвсгэрээ шүүж харуулах тул тор хэт тод бол шуугиан болно.
-          isPage && "opacity-50",
-        )}
-      />
+      {/* ДЭВСГЭР — НҮҮРЭН ДЭЭР ДАВХАРГА ОГТ БАЙХГҮЙ.
+
+          ⚠️ Өмнө нь энд `.assistant-wash` (дээрээс бууж ууссан саарал +
+          доод талын ногоон туяа) байсныг ХАСАВ. Хуудасны бүх section нэг
+          `bg-background` дээр суудаг тул тэр угаалт нь ЗӨВХӨН энэ section-ыг
+          өнгөөр ялгаж, дээд ба доод ирмэг дээр нь ХАРАГДАХ ЗУУРАС үүсгэж
+          байв — promo-гийн цэгэн заагчийн доор нэг, чипүүдийн доор нэг.
+          Загварт бүх хуудас НЭГДСЭН НЭГ дэвсгэртэй.
+
+          ⚠️ `/assistant` дээр тор ХЭВЭЭР: тэнд шилэн карт (`.glass-surface`)
+          доорхыгоо шүүж харуулдаг тул хавтгай дэвсгэр дээр эффект нь үл
+          мэдэгдэнэ — торыг авбал шилний ажил үрэгдэнэ. */}
+      {isPage && (
+        <InteractiveGridPattern
+          width={40}
+          height={40}
+          squares={[42, 24]}
+          // Хариулт нь хайрцаггүй тул бичвэр шууд торон дээр суудаг —
+          // тор хэт тод бол шуугиан болно.
+          className="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)] opacity-50"
+        />
+      )}
       {/* ⚠️ БОСОО ЗАЙГ ХУМИХ нөхцөл нь `min-width: 768px`-ТЭЙ ХОСЛОНО.
           Өмнө нь зөвхөн `max-height: 1024px` байсан — тэр нь НАМХАН ЗӨӨВРИЙН
           дэлгэцэд (1280×720) зориулагдсан ч, МОБАЙЛ утас (жишээ нь 375×812)
@@ -522,7 +569,13 @@ export function ChatHero({
           авч, намхан desktop дээрх хумилт өөрчлөгдөөгүй хэвээр ажиллана. */}
       <div
         className={cn(
-          "relative z-10 mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-5 text-center transition-[max-width] duration-700 ease-out sm:py-8 md:py-10 [@media_(min-width:768px)_and_(max-height:1024px)]:py-1",
+          // ⚠️ МОБАЙЛЫН ДЭЭД ЗАЙ = 40px (`pt-10`). Загварын хэмжээ 72px байсныг
+          // бодит хуудсан дээр хэрэглэгч ХЭТ ИХ гэж үзсэн тул багасгав
+          // (загварт гарчиг нь ганц богино мөр байсан бол энд гарчиг + тайлбар
+          // хоёулаа байдаг тул блокийн жин илүү).
+          // Картаас заагч хүртэлх 24px-тэй хамт: 24 → заагч → 40 → гарчиг.
+          // Доод зай нь 20px хэвээр (`pb-5`) — тэр нь оролт руу шилжих зай.
+          "relative z-10 mx-auto flex max-w-3xl flex-col items-center justify-center px-4 pt-10 pb-5 text-center transition-[max-width] duration-700 ease-out sm:py-8 md:py-10 [@media_(min-width:768px)_and_(max-height:1024px)]:py-1",
           // Хариулт гармагц туслахын хэсэг ӨРГӨСӨНӨ — зөвлөмжийн карт,
           // багцын харьцуулалт зэрэг нь 3xl дотор шахагдахгүй.
           blocks.length > 0 && "max-w-5xl",
@@ -541,32 +594,31 @@ export function ChatHero({
             гарчигтай, оролт нь доод талдаа байна). */}
         {!isPage && (
           <>
-            {/* ТАНИЛЦУУЛГА — badge ба чадварын тайлбар нь ЗӨВХӨН хэрэглэгч
-                асуухаас ӨМНӨ гарна. Асуулт орсны дараа гол дүр нь ХАРИУЛТ болох
-                тул эдгээр нь зөвхөн зай эзэлж, агуулгыг доош түлхэнэ.
-                ⚠️ Текстийг нь хоослох БИШ, ЭЛЕМЕНТИЙГ нь бүхэлд нь хасна — эс
-                бөгөөс margin нь үлдэж, хоосон зай гацна. Гарчгийн ДЭЭД margin ч
-                мөн зөвхөн танилцуулгатай үедээ утгатай.
-                ⚠️ Шошго нь PLACEHOLDER: жинхэнэ онцлох үг (кампанит ажил,
-                улирлын санал г.м.) шийдэгдээгүй тул слотыг нь нэрлэсэн хэвээр. */}
-            {blocks.length === 0 && (
-              <span className="border-border bg-card/60 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur">
-                <Sparkles className="text-primary size-3.5" aria-hidden="true" />
-                Highlight Keyword
-              </span>
-            )}
+            {/* ⚠️ «Highlight Keyword» BADGE ХАСАГДСАН (хэрэглэгчийн шийдвэр).
+                Гарчгийн дээр суудаг PLACEHOLDER шошго байв — жинхэнэ онцлох
+                үг (кампанит ажил, улирлын санал г.м.) хэзээ ч шийдэгдээгүй
+                бөгөөд хүрээ нь доорх оролтын градиент хүрээтэй өрсөлдөж
+                байлаа. Буцааж хэрэгтэй бол `blocks.length === 0` нөхцөлтэйгөөр
+                гарчгийн ДЭЭР тавина — асуулт орсны дараа ХАРИУЛТ гол дүр
+                болох тул тэр үед харагдах ёсгүй.
+
+                ЧАДВАРЫН ТАЙЛБАР (доорх `<p>`) нь мөн ЗӨВХӨН асуухаас ӨМНӨ
+                гарна. Текстийг нь хоослох БИШ, ЭЛЕМЕНТИЙГ нь бүхэлд нь хасна
+                — эс бөгөөс margin нь үлдэж, хоосон зай гацна. */}
 
             <h1
               className={cn(
                 "text-foreground text-2xl font-extrabold tracking-tight text-balance sm:text-3xl md:text-4xl",
-                blocks.length === 0
-                  ? "mt-4 sm:mt-6 [@media_(min-width:768px)_and_(max-height:1024px)]:mt-2"
-                  : // Танилцуулга алга болсон тул гарчиг ДЭЭД, ДООД зайгаа ӨӨРӨӨ
-                    // авна: дээшээ promo banner-т, доошоо хариултад наалдахгүй.
-                    // Дээд зай нь танилцуулгатай үеийнхтэй ижил (`mt-4 sm:mt-6`)
-                    // тул асуулт орох/эс орохоос үл хамааран гарчиг нэг л
-                    // байрлалд суусан мэт харагдана.
-                    "mt-4 mb-5 sm:mt-6 sm:mb-6",
+                // ⚠️ ДЭЭД MARGIN ХАСАГДСАН. Өмнө нь `mt-4 sm:mt-6` байсан —
+                // тэр нь гарчгийг ДЭЭД талын badge-ээс зааглах үүрэгтэй байв.
+                // Badge устсаны дараа гарчиг нь энэ блокийн ЭХНИЙ элемент
+                // болсон тул дээд зайг нь эцгийн `py-5/sm:py-8/md:py-10`
+                // аль хэдийн өгдөг. Хоёулаа байхад promo-гийн цэгэн заагчаас
+                // 36px (20 + 16) салж, хэт унжсан харагдаж байлаа.
+                //
+                // ДООД зай нь зөвхөн хариулт гарсан үед: тэгэхгүй бол гарчиг
+                // хариултад шууд наалдана.
+                blocks.length > 0 && "mb-5 sm:mb-6",
               )}
             >
               Ухаалаг <span className="from-primary bg-clip-text text-[#45c700]">туслах</span>
@@ -597,6 +649,7 @@ export function ChatHero({
                 questions={questions}
                 onPick={ask}
                 onAnswers={(next) => setAnswers(block.key, next)}
+                latest={i === blocks.length - 1}
                 footer={i === blocks.length - 1 ? followUpForm(true) : undefined}
                 chat={isPage}
               />
@@ -714,6 +767,7 @@ function ResultBlock({
   questions,
   onPick,
   onAnswers,
+  latest = false,
   footer,
   chat = false,
 }: {
@@ -722,6 +776,11 @@ function ResultBlock({
   questions: AssistantQuestion[];
   onPick: (question: string) => void;
   onAnswers: (next: Record<string, string>) => void;
+  /**
+   * Ярианы СҮҮЛИЙН блок мөн үү. Зөвхөн 👍👎 мөрийг хаана гаргахыг шийднэ —
+   * `AnswerFeedback`-ийн тайлбарыг үз.
+   */
+  latest?: boolean;
   /**
    * Картын ДООД хэсэгт наалдах агуулга — дараагийн асуултын оролт.
    * Хумих/дэлгэхээс ХАМААРАХГҮЙ: блок хумигдсан ч оролт нь харагдсаар байх
@@ -769,6 +828,7 @@ function ResultBlock({
         questions={questions}
         onPick={onPick}
         onAnswers={onAnswers}
+        latest={latest}
         introDone={introDone}
         onIntroDone={() => setIntroDone(true)}
       />
@@ -908,6 +968,7 @@ function Answer({
   questions,
   onPick,
   onAnswers,
+  latest,
   introDone,
   onIntroDone,
 }: {
@@ -915,6 +976,8 @@ function Answer({
   questions: AssistantQuestion[];
   onPick: (question: string) => void;
   onAnswers: (next: Record<string, string>) => void;
+  /** Ярианы СҮҮЛИЙН блок мөн үү — 👍👎 мөр зөвхөн тэнд гарна */
+  latest: boolean;
   /** Тойм бичигдэж дууссан уу — үүнээс хойш хариултын бие гарна */
   introDone: boolean;
   onIntroDone: () => void;
@@ -1016,7 +1079,12 @@ function Answer({
         )}
       </div>
 
-      {introDone && <AnswerFeedback questionId={matched.id} />}
+      {/* ⚠️ ЗӨВХӨН СҮҮЛИЙН хариулт дээр. Блок бүрд тавибал 3 асуулт асуусан
+          хүн "Бид таньд тус болж чадсан уу?" гэснийг 3 УДАА хардаг —
+          гуйлт мэт мэдрэгдэж, хариултын агуулгаас анхаарлыг сарниулна.
+          Санал нь `localStorage`-д кейсийн id-гаар хадгалагддаг тул
+          өмнөх блокийн мөр алга болсон ч өгсөн санал алдагдахгүй. */}
+      {introDone && latest && <AnswerFeedback questionId={matched.id} />}
 
       {introDone && matched.cta && (
         <div className="mt-6 flex justify-center">
@@ -1283,12 +1351,16 @@ function ClarifyView({
             Тодруулах асуулт {currentIndex + 1}/{result.steps.length}
           </div>
 
-          {/* Эхний асуултад — ЯАГААД асууж байгааг тайлбарлана.
-              Дараагийнхад — өмнөх хариултыг ИШ ТАТНА. Хоёулаа "намайг
-              сонсож байна" гэсэн мэдрэмж өгнө. */}
-          <p className="text-muted-foreground mt-1.5 text-xs">
-            {prevPick ? `«${prevPick.label}» — тэмдэглэж авлаа.` : CLARIFY_INTRO}
-          </p>
+          {/* ⚠️ ЗӨВХӨН 2-Р АСУУЛТААС — өмнөх хариултыг ИШ ТАТНА ("намайг
+              сонсож байна" гэсэн мэдрэмж). ЭХНИЙ асуулт дээр энд юу ч
+              гарахгүй: яагаад асууж байгааг кейсийн `summary` дөнгөж сая
+              дээр нь хэлсэн байдаг тул тогтмол оршил нэмбэл нэг зүйл хоёр
+              удаа хэлэгдэнэ ([[hero-assistant.ts]]-ийн CLARIFY_INTRO-г үз). */}
+          {prevPick && (
+            <p className="text-muted-foreground mt-1.5 text-xs">
+              «{prevPick.label}» — тэмдэглэж авлаа.
+            </p>
+          )}
           <p className="text-foreground mt-1.5 text-sm font-semibold">
             {result.steps[currentIndex].prompt}
           </p>
@@ -2567,15 +2639,22 @@ function NeonFrame({
         <div
           aria-hidden
           className={cn(
-            "animate-neon-pan pointer-events-none absolute -inset-1 opacity-25 blur-lg",
+            // ТУЯА нь ЗӨӨЛӨН байх ёстой: `-inset-1` + `blur-lg` нь оролтын
+            // дагуу тодорхой боловч бүдэг хүрээ үлдээнэ. Тархалт нь үүнээс
+            // өргөн (`blur-2xl`) бол өнгө ирмэгээ алдаж уусна, нарийн
+            // (`blur-md`) бол хатуу зураас болно. Хүч нь 45% — өнгө нь
+            // танигдах ч оролтын агуулгаас илүү анхаарал татахгүй.
+            "animate-neon-spin pointer-events-none absolute -inset-1 opacity-45 blur-lg",
             rounded,
           )}
-          style={{ background: NEON, backgroundSize: "200% 100%" }}
+          style={NEON_STYLE}
         />
       )}
       <div
-        className={cn("animate-neon-pan relative p-px", rounded)}
-        style={{ background: NEON, backgroundSize: "200% 100%" }}
+        // ⚠️ 1px → 2px. 1px дээр градиент нь өнгө таних зайгүй тул зүгээр л
+        // саарал зураас мэт харагдаж, бүх өнгө нэг нэгэндээ УУСДАГ.
+        className={cn("animate-neon-spin relative p-0.5", rounded)}
+        style={NEON_STYLE}
       >
         {children}
       </div>

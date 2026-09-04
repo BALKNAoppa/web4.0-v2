@@ -37,6 +37,29 @@ export type PlanCardContent = {
    * (`lib/brand.ts > ACCENT`).
    */
   recommended?: boolean;
+  /**
+   * `mobile-plans.ts`-ийн багцын id.
+   *
+   * ⚠️ БАГЦЫН НЭР, ДАТА ЭРХ, СУУРЬ ХУРААМЖ гурвуулаа ТЭНДЭЭС ирнэ — энд
+   * ДАВХАРДУУЛЖ БИЧИХГҮЙ. Тариф өөрчлөгдвөл `mobile-plans.ts`-ийг л засна.
+   * Байхгүй бол карт нь `title`-ээ хэрэглэж, дата pill ба үнийн мөр
+   * ОГТ гарахгүй (Univision-ы placeholder картууд ийм).
+   */
+  planId?: string;
+  /**
+   * Картын дээд талын ЗУРАГ — `public/`-ээс эхлэх зам.
+   *
+   * ХЭМЖЭЭ: слот нь 1:1 (дөрвөлжин) тул 2× нягтад **880 × 880**.
+   * Байвал зураг `object-cover`-оор слотыг дүүргэж, дээр нь scrim орж,
+   * багцын нэр ба дата pill ЦАГААН болно. Байхгүй бол саарал
+   * placeholder + шошго хэвээр.
+   *
+   * ⚠️ БАГЦЫН НЭР, ДАТА нь зургийн ДООД ЗҮҮН/БАРУУН буланд ГАРНА тул
+   * тэр хоёр талбайг зурган дээрээ чөлөөтэй үлдээ.
+   */
+  image?: string;
+  /** Зургийн alt. Чимэглэл бол бүү бич (WCAG 1.1.1). */
+  imageAlt?: string;
 };
 
 export type RecommendedPlansContent = {
@@ -78,10 +101,53 @@ export const unitelRecommendedPlans: RecommendedPlansContent = {
     { id: "other", label: "Бусад багцууд" },
   ],
   cards: {
+    // ⚠️ ЭНЭ ГУРАВ нь PLACEHOLDER БИШ — захиалагчийн өгсөн бодит эрхүүд.
+    // Нэр, дата, үнэ нь `planId`-аар `mobile-plans.ts`-ээс ирнэ.
     recommended: [
-      placeholderCard("rec-1", 3),
-      placeholderCard("rec-2", 4, true),
-      placeholderCard("rec-3", 4),
+      {
+        id: "rec-plus",
+        planId: "plus-16",
+        photoLabel: "Card photo",
+        title: "PLUS",
+        highlights: [
+          "Хэрэглээндээ тохируулан багцаа бүтээх боломж",
+          "8GB-32GB дата эрх",
+          "Сүлжээндээ хязгааргүй ярих эрх",
+        ],
+        ctaLabel: "Дэлгэрэнгүй",
+        href: "#",
+      },
+      {
+        id: "rec-priority",
+        planId: "priority-48",
+        photoLabel: "Card photo",
+        title: "PRIORITY",
+        highlights: [
+          "Сүлжээний ачаалалтай цагуудад x3 өндөр хурд",
+          "Лавлах төвийн хүлээлэггүй үйлчилгээ",
+          "16GB-88GB дата эрх",
+        ],
+        ctaLabel: "Дэлгэрэнгүй",
+        href: "#",
+        recommended: true,
+      },
+      {
+        id: "rec-premium",
+        planId: "premium-88",
+        photoLabel: "Card photo",
+        title: "PREMIUM",
+        // ⚠️⚠️ ЭДГЭЭР 3 МӨР нь PRIORITY-гийнхтэй ЯГ ИЖИЛ. Захиалагчийн
+        // өгсөн жагсаалтад 3 дахь багц нь "Priority" гэж ХОЁР ДАХЬ УДАА
+        // бичигдсэн (хуулсан алдаа бололтой) тул PREMIUM-ийн ӨӨРИЙН
+        // эрхүүд ХҮЛЭЭГДЭЖ БАЙНА. Ирэхэд зөвхөн энэ гурван мөрийг солино.
+        highlights: [
+          "Сүлжээний ачаалалтай цагуудад x3 өндөр хурд",
+          "Лавлах төвийн хүлээлэггүй үйлчилгээ",
+          "16GB-88GB дата эрх",
+        ],
+        ctaLabel: "Дэлгэрэнгүй",
+        href: "#",
+      },
     ],
     other: [
       placeholderCard("other-1", 3),
