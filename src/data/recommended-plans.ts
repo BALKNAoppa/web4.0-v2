@@ -25,8 +25,18 @@ export type PlanTab = {
 
 export type PlanCardContent = {
   id: string;
-  /** Зургийн слотод харагдах шошго — жинхэнэ зураг гартал */
-  photoLabel: string;
+  /**
+   * Зургийн слотын ДУНДАА гарах WIREFRAME шошго ("Card photo" гэх мэт) —
+   * "энд зураг ирнэ" гэдгийг заана.
+   *
+   * ⚠️ ЗААВАЛ БИШ. Орхивол слот нь ЗҮГЭЭР Л саарал талбай болно (дүрс,
+   * шошго гарахгүй) — SMART DATA / SMART TALK зэрэг БОДИТ багцад ийм.
+   *
+   * ⚠️ Слот ӨӨРӨӨ ХЭЗЭЭ Ч ХАСАГДАХГҮЙ: `image` ч, `photoLabel` ч байхгүй
+   * үед 1:1 хэмжээ нь хэвээр үлдэнэ. Эс бөгөөс тэр карт зурагтай картаас
+   * ~340px намхан болж, таб солиход section-ий өндөр үсэрнэ.
+   */
+  photoLabel?: string;
   title: string;
   /** Картан дээр check-тэй гарах 3–4 мөр */
   highlights: string[];
@@ -93,9 +103,12 @@ const placeholderCard = (id: string, count: 3 | 4, recommended = false): PlanCar
 });
 
 export const unitelRecommendedPlans: RecommendedPlansContent = {
-  // Бичвэр нь PLACEHOLDER — жинхэнэ маркетингийн "trigger" үг шийдэгдээгүй
-  // тул слотыг нэрлэсэн шошго л тавьсан.
-  heading: { title: "Санал болгох багц", subtitle: "Энд онцлох trigger үг байрлана" },
+  // ⚠️ SUBTITLE нь одоо БОДИТ бичвэр (2026-09-07) — өмнө нь "Энд онцлох
+  // trigger үг байрлана" гэсэн нэрлэсэн placeholder байв.
+  heading: {
+    title: "Санал болгох багц",
+    subtitle: "Хэрэглээнд тань тохирох дата болон ярианы багцууд.",
+  },
   tabs: [
     { id: "recommended", label: "Танд санал болгох багц" },
     { id: "other", label: "Бусад багцууд" },
@@ -103,10 +116,19 @@ export const unitelRecommendedPlans: RecommendedPlansContent = {
   cards: {
     // ⚠️ ЭНЭ ГУРАВ нь PLACEHOLDER БИШ — захиалагчийн өгсөн бодит эрхүүд.
     // Нэр, дата, үнэ нь `planId`-аар `mobile-plans.ts`-ээс ирнэ.
+    //
+    // ЗУРАГ — `public/Unitel/Recommandation/` (хавтасны нэр захиалагчийн
+    // байршуулсан хэлбэрээр, "Recommendation" БИШ). `alt` бичээгүй нь
+    // ЗӨВ: багцын нэр, дата эрх нь зургийн дээр БОДИТ бичвэр болж гардаг
+    // тул зураг нь чимэглэл (WCAG 1.1.1).
+    // ⚠️ Слот нь 1:1. `Plus.jpg` (2048×2048) яг таарна; `Priority.png` ба
+    // `Premium.png` нь 1080×1350 (4:5) тул дээд/доод ~20% ТАЙРАГДАНА —
+    // гол дүрс нь төвөөс хол бол шинэ кроп хэрэгтэй.
     recommended: [
       {
         id: "rec-plus",
         planId: "plus-16",
+        image: "/Unitel/Recommandation/Plus.jpg",
         photoLabel: "Card photo",
         title: "PLUS",
         highlights: [
@@ -120,6 +142,7 @@ export const unitelRecommendedPlans: RecommendedPlansContent = {
       {
         id: "rec-priority",
         planId: "priority-48",
+        image: "/Unitel/Recommandation/Priority.png",
         photoLabel: "Card photo",
         title: "PRIORITY",
         highlights: [
@@ -134,6 +157,7 @@ export const unitelRecommendedPlans: RecommendedPlansContent = {
       {
         id: "rec-premium",
         planId: "premium-88",
+        image: "/Unitel/Recommandation/Premium.png",
         photoLabel: "Card photo",
         title: "PREMIUM",
         // ⚠️⚠️ ЭДГЭЭР 3 МӨР нь PRIORITY-гийнхтэй ЯГ ИЖИЛ. Захиалагчийн
@@ -149,10 +173,38 @@ export const unitelRecommendedPlans: RecommendedPlansContent = {
         href: "#",
       },
     ],
+    // ⚠️ ЗУРАГГҮЙ — саарал PLACEHOLDER слоттой (захиалагчийн шийдвэр):
+    // `image` өгөөгүй тул слот нь саарал placeholder болж, дундаа "энд зураг
+    // ирнэ" гэсэн дүрс+шошготой (`photoLabel`) гарна. 1:1 хэмжээ нь зурагтай
+    // картуудтай ижил байснаар таб солиход section-ий өндөр үсрэхгүй.
+    //
+    // ⚠️ Өмнөх 3 placeholder карт (`other-1..3`) ХАСАГДСАН — эдгээр нь
+    // захиалагчийн өгсөн БОДИТ хоёр багц тул wireframe-ийн орлуулагчийг
+    // дэргэд нь үлдээх нь "аль нь батлагдсан бэ" гэдгийг ойлгомжгүй болгоно.
+    //
+    // ⚠️ `planId` АЛГА — эдгээр багц `mobile-plans.ts`-д бүртгэлгүй тул
+    // дата pill ба суурь хураамжийн мөр гарахгүй. Тарифыг нь тэнд бүртгээд
+    // `planId` өгвөл автоматаар гарна, энд тоо давхардуулж бичихгүй.
     other: [
-      placeholderCard("other-1", 3),
-      placeholderCard("other-2", 3),
-      placeholderCard("other-3", 4),
+      {
+        id: "smart-data",
+        photoLabel: "Card photo",
+        title: "SMART DATA",
+        highlights: ["Хэрэглээнд тохирсон дата", "Өндөр хурдны сүлжээ", "Уян хатан сонголт"],
+        ctaLabel: "Дэлгэрэнгүй",
+        href: "#",
+      },
+      {
+        id: "smart-talk",
+        photoLabel: "Card photo",
+        title: "SMART TALK",
+        // ⚠️ "Хязгаарлалттай дуудлага" — захиалагчийн бичсэн ЯГ ТЭР ҮГ.
+        // Давуу тал болгож харуулж буй мөрөнд "хязгаарлалттай" гэдэг нь
+        // сөрөг сонсогдох тул "Хязгааргүй" гэсэн үг байсан эсэхийг лавлах.
+        highlights: ["Бүх сүлжээнд ярих эрх", "Хязгаарлалттай дуудлага", "Нэмэлт боломжууд"],
+        ctaLabel: "Дэлгэрэнгүй",
+        href: "#",
+      },
     ],
   },
 };

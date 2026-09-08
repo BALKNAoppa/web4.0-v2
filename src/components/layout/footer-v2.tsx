@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import {
   Accordion,
   AccordionContent,
@@ -10,162 +8,160 @@ import { BrandLogo } from "@/components/layout/brand-logo";
 import { LogoHomeLink } from "@/components/layout/logo-home-link";
 import {
   AppStoreRow,
+  DesktopFooterCard,
   FooterHeading,
+  FooterNavLink,
   LegalStrip,
   SHOW_APP_DOWNLOAD,
   SocialRow,
 } from "@/components/layout/footer-shared";
-import { footerSitemap, type FooterLink } from "@/data/footer";
+import { footerSitemap, footerStripLinks } from "@/data/footer";
 import { cn } from "@/lib/utils";
 
 /**
- * ХУВИЛБАР 2 — "Телеком классик"
+ * ХУВИЛБАР 1 ба 3-ЫН FOOTER.
  *
- * Хоёр хэлбэр нь ЗОРИУД өөр:
+ * Desktop — `DesktopFooterCard` (`footer-shared.tsx`): хөвөгч карт, 5 багана.
+ *   ⚠️ БҮХ ХУВИЛБАРТ ИЖИЛ. Өмнө нь энд `DesktopSitemap` гэсэн ӨӨР бүтэц
+ *   байсан (лого + 3 багана + Апп татах + Сошиал, бүгд нэг эгнээнд, картгүй).
+ *   2026-09-08-нд захиалагч "desktop-ийн БҮХ footer"-ыг шинэ загвараар
+ *   хийхийг заасан тул `DesktopSitemap` УСТСАН, хувилбар 2-той хуваалцах
+ *   нэг компонент болов.
  *
- * Desktop — БҮГД НЭГ ЭГНЭЭНД: зүүн ирмэгт брэндийн лого, дараа нь ангиллын
- *   3 багана нягт зэрэгцээд, баруун ирмэгт Апп татах + Сошиал хаяг.
- *   Dropdown/accordion БАЙХГҮЙ — бүх линк ил. Гарчиг нь линкүүдээсээ тодрох
- *   ч хэт хүчтэй биш (`FooterHeading` = 14px semibold + foreground, линк нь
- *   14px + muted).
+ * Mobile — ГОЛЛУУЛСАН НЭГ БАГАНА: лого → (Апп татах) → ангиллын accordion →
+ *   ангилалд ороогүй бусад линк → сошиал icon (`MobileSitemap`). ХӨНДӨГДӨӨГҮЙ.
  *
- * Mobile — дарааллаар:
- *   1. Апп татах (ХАМГИЙН ДЭЭР)
- *   2. Secondary navigation — accordion (dropdown) хэлбэрээр
- *   3. Сошиал хаяг
- *
- * Хамгийн доор — 3 хувилбарт нийтлэг `LegalStrip`: copyright + "Бидний тухай ·
- * Тогтвортой ирээдүй · …" линкүүд + бүс нутаг.
+ * Хамгийн доор — `LegalStrip` нь одоо ЗӨВХӨН МОБАЙЛД (copyright). Desktop-д
+ * copyright нь картын дотор орсон.
  */
 export function FooterSitemapVariant() {
   return (
-    <footer aria-label="Footer" className="border-border bg-background border-t">
-      <DesktopSitemap />
+    <footer aria-label="Footer" className="border-border bg-background border-t lg:border-t-0">
+      <DesktopFooterCard />
       <MobileSitemap />
       <LegalStrip />
     </footer>
   );
 }
 
-/** Бүх багананд ашиглагдах линк — гадаад бол шинэ tab */
-function FooterNavLink({ item }: { item: FooterLink }) {
-  // `no-underline` — AccordionContent нь доторх бүх `<a>`-г underline болгодог
-  const className =
-    "text-muted-foreground hover:text-foreground text-sm no-underline transition-colors";
+/**
+ * МОБАЙЛЫН ЖАГСААЛТЫН МӨР — ангиллын гарчиг, ангилал доторх линк, ангилалд
+ * ороогүй бусад линк ГУРВУУЛАА ЯГ ЭНЭ өндөр, ижил голлолттой. Ингэснээр
+ * accordion задарсан ч, хаагдсан ч бүхэлдээ НЭГ жагсаалт мэт уншигдана.
+ *
+ * `py-3` + `text-sm` (мөрийн өндөр 20px) + 1px хүрээ = 46px — WCAG 2.5.8-ын
+ * 24px-ийн доод хэмжээнээс хангалттай том, хуруунд таарна.
+ *
+ * ⚠️ `border border-transparent` нь ЧИМЭГЛЭЛ БИШ. `AccordionTrigger` өөрөө
+ * focus-ring-ийнхээ төлөө 1px хүрээтэй байдаг тул гарчгийн мөр линкийн
+ * мөрнөөс 2px өндөр болно. Ижил хүрээг линкүүдэд ч тавьж тэгшитгэв.
+ */
+const FOOTER_ROW =
+  "flex w-full items-center justify-center border border-transparent py-3 text-center text-sm";
 
-  return item.external ? (
-    <a
-      href={item.href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={`${item.label} (шинэ tab-д нээгдэнэ)`}
-      className={className}
-    >
-      {item.label}
-    </a>
-  ) : (
-    <Link href={item.href} className={className}>
-      {item.label}
-    </Link>
-  );
-}
-
-// =====================================================================
-// DESKTOP — лого + гарчигтай баганууд НЭГ эгнээнд
-// =====================================================================
-function DesktopSitemap() {
-  return (
-    <div className="container mx-auto hidden py-12 lg:block">
-      {/* БҮГД НЭГ ЭГНЭЭНД: лого · 3 багана (зүүн тийш шахсан) · апп + сошиал (баруунд) */}
-      <div className="flex items-start gap-12">
-        {/* Брэндийн лого — зүүн ирмэгт */}
-        <LogoHomeLink className="inline-flex shrink-0 items-center" aria-label="Нүүр">
-          <BrandLogo height={28} />
-        </LogoHomeLink>
-
-        {/* БҮХ БАГАНА нэг flex-д — хоорондын зай БҮГД ижил `gap-14` (56px).
-            `justify-between` БАЙХГҮЙ тул зай нь дэлгэцийн өргөнөөс хамаарч
-            сунахгүй, тогтмол хэвээр. Логоны зай нь тусдаа (гадна `gap-12`).
-            Дараалал: Харилцаа холбоо · Платформ · Дижитал үйлчилгээ ·
-                      Апп татах · Сошиал хаяг */}
-        <div className="flex items-start gap-14">
-          {footerSitemap.map((column) => (
-            <div key={column.id}>
-              <FooterHeading>{column.title}</FooterHeading>
-              <ul className="mt-4 space-y-2.5">
-                {column.items.map((item) => (
-                  <li key={item.id}>
-                    <FooterNavLink item={item} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-
-          {SHOW_APP_DOWNLOAD && (
-            <div>
-              <FooterHeading>Апп татах</FooterHeading>
-              {/* `flex-col` — badge бүр өөрийн мөрөнд (3 мөр) */}
-              <AppStoreRow className="mt-4 flex-col" />
-            </div>
-          )}
-
-          <div>
-            <FooterHeading>Сошиал хаяг</FooterHeading>
-            <SocialRow className="mt-4" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+/**
+ * Доторх бичвэр өндөртэй ХАМТ уусч гарна/арилна.
+ *
+ * Өндрийн муруй, хугацаа нь `ui/accordion.tsx`-д (300ms) — бүх accordion-д
+ * нийтлэг. Энэ уусалт нь ЗӨВХӨН footer-ийнх.
+ *
+ * Зөвхөн өндөр хөдөлбөл бичвэр нь `overflow-hidden`-д ТАЙРАГДАЖ илэрдэг —
+ * эхний хэдэн frame-д мөр хагасаараа зүсэгдэж харагдана. Уусалт нэмэхэд тэр
+ * зүсэлт мэдрэгдэхээ болино. 280ms нь өндрийн 300ms-ээс арай богино —
+ * бичвэр бүрэн харагдсан хойно хөдөлгөөн жаахан үргэлжилж зөөлөн зогсоно.
+ *
+ * `[[data-state=open]>&]` — төлөв нь ЭЦЭГ элемент дээр (Content) байдаг тул
+ * дотоод div-ийг эцгийнх нь төлөвөөр сонгоно.
+ */
+const ACCORDION_FADE =
+  "duration-[280ms] [[data-state=closed]>&]:animate-out [[data-state=closed]>&]:fade-out [[data-state=open]>&]:animate-in [[data-state=open]>&]:fade-in";
 
 // =====================================================================
-// MOBILE — Апп татах ДЭЭР → accordion → сошиал → компани
+// MOBILE — ГОЛЛУУЛСАН НЭГ БАГАНА
+//
+// Дараалал: лого → (Апп татах) → ангилал × 3 (accordion) → бусад линк →
+//           сошиал icon. Доор нь `LegalStrip`-ийн copyright.
+//
+// ⚠️ ЗААГ ЗУРААС БАЙХГҮЙ. `AccordionItem`-ийн анхны `not-last:border-b`-г
+// `not-last:border-b-0`-оор дардаг. Яагаад ЯГ ижил variant-тай бичив гэвэл:
+// зүгээр `border-b-0` гэвэл tailwind-merge хоёуланг нь үлдээх ба
+// `.not-last\:border-b:not(:last-child)` нь pseudo-class-аасаа болж
+// специфик өндөр тул ЗУРААС АРИЛАХГҮЙ.
+//
+// ⚠️ "Бусад линк" нь `footerStripLinks` — desktop дээр `LegalStrip`-ийн доод
+// мөрөнд гардаг ЯГ ТЭР жагсаалт. Хоёр газар давхар гарахгүйн тулд
+// `LegalStrip` доторх nav нь `lg`-ээс доош нуугддаг болов.
 // =====================================================================
 function MobileSitemap() {
   return (
     <div className="container mx-auto py-8 lg:hidden">
-      {/* 1. Апп татах — хамгийн дээр (Unitel дээр харагдахгүй) */}
+      {/* 1. Брэндийн лого — голд */}
+      <LogoHomeLink className="mx-auto flex w-fit items-center" aria-label="Нүүр">
+        <BrandLogo height={28} />
+      </LogoHomeLink>
+
+      {/* 2. Апп татах — зөвхөн Univision дээр (Unitel-ийн нүүрэнд аль хэдийн бий) */}
       {SHOW_APP_DOWNLOAD && (
-        <div>
+        <div className="mt-8 flex flex-col items-center">
           <FooterHeading>Апп татах</FooterHeading>
-          <AppStoreRow className="mt-3" />
+          <AppStoreRow className="mt-3 justify-center" />
         </div>
       )}
 
-      {/* 2. Secondary navigation — dropdown (accordion) хэвээр.
-          Апп татах блокгүй үед энэ нь хамгийн дээр гарах тул дээд зайг
-          нөхөж өгнө (эс бөгөөс footer-ийн ирмэгт наалдана). */}
-      <Accordion
-        type="single"
-        collapsible
-        className={cn("border-border border-t pt-1", SHOW_APP_DOWNLOAD && "mt-6")}
-      >
-        {footerSitemap.map((column) => (
-          <AccordionItem key={column.id} value={column.id}>
-            <AccordionTrigger className="text-foreground text-base font-semibold">
-              {column.title}
-            </AccordionTrigger>
-            <AccordionContent>
-              <ul className="space-y-2.5 pb-2">
-                {column.items.map((item) => (
-                  <li key={item.id}>
-                    <FooterNavLink item={item} />
-                  </li>
-                ))}
-              </ul>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+      {/* 3. Ангилал + бусад линк — НЭГ жагсаалт, мөр бүр `FOOTER_ROW` */}
+      <nav aria-label="Footer navigation" className="mt-6">
+        {/* `multiple` — зурган дээрх шиг ГУРВУУЛАА зэрэг задарч чадна.
+            `single` үед Платформыг дарахад Харилцаа холбоо хаагдана. Анхны
+            төлөв нь БҮГД ХААЛТТАЙ — accordion-ы гол зорилго нь мобайл дээр
+            footer-ийн уртыг богиносгох. */}
+        <Accordion type="multiple">
+          {footerSitemap.map((column) => (
+            <AccordionItem key={column.id} value={column.id} className="not-last:border-b-0">
+              <AccordionTrigger
+                className={cn(
+                  FOOTER_ROW,
+                  // `gap-1.5` — chevron гарчгийн ЯГ ХАЖУУД. Анхны утга нь
+                  // `ml-auto` буюу баруун ирмэг рүү түлхдэг тул `ml-0` болгов.
+                  "text-foreground gap-1.5 font-medium **:data-[slot=accordion-trigger-icon]:ml-0",
+                )}
+              >
+                {column.title}
+              </AccordionTrigger>
+              {/* `pb-0` — анхны `pb-4` нь ангилал хоорондын хэмнэлийг эвдэнэ.
+                  `[&_a]:no-underline` — AccordionContent-ийн анхны `[&_a]:underline`
+                  нь ҮР ДҮНД НЬ линк дээрх `no-underline`-ыг ялдаг (descendant
+                  сонгогч тул специфик өндөр). Тиймээс ЯГ ижил variant-аар
+                  дарж, tailwind-merge-ээр солиулав. */}
+              <AccordionContent className={cn("pb-0 [&_a]:no-underline", ACCORDION_FADE)}>
+                <ul>
+                  {column.items.map((item) => (
+                    <li key={item.id}>
+                      <FooterNavLink item={item} className={FOOTER_ROW} />
+                    </li>
+                  ))}
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
 
-      {/* 3. Сошиал хаяг — байрандаа хэвээр. Түүний доорх "Бидний тухай ·
-             Тогтвортой ирээдүй …" хэсэг нь `LegalStrip` дотор байрлана. */}
-      <div className="border-border mt-6 border-t pt-6">
-        <FooterHeading>Сошиал хаяг</FooterHeading>
-        <SocialRow className="mt-3" />
-      </div>
+        {/* Ангилалд ороогүй бусад линк — ангиллын гарчигтай ИЖИЛ хэв, ижил мөр.
+            `hover:opacity-70` — өнгө нь аль хэдийн `foreground` тул үндсэн
+            хэвийн `hover:text-foreground` энд харагдах өөрчлөлт өгөхгүй. */}
+        <ul>
+          {footerStripLinks.map((item) => (
+            <li key={item.id}>
+              <FooterNavLink
+                item={item}
+                className={cn(FOOTER_ROW, "text-foreground font-medium hover:opacity-70")}
+              />
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* 4. Сошиал — гарчиггүй, дээрх мөрүүдтэй ижил голлолтоор */}
+      <SocialRow className="mt-2 justify-center" />
     </div>
   );
 }

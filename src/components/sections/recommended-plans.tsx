@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Check, ImageIcon, Star } from "lucide-react";
+import { ImageIcon, Sparkles, Star } from "lucide-react";
 
 import {
   Carousel,
@@ -19,7 +19,7 @@ import {
   type PlanTabId,
   type RecommendedPlansContent,
 } from "@/data/recommended-plans";
-import { mobilePlans } from "@/data/mobile-plans";
+import { mobilePlans, type MobilePlan } from "@/data/mobile-plans";
 import { ACCENT } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
  *
  * МОБАЙЛ (< md) — ХЯЗГААРГҮЙ (loop) CAROUSEL. Нэг карт төвд, хоёр талд нь
  *   хөршүүдийн ирмэг харагдана; доор нь цэгэн заагч.
- * md+ — 3 тэнцүү багана (хуучнаараа).
+ * md+ — тэнцүү багана: 3 карттай таб → 3, 2 карттай ("Бусад багцууд") → 2.
  *
  * ⚠️ ЯАГААД МОБАЙЛД CAROUSEL: гурван карт босоо жагсвал section нь ~2000px
  * болж, доорх бүх агуулгыг түлхдэг байв. Хэвтээ carousel нь гурвыг НЭГ
@@ -82,10 +82,17 @@ export function RecommendedPlans({ content }: { content: RecommendedPlansContent
         <PlanCarousel key={tab} cards={cards} />
       </div>
 
-      {/* md+ — 3 тэнцүү багана. `items-stretch` — картууд ижил өндөртэй
-          болж, доод талын үнэ/CTA мөр нэг шугамд эгнэнэ. */}
+      {/* md+ — тэнцүү багана (тоо нь доор, картаас). `items-stretch` — картууд
+          ижил өндөртэй болж, доод талын үнэ/CTA мөр нэг шугамд эгнэнэ. */}
       <div className="mx-auto hidden max-w-300 px-4 md:block">
-        <ul className="mt-10 grid grid-cols-1 items-stretch gap-6 md:grid-cols-3">
+        <ul
+          className={cn(
+            "mt-10 grid grid-cols-1 items-stretch gap-6",
+            // ⚠️ БАГАНЫН ТОО КАРТААС. "Бусад багцууд" таб 2 карттай тул
+            // `md:grid-cols-3` үлдээвэл баруун талд ХООСОН багана үлдэнэ.
+            cards.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3",
+          )}
+        >
           {cards.map((item) => (
             <li key={item.id} className="min-w-0">
               <PlanCard card={item} />
@@ -98,7 +105,8 @@ export function RecommendedPlans({ content }: { content: RecommendedPlansContent
 }
 
 /**
- * МОБАЙЛЫН CAROUSEL — embla, `loop: true`.
+ * МОБАЙЛЫН CAROUSEL — embla. `loop` нь ГУРВААС ОЛОН карттай үед л асна
+ * (доорх `canLoop`-ийн тайлбарыг үз).
  *
  * `align: "center"` + `basis-[86%]` — идэвхтэй карт төвд, хоёр талд нь
  * ~26px ирмэг. Тэр ирмэг нь "цааш байна" гэдгийг сумгүйгээр хэлнэ.
@@ -107,6 +115,33 @@ export function RecommendedPlans({ content }: { content: RecommendedPlansContent
  * дээр хоёр өөр хэлбэрийн заагч байвал систем задарна.
  */
 function PlanCarousel({ cards }: { cards: PlanCardContent[] }) {
+  /**
+   * ГУРВААС ЦӨӨН КАРТ ДЭЭР LOOP ХИЙХ БОЛОМЖГҮЙ — embla өөрөө унтраадаг.
+   *
+   * `embla-carousel`-ийн `SlideLooper.canLoop()`:
+   *
+   *     viewSize − Σ(БУСАД бүх слайдын өргөн) <= 0.1
+   *
+   * буюу "нэг слайдыг эргүүлэхийн тулд ҮЛДСЭН слайдууд viewport-ыг БҮТНЭЭР
+   * дүүргэж чадах ёстой". Манай слайд `basis-[84%]` тул:
+   *   3 карт → үлдсэн 2 нь 168% ✓ loop асна
+   *   2 карт → үлдсэн 1 нь ердөө 84% ✗ loop УНТАРНА
+   * (`embla-carousel.esm.js:1528` — `loop && !canLoop()` бол engine-ээ
+   * `loop: false`-оор ДАХИН үүсгэдэг, чимээгүйхэн.)
+   *
+   * Loop унтармагц анхдагч `containScroll: "trimSnaps"` нь гүйлтийг агуулгын
+   * ирмэгээр ХАЗААРЛАДАГ. `align: "center"` нь 0 дугаар картыг голлуулахын
+   * тулд СӨРӨГ байрлал шаардах тул хазаарлагдаж, карт зүүн ирмэгт наалддаг —
+   * захиалагчийн "карт голлож харагдахгүй байна" гэсэн нь ЯГ ЭНЭ.
+   *
+   * ЗАСВАР: loop боломжгүй үед `containScroll: false` — снапууд тайрагдахгүй
+   * тул карт голлоно. Гадна талд нь хоосон зай үлдэнэ (хөрш байхгүй тул
+   * тэр талд peek гарах боломжгүй) — 2 картаар peek-тэй loop хийх нь
+   * дээрх томьёогоор ЗАРЧМЫН ХУВЬД боломжгүй.
+   *
+   * ⚠️ `basis-[84%]`-ийг өөрчилвөл энэ 3-ын босгыг ДАХИН тооц.
+   */
+  const canLoop = cards.length > 2;
   const [api, setApi] = useState<CarouselApi>();
   /**
    * Идэвхтэй индекс. Effect-ийн БИЕД `setState` дуудахгүй
@@ -128,7 +163,9 @@ function PlanCarousel({ cards }: { cards: PlanCardContent[] }) {
     <>
       <Carousel
         setApi={setApi}
-        opts={{ loop: true, align: "center" }}
+        // `containScroll` нь `loop: true` үед embla-д ХЭРЭГСЭГДЭХГҮЙ тул
+        // "trimSnaps" (анхдагч) нь тэр тохиолдолд юу ч өөрчлөхгүй.
+        opts={{ loop: canLoop, align: "center", containScroll: canLoop ? "trimSnaps" : false }}
         // `data-slot=carousel-content` нь `CarouselContent`-ийн ГАДНА
         // (`ref`-тэй) div — тэр нь className хүлээж авдаггүй тул өндрийг
         // эндээс дамжуулна. `items-stretch` — карт бүр эгнээний бүтэн
@@ -216,9 +253,26 @@ function PlanTabs({
  *   │  Суурь хураамж:  [Дэлгэр…]  │  ← үнэ + CTA
  *   └─────────────────────────────┘
  *
+ * ЗУРАГГҮЙ ХУВИЛБАР — слот нь ЯГ ИЖИЛ ХЭМЖЭЭТЭЙ, зүгээр л саарал:
+ *
+ *   ┌─────────────────────────────┐
+ *   │ ┌─────────────────────────┐ │  ← ижил 1:1 слот, `bg-muted`
+ *   │ │                         │ │     (`photoLabel` өгвөл дундаа
+ *   │ │ ▌SMART DATA             │ │      дүрс+шошготой wireframe)
+ *   │ └─────────────────────────┘ │
+ *   │  ✓ 3 онцлох эрх             │
+ *   │  ───────────────────────    │
+ *   │                 [Дэлгэр…]   │  ← CTA (үнэ нь `planId`-гүй тул алга)
+ *   └─────────────────────────────┘
+ *
+ * ⚠️ СЛОТЫГ ОГТ ХАСАХГҮЙ. Баннергүй хувилбар туршиж үзсэн боловч тэр карт
+ * зурагтай картаас ~340px намхан болж, таб солиход section-ий өндөр үсэрдэг
+ * байв (захиалагчийн "дэлгэцийн хэмжээг алдуулж байна").
+ *
  * ⚠️ НЭР · ДАТА · ҮНЭ гурвуулаа `mobile-plans.ts`-ээс `planId`-аар ирнэ —
- * энд давхардуулж бичихгүй. `planId` байхгүй карт (Univision-ы placeholder)
- * дээр дата pill ба үнийн мөр ОГТ гарахгүй, `title` нь нэрийн оронд орно.
+ * энд давхардуулж бичихгүй. `planId` байхгүй карт (Univision-ы placeholder,
+ * SMART DATA/TALK) дээр дата pill ба үнийн мөр ОГТ гарахгүй, `title` нь
+ * нэрийн оронд орно.
  */
 function PlanCard({ card }: { card: PlanCardContent }) {
   const plan = card.planId ? mobilePlans.find((p) => p.id === card.planId) : undefined;
@@ -230,17 +284,37 @@ function PlanCard({ card }: { card: PlanCardContent }) {
       className={cn(
         // `overflow-hidden` — зураг нь картын дугуй буланг давахгүй.
         "bg-card relative flex h-full flex-col overflow-hidden rounded-3xl border p-3 md:p-4",
-        // ⚠️ Санал болгож буй багцын хүрээ нь БРЭНДИЙН өнгөний код
-        // (`lib/brand.ts > ACCENT` — Unitel #45c700 / Univision #0FAA0A).
-        // `border-primary` (oklch) БИШ: брэнд бүр өөрийн ногоонтой байх ёстой.
-        featured ? "border-2 shadow-lg" : "border-border hover:shadow-md",
+        // ⚠️ НОГООН ХҮРЭЭ ХАСАГДСАН (2026-09-07, захиалагчийн шийдвэр).
+        // Өмнө нь санал болгож буй карт `border-2` + `borderColor: ACCENT`
+        // (брэндийн ногоон) авдаг байв. Одоо хүрээ нь бусадтай ИЖИЛ.
+        //
+        // Онцлохыг заасан ХОЁР дохио ҮЛДСЭН тул карт танигдахаа болиогүй:
+        //   1. `shadow-lg` — хөрш картуудын `hover:shadow-md`-ээс тод
+        //   2. зургийн баруун дээд булангийн ★ "ТАНД ТОХИРНО" тэмдэг,
+        //      түүний дугуй нь брэндийн ногоон хэвээр
+        featured ? "border-border shadow-lg" : "border-border hover:shadow-md",
       )}
-      style={featured ? { borderColor: ACCENT } : undefined}
     >
-      {/* ── ЗУРГИЙН СЛОТ + дээр нь суух мэдээлэл ──
+      {/* ── 1:1 СЛОТ + дээр нь суух мэдээлэл ──
+          ⚠️ ЭНЭ СЛОТ КАРТ БҮРД ГАРНА, зурагтай эсэхээс ҮЛ ХАМААРЧ. Түр
+          зуур баннергүй хувилбар хийж үзсэн боловч тэр карт нь зурагтай
+          картаас ~340px намхан болж, таб солиход section-ий өндөр үсэрдэг
+          байв. Одоо зураггүй үед слот нь ЗҮГЭЭР Л саарал (`bg-muted`)
+          талбай болж, өндөр нь бүх табад ижил хэвээр үлдэнэ.
+
           `isolate` — доорх `-z-10` зураг картын ДОТООД stacking context-д
           хоригдоно. Үүнгүй бол зураг картын дэвсгэрийн АРД орох эрсдэлтэй. */}
-      <div className="relative isolate aspect-square shrink-0 overflow-hidden rounded-2xl">
+      <div
+        className={cn(
+          "relative isolate aspect-square shrink-0 overflow-hidden rounded-2xl",
+          // ⚠️ САААРАЛ нь СЛОТ ӨӨРӨӨ дээр, `-z-10` ХҮҮХЭД дээр БИШ. Өмнө нь
+          // `bg-muted` нь `absolute inset-0 -z-10` div дээр байсан бөгөөд
+          // эцгийн `isolate`-тай хамт саарал нь картын дэвсгэрээс ялгарахгүй
+          // болох эрсдэлтэй байв. Слот дээр шууд тавихад stacking-аас
+          // ХАМААРАХГҮЙ — placeholder ҮРГЭЛЖ харагдана.
+          !hasImage && "bg-muted",
+        )}
+      >
         {card.image ? (
           <>
             <Image
@@ -259,79 +333,25 @@ function PlanCard({ card }: { card: PlanCardContent }) {
             />
           </>
         ) : (
-          <div
-            className="bg-muted absolute inset-0 -z-10 flex items-center justify-center gap-2"
-            aria-hidden="true"
-          >
-            <ImageIcon className="text-muted-foreground/50 size-5" strokeWidth={1.5} />
-            <span className="text-muted-foreground text-sm font-medium">{card.photoLabel}</span>
-          </div>
-        )}
-
-        {/* ОНЦЛОХ ТЭМДЭГ — баруун дээд булан.
-            ⚠️ Зураг БАЙХГҮЙ үед шошго нь цайвар саарал дээр суудаг тул
-            `text-foreground`; зурагтай үед scrim дээр ЦАГААН. Дугуй нь
-            хоёр тохиолдолд ч брэндийн ногоон. */}
-        {featured && (
-          <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5">
-            <span
-              className="flex size-5 items-center justify-center rounded-full"
-              style={{ backgroundColor: ACCENT }}
-            >
-              <Star className="size-3 fill-white text-white" aria-hidden="true" />
-            </span>
-            <span
-              className={cn(
-                "text-[11px] font-bold tracking-wide",
-                hasImage ? "text-white" : "text-foreground",
-              )}
-            >
-              {RECOMMENDED_BADGE}
-            </span>
-          </span>
-        )}
-
-        {/* НЭР + ДАТА — зургийн ДООД ирмэгт */}
-        <div className="absolute inset-x-3 bottom-3 z-10 flex items-end justify-between gap-2">
-          <div className="flex min-w-0 items-stretch gap-2">
-            {/* Брэнд өнгөт босоо зураас — нэрийг зургийн шуугианаас таслана */}
+          /* ЗУРГИЙН PLACEHOLDER-ийн ТЭМДЭГЛЭГЭЭ — дүрс + шошго, слотын ДУНДАА.
+             `photoLabel` өгөгдсөн үед л гарна; орхивол слот нь цулгуй саарал
+             хэвээр (өндөр нь аль ч тохиолдолд хэвээр). */
+          card.photoLabel && (
             <span
               aria-hidden="true"
-              className="w-1 shrink-0 rounded-full"
-              style={{ backgroundColor: ACCENT }}
-            />
-            <div className="min-w-0">
-              <h3
-                className={cn(
-                  "truncate text-xl leading-tight font-bold tracking-tight",
-                  hasImage ? "text-white" : "text-foreground",
-                )}
-              >
-                {plan?.name ?? card.title}
-              </h3>
-              {plan && (
-                <p
-                  className={cn(
-                    "text-[11px] leading-tight",
-                    hasImage ? "text-white/80" : "text-muted-foreground",
-                  )}
-                >
-                  Сар бүр
-                </p>
-              )}
-            </div>
-          </div>
-
-          {plan && (
-            <span
-              className={cn(
-                "shrink-0 rounded-full border px-3 py-1.5 text-sm font-bold",
-                hasImage ? "border-white/60 text-white" : "border-border text-foreground bg-card",
-              )}
+              className="absolute inset-0 flex items-center justify-center gap-2"
             >
-              {plan.data}
+              <ImageIcon className="text-muted-foreground/50 size-5" strokeWidth={1.5} />
+              <span className="text-muted-foreground text-sm font-medium">{card.photoLabel}</span>
             </span>
-          )}
+          )
+        )}
+
+        {featured && <RecommendedFlag onImage={hasImage} className="absolute top-3 right-3 z-10" />}
+
+        {/* НЭР + ДАТА — слотын ДООД ирмэгт */}
+        <div className="absolute inset-x-3 bottom-3 z-10">
+          <PlanIdentity card={card} plan={plan} onImage={hasImage} />
         </div>
       </div>
 
@@ -350,7 +370,11 @@ function PlanCard({ card }: { card: PlanCardContent }) {
               className="mt-px flex size-5 shrink-0 items-center justify-center rounded-md"
               style={{ backgroundColor: `color-mix(in oklab, ${ACCENT} 18%, transparent)` }}
             >
-              <Check className="size-3.5" style={{ color: ACCENT }} strokeWidth={3} />
+              {/* ⚠️ `Sparkles` — захиалагчийн сонгосон дүрс (AI туслахын оролт,
+                  header-т хэрэглэгддэгтэй ИЖИЛ). `Check` байсныг сольсон.
+                  strokeWidth нь анхны 2 — `Check`-ийн 3 нь оч дүрсний нарийн
+                  туяануудыг наалдуулж толбо мэт болгодог. */}
+              <Sparkles className="size-3.5" style={{ color: ACCENT }} />
             </span>
             <span className="leading-snug">{h}</span>
           </li>
@@ -381,5 +405,100 @@ function PlanCard({ card }: { card: PlanCardContent }) {
         </Link>
       </div>
     </article>
+  );
+}
+
+/**
+ * ОНЦЛОХ ТЭМДЭГ — ★ + "САНАЛ БОЛГОХ".
+ *
+ * Баннертай карт дээр зургийн баруун дээд буланд ХӨВНӨ (`absolute`),
+ * баннергүй дээр нэрийн ДЭЭР энгийн мөр болж суудаг тул байрлалыг ГАДНААС
+ * `className`-аар өгнө.
+ *
+ * `onImage` — scrim дээр суух эсэх: тийм бол шошго ЦАГААН, эс бөгөөс
+ * картын энгийн өнгө. Дугуй нь хоёр тохиолдолд ч брэндийн ногоон.
+ */
+function RecommendedFlag({ onImage, className }: { onImage: boolean; className?: string }) {
+  return (
+    <span className={cn("inline-flex w-fit items-center gap-1.5", className)}>
+      <span
+        className="flex size-5 items-center justify-center rounded-full"
+        style={{ backgroundColor: ACCENT }}
+      >
+        <Star className="size-3 fill-white text-white" aria-hidden="true" />
+      </span>
+      <span
+        className={cn(
+          "text-[11px] font-bold tracking-wide",
+          onImage ? "text-white" : "text-foreground",
+        )}
+      >
+        {RECOMMENDED_BADGE}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * БАГЦЫН НЭР + дата pill.
+ *
+ * Баннертай карт (зургийн доод ирмэгт) ба баннергүй карт (картын дээд талд)
+ * ХОЁУЛАА үүнийг дууддаг — бүтэц НЭГ л газарт байснаар хоёр хэлбэр хожим
+ * зөрөх боломжгүй.
+ *
+ * ⚠️ НЭР нь `plan?.name` → `card.title` дарааллаар: `planId`-тай карт дээр
+ * нэр `mobile-plans.ts`-ээс ирнэ, энд давхардуулж бичихгүй.
+ */
+function PlanIdentity({
+  card,
+  plan,
+  onImage,
+}: {
+  card: PlanCardContent;
+  plan: MobilePlan | undefined;
+  onImage: boolean;
+}) {
+  return (
+    <div className="flex items-end justify-between gap-2">
+      <div className="flex min-w-0 items-stretch gap-2">
+        {/* Брэнд өнгөт босоо зураас — нэрийг зургийн шуугианаас таслана */}
+        <span
+          aria-hidden="true"
+          className="w-1 shrink-0 rounded-full"
+          style={{ backgroundColor: ACCENT }}
+        />
+        <div className="min-w-0">
+          <h3
+            className={cn(
+              "truncate text-xl leading-tight font-bold tracking-tight",
+              onImage ? "text-white" : "text-foreground",
+            )}
+          >
+            {plan?.name ?? card.title}
+          </h3>
+          {plan && (
+            <p
+              className={cn(
+                "text-[11px] leading-tight",
+                onImage ? "text-white/80" : "text-muted-foreground",
+              )}
+            >
+              Сар бүр
+            </p>
+          )}
+        </div>
+      </div>
+
+      {plan && (
+        <span
+          className={cn(
+            "shrink-0 rounded-full border px-3 py-1.5 text-sm font-bold",
+            onImage ? "border-white/60 text-white" : "border-border text-foreground bg-card",
+          )}
+        >
+          {plan.data}
+        </span>
+      )}
+    </div>
   );
 }

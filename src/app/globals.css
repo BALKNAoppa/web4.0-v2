@@ -276,6 +276,14 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    /* ⚠️ ДЭВСГЭР НЬ `body`-с ГАДНА ЭНД БАС ТАВИГДСАН (2026-09-07).
+       Өмнө нь зөвхөн `body` өнгөтэй байсан. CSS-ийн дүрмээр body-гийн
+       дэвсгэр canvas руу дамждаг ч тэр дамжуулалт нь overscroll (iOS-ийн
+       rubber-band) ба safe-area зэрэг зах хэсгүүдэд НАЙДВАРГҮЙ: root нь
+       тунгалаг байхад хөтөч тэр талбайг `color-scheme`-ийн анхдагчаар
+       (dark үед бараг ХАР) буудаг. Root-д шууд тавихад тэр эрсдэл арилна.
+       `theme-color` meta-тай ХАМТ ажиллана — layout.tsx-ийн тайлбарыг үз. */
+    background-color: var(--background);
   }
 
   /* Section snap-ыг CSS-ээр бус section-snap-scroller.tsx (JS) удирдана:
@@ -683,6 +691,52 @@
     transform: none !important;
     transition: none !important;
   }
+}
+
+/* ============================================
+   ХУВИЛБАР 2 — доод sticky navigation-ы зай
+
+   Bar нь `fixed` тул хуудасны доод хэсгийг (footer, copyright) ДАРНА.
+   `body:has(…)` — bar рендерлэгдсэн үед л зай гаргана, өөрөөр хэлбэл
+   хувилбар 1 дээр илүү зай гарахгүй.
+
+   ХЭМЖЭЭ НЬ FIGMA-ААС: панел 73px өндөр, доод зай 32px (frame 390×844,
+   панелийн доод ирмэг 812px). Дээр нь 8px нөөц → `81px + доод зай`.
+
+   `max(2rem, env(…))` нь `mobile-header.tsx`-ийн панелтай ЯГ ИЖИЛ илэрхийлэл
+   байх ЁСТОЙ — зөрвөл хуудасны зай панелийн доод ирмэгтэй таарахаа болино.
+   (`max()`-ийн шалтгаан тэнд бичигдсэн: Figma-ийн 32px нь iPhone-ын home
+   indicator-ын зурвастай тэнцүү тул `calc()` нь давхар тоолно.)
+
+   ⚠️ 4rem → 4.75rem → 81px+ гэж ХОЁР УДАА НЭМЭГДСЭН (2026-09-08): bar нь
+   бүтэн өргөн байснаа хөвөгч панел болж, дараа нь Figma-ийн 73px өндөрт
+   тохирсон. Зайг нэмэхгүй бол footer-ийн сүүлийн мөр панелийн ДООР орно.
+
+   Медиа query нь Tailwind-ийн `lg` (1024px)-тай тааруулсан: bar нь
+   `lg:hidden` тул desktop дээр зай гаргах шаардлагагүй.
+
+   ⚠️ 2026-08-24-нд устсан хувилбар 3-ын дүрмээс СЭРГЭСЭН. Тэр үеийн
+   `[data-chat-fab]` / `[data-chat-teaser]`-ыг нуудаг хэсэг нь БУЦААГҮЙ:
+   chat нь одоо доод bar-ын таб БИШ, зүүн ирмэгийн босоо таб
+   (`chat-widget.tsx` → `fixed left-0`) тул bar-тай давхцахгүй.
+   ============================================ */
+@media (max-width: 1023px) {
+  body:has([data-bottom-tab-bar]) {
+    padding-bottom: calc(81px + max(2rem, env(safe-area-inset-bottom)));
+  }
+}
+
+/* Доод хөвөгч панел нь ТОГТМОЛ #000 (`bg-black`) — theme токен биш, загварын
+   дагуу ХҮРЭЭГҮЙ. High-contrast режимд хуудас ч #000 болдог тул панел
+   суурьтайгаа БҮРЭН нийлж, `shadow`-оос өөр зааг үлдэхгүй. Тиймээс энд шар
+   ГАДНА ЗУРААС нэмж панелийг харагдахуйц салгана (`--primary`-аар дүрс/шошго
+   нь өөрөө шар болсон байдаг).
+
+   `outline` хэрэглэсэн нь `ring` БИШ: ring нь Tailwind-ийн box-shadow дээр
+   тулгуурладаг тул доорх `box-shadow: none`-той зөрчилдөнө. */
+html.a11y-high-contrast [data-bottom-tab-bar] > ul {
+  box-shadow: none !important;
+  outline: 2px solid #ffff00;
 }
 
 /* Web4 deck — scrollbar-г нуух (scroll ажиллах хэвээр, зөвхөн зураас нь харагдахгүй) */

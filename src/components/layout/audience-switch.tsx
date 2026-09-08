@@ -95,6 +95,21 @@ function BrandCardsPanel({ seg }: { seg: AudienceSegment }) {
   );
 }
 
+/**
+ * ДҮРСНИЙ ХЭМЖЭЭ нь `px` БИШ, `em` (2026-09-08).
+ *
+ * ⚠️ Өмнө нь `size-4` (16px) ба `size-3.5` (14px) гэж ТОГТМОЛ байв. Тиймээс
+ * `triggerClassName`-аар текстийн хэмжээг жижигрүүлэхэд ДҮРС нь хэвээр том
+ * үлдэж, шошгоо дийлж байв (13px үсэг + 16px дүрс = дүрс нь үсгээсээ 23%
+ * том). `em` нь ЭЦГИЙН `font-size`-аас тооцогддог тул одоо ГАНЦ КНОП —
+ * текстийн хэмжээ — бүх элементийг зэрэг дагуулна.
+ *
+ *   1.05em → 15px үсэгт 15.75px (өмнөх 16px), 13px үсэгт 13.65px
+ *   0.9em  → 15px үсэгт 13.5px  (өмнөх 14px), 13px үсэгт 11.7px
+ */
+const SEG_ICON = "size-[1.05em] shrink-0";
+const SEG_AFFIX = "size-[0.9em] shrink-0 opacity-60";
+
 const tabClass = cn(
   navType.bar,
   "text-muted-foreground hover:text-foreground data-[state=open]:text-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-colors",
@@ -214,9 +229,9 @@ function AudienceSwitch({
                     triggerClassName,
                   )}
                 >
-                  <SegmentIcon icon={seg.icon} className="size-4" />
+                  <SegmentIcon icon={seg.icon} className={SEG_ICON} />
                   <span>{seg.label}</span>
-                  <ArrowUpRight className="size-3.5 opacity-60" aria-hidden="true" />
+                  <ArrowUpRight className={SEG_AFFIX} aria-hidden="true" />
                 </a>
               );
             }
@@ -237,10 +252,13 @@ function AudienceSwitch({
                   triggerClassName,
                 )}
               >
-                <SegmentIcon icon={seg.icon} className="size-4" />
+                <SegmentIcon icon={seg.icon} className={SEG_ICON} />
                 <span>{seg.label}</span>
                 <ChevronDown
-                  className="size-3.5 opacity-60 transition-transform duration-200 group-data-[state=open]:rotate-180"
+                  className={cn(
+                    SEG_AFFIX,
+                    "transition-transform duration-200 group-data-[state=open]:rotate-180",
+                  )}
                   aria-hidden="true"
                 />
               </button>

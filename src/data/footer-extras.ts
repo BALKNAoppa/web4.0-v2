@@ -19,7 +19,8 @@ export type AppStoreLink = {
 };
 
 export type SocialLink = {
-  id: "facebook" | "instagram" | "youtube";
+  /** ⚠️ `x` нь 2026-09-08-нд загвараас нэмэгдсэн (Twitter → X) */
+  id: "facebook" | "x" | "instagram" | "youtube";
   /** aria-label-д ашиглах нэр */
   name: string;
   href: string;
@@ -59,8 +60,14 @@ export const appStores: AppStoreLink[] = [
 // ====================================================
 // SOCIAL — Линкийг өөрийн жинхэнэ хаягаар солих
 // ====================================================
+// ДАРААЛАЛ нь загварынх: Facebook · X · Instagram · YouTube.
+// ⚠️ X-ийн хаяг PLACEHOLDER (`#`) — жинхэнэ Unitel-ийн X хаяг тодроогүй.
+// `FooterNavLink`-ийн зарчмаас ЯЛГААТАЙ: сошиал линк нь ҮРГЭЛЖ гадаад тул
+// `SocialRow` нь `target="_blank"`-ыг шууд тавьдаг. Хаяг `#` хэвээр байвал
+// хоосон tab нээгдэнэ — жинхэнэ хаягаар СОЛИХ шаардлагатай.
 export const socialLinks: SocialLink[] = [
   { id: "facebook", name: "Facebook", href: "https://www.facebook.com/UnitelMN" },
+  { id: "x", name: "X", href: "#" },
   { id: "instagram", name: "Instagram", href: "https://instagram.com/unitelmn" },
   { id: "youtube", name: "YouTube", href: "https://www.youtube.com/@UnitelMN" },
 ];

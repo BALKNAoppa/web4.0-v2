@@ -1,9 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { ArrowRight, ArrowUpRight, Gift, Globe, LogOut, Menu, Moon, Sun, User } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  Gift,
+  Globe,
+  LogOut,
+  Menu,
+  MonitorPlay,
+  Moon,
+  Star,
+  Store,
+  Sun,
+  User,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,8 +38,10 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/components/auth/auth-provider";
+import { SmartLink } from "@/components/layout/smart-link";
+import { BrandLogo } from "@/components/layout/brand-logo";
+import { LogoHomeLink } from "@/components/layout/logo-home-link";
 import {
-  BrandLogoLink,
   MENU_PROMOS,
   MENU_PROMOS_HEADING,
   classifierSegments,
@@ -36,6 +54,7 @@ import {
   type MegaMenu,
   type MegaMenuSection,
 } from "@/data/navigation";
+import { BRAND } from "@/lib/brand";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
@@ -44,33 +63,61 @@ import { cn } from "@/lib/utils";
  * MOBILE HEADER — 2 хувилбар (desktop-ийн хувилбартай хамт солигдоно)
  * ═══════════════════════════════════════════════════════════════════════
  *
- * ХУВИЛБАР 1 — таб төвд, Layer 2-ын БҮХ 5 ангилал
+ * ХУВИЛБАР 1 — ХОЁР ДАВХАРГА: ангиллын мөр дээр, капсул доор
  *   ┌────────────────────────────────────────────────────┐
- *   │ (◉) Unitel Univision Дэлгүүр Урамшуулал LookTV  ☰ │
+ *   │ Unitel  Univision  Дэлгүүр  Урамшуулал  LookTV  →  │ L1
+ *   ├────────────────────────────────────────────────────┤
+ *   │  ╭──────────────────────────────────────────────╮  │
+ *   │  │ UNITEL                                ( ☰ )  │  │ L2
+ *   │  ╰──────────────────────────────────────────────╯  │
  *   └────────────────────────────────────────────────────┘
+ *
+ *   ⚠️ 2026-09-08-НД ДАХИН БҮТЭЦЛЭГДСЭН (захиалагчийн Figma загвар). Өмнө нь
+ *   НЭГ мөр байв: `(◉) [табууд төвд] ☰` — лого зүүн, табууд `mx-auto`-гоор
+ *   төвд, burger баруун. Одоо:
+ *     L1 — табууд ЗҮҮН ирмэгээс (`px-4`), `mx-auto` ХАСАГДСАН
+ *     L2 — капсул: ҮГЭН лого + 44px дугуй burger товч
+ *
  *   Таб дарахад дэд цэс задарна — `NavigationMenu`-ийн НЭГ хуваалцах Viewport
  *   дотор. Дэд цэсгүй ангилал (Урамшуулал) нь ШУУД /campaigns руу шилжинэ.
  *
- *   ДЭД ЦЭС: дэлгэцийн БҮТЭН өргөн, header-ийн доод ирмэгээс зайгүй. Хуудас нь
- *   scrim-ээр бүдгэрнэ (`backdrop-blur`). Таб хооронд сольвол суурь хаагдахгүй,
- *   өндрөө зөөлөн тааруулж агуулга нь хажуугаас гулсаж орж ирнэ.
+ *   ДЭД ЦЭС: дэлгэцийн БҮТЭН өргөн, `<header>`-ийн доод ирмэгээс (капсулын ч
+ *   доор) эхэлнэ. Хуудас нь scrim-ээр бүдгэрнэ (`backdrop-blur`). Таб хооронд
+ *   сольвол суурь хаагдахгүй, өндрөө зөөлөн тааруулна.
  *
- *   5 нь нэг мөрөнд багтахын тулд: текст 12px (`navType.mobileTab`),
- *   pill padding px-0.5, табын gap-1, hit area нь мөрийн бүтэн өндөр (48px).
- *   Агуулга 284px / боломжтой зай 286px (375px дэлгэц). Түүнээс нарийн бол
- *   хэвтээ гүйлгэнэ — mask нь гүйлгэх боломжийг ирмэг бүдгэрүүлж харуулна.
+ *   5 таб нэг мөрөнд БАГТАХ ШААРДЛАГАГҮЙ болсон — мөр нь бүтэн өргөнөө эзэлж,
+ *   багтахгүй бол ХЭВТЭЭ ГҮЙНЭ. Mask нь гүйлгэх боломжийг ирмэг бүдгэрүүлж
+ *   харуулна (загварт ч баруун тал нь тасарч харагддаг).
  *
- *   Burger-т ангилал ҮЛДЭХГҮЙ — зөвхөн Байгууллага + тохиргоо.
+ *   Burger-т ангилал ҮЛДЭХГҮЙ — зөвхөн Байгууллага · Unitel Group · theme ·
+ *   хэл · бүртгэл (энэ дарааллаар: тохиргоо ДЭЭР, гадагш холбоос ДООР).
  *
- * ХУВИЛБАР 2 — бүх цэс burger дотор
- *   ┌──────────────────────────────────────┐
- *   │ (◉)                               ☰ │
- *   └──────────────────────────────────────┘
- *   Header дээр таб байхгүй. Desktop-ийн mega menu БҮГД burger дотор
- *   dropdown (accordion)-оор задарна.
+ *   ⚠️ ПРОФАЙЛ ТОВЧ КАПСУЛ ДЭЭР БАЙХГҮЙ. Захиалагчийн загварт дугуй хүний
+ *   дүрстэй товч харагддаг ч "профайл нь burger дотор орно" гэж ТУСГАЙЛАН
+ *   заасан тул капсул дээр ЗӨВХӨН burger үлдэв. Бүртгэл рүү burger доторх
+ *   "Нэвтрэх" мөрөөр (`AccountRow`) хүрнэ.
  *
- * ⚠️ ХУВИЛБАР 3 (sticky доод tab bar) нь ХАСАГДСАН — код нь бүрэн устсан
- * (`BottomTabBar` ба туслахууд, globals.css-ийн зай, chat-ийн нуулт).
+ * ХУВИЛБАР 2 — ангилал нь ДООД sticky navigation-д
+ *   ┌────────────────────────────────────────────────────┐
+ *   │  ╭──────────────────────────────────────────────╮  │
+ *   │  │ UNITEL                                ( ☰ )  │  │ header — ЗӨВХӨН капсул
+ *   │  ╰──────────────────────────────────────────────╯  │
+ *   │                     (агуулга)                      │
+ *   │  ╭──────────────────────────────────────────────╮  │
+ *   │  │  (◉)     ▷      🛍      ☆      ▶            │  │ хөвөгч бараан панел
+ *   │  │ Unitel Univision Дэлгүүр Урамшуулал LookTV   │  │ (fixed, 5 таб)
+ *   │  ╰──────────────────────────────────────────────╯  │
+ *   └────────────────────────────────────────────────────┘
+ *   Хувилбар 1-ийн Layer 1 нь ДООШ зөөгдсөн. Burger нь ангиллын жагсаалт
+ *   БИШ — ОДООГИЙН брэндийн дэд цэс (брэнд хооронд шилжихийг доод панел
+ *   хариуцдаг тул 5 брэндийг дахин жагсаах нь давхардал).
+ *   Хайлт БАЙХГҮЙ (захиалагчийн шийдвэр), профайл нь burger дотор.
+ *
+ * ⚠️ ХУВИЛБАР 3 (мөн доод tab bar) нь 2026-08-24-нд ХАСАГДСАН. Хувилбар 2-ын
+ * доод панел нь түүний кодоос СЭРГЭСЭН (`98f3b43^`) — `data-bottom-tab-bar`
+ * зай ба visualViewport-ийн hook. Ялгаа: тэнд 3 ангилал + Chat + Профайл
+ * байсан; мөн тэр hook нь bar-ыг ГАРААР зөөдөг байсныг 2026-09-08-нд
+ * хассан (`useKeyboardOpen` — зөвхөн гар мэдрэх).
  *
  * ТОДОРСОН ангилал — `useActiveNavName` (`header-shared.tsx`): зам таарвал
  * тэр, таарахгүй бол build-ийн домэйн. Desktop-ийн `CategoryNav`, header-ийн
@@ -82,7 +129,22 @@ import { cn } from "@/lib/utils";
  * больсон — ногоон нь одоо ЗӨВХӨН CTA / promo / Chat-ын дугуйд үлдсэн.
  */
 
-export type MobileVariant = 1 | 2;
+export type MobileVariant = 1 | 2 | 3;
+
+/**
+ * `MenuSheet`-ийг хэрэглэдэг хувилбарууд. Хувилбар 3 нь ХАСАГДСАН — тэр нь
+ * `Sheet` БИШ, header-ийн доор задардаг ӨӨРИЙН drawer-тай (`BurgerDrawer`).
+ */
+type SheetVariant = 1 | 2;
+
+/**
+ * Хувилбар 1-ийн капсул доторх ДУГУЙ САААРАЛ burger товч.
+ *
+ * `size-11` (44px) — WCAG 2.5.8-ын доод хэмжээнээс дээгүүр. Загварт товч
+ * үүнээс арай жижиг харагдах ч мобайлд хуруунд таарах нь чухал.
+ */
+const PILL_ICON_BUTTON =
+  "bg-muted hover:bg-muted/70 text-foreground focus-visible:ring-ring inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none";
 
 /**
  * Хувилбар 1-ийн header дээрх табууд — Layer 2-ын БҮХ 5 ангилал.
@@ -110,7 +172,7 @@ const TABS = appleNavCategories.filter((c): c is EcosystemLink & { name: TabName
  *     (Ангиллын дэд цэсэнд header-ийн таб dropdown-оос хүрнэ.)
  *   Хувилбар 2 — БҮГД. Header дээр таб байхгүй тул цэсэнд хүрэх ганц зам.
  */
-const BURGER_CATEGORIES: Record<MobileVariant, EcosystemLink[]> = {
+const BURGER_CATEGORIES: Record<SheetVariant, EcosystemLink[]> = {
   1: appleNavCategories.filter((c) => !isTab(c.name)),
   2: appleNavCategories,
 };
@@ -126,12 +188,414 @@ const BURGER_CATEGORIES: Record<MobileVariant, EcosystemLink[]> = {
  * автоматаар орно — цаашид гараар синк хийх шаардлагагүй. */
 const DIRECT_SEGMENTS = classifierSegments.filter((s) => !s.brands?.length);
 
+/**
+ * UNITEL-ЫН ЭКО ТЭМДЭГ — доод navigation-д зориулсан INLINE SVG.
+ *
+ * ⚠️ ЯАГААД `eco-logo.png` БИШ: тэр нь РАСТЕР бөгөөд хар/цагаан ХОС файлаар
+ * ирдэг тул өнгө сольж болохгүй. Загварт тэмдэг НОГООН — шошготойгоо нэг өнгө.
+ * Тиймээс `public/unitel-icon.svg`-ийн эргэлдэх зурвасыг сугалж, гаднах ногоон
+ * дөрвөлжинг хаяад `currentColor`-оор зурав. Ингэснээр ГУРВАН төлөв НЭГ
+ * эх сурвалжаас, класс сольдоггүйгээр гарна:
+ *   идэвхтэй    → ногоон (`text-primary`)
+ *   идэвхгүй    → цагаан/бүдэг (бусад дүрстэй ижил)
+ *   a11y-contrast → шар (`--primary: #ffff00`)
+ *
+ * `fill-rule` нь ӨГӨГДӨӨГҮЙ (default nonzero) — эх файлтай ИЖИЛ. Сольвол
+ * тэмдгийн дундах цоолсон хэсэг дүүрч, өөр хэлбэр болно.
+ *
+ * viewBox — доорх `BRAND_MARK_PAD`-ыг үзнэ үү.
+ */
+function UnitelMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="2545.12 392.72 236.16 236.16"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M2761.6,510.8c0-54-43.5-97.8-97.4-98.4-.2,0-.4,0-.5,0h-.5c-54.4,0-98.4,44.1-98.4,98.4s43.4,97.8,97.2,98.4c.2,0,.5,0,.7,0h.5c54.4,0,98.4-44.1,98.4-98.4ZM2591.7,510.8c0-39.4,32-71.4,71.4-71.4s3,.1,4.4.2c17.9,1.9,31.8,17.1,31.8,35.5s-16,35.7-35.7,35.7h-.5v-27h-.5c-33.8,0-61.4,26.9-62.6,60.4-5.3-10-8.3-21.4-8.3-33.4ZM2663.2,582.3c-1.5,0-3-.1-4.5-.2-17.9-2-31.8-17.1-31.8-35.5s16-35.7,35.7-35.7h.5v27h.5c33.8,0,61.4-26.9,62.6-60.4,5.3,10,8.3,21.3,8.3,33.4,0,39.5-32,71.4-71.4,71.4Z" />
+    </svg>
+  );
+}
+
+/**
+ * UNIVISION-Ы ТЭМДЭГ — Unitel-ийнхтэй ЯГ ИЖИЛ зарчмаар.
+ *
+ * ⚠️ ГАДНАХ ДӨРВӨЛЖИН ХАЯГДСАН. Эх файлууд нь ХОЁУЛАА "дэвсгэр + тэмдэг"
+ * хосоос тогтдог:
+ *   `univision-icon.svg`      → ногоон squircle + ЦАГААН 3 сэлбээ
+ *   `univision-mark-mono.svg` → ХАР squircle, 3 сэлбээ нь маскаар ЦООЛСОН
+ * Хоёулаа ДЭВСГЭРТЭЙ тул `currentColor` болгоход бүтэн дүүрсэн дөрвөлжин
+ * болж, Unitel-ийн эргэлдэх ЗУРВАС-тай оптикоор зөрнө (нэг нь хөнгөн зураас,
+ * нөгөө нь хүнд блок). Тиймээс ЗӨВХӨН 3 сэлбээг (тэмдгийн цөм) авав —
+ * идэвхтэй/идэвхгүй дугуйг табын төлөв өөрөө өгдөг тул дэвсгэр шаардлагагүй.
+ *
+ * viewBox — доорх `BRAND_MARK_PAD`-ыг үзнэ үү. 3 сэлбээний нийлбэр хүрээ нь
+ * `getBBox()`-оор хэмжигдсэн: x 4.397 · y 8.413 · 21.127 × 21.158.
+ */
+function UnivisionMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="2.264 6.294 25.392 25.392"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M20.2613 28.1496C21.0976 27.6358 21.826 26.9327 22.3836 26.0493C23.7146 23.9399 23.7146 21.3708 22.6084 19.3245C22.6084 19.3245 22.6084 19.3245 22.6084 19.3155H22.6174C22.5545 19.2163 22.4825 19.1172 22.4196 19.018C22.3027 18.8287 22.1768 18.6484 22.0509 18.4771C21.9789 18.387 21.907 18.2969 21.835 18.2067C20.7199 16.7644 19.353 15.5204 17.8062 14.5378C16.2504 13.5463 14.5057 12.8161 12.6262 12.4194C12.5632 12.4014 12.5003 12.3924 12.4283 12.3744C12.5183 12.2031 12.6082 12.0228 12.7161 11.8606C14.3798 9.22834 17.8331 8.41704 20.4861 10.0036C20.5311 10.0306 20.567 10.0577 20.612 10.0847C20.657 10.1118 20.6929 10.1388 20.7379 10.1658L20.7559 10.1839C22.7164 11.4729 24.1103 13.3029 24.8657 15.3491C25.3513 16.6562 25.5761 18.0535 25.5132 19.4597C25.4592 20.8299 25.1355 22.2091 24.5329 23.5072C24.3441 23.9128 24.1283 24.3095 23.8855 24.6971C22.8602 26.3197 21.4663 27.5727 19.8746 28.402C19.9195 28.384 19.9555 28.3569 19.9915 28.3389C20.0364 28.3119 20.0724 28.2938 20.1174 28.2668C20.1623 28.2398 20.2163 28.2127 20.2613 28.1857" />
+      <path d="M22.0419 26.3648C21.5742 27.104 20.9627 27.7079 20.2613 28.1496C20.2163 28.1767 20.1713 28.2037 20.1174 28.2308C20.0814 28.2578 20.0364 28.2758 19.9915 28.3029C19.9465 28.3299 19.8926 28.357 19.8476 28.375C19.8116 28.393 19.7756 28.4111 19.7487 28.4291C19.7487 28.4291 19.7397 28.4291 19.7307 28.4291C19.7307 28.4291 19.7127 28.4291 19.7127 28.4381C17.7252 29.4387 15.45 29.7993 13.2287 29.4297C11.8708 29.2043 10.5398 28.7085 9.30777 27.9243C8.07573 27.14 7.05952 26.1484 6.27712 25.0216C5.09005 23.3089 4.45154 21.2897 4.39758 19.2344C4.52349 21.2806 5.60265 23.2368 7.45521 24.4177C8.51639 25.0847 9.68548 25.4273 10.8546 25.4453C10.8546 25.4453 10.8546 25.4453 10.8546 25.4543C10.9265 25.4543 10.9895 25.4453 11.0614 25.4363C11.3312 25.4363 11.601 25.4183 11.8618 25.3822C11.9787 25.3642 12.0866 25.3462 12.2035 25.3281C14.0471 25.0757 15.7917 24.5078 17.3835 23.6695C18.9033 22.8762 20.2793 21.8395 21.4573 20.6136C21.6282 20.4603 21.7901 20.2981 21.952 20.1178C23.157 21.9477 23.2559 24.3816 22.0149 26.3558" />
+      <path d="M10.324 23.9219C10.369 24.1292 10.4229 24.3275 10.4859 24.5349C9.32577 24.607 8.12071 24.3275 7.05953 23.6515C5.30589 22.5427 4.36163 20.6316 4.3976 18.6935C4.3976 18.6575 4.3976 18.6214 4.3976 18.5763C4.3976 18.5493 4.3976 18.5223 4.3976 18.5042C4.40659 18.2789 4.42458 18.0535 4.45156 17.8281C4.62242 16.2777 5.14402 14.7452 6.02533 13.339C6.26815 12.9513 6.53794 12.5818 6.81672 12.2392C7.72501 11.1304 8.83116 10.256 10.0452 9.61601C11.2862 8.96697 12.6442 8.57034 14.0381 8.45315C16.2054 8.26385 18.4537 8.74161 20.4501 9.96757C17.3745 8.11961 13.3816 9.06613 11.4481 12.113C11.4301 12.14 11.4211 12.1581 11.4032 12.1851C11.4032 12.1851 11.4032 12.1851 11.3942 12.1851C11.3942 12.1851 11.3942 12.1941 11.3942 12.2031C11.3762 12.2302 11.3672 12.2572 11.3492 12.2843C11.1873 12.5547 11.0524 12.8342 10.9355 13.1226C10.8546 13.3209 10.7826 13.5193 10.7197 13.7266C10.1531 15.223 9.79341 16.8275 9.69449 18.5042C9.69449 18.5944 9.68549 18.6935 9.68549 18.7837C9.61355 20.5595 9.83837 22.2903 10.315 23.9129" />
+    </svg>
+  );
+}
+
+/*
+ * ═══════════════════════════════════════════════════════════════════════
+ * BRAND_MARK_PAD — брэндийн тэмдгийн viewBox-ыг ЯАГААД 20%-аар тэлсэн вэ
+ * ═══════════════════════════════════════════════════════════════════════
+ * (Дээрх `UnitelMark` / `UnivisionMark` хоёрын viewBox-ийн лавлагаа.)
+ *
+ * lucide дүрс нь 24×24 viewBox дотор ~20px зурагддаг — өөрөөр хэлбэл өөртөө
+ * ~17% ЗАЙ агуулдаг. Брэндийн тэмдгийг харин нягт хайчилбал (`getBBox`-ийн
+ * яг хүрээгээр) хайрцгаа 100% дүүргэнэ. Тэгвэл `size-5.5` гэсэн ИЖИЛ класст:
+ *   lucide     → бодит зураг 18.3px
+ *   брэнд мark → бодит зураг 22px   (20% ТОМ харагдана)
+ * Эхний хувилбарт Unitel-ийн тэмдэг хажуугийнхаас тод том харагдсан нь ЭНЭ.
+ *
+ * Тиймээс тэмдэг тус бүрийн viewBox-ыг хүрээнээсээ 24/20 = 1.2 дахин тэлж,
+ * тал бүрд глифийн 10%-ийн зай нэмэв:
+ *   Unitel     хүрээ 196.8 → 236.16, offset −19.68 → "2545.12 392.72 …"
+ *   Univision  хүрээ 21.16 → 25.392, offset  −2.116 → "2.264 6.294 …"
+ * Ингэснээр ТАВАН дүрс НЭГ класстай, оптикоор ИЖИЛ хэмжээтэй болно.
+ * ═══════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Доод navigation-ы дүрс — ангилал бүрд НЭГ.
+ *
+ * ⚠️ ХОЁР БРЭНД ӨӨРИЙН ТЭМДГЭЭ ХЭРЭГЛЭНЭ (2026-09-08). Ерөнхий lucide дүрс
+ * (`Smartphone`, `Tv`, `CirclePlay`) нь брэндийн табанд ТААРАХГҮЙ — брэндийг
+ * хэрэглэгч ТЭМДГЭЭР нь танина, "нэг ямар нэг ухаалаг гар утас"-аар биш.
+ * Тиймээс:
+ *   Unitel     → эко тэмдэг    (`UnitelMark`)
+ *   Univision  → 3 сэлбээ      (`UnivisionMark`)
+ * Брэндийн БИШ гурав нь lucide хэвээр (загварын дагуу: Дэлгүүр → ДЭЛГҮҮРИЙН
+ * ХАЯВЧ `Store`, Урамшуулал → од). LookTV нь `MonitorPlay` — `Tv` чөлөөтэй
+ * боловч Univision нь одоо тэмдгээ авсан тул сольж төөрөгдүүлэх шаардлагагүй.
+ *
+ * ⚠️ `ShoppingBag` → `Store` (2026-09-08). Хоёр шалтгаан: (1) загварын Shop
+ * дүрс нь хаявчтай дэлгүүр, цүнх БИШ; (2) цүнхний глиф нь өргөнөөсөө өндөр
+ * тул 24×24 хайрцагт 18×20 болж, хажуугийн дөрвөн дүрснээс 10% НАРИЙН
+ * харагддаг байв — "дүрсний хэмжээ яг ижил" болох шаардлагатай зөрчилдөж.
+ *
+ * Төрөл нь `LucideIcon` БИШ — брэндийн тэмдгүүд lucide БИШ, ердөө className
+ * авдаг компонент. Ангилал нэмбэл ЭНД БАС нэмнэ (`Record<TabName, …>` тул
+ * TypeScript мартуулахгүй).
+ */
+const TAB_ICONS: Record<TabName, React.ComponentType<{ className?: string }>> = {
+  Unitel: UnitelMark,
+  Univision: UnivisionMark,
+  Дэлгүүр: Store,
+  Урамшуулал: Star,
+  LookTV: MonitorPlay,
+};
+
+/**
+ * Доод табын НЭГ хэлбэр — дүрс дээр, шошго доор.
+ *
+ * Босоо padding нь ЭНД БАЙХГҮЙ — панелийн `py-1.5` нь бүх табд нэг дор зай
+ * өгнө. Табын `h-full` нь панелийн өндрийг бүтэн эзэлж, хүрэх талбайг
+ * дугуй/шошгоны хэмжээнээс биш ПАНЕЛААС тооцуулна (≈62px > WCAG 2.5.8-ын 44px).
+ */
+const BOTTOM_TAB =
+  "flex h-full w-full flex-col items-center justify-center gap-1 px-0.5 transition-colors";
+
+/**
+ * ЗӨВХӨН ЭКРАН ДЭЭРХ ГАР нээгдсэн эсэхийг мэдэрнэ (`data-keyboard`).
+ *
+ * ⚠️⚠️ 2026-09-08 — ЭНЭ HOOK НЬ BAR-ЫГ БАЙРЛУУЛАХАА БОЛЬСОН.
+ *
+ * Өмнө нь `useBrowserBottomInset` нэртэй байсан ба `--vv-bottom` хувьсагч
+ * бичиж bar-ыг `bottom: var(--vv-bottom)`-ээр ГАРААР дээш зөөдөг байв.
+ * Логик нь: "iOS Safari-д `fixed; bottom:0` нь layout viewport-д бэхлэгддэг
+ * тул toolbar задрахад bar-ыг дардаг" гэсэн ХУУЧИРСАН таамаг.
+ *
+ * ОДООГИЙН хөтчүүд (iOS Safari 16+, Android Chrome) `fixed; bottom: 0`-ыг
+ * ХАРАГДАХ хэсгийн доод ирмэгт өөрсдөө бэхэлж, address bar хураагдах/задрах
+ * үед ХАМТ, ЖИГД гулсуулдаг. Тиймээс JS-ийн нөхөн зөөлт нь хөтчийн ажлын
+ * ДЭЭР давхарлаж, bar-ыг хэрэгцээнээс ДЭЭШ өргөж, доор нь ЗАЙ гаргадаг —
+ * `transition-[bottom]`-той хамт тэр зай scroll бүрд АНИМАЦТАЙ хөдөлж
+ * "bar гарч ирээд буцаж байна" гэсэн шинж үүсгэж байв (захиалагч мэдэгдсэн).
+ *
+ * Одоо байрлалыг БҮХЭЛД НЬ хөтөч шийднэ (`fixed bottom-0`) — ямар ч
+ * төхөөрөмж, ямар ч OS хувилбарт нэг зан төлөв, JS-гүй.
+ *
+ * ГАР нь ӨӨР асуудал бөгөөс ХЭВЭЭР ҮЛДЭНЭ: гар нээгдэхэд visualViewport
+ * ЭРС (250px+) жижигрэх ба bar нь гарын ДЭЭР хөвж, оролтыг халхлах эрсдэлтэй.
+ * 150px-ийн хязгаар нь toolbar-ын задралт (40–90px) -аас ДЭЭГҮҮР тул scroll
+ * хийхэд хэзээ ч ажиллахгүй — зөвхөн гар нээгдэхэд bar доош гулсаж нуугдана.
+ *
+ * REACT STATE ХЭРЭГЛЭХГҮЙ — scroll бүрд re-render хийхгүйн тулд `dataset`-д
+ * шууд бичнэ (rAF-аар нэгтгэсэн).
+ */
+function useKeyboardOpen(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const el = ref.current;
+    if (!vv || !el) return;
+
+    let raf = 0;
+    const apply = () => {
+      const hidden = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      el.dataset.keyboard = hidden > 150 ? "open" : "closed";
+    };
+    const update = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(apply);
+    };
+
+    apply();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      cancelAnimationFrame(raf);
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, [ref]);
+}
+
+/**
+ * ХУВИЛБАР 2-ЫН ДООД NAVIGATION — 5 ангилал, sticky.
+ *
+ * Хувилбар 1-ийн Layer 1 (ангиллын мөр) нь энд ДООШ зөөгдсөн — захиалагчийн
+ * загварын дагуу. Header дээр зөвхөн капсул (лого + burger) үлдэнэ.
+ *
+ * ⚠️ ХУУЧИН ХУВИЛБАР 3-ААС ЗӨРӨХ нь: тэнд `[Chat]` голдоо, `Профайл` сүүлд
+ * байсан бөгөөд ангилал нь ердөө 3 (Unitel · Univision · Дэлгүүр) байв. Одоо
+ * БҮХ 5 ангилал — Chat, Профайл, Хайлт ОРООГҮЙ (захиалагчийн шийдвэр):
+ * chat нь зүүн ирмэгийн таб, профайл нь burger дотор.
+ *
+ * ⚠️ `bottom` нь `bottom-0` — ХӨТӨЧ ӨӨРӨӨ шийднэ. Өмнө нь JS-ээр тооцсон
+ * `--vv-bottom` байсныг ХАСАВ (дээрх `useKeyboardOpen`-ийн тайлбарыг үз).
+ *
+ * `data-bottom-tab-bar` — `globals.css` дотор `body:has(…)`-аар хуудасны доод
+ * зай гаргахад ашиглагдана (bar нь `fixed` тул footer-ийг дардаг).
+ */
+function BottomTabBar() {
+  const ref = useRef<HTMLElement>(null);
+  useKeyboardOpen(ref);
+  const pathname = usePathname() ?? "";
+
+  /**
+   * ХАМГИЙН ИХДЭЭ НЭГ таб тодорно. Замтай таарсан таб байвал тэр, эс бөгөөс
+   * (жишээ нь нүүр хуудсанд) build-ийн домэйны таб тодорно.
+   *
+   * `isCurrentPage` (`aria-current`) нь ХАТУУ: нөгөө домэйны таб шинэ tab-аар
+   * нээгддэг тул "одоогийн хуудас" болж чадахгүй.
+   */
+  const isInternal = (t: (typeof TABS)[number]) =>
+    !t.owner || t.owner === "self" || t.owner === BRAND;
+  const currentName = TABS.find(
+    (t) => isInternal(t) && (pathname === t.href || pathname.startsWith(`${t.href}/`)),
+  )?.name;
+  // Тодотгол нь header-ийн таб, desktop-той НЭГ эх сурвалжаас — гурван
+  // давхарга хэзээ ч зөрөхгүй.
+  const highlightedName = useActiveNavName(appleNavCategories);
+
+  return (
+    /**
+     * ⚠️ БҮТЭН ӨРГӨН BAR → ХӨВӨГЧ ПАНЕЛ (2026-09-08, захиалагчийн screenshot).
+     * Өмнө нь `bg-background/95 border-t backdrop-blur` бүтэн өргөнөөр байв.
+     *
+     * `<nav>` нь ХҮРЭЭ (зайг гаргах хайрцаг), `<ul>` нь ХАРАГДАХ ПАНЕЛ.
+     * `pointer-events-none` нь ЗАЙЛШГҮЙ: nav нь панелийн ХАЖУУ ба ДООД зайг
+     * ч эзэлдэг тул түүнгүйгээр тэр тунгалаг зурвас нь доорх хуудасны
+     * дарагдалтыг ЗАЛГИНА (жишээ нь панелийн хажуугийн CTA дарагдахгүй).
+     * Панел өөрөө `pointer-events-auto`-гоор буцааж авна.
+     */
+    <nav
+      ref={ref}
+      data-bottom-tab-bar
+      aria-label="Доод цэс"
+      /**
+       * ⚠️ БАЙРЛАЛ — `fixed inset-x-0 bottom-0`, JS-ГҮЙ (2026-09-08).
+       * Өмнө нь `style={{ bottom: "var(--vv-bottom, 0px)" }}` байв: JS нь
+       * хөтчийн доод UI-ийн өндрийг тооцоод bar-ыг тэр хэмжээгээр дээш
+       * зөөдөг байсан. Одоогийн хөтчүүд тэрийг ӨӨРСДӨӨ, address bar-тай
+       * ЖИГД хамт хийдэг тул JS нь давхарлаж, bar-ыг хэрэгцээнээс дээш
+       * өргөж, доор зай гаргаж байв. Дэлгэрэнгүйг `useKeyboardOpen`-д.
+       *
+       * ⚠️ `transition-[bottom,…]` ч ХАСАГДСАН. `bottom` нь одоо ТОГТМОЛ 0
+       * тул хөдлөх зүйл байхгүй; түүнийг сонсох нь зөвхөн хөтчийн жигд
+       * гулсалт дээр ӨӨР 300ms анимаци давхарлаж, "bar гарч ирж байна"
+       * гэсэн шинж үүсгэж байсан. Одоо зөвхөн ГАРЫН нуулт анимацтай
+       * (`translate` + `opacity`) — Tailwind v4-т `translate-y-full` нь
+       * `transform` БИШ, `translate` property.
+       *
+       * ДООД ЗАЙ — Figma: панелийн доод ирмэг 812px, frame 390×844 → 32px.
+       * `max()` нь ЗОРИУД: Figma-ийн 32px нь iPhone-ын HOME INDICATOR-ын
+       * зурвастай (34px) бараг тэнцүү — дизайнер тэр зурвасын ДЭЭР л
+       * тавьсан, ТУСДАА зай нэмээгүй. `calc(2rem + env(…))` гэвэл iPhone
+       * дээр 66px болж ХОЁР ДАХИН тоологдоно. (`viewport-fit=cover`
+       * ороогүй тул `env()` одоогоор 0 — layout viewport өөрөө home
+       * indicator-ыг аль хэдийн хассан байдаг.)
+       */
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 pb-[max(2rem,env(safe-area-inset-bottom))] transition-[opacity,translate] duration-300 ease-out data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
+    >
+      {/**
+       * ⚠️ ПАНЕЛ НЬ THEME-ЭЭС ХАМААРАХГҮЙ, ЯГ ХАР (#000). `bg-card` төрлийн
+       * токен хэрэглэвэл light theme-д ЦАГААН панел цагаан хуудсан дээр хөвж,
+       * загварын гол ялгарал (хар суурь + ногоон тодотгол) алга болно.
+       *
+       * ⚠️ `neutral-900` → `black` БОЛГОВ, ХҮРЭЭ ХАСАГДСАН (2026-09-08,
+       * захиалагч: "хар bg-ний border болон өнгө зөрж байна"). Өмнө нь:
+       *   `bg-neutral-900 dark:bg-neutral-800 ring-1 ring-white/10`
+       * Загварт панел нь ЦЭВЭР ХАР бөгөөд ХҮРЭЭГҮЙ. Dark theme-д ч цайруулж
+       * ялгахгүй — хуудасны дэвсгэр (#10131b) нь харанхуй ЦЭНХЭР өнгөтэй тул
+       * цэвэр хараас өнгөөрөө ялгарна, `shadow-2xl` нь тэрийг гүйцээнэ.
+       *
+       * ХЭМЖЭЭ НЬ FIGMA-ААС ТОГТМОЛ: 278 × 73.
+       *
+       * ⚠️ `px-*`-ЭЭР ЗАЙ ГАРГАХГҮЙ, ӨРГӨНИЙГ ТОГТООНО. Figma-д зүүн 56px,
+       * өргөн 278px, frame 390px → баруун ч 56px (тэгш хэмтэй). Хэрэв
+       * `mx-14` гэж ЗАЙГ тогтоовол панелийн өргөн дэлгэцээс хамаарч хэлбэлзэнэ
+       * (375px-д 263px, 430px-д 318px). Тогтмол өргөн + `mx-auto` нь ямар ч
+       * дэлгэцэнд загварын ЯГ тэр панелийг төвд суулгана.
+       *
+       * `max-w-[calc(100%-2rem)]` — 310px-ээс нарийн дэлгэцэнд (Galaxy Fold
+       * хумигдсан) панел ирмэгээс халихгүй байх хамгаалалт.
+       *
+       * `items-center` + табын `h-full` — 73px өндрийг ТОГТМОЛ болгосон тул
+       * босоо padding тооцох шаардлагагүй, агуулга өөрөө төвлөрнө.
+       *
+       * a11y-high-contrast — `globals.css` дотор шар хүрээ болж дарагдана
+       * (тэнд хуудас #000 болдог тул neutral-900 панел үл ялиг харагдана).
+       */}
+      <ul className="pointer-events-auto mx-auto flex h-[73px] w-[278px] max-w-[calc(100%-2rem)] items-center rounded-[28px] bg-black px-1.5 shadow-2xl">
+        {TABS.map((tab) => (
+          /**
+           * ⚠️ `min-w-0` ЗАЙЛШГҮЙ. `flex-1` нь `flex: 1 1 0%` боловч flex
+           * item-ийн `min-width` нь ӨГӨГДМӨЛӨӨР `auto` — өөрөөр хэлбэл
+           * агуулгаасаа нарийсаж чаддаггүй. Түүнгүйгээр "Урамшуулал" 70px,
+           * бусад 48px болж, ДҮРСНҮҮД ЖИГД ЗАЙЛАХГҮЙ (сүүлийн хоёр зай 19%
+           * өргөн). `min-w-0` нь 5 баганыг ЯГ 53.2px тэнцүү болгоно.
+           */
+          <li key={tab.name} className="min-w-0 flex-1">
+            <BottomTab
+              tab={tab}
+              highlighted={tab.name === highlightedName}
+              isCurrentPage={tab.name === currentName}
+            />
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+/**
+ * Доод bar-ын нэг ангилал — дэд цэс НЭЭХГҮЙ, дарвал ШУУД тухайн брэнд рүү
+ * шилжинэ. Дэд цэсэнд burger-ээс хүрнэ.
+ *
+ * `SmartLink` — AI туслахын CTA-тай ЯГ ИЖИЛ логик (`resolveHref`): нөгөө
+ * домэйн бол шинэ tab-аар нээгдэнэ. Дотоод/гадаадыг ХАРАГДАЦААР ялгахгүй —
+ * нэгдсэн эко-системийн зарчим.
+ *
+ * ⚠️ ТОДОТГОЛ НЬ ЭНД БРЭНД НОГООН — бусад бүх давхаргаас ЯЛГААТАЙ.
+ * Файлын толгойд "ногоон нь зөвхөн CTA/promo/Chat-д" гэсэн дүрэм бий бөгөөд
+ * доод bar нь түүний ЗӨВШӨӨРӨГДСӨН ГАНЦ ОНЦГОЙ тохиолдол. Шалтгаан:
+ *   1. Захиалагчийн загварт идэвхтэй таб нь ногоон дугуй + ногоон шошготой.
+ *   2. Панел нь ТОГТМОЛ БАРААН тул `text-foreground` (light-д хар) тэнд
+ *      уншигдахгүй, харин цагаан болговол ИДЭВХГҮЙ табнаас (цагаан/70)
+ *      ердөө тунгалагаараа л ялгарна — тэр нь WCAG 1.4.11-д хүрэхгүй.
+ *   3. Доогуур зураас (бусад давхаргын тэмдэг) нь шошго нь 11px, дүрсний
+ *      доор байрладаг тул бараг үл мэдэгдэнэ.
+ * Ногоон нь `--primary` токен тул a11y-high-contrast-д ШАР болж дагана.
+ */
+function BottomTab({
+  tab,
+  highlighted,
+  isCurrentPage,
+}: {
+  tab: EcosystemLink & { name: TabName };
+  highlighted: boolean;
+  isCurrentPage: boolean;
+}) {
+  const Icon = TAB_ICONS[tab.name];
+
+  return (
+    <SmartLink
+      href={tab.href}
+      owner={tab.owner}
+      aria-current={isCurrentPage ? "page" : undefined}
+      className={cn(
+        BOTTOM_TAB,
+        // Панел бараан тул ИДЭВХГҮЙ өнгө нь `text-muted-foreground` БИШ —
+        // тэр токен light theme-д бараан саарал болж, бараан панел дээр
+        // алга болно. Тиймээс цагаан/тунгалаг.
+        highlighted ? "text-primary" : "text-white/65 hover:text-white",
+      )}
+    >
+      {/* ДУГУЙ ХҮРЭЭ — идэвхтэй үед л зурагдана. `ring-current` тул хүрээ ба
+          дүрс ба шошго ГУРВУУЛАА нэг өнгө: өнгө сольвол нэг л газраас солино.
+          `ring` нь `border` БИШ — layout-д 2px НЭМДЭГГҮЙ тул хүрээ гарч
+          ирэхэд дүрс "цүүрэхгүй". */}
+      {/* ⚠️ ХЭМЖЭЭ ТОМСГОСОН (2026-09-08): дугуй 32→36px, дүрс 18→22px.
+          73px өндөртэй панелд агуулга 36+4+10 = 50px тул дээр/доор 11.5px
+          зай үлдэнэ — сул зайг дүрсэнд ашиглав. Оптик хэмжээ нь брэндийн
+          тэмдгийн viewBox-ийн зайтай хамт тооцогдсон (`BRAND_MARK_PAD`). */}
+      <span
+        className={cn(
+          "flex size-9 shrink-0 items-center justify-center rounded-full",
+          highlighted && "ring-2 ring-current",
+        )}
+      >
+        <Icon className="size-5.5 shrink-0" />
+      </span>
+      {/* ⚠️ `truncate` ХАСАГДСАН. Багана нь одоо ЯГ 53.2px тул `truncate`
+          бол "Урамшуулал" → "Урамшуула…" болж таслагдана. Оронд нь шошгыг
+          баганаас ХАЛИХЫГ зөвшөөрөв: 10px-д тэр 6.8px халих ба хажуугийн
+          баганад 6.6px / 9.4px нөөц бий тул давхцахгүй (хэмжсэн).
+          `overflow: visible` (default) — `min-w-0` нь зөвхөн ӨРГӨНИЙГ
+          хумина, хайчлахгүй. */}
+      <span
+        className={cn(
+          highlighted ? navType.bottomTabActive : navType.bottomTab,
+          "leading-none whitespace-nowrap",
+        )}
+      >
+        {/* sr-only тодотгол нь ХАРАГДАХ тодотголтой ижил байх ёстой — эс
+            бөгөөс харааны хэрэглэгч нэгийг, screen reader нөгөөг "одоогийн"
+            гэж харна. Тиймээс `highlighted`-ыг шууд дамжуулна. */}
+        <TabLabel name={tab.name} isDomain={highlighted} />
+      </span>
+    </SmartLink>
+  );
+}
+
 // =====================================================================
 // ROUTER — хувилбараар салгана
 // =====================================================================
 export function MobileBrandHeader({ variant }: { variant: MobileVariant }) {
   if (variant === 1) return <BrandTabsHeader />;
-  return <HeaderRow variant={2} />;
+  if (variant === 3) return <BurgerDrawerHeader />;
+
+  /**
+   * ХУВИЛБАР 2 — header дээр ЗӨВХӨН капсул, ангилал нь ДООД sticky bar-д.
+   *
+   * ⚠️ `HeaderRow` ХЭРЭГЛЭХЭЭ БОЛЬСОН (өмнө нь `<HeaderRow variant={2} />`
+   * байсан: лого зүүн, burger баруун, дунд хоосон). Захиалагчийн загварт
+   * хувилбар 2 нь хувилбар 1-тэй ИЖИЛ капсултай бөгөөд ангиллын мөр нь
+   * дээрээс ДООШ, sticky navigation болж зөөгдсөн.
+   */
+  return (
+    <>
+      <div className="lg:hidden">
+        <CapsuleRow burger={<SheetBurger variant={2} />} />
+      </div>
+      <BottomTabBar />
+    </>
+  );
 }
 
 /**
@@ -185,75 +649,819 @@ function BrandTabsHeader() {
         )}
       />
 
-      <HeaderRow variant={1}>
-        <NavigationMenu
-          value={openValue}
-          onValueChange={setOpenValue}
-          // `flex-1 items-center justify-start` нь Root-ийн default — өндрөө
-          // мөрөөр дүүргэхийн тулд `h-full`, төвлөрүүлэхийн тулд `justify-center`
-          className="h-full w-full justify-center"
-          // Viewport — header-тэй НИЙЛСЭН: дугуйрал/хүрээ байхгүй.
-          // `border-t` тавихгүй — `<header>` өөрөө `border-b`-тэй тул давхар
-          // 2px зураас гарна. `shadow-lg` нь хуудсаас салгаж өгнө.
-          viewportClassName="rounded-none shadow-lg ring-0"
-        >
-          {/* MASK нь ГҮЙЛГЭХ БОЛОМЖИЙН ТЭМДЭГ: `no-scrollbar` нь scrollbar-ыг
-              нуудаг тул 320px зэрэг нарийн дэлгэцэнд "гүйлгэж болно" гэдэг нь
-              харагдахгүй байв. Багтаж байх үед `mx-auto` нь агуулгыг
-              төвлүүлдэг тул бүдгэрэх 10px нь ХООСОН зай дээр буудаг. */}
-          <div className="no-scrollbar h-full w-full overflow-x-auto [mask-image:linear-gradient(to_right,transparent,black_10px,black_calc(100%-10px),transparent)]">
-            {/* `h-12` нь ТОДОРХОЙ өндөр — `h-full` БОЛОХГҮЙ. Radix нь энэ List
-                ба гаднах scroller хооронд ӨӨРИЙН div үүсгэдэг бөгөөд тэр div-д
-                өндөр байхгүй тул `height: 100%`-ийн гинж тасарч, табын hit area
-                48px-ээс 30px хүртэл унадаг. `h-12` нь мөрний өндөртэй (`h-12`)
-                тэнцүү — эндээс доош `h-full` дахин зөв ажиллана. */}
-            <NavigationMenuList className="mx-auto h-12 w-max gap-1">
-              {TABS.map((tab) => (
-                <BrandTab key={tab.name} tab={tab} openValue={openValue} />
-              ))}
-            </NavigationMenuList>
-          </div>
-        </NavigationMenu>
-      </HeaderRow>
+      <div className="lg:hidden">
+        {/* ── LAYER 1 — АНГИЛЛЫН МӨР, ЗҮҮН ирмэгээс, ХАЖУУ ТИЙШ ГҮЙНЭ ──
+            ⚠️ `mx-auto` ХАСАГДСАН (2026-09-07). Өмнө нь табууд мөрийн ТӨВД
+            төвлөрдөг байсныг захиалагчийн загварын дагуу ЗҮҮН ирмэгээс
+            эхлүүлэв — `px-4` нь капсулын гадна зайтай эгнэнэ. */}
+        <div className="bg-muted/40 border-border border-b">
+          <NavigationMenu
+            value={openValue}
+            onValueChange={setOpenValue}
+            className="h-full w-full justify-start"
+            // Viewport — header-тэй НИЙЛСЭН: дугуйрал/хүрээ байхгүй.
+            // `border-t` тавихгүй — `<header>` өөрөө `border-b`-тэй тул давхар
+            // 2px зураас гарна. `shadow-lg` нь хуудсаас салгаж өгнө.
+            viewportClassName="rounded-none shadow-lg ring-0"
+          >
+            {/* MASK нь ГҮЙЛГЭХ БОЛОМЖИЙН ТЭМДЭГ: `no-scrollbar` нь scrollbar-ыг
+                нуудаг тул 320px зэрэг нарийн дэлгэцэнд "гүйлгэж болно" гэдэг нь
+                харагдахгүй байв. Ирмэг дээр 10px-д бүдгэрнэ. */}
+            <div className="no-scrollbar w-full overflow-x-auto [mask-image:linear-gradient(to_right,transparent,black_10px,black_calc(100%-10px),transparent)]">
+              {/* `h-12` нь ТОДОРХОЙ өндөр — `h-full` БОЛОХГҮЙ. Radix нь энэ List
+                  ба гаднах scroller хооронд ӨӨРИЙН div үүсгэдэг бөгөөд тэр div-д
+                  өндөр байхгүй тул `height: 100%`-ийн гинж тасарч, табын hit area
+                  48px-ээс 30px хүртэл унадаг. */}
+              {/* `gap-4` — өмнө нь `gap-1` байсан нь 5 табыг нэг мөрөнд шахах
+                  гэсэн оролдлого. Одоо мөр нь бүтэн өргөнтэй бөгөөд халих нь
+                  ЗОРИУД тул загварын жигд зайг сэргээв. */}
+              <NavigationMenuList className="h-12 w-max gap-4 px-4">
+                {TABS.map((tab) => (
+                  <BrandTab key={tab.name} tab={tab} openValue={openValue} />
+                ))}
+              </NavigationMenuList>
+            </div>
+          </NavigationMenu>
+        </div>
+
+        <CapsuleRow burger={<SheetBurger variant={1} />} />
+      </div>
     </>
   );
 }
 
 /**
- * Header-ийн мөр — гурван хувилбарт ижил хэлбэр: лого ЗҮҮН, burger БАРУУН.
- * Хувилбар 1-д дунд нь табууд орно; 2 ба 3-д дунд хоосон.
+ * БӨӨРӨНХИЙ КАПСУЛ — лого + burger. ГУРВУУЛАА ХУВИЛБАР ХУВААЛЦАНА.
+ *
+ * Хувилбар 1-д ангиллын мөрний ДООР, хувилбар 2 ба 3-д header-ийн ЦОРЫН ГАНЦ
+ * элемент болж суудаг — загварт гуравт ЯГ ижил харагддаг тул бүтэц НЭГ л
+ * газарт бичигдэнэ.
+ *
+ * ⚠️ `variant` prop-ыг `burger` node БОЛГОВ (2026-09-08). Өмнө нь CapsuleRow
+ * өөрөө `MenuSheet`-ийг дууддаг байсан тул хувилбар 3-ын drawer (Sheet БИШ,
+ * header-ийн доор задардаг панел) энд суух боломжгүй байв. Одоо капсул нь
+ * ЗӨВХӨН хэлбэрийг хариуцаж, товчны ард юу байхыг дуудагч тал шийднэ.
+ *
+ * ⚠️ Логонь ҮГЭН лого (`BrandLogo`), эко тэмдэг (`BrandLogoLink`) БИШ —
+ * захиалагчийн загварт UNITEL-ийн үгэн лого байна. Footer-ийнхтэй ижил
+ * хослол (`LogoHomeLink` + `BrandLogo`) тул nested anchor үүсэхгүй.
  */
-function HeaderRow({ variant, children }: { variant: MobileVariant; children?: React.ReactNode }) {
+function CapsuleRow({ burger }: { burger: React.ReactNode }) {
   return (
-    <div className="lg:hidden">
-      {/* GRID → FLEX болгов.
-          Өмнө `grid-cols-[1fr_minmax(0,auto)_1fr]` байсан нь табуудыг дэлгэцийн
-          ҮНЭН ТӨВД суулгадаг ч талын хоёр багана ХАМГИЙН ӨРГӨН агуулгаараа
-          (burger 36px) тэнцдэг тул дунд руу 271px-ээс их зай гардаггүй байв.
-          5 таб нь 11px-ээр ~254px тул тэр хязгаар хэтэрхий шахуу байна.
+    <div className="px-4 py-3">
+      <div className="bg-card flex h-16 items-center rounded-full px-5 shadow-sm">
+        <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
+          <BrandLogo height={24} preload />
+        </LogoHomeLink>
 
-          Flex-д лого (29px) ба burger (36px) зөвхөн өөрсдийн өргөнийг эзэлж,
-          дунд нь `flex-1` — 375px дэлгэц дээр 278px, 360px дээр 263px болж
-          ~15px нөөц гарна. Табууд `mx-auto`-гоор дундаа хэвээр төвлөрөх ба
-          лого/burger-ийн 7px зөрүүгээр л оптик төвөөс хазайна (үл ялиг). */}
-      {/* `px-2.5` + `gap-0.5` — табуудад зай гаргахын тулд мөрний гадна ирмэг ба
-          лого/burger-ийн хоорондын зайнаас 8px "зээлсэн" (px-3 → px-2.5 нь
-          4px, gap-1 → gap-0.5 нь 4px). Ирмэгийн 10px зай mobile-д хэвийн. */}
-      <div className="mx-auto flex h-12 max-w-300 items-center gap-0.5 px-2.5">
-        <div className="flex shrink-0 justify-start">
-          <BrandLogoLink />
-        </div>
-
-        {/* `h-full` ЗААВАЛ — дотор нь табын hit area нь `h-full`-ээр 48px болдог.
-            Энэ багана өндөргүй бол тэр гинж тасарч, hit area нь текстийн
-            өндөр (29px) хүртэл хумигдана (44px-ийн шаардлага биелэхгүй). */}
-        <div className="h-full min-w-0 flex-1">{children}</div>
-
-        <div className="flex shrink-0 items-center justify-end">
-          <MobileMenuSheet variant={variant} />
-        </div>
+        {/* BURGER — тохиргоо · Байгууллага · Unitel Group, мөн ангиллын дэд
+            цэс (хувилбар 2 ба 3-т). Профайл нь мөр болж ДОТОР орсон — капсул
+            дээр тусдаа товч БАЙХГҮЙ. */}
+        <div className="ml-auto flex items-center">{burger}</div>
       </div>
     </div>
+  );
+}
+
+/**
+ * КАПСУЛЫН ДУГУЙ BURGER ТОВЧ — гурван хувилбарт ИЖИЛ.
+ *
+ * `open` нь ЗӨВХӨН хувилбар 3-д хэрэглэгдэнэ (drawer-ийн төлөвийг харуулж
+ * `Menu` ⇄ `X` солино). Хувилбар 1/2-ын `Sheet` нь дарагдмагц бүтэн дэлгэцээр
+ * нээгддэг тул trigger нь харагдахаа болино — тэнд X хэрэггүй.
+ *
+ * `...rest` нь ХАМГИЙН СҮҮЛД: `SheetTrigger asChild` нь `onClick`,
+ * `aria-expanded`, `data-state` зэргийг ЭНД дамжуулдаг тул тэднийг дарж
+ * бичихгүй байх ёстой.
+ */
+function BurgerButton({
+  open = false,
+  ...rest
+}: { open?: boolean } & React.ComponentProps<"button">) {
+  return (
+    <button
+      type="button"
+      aria-label={open ? "Цэс хаах" : "Цэс нээх"}
+      className={PILL_ICON_BUTTON}
+      {...rest}
+    >
+      {open ? <X className="size-5" /> : <Menu className="size-5" />}
+    </button>
+  );
+}
+
+/** Хувилбар 1 ба 2-ын burger — `Sheet` нээнэ. */
+function SheetBurger({ variant }: { variant: SheetVariant }) {
+  return <MenuSheet variant={variant} trigger={<BurgerButton />} />;
+}
+
+// =====================================================================
+// ХУВИЛБАР 3 — BURGER DRAWER (хоёр давхаргат, хажуу тийш гулсдаг)
+// =====================================================================
+
+/**
+ * Drawer-ийн панелийн id — burger-ийн `aria-controls` түүн рүү заана.
+ * Хувилбар 3 нь mobile header-т ЗӨВХӨН НЭГ л удаа рендерлэгддэг тул тогтмол
+ * id зөрчил үүсгэхгүй (`useId` шаардлагагүй).
+ */
+const DRAWER_ID = "mobile-burger-drawer";
+
+/**
+ * Дэд цэстэй ангилал эсэхийг `mobileMegaMenus`-д бичлэгтэй эсэхээр шийднэ —
+ * `header.tsx > CategoryNav`, `BrandTab` -тай ЯГ ИЖИЛ логик.
+ *
+ * Одоогийн байдлаар: Unitel · Univision → бичлэгтэй ⇒ дэд цэс задарна.
+ * Дэлгүүр · Урамшуулал · LookTV → бичлэггүй ⇒ ЭНГИЙН ЛИНК.
+ * Тиймээс шинэ ангилалд дэд цэс нэмэхэд ЭНД юу ч засах шаардлагагүй — data
+ * дээр `mobileMegaMenus` бичлэг нэмэхэд гурван давхарга зэрэг дагана.
+ */
+const hasSubmenu = (name: string) => Boolean(mobileMegaMenus[name]);
+
+/** Drawer-ийн 1-р давхаргын ҮНДСЭН мөр (ангилал) — 15px · 600, 44px өндөр */
+const DRAWER_PRIMARY_ROW = cn(
+  navType.drawerPrimary,
+  "hover:bg-muted flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left transition-colors",
+);
+
+/** Дэд цэсний навчин линк — үндсэн мөртэй ижил зэрэглэл, сумгүй */
+const DRAWER_LEAF_ROW = cn(
+  navType.drawerPrimary,
+  "hover:bg-muted flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left no-underline transition-colors",
+);
+
+/**
+ * ХУВИЛБАР 3 — header дээр ЗӨВХӨН капсул, БҮХ цэс burger-ийн ард.
+ *
+ * ┌────────────────────────────────────────────┐
+ * │  ╭──────────────────────────────────────╮  │
+ * │  │ UNITEL                        ( ☰ )  │  │ капсул
+ * │  ╰──────────────────────────────────────╯  │
+ * │  ╭──────────────────────────────────────╮  │
+ * │  │ Unitel                            →  │  │ ← 1-р давхарга
+ * │  │ Univision                         →  │  │
+ * │  │ Дэлгүүр                              │  │   (дэд цэсгүй ⇒ шууд линк)
+ * │  │ Урамшуулал                           │  │
+ * │  │ LookTV                               │  │
+ * │  │ ──────────────────────────────────── │  │
+ * │  │ Theme · Хэл солих · Нэвтрэх          │  │
+ * │  │ ──────────────────────────────────── │  │
+ * │  │ Байгууллага ↗ · Unitel Group ↗       │  │
+ * │  ╰──────────────────────────────────────╯  │
+ * └────────────────────────────────────────────┘
+ *
+ * `Sheet` (radix Dialog) ХЭРЭГЛЭЭГҮЙ ГУРВАН ШАЛТГААН:
+ *   1. Загварт панел нь дэлгэцийн хажуугаас БИШ, header-ийн ДООРООС задардаг
+ *      бөгөөд өндөр нь АГУУЛГААР тодорхойлогддог. Sheet нь ТОГТМОЛ өндөртэй.
+ *   2. Sheet бол modal — фокусыг цоожилж, хуудсыг `aria-hidden` болгодог.
+ *      Энэ панел нь цэс (disclosure) бөгөөс хувилбар 1-ийн `NavigationMenu`
+ *      -тай ИЖИЛ зан төлөвтэй байх ёстой: Escape/гадна дарж хаагдана, гэхдээ
+ *      фокус цоожлохгүй.
+ *   3. `ui/sheet.tsx` нь `data-open:`/`data-closed:` гэсэн БАЙХГҮЙ Tailwind
+ *      variant хэрэглэдэг тул анимаци нь ОДООГООР ажилладаггүй (тусад нь
+ *      зассан ч энэ панелийн хоёр давхаргын гулсалтыг Sheet хийж чадахгүй).
+ */
+function BurgerDrawerHeader() {
+  const [open, setOpen] = useState(false);
+  /** null = 1-р давхарга (үндсэн жагсаалт) · нэр = тэр ангиллын дэд цэс */
+  const [subName, setSubName] = useState<string | null>(null);
+  /**
+   * ⚠️ ХАРАГДАЖ БАЙГАА дэд цэсний АГУУЛГА нь `subName`-ЭЭС ТУСДАА state.
+   * `subName` нь БАЙРЛАЛЫГ (аль давхарга) хариуцна, энэ нь АГУУЛГЫГ. Хоёрыг
+   * нэгтгэвэл "Буцах" дарахад агуулга ТЭР ДОРОО unmount болж, баруун тийш
+   * гулсах анимаци хоосон панелаар гүйнэ. Тиймээс буцсаны дараа ч сүүлд
+   * үзсэн цэс нь дэлгэцийн ГАДНА, `inert`-ээр үлдэнэ.
+   */
+  const [subMenu, setSubMenu] = useState<MegaMenu | null>(null);
+
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const rootPaneRef = useRef<HTMLDivElement>(null);
+  const subPaneRef = useRef<HTMLDivElement>(null);
+  /** Буцахад фокус аль ангиллын мөрөнд эргэж орох вэ */
+  const returnTo = useRef<string | null>(null);
+
+  const [paneH, setPaneH] = useState<number>();
+  const pathname = usePathname();
+  const activeName = useActiveNavName(appleNavCategories);
+
+  /** Хаах + фокусыг burger руу БУЦААХ (Escape, scrim, товч дарсан үед) */
+  const close = () => {
+    setOpen(false);
+    burgerRef.current?.focus({ preventScroll: true });
+  };
+
+  /**
+   * Линк дарсан үед — фокус БУЦААХГҮЙ. Шилжилт болж байгаа тул фокусыг
+   * burger руу зөөвөл шинэ хуудас "цэс нээх товч" дээр фокустай нээгдэнэ.
+   */
+  const dismiss = () => setOpen(false);
+
+  /**
+   * ЗАМ СОЛИГДВОЛ ХААНА — жишээ нь хөтчийн "Back" товч, эсвэл цэсний гадна
+   * ажилласан шилжилт. Панел доторх линкүүд `dismiss`-ээр өөрсдөө хаадаг тул
+   * энэ нь ХАМГААЛАЛТ; мөн `href="#"` линкүүд зам СОЛЬДОГГҮЙ тул тэднийг
+   * зөвхөн `dismiss` хаана.
+   *
+   * ⚠️ `useEffect`-ЭЭР БИШ, RENDER-ИЙН ҮЕД тааруулав. `useEffect(() =>
+   * setOpen(false), [pathname])` нь эффектийн дотор setState дуудаж, дараалсан
+   * (cascading) render үүсгэдэг — `react-hooks/set-state-in-effect` түүнийг
+   * зогсоов. Доорх нь React-ийн бичиг баримтад заасан "prop солигдоход
+   * state-ыг тааруулах" загвар: React зурахаасаа ӨМНӨ дахин render хийнэ.
+   */
+  const [seenPath, setSeenPath] = useState(pathname);
+  if (pathname !== seenPath) {
+    setSeenPath(pathname);
+    if (open) setOpen(false);
+  }
+
+  // ESCAPE
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      burgerRef.current?.focus({ preventScroll: true });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  /**
+   * ФОКУСЫН ЗӨӨЛТ — хоёр давхаргат цэсний ГОЛ UX.
+   *   нээхэд        → 1-р мөр (Unitel)
+   *   дэд цэс нээхэд → "Буцах" товч (шинэ давхаргын эхлэл)
+   *   буцахад       → ГАРСАН ангиллынхаа мөр (хаанаас гарснаа "мартахгүй")
+   *
+   * `preventScroll: true` — гулсах анимацийн дундуур фокуслахад хөтөч
+   * элементийг харагдуулах гэж scroller-ыг үсэргэдэг. Панел өөрөө
+   * `overflow-y-auto` тул тэр нь агуулгыг дээш "цүүрүүлнэ".
+   */
+  useEffect(() => {
+    if (!open) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    if (subName) {
+      panel.querySelector<HTMLElement>("[data-drawer-back]")?.focus({ preventScroll: true });
+      return;
+    }
+    // Буцах — аль ангиллаас гарсныг `dataset`-аар олно (attribute selector-т
+    // нэрийг шигтгэвэл кирилл/тусгай тэмдэгт escape хийх шаардлага гарна).
+    const want = returnTo.current;
+    const rows = [...panel.querySelectorAll<HTMLElement>("[data-drawer-cat]")];
+    const target = want ? rows.find((r) => r.dataset.drawerCat === want) : rows[0];
+    (target ?? rows[0])?.focus({ preventScroll: true });
+    returnTo.current = null;
+  }, [open, subName]);
+
+  /**
+   * ӨНДРИЙГ АГУУЛГААР ХӨӨНӨ — "content-ийн хэмжээгээр доошоо extend".
+   *
+   * Хоёр давхарга нь НЭГ мөрөнд зэрэгцэн сууна (`w-[200%]`). Тиймээс мөрийн
+   * өндөр нь ХОЁУЛАНГИЙН ИХ нь болно — гаднах хайрцагт ИДЭВХТЭЙ давхаргын
+   * өндрийг ГАРААР онооно.
+   *
+   * ⚠️ Мөрөнд `items-start` ЗАЙЛШГҮЙ: flex-ийн `align-items` нь өгөгдмөлөөр
+   * `stretch` тул хоёр давхарга ХОЁУЛАА мөрийн (=илүү өндөрийн) өндөртэй
+   * болж, `offsetHeight` нь агуулгынхаа өндрийг БУЦААХГҮЙ.
+   *
+   * `ResizeObserver` — агуулга нь дотроо ч өөрчлөгдөж болно (нэвтэрсэн үед
+   * профайлын мөр урт болно, шрифт ачаалагдахад мөр өндөрсөнө).
+   */
+  useEffect(() => {
+    if (!open) return;
+    const el = subName ? subPaneRef.current : rootPaneRef.current;
+    if (!el) return;
+    const apply = () => setPaneH(el.offsetHeight);
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [open, subName]);
+
+  const openSub = (name: string) => {
+    const menu = mobileMegaMenus[name];
+    if (!menu) return;
+    returnTo.current = name;
+    setSubMenu(menu);
+    setSubName(name);
+  };
+
+  return (
+    <>
+      {/* PAGE BLUR — хувилбар 1-ийн scrim-тэй ЯГ ИЖИЛ. `absolute top-full`
+          нь `<header>`-ийн ДООД ирмэгээс эхэлнэ: header өөрөө хэзээ ч
+          бүдгэрэхгүй, зөвхөн доорх агуулга бүдгэрнэ. `h-lvh` — URL bar
+          хураагдсан үед доод тал хоосон үлдэхгүй. */}
+      <div
+        aria-hidden
+        onClick={close}
+        className={cn(
+          "bg-foreground/10 absolute inset-x-0 top-full z-40 h-lvh backdrop-blur-sm transition-opacity duration-300 ease-out lg:hidden",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+      />
+
+      <div className="lg:hidden">
+        <CapsuleRow
+          burger={
+            <BurgerButton
+              ref={burgerRef}
+              open={open}
+              aria-expanded={open}
+              aria-controls={DRAWER_ID}
+              onClick={() => {
+                if (open) {
+                  close();
+                  return;
+                }
+                // Дахин нээхэд ҮРГЭЛЖ 1-р давхаргаас — хэрэглэгч сүүлд
+                // хаана байснаа санахгүй, "цэс нээх" нь цэсний ЭХЛЭЛ.
+                returnTo.current = null;
+                setSubName(null);
+                setOpen(true);
+              }}
+            />
+          }
+        />
+
+        {/* DRAWER — `absolute top-full` тул капсулын доор, хуудсыг ЗӨӨХГҮЙ.
+            `px-4` нь капсултай ИЖИЛ 16px гутер — хоёр элемент эгнэнэ. */}
+        <div
+          className={cn(
+            // ⚠️ `transition-[opacity,transform]` БИШ, `translate`. Tailwind v4-т
+            // `-translate-y-2` нь `transform` БИШ, ТУСДАА `translate` property-г
+            // өөрчилдөг. `transform`-ыг сонсвол дээш гулсах хөдөлгөөн анимацгүй
+            // ҮСРЭНЭ (зөвхөн opacity нь зөөлрөнө).
+            "absolute inset-x-0 top-full z-50 px-4 pb-4 transition-[opacity,translate] duration-300 ease-out motion-reduce:transition-none",
+            open ? "opacity-100" : "pointer-events-none -translate-y-2 opacity-0",
+          )}
+        >
+          {/**
+           * `inert` — хаалттай үед панел нь DOM-д ҮЛДДЭГ (хаах анимаци
+           * гүйхийн тулд) боловч дотор нь 25+ фокуслаж болох линк бий.
+           * `inert`-гүй бол Tab дарахад ХАРАГДАХГҮЙ цэс дундуур фокус
+           * "төөрнө". `aria-hidden` нь фокусын дарааллыг АВДАГГҮЙ тул
+           * тохирохгүй.
+           *
+           * `max-h` = 100lvh − 88px (капсулын мөр) − 16px (доод зай)
+           * = `calc(100lvh-6.5rem)`. Агуулга үүнээс өндөр бол панел ДОТРОО
+           * гүйнэ — дэлгэцээс халихгүй.
+           *
+           * ⚠️ Гулсалт нь `overflow-hidden`-тэй ДОТООД хайрцагт, гүйлгэлт нь
+           * ГАДНАД. Нэг элементэд хоёуланг өгвөл `overflow-x` нь `auto`
+           * болж, хоёр давхаргын 200% өргөн нь ХЭВТЭЭ scrollbar гаргана.
+           */}
+          <div
+            ref={panelRef}
+            id={DRAWER_ID}
+            inert={!open}
+            className="bg-card border-border max-h-[calc(100lvh-6.5rem)] overflow-y-auto rounded-[28px] border shadow-2xl"
+          >
+            <div
+              style={{ height: paneH }}
+              className="overflow-hidden transition-[height] duration-300 ease-out motion-reduce:transition-none"
+            >
+              {/* ХОЁР ДАВХАРГЫН ЗАМ — дэд цэс БАРУУНААС зүүн тийш гулсаж
+                  орж ирнэ (мөрийг зүүн тийш 50% зөөнө). Буцахад эсрэгээр. */}
+              <div
+                className={cn(
+                  "flex w-[200%] items-start transition-transform duration-300 ease-out motion-reduce:transition-none",
+                  subName && "-translate-x-1/2",
+                )}
+              >
+                {/* ─────────── 1-Р ДАВХАРГА ─────────── */}
+                <div ref={rootPaneRef} inert={!!subName} className="w-1/2 p-4">
+                  {/* ⚠️ `aria-label` нь `<nav>`-д, `<ul>`-д БИШ. Роль-гүй `<ul>`
+                      дээрх label-ыг ихэнх screen reader ИЛЭРХИЙЛДЭГГҮЙ. Мөн
+                      нэр нь "Үндсэн цэс" БАЙЖ БОЛОХГҮЙ — desktop-ийн
+                      `CategoryNav` тэр нэрийг аль хэдийн эзэмшсэн тул хоёр
+                      landmark нэг нэртэй болж, цэсний жагсаалт хоёрдоно. */}
+                  <nav aria-label="Ангилал">
+                    <ul className="flex flex-col">
+                      {appleNavCategories.map((cat) => (
+                        <li key={cat.name}>
+                          {hasSubmenu(cat.name) ? (
+                            <button
+                              type="button"
+                              data-drawer-cat={cat.name}
+                              onClick={() => openSub(cat.name)}
+                              className={DRAWER_PRIMARY_ROW}
+                            >
+                              <DrawerCatLabel name={cat.name} active={cat.name === activeName} />
+                              {/* Сум = "ДЭД ЦЭС БИЙ" гэсэн цорын ганц тэмдэг.
+                                Дэд цэсгүй мөрөнд сум БАЙХГҮЙ тул хэрэглэгч
+                                дарахаасаа өмнө "шилжих" ба "задрах"-ыг
+                                ялгаж мэднэ. */}
+                              <ArrowRight
+                                className="ml-auto size-4 shrink-0 opacity-60"
+                                aria-hidden="true"
+                              />
+                              <span className="sr-only">— дэд цэс нээх</span>
+                            </button>
+                          ) : (
+                            <SmartLink
+                              href={cat.href}
+                              owner={cat.owner}
+                              data-drawer-cat={cat.name}
+                              onClick={dismiss}
+                              className={DRAWER_PRIMARY_ROW}
+                            >
+                              <DrawerCatLabel name={cat.name} active={cat.name === activeName} />
+                            </SmartLink>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+
+                  {/* ─── ХЭРЭГЛЭГЧИЙН УРСГАЛЫГ ЧИГЛҮҮЛЭХ 2 СОНГОЛТ ───
+                      Байгууллага · Unitel Group — эдгээр нь БҮТЭЭГДЭХҮҮНИЙ
+                      ангилал БИШ, "та хэн бэ / хаашаа явах вэ" гэсэн ӨӨР
+                      ТӨРЛИЙН сонголт. Тиймээс дээрх мега цэснээс ЗАЙГААР
+                      тусгаарлав (`mt-4 pt-4`, өмнө нь `mt-2 pt-2` байсан) —
+                      зураас нь заагийг, зай нь ЗЭРЭГЛЭЛИЙГ хэлнэ. */}
+                  {DIRECT_SEGMENTS.length > 0 && (
+                    <div className="border-border mt-4 space-y-0.5 border-t pt-4">
+                      {DIRECT_SEGMENTS.map((seg) => (
+                        <a
+                          key={seg.id}
+                          href={seg.href}
+                          target={seg.external ? "_blank" : undefined}
+                          rel={seg.external ? "noopener noreferrer" : undefined}
+                          onClick={dismiss}
+                          className={cn(navType.mobileLink, ROW)}
+                        >
+                          {seg.label}
+                          <ArrowUpRight
+                            className="ml-auto size-4 shrink-0 opacity-60"
+                            aria-hidden="true"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* ─── ХЭРЭГСЛҮҮД — хэл · профайл · theme ───
+                      ⚠️ МӨРӨӨС PILL ЭГНЭЭ БОЛГОВ (2026-09-08, захиалагчийн
+                      screenshot). Өмнө нь `ThemeRow`/`LanguageRow`/
+                      `AccountRow` гурав нь ангиллуудтай ИЖИЛ өргөнтэй мөр
+                      байсан тул навигацийн жагсаалтын үргэлжлэл мэт
+                      уншигдаж байв. Одоо гурвуулаа тэнцүү өргөнтэй ТОВЧ —
+                      "энэ бол очих газар БИШ, тохиргоо" гэдэг нь хэлбэрээсээ
+                      мэдэгдэнэ.
+
+                      ЗУРААСГҮЙ: дэвсгэртэй товч нь жагсаалтаас өөрөө
+                      ялгарна, дээр нь зураас нэмбэл давхар зааг болно.
+
+                      ДАРААЛАЛ нь загварынх: хэл → профайл → theme
+                      (`HeaderTools`-ийнхоос эсрэг). */}
+                  <div className="mt-4 flex items-stretch gap-2">
+                    <LanguagePill />
+                    <ProfilePill onDone={dismiss} />
+                    <ThemePill />
+                  </div>
+                </div>
+
+                {/* ─────────── 2-Р ДАВХАРГА (дэд цэс) ─────────── */}
+                <div ref={subPaneRef} inert={!subName} className="w-1/2 p-4">
+                  {subMenu && (
+                    <DrawerSubmenu
+                      menu={subMenu}
+                      onBack={() => setSubName(null)}
+                      onNavigate={dismiss}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/**
+ * 1-р давхаргын ангиллын шошго. ТОДОТГОЛ нь бүх давхаргатай ИЖИЛ хэлбэр:
+ * `text-foreground` + доогуур зураас (брэнд ногоон БИШ) — desktop-ийн
+ * `CategoryNav`, хувилбар 1-ийн таб, burger-ийн accordion бүгд ижил.
+ *
+ * Зураас нь ЗӨВХӨН үсгэн доор (мөр бүхэлдээ БИШ) тул мөрийн өндөр хөндөгдөхгүй.
+ */
+function DrawerCatLabel({ name, active }: { name: string; active: boolean }) {
+  return (
+    <span className={cn(active && "underline underline-offset-4")}>
+      <TabLabel name={name} isDomain={active} />
+    </span>
+  );
+}
+
+/**
+ * ДЭД ЦЭС — захиалагчийн 3-р screenshot-ийн бүтэц:
+ *   ← Буцах
+ *   <Ангиллын нэр>            (чиглүүлэгч гарчиг)
+ *   [хурдан үйлдэл]           (байвал)
+ *   <Багц>                    (бүлгийн шошго)
+ *   Premium · Priority · …
+ *   <Бусад үйлчилгээ>
+ *   Нэмэлт дата · …
+ *   ─────────────
+ *   [урамшууллын блокууд]     (дугуй зураг + гарчиг + CTA)
+ *
+ * ⚠️ ГАРЧИГ НЭМЭГДСЭН (загварт байхгүй). Swisscom-ийн цэсэнд "Back"-ийн дараа
+ * шууд жагсаалт орно — тэдний жагсаалт нэг л төрлийн (Mobile-ийн дэд төрлүүд)
+ * тул контекст нь өөрөө ойлгомжтой. Бидний жагсаалт нь "Premium · Priority ·
+ * Plus" — эдгээр нь ямар брэндийн юу болох нь ЗӨВХӨН гарчгаас мэдэгдэнэ.
+ * Мөн `aria-labelledby`-д хэрэгтэй: screen reader хэрэглэгч шинэ давхаргад
+ * орохдоо "хаана орсноо" сонсох ёстой.
+ */
+function DrawerSubmenu({
+  menu,
+  onBack,
+  onNavigate,
+}: {
+  menu: MegaMenu;
+  onBack: () => void;
+  onNavigate: () => void;
+}) {
+  const headingId = `${DRAWER_ID}-${menu.name}-heading`;
+
+  return (
+    <section aria-labelledby={headingId}>
+      {/* БУЦАХ — панелийн ХАМГИЙН ДЭЭД мөр. Сум нь ЗҮҮН тийш: агуулга
+          баруунаас орж ирсэн тул буцах чиглэл нь зүүн — хөдөлгөөн ба
+          тэмдэг нь нэг чиглэлийг заана. */}
+      <button
+        type="button"
+        data-drawer-back
+        onClick={onBack}
+        className={cn(
+          navType.mobileLink,
+          "hover:bg-muted text-muted-foreground hover:text-foreground mb-1 -ml-2 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 transition-colors",
+        )}
+      >
+        <ArrowLeft className="size-4 shrink-0" aria-hidden="true" />
+        Буцах
+      </button>
+
+      <h2 id={headingId} className={cn(navType.drawerHeading, "text-foreground mb-1 px-2")}>
+        {menu.name}
+      </h2>
+
+      {/* ХУРДАН ҮЙЛДЭЛ — ГАРЧИГГҮЙ мөр, минимал текст линк. Хувилбар 1-ийн
+          `SectionMenu`-тэй ижил зарчим. ⚠️ Одоогоор PLACEHOLDER агуулга. */}
+      {menu.quickActions && menu.quickActions.length > 0 && (
+        <div className="mb-1 flex flex-wrap gap-x-5 px-2">
+          {menu.quickActions.map((action) => (
+            <DrawerLink
+              key={action.id}
+              href={action.href}
+              onNavigate={onNavigate}
+              className={cn(
+                navType.mobileLink,
+                "text-foreground/75 hover:text-foreground inline-flex min-h-11 items-center transition-colors",
+              )}
+            >
+              {action.title}
+            </DrawerLink>
+          ))}
+        </div>
+      )}
+
+      <DrawerGroup label={menu.sectionsLabel ?? menu.name}>
+        {menu.sections.map((s) => (
+          <li key={s.id}>
+            <DrawerLink href={s.href} onNavigate={onNavigate} className={DRAWER_LEAF_ROW}>
+              {s.title.trim()}
+            </DrawerLink>
+          </li>
+        ))}
+      </DrawerGroup>
+
+      {menu.extras && menu.extras.length > 0 && (
+        <DrawerGroup label={menu.extrasLabel ?? "Нэмэлт"}>
+          {menu.extras.map((s) => (
+            <li key={s.id}>
+              {/* Туслах жагсаалт — үндсэнээсээ НИМГЭН (14px · 500 · muted).
+                  Зэрэглэл нь `SectionRow`-той ижил чиглэлтэй. */}
+              <DrawerLink
+                href={s.href}
+                onNavigate={onNavigate}
+                className={cn(navType.mobileLink, ROW, "text-muted-foreground no-underline")}
+              >
+                {s.title.trim()}
+              </DrawerLink>
+            </li>
+          ))}
+        </DrawerGroup>
+      )}
+
+      {/* УРАМШУУЛАЛ — навигаци БИШ ӨӨР төрлийн агуулга тул зураасаар заагласан
+          (жагсаалтуудын хооронд зураас байхгүй, зөвхөн энд). */}
+      <div className="border-border mt-4 border-t px-2 pt-4">
+        <h3 className={cn(navType.groupLabel, "mb-3")}>{MENU_PROMOS_HEADING}</h3>
+        <div className="flex flex-col gap-4">
+          {MENU_PROMOS.map((promo, i) => (
+            // Гарчиг/CTA ХОЁУЛАА placeholder тул давтагдашгүй `key` алга —
+            // жинхэнэ data орж ирэхэд `promo.id`.
+            <div key={i} className="flex items-center gap-3">
+              <MobilePromoAvatar />
+              <div className="flex min-w-0 flex-col items-start">
+                <p className={cn(navType.secondaryLink, "text-foreground")}>{promo.title}</p>
+                <Link
+                  href={promo.href}
+                  onClick={onNavigate}
+                  className="text-primary mt-1 inline-flex items-center gap-1.5 text-xs font-semibold no-underline"
+                >
+                  <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
+                  {promo.ctaLabel}
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Дэд цэсний бүлэг — шошго + жагсаалт. Бүлэг нь `<ul>`-ийн нэрлэгдсэн хүрээ. */
+function DrawerGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-3">
+      <p className={cn(navType.groupLabel, "mb-1 px-2")}>{label}</p>
+      <ul aria-label={label} className="flex flex-col">
+        {children}
+      </ul>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// DRAWER-ИЙН ХЭРЭГСЛИЙН PILL-УУД (хувилбар 3)
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Гурван pill-ийн НЭГ хэлбэр.
+ *
+ * `flex-1` + `basis-0` — гурав нь ЯГ тэнцүү өргөнтэй. `flex-1` дээр
+ * `min-w-0` шаардлагагүй: агуулга нь хамгийн ихдээ дүрс + "MN" тул 44px-ийн
+ * доод хэмжээнээс халихгүй.
+ *
+ * `min-h-11` (44px) — WCAG 2.5.8. Загварын товч үүнээс арай хавтгай харагдах
+ * ч мобайлд хуруунд таарах нь чухал.
+ *
+ * `rounded-xl` (12px) — капсулын `rounded-full`-аас ЗОРИУД өөр: эдгээр нь
+ * navigation БИШ тохиргоо, өөр хэлбэрийн бүлэгт хамаарна.
+ */
+const DRAWER_TOOL_PILL =
+  "bg-muted text-foreground focus-visible:ring-ring inline-flex min-h-11 flex-1 basis-0 items-center justify-center gap-2 rounded-xl transition-colors focus-visible:ring-2 focus-visible:outline-none";
+
+/** Дарагддаг pill — hover нэмнэ. `LanguagePill` нь placeholder тул авахгүй. */
+const DRAWER_TOOL_PILL_ACTIVE = cn(DRAWER_TOOL_PILL, "hover:bg-muted/70");
+
+/**
+ * Theme-ийн төлөв + солих үйлдэл — `ThemeRow` (хувилбар 1/2) ба `ThemePill`
+ * (хувилбар 3) ХОЁУЛАА эндээс уншина.
+ *
+ * ⚠️ Хоёр газар `useTheme()`-ийг тусад нь бичих нь `resolvedTheme === "dark"`
+ * гэсэн шалгалтыг давхардуулна — нэгийг сольж (жишээ нь system-ийг гурав дахь
+ * төлөв болгож) нөгөөг мартвал хоёр хувилбар өөр өөр зан гаргана.
+ * `components/theme-toggle.tsx` нь desktop-ийн ТУСДАА компонент тул тэр
+ * үүнийг хэрэглэхгүй (shadcn-ийн үүсгэсэн файл, `.prettierignore`-д).
+ */
+function useThemeSwitch() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  return { isDark, toggle: () => setTheme(isDark ? "light" : "dark") };
+}
+
+/**
+ * ХЭЛ — дүрс + одоогийн хэлний код.
+ *
+ * ОДООГООР ХАРАГДАХ ТАЛ ЛЭ: проектод i18n давхарга байхгүй (`layout.tsx`-д
+ * `lang="mn"` тогтмол, бүх data монгол) тул дарахад сольж болох зүйл байхгүй.
+ * `<div aria-disabled>` — товч болгож дүр эсгэвэл дарж үзсэн хэрэглэгч "эвдэрсэн"
+ * гэж дүгнэнэ. `hover` мөн байхгүй — дарагдахгүй гэдгийг хэлбэр нь өгнө.
+ * i18n нэмэгдмэгц энэ pill-ийг MN/EN сонголттой болгоно.
+ */
+function LanguagePill() {
+  return (
+    <div
+      aria-disabled="true"
+      aria-label="Хэл — одоо MN"
+      className={cn(DRAWER_TOOL_PILL, navType.mobileLink)}
+    >
+      <Globe className="text-muted-foreground size-5 shrink-0" aria-hidden="true" />
+      <span className="text-[13px]">MN</span>
+    </div>
+  );
+}
+
+/**
+ * ПРОФАЙЛ — `AccountRow`-той ИЖИЛ зан төлөв, зөвхөн хэлбэр нь pill.
+ *
+ * ⚠️ ДҮРС нь ТӨЛӨВӨӨС ХАМААРНА, ингэснээр ХАРАГДАХ дүрс нь ҮЙЛДЭЛТЭЙГЭЭ
+ * үргэлж таарна:
+ *   нэвтрээгүй → `User`   (дарвал нэвтрэх хэлбэр нээгдэнэ)
+ *   нэвтэрсэн  → `LogOut` (дарвал ГАРНА)
+ * Зөвхөн `User` дүрсийг үлдээвэл нэвтэрсэн хэрэглэгч "профайл харах" гэж
+ * бодоод дарж, санамсаргүй гарах болно. Загварт хүний дүрс байгаа нь
+ * нэвтрээгүй төлөв (sample дээрх өгөгдмөл).
+ *
+ * Нэр нь `sr-only`-д — 130px өргөн pill-д "Батаа" гэсэн урт нэр багтахгүй,
+ * харин screen reader хэрэглэгчид ХЭН гарах нь тодорхой байх ёстой.
+ */
+function ProfilePill({ onDone }: { onDone: () => void }) {
+  const { isAuthenticated, user, openLogin, logout } = useAuth();
+
+  if (!isAuthenticated) {
+    return (
+      <button
+        type="button"
+        aria-label="Нэвтрэх"
+        onClick={() => {
+          onDone();
+          // Drawer хаагдаж фокусаа буцаах хугацаа — эс бөгөөс login
+          // хэлбэр нээгдэнгүүт фокусаа алдана (`AccountRow`-той ижил).
+          setTimeout(() => openLogin(), 220);
+        }}
+        className={DRAWER_TOOL_PILL_ACTIVE}
+      >
+        <User className="text-muted-foreground size-5 shrink-0" aria-hidden="true" />
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        logout();
+        onDone();
+      }}
+      className={DRAWER_TOOL_PILL_ACTIVE}
+    >
+      <LogOut className="text-destructive size-5 shrink-0" aria-hidden="true" />
+      <span className="sr-only">Гарах — {user?.name}</span>
+    </button>
+  );
+}
+
+/** THEME — light ⇄ dark. Одоогийн төлөвийн дүрс харагдана (`ThemeRow`-той ижил). */
+function ThemePill() {
+  const { isDark, toggle } = useThemeSwitch();
+
+  return (
+    <button type="button" onClick={toggle} className={DRAWER_TOOL_PILL_ACTIVE}>
+      {isDark ? (
+        <Moon className="text-muted-foreground size-5 shrink-0" aria-hidden="true" />
+      ) : (
+        <Sun className="text-muted-foreground size-5 shrink-0" aria-hidden="true" />
+      )}
+      <span className="sr-only">Theme солих — одоо {isDark ? "Dark" : "Light"}</span>
+    </button>
+  );
+}
+
+/**
+ * Drawer доторх линк — дотоод/гадаадыг ӨӨРӨӨ шийднэ.
+ *
+ * `SmartLink` БИШ: тэр нь брэндийн `owner`-оор домэйн хооронд шийддэг бөгөөд
+ * дэд цэсний элементүүдэд `owner` талбар БАЙХГҮЙ (`MegaMenuSection` нь
+ * `{id,title,href}` л). Гадаад эсэхийг href-ээс шалгах нь `SectionRow`
+ * (хувилбар 1)-тэй ижил логик.
+ */
+function DrawerLink({
+  href,
+  onNavigate,
+  className,
+  children,
+}: {
+  href: string;
+  onNavigate: () => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  if (href.startsWith("http")) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onNavigate}
+        className={className}
+      >
+        {children}
+        <ArrowUpRight className="ml-auto size-3.5 shrink-0 opacity-60" aria-hidden="true" />
+      </a>
+    );
+  }
+  return (
+    <Link href={href} onClick={onNavigate} className={className}>
+      {children}
+    </Link>
   );
 }
 
@@ -617,22 +1825,59 @@ function MobilePromoAvatar() {
 const ROW =
   "hover:bg-muted flex w-full items-center gap-2 rounded-md px-2 py-2.5 text-left transition-colors";
 
-function MobileMenuSheet({ variant }: { variant: MobileVariant }) {
+/**
+ * BURGER — ангилал (хувилбар 2) · Байгууллага/Unitel Group · тохиргоо.
+ *
+ * ⚠️ ЗӨВХӨН МОБАЙЛЫНХ БИШ БОЛСОН (2026-09-07). Хувилбар 1-ийн DESKTOP header
+ * ч үүнийг дууддаг (`header.tsx > LogoLeftHeader`): захиалагчийн загварт
+ * профайл, theme, хэл, Байгууллага бүгд burger-ийн ард орсон. Тиймээс
+ * `MobileMenuSheet` → `MenuSheet` болж НЭР СОЛИГДОЖ, ЭКСПОРТЛОГДЛОО.
+ * `Sheet` нь ямар ч өргөнд ажилладаг тул дотоод бүтэц хөндөгдөөгүй.
+ *
+ * `trigger` — өгвөл ТЭР элемент товч болно (desktop дээр дугуй саарал товч).
+ * Өгөхгүй бол мобайлын ghost icon товч хэвээр.
+ */
+export function MenuSheet({
+  variant,
+  trigger,
+}: {
+  variant: SheetVariant;
+  trigger?: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
-  const categories = BURGER_CATEGORIES[variant];
   const rowClass = cn(navType.mobileLink, ROW);
   // Header-ийн таб, доод bar-тай НЭГ эх сурвалж (`useActiveNavName`) — hook
   // тул `.map()` дотор дуудаж болохгүй, энд нэг удаа тооцно.
   const activeName = useActiveNavName(appleNavCategories);
 
+  /**
+   * Burger-т ямар ангилал гарах вэ.
+   *
+   * ⚠️ ХУВИЛБАР 2 нь ОДООГИЙН БРЭНДИЙН дэд цэсийг л харуулна (захиалагчийн
+   * заавар: "burger дотор тухайн байгууллага дотрох sub menu"). Өмнө нь
+   * `BURGER_CATEGORIES[2]` = БҮХ 5 ангилал байсан — тэр үед burger нь цэсэнд
+   * хүрэх ЦОРЫН ГАНЦ зам байсан тул зөв байв. Одоо брэнд хооронд шилжихийг
+   * ДООД NAVIGATION хариуцдаг тул burger-т бүх брэндийг дахин жагсаах нь
+   * давхардал болно.
+   *
+   * Хувилбар 1 нь хэвээр `BURGER_CATEGORIES[1]` (ХООСОН) — 5 ангилал бүгд
+   * түүний Layer 1-д бий.
+   */
+  const categories =
+    variant === 2
+      ? appleNavCategories.filter((c) => c.name === activeName)
+      : BURGER_CATEGORIES[variant];
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Цэс нээх">
-          <Menu className="size-5" />
-        </Button>
+        {trigger ?? (
+          <Button variant="ghost" size="icon" aria-label="Цэс нээх">
+            <Menu className="size-5" />
+          </Button>
+        )}
       </SheetTrigger>
 
       <SheetContent side="right" className="w-80 gap-0 overflow-y-auto p-6 sm:w-90">
@@ -645,7 +1890,16 @@ function MobileMenuSheet({ variant }: { variant: MobileVariant }) {
             хоосон `mt-5` зай гаргахгүйн тулд блокийг бүхэлд нь рендерлэхгүй. */}
         {categories.length > 0 && (
           <div className="mt-5">
-            <Accordion type="single" collapsible className="gap-0.5">
+            {/* `defaultValue` — хувилбар 2-т ангилал ГАНЦ (одоогийн брэнд) тул
+                хаалттай байвал хэрэглэгч нэг л зүйлийг дарж нээх шаардлагатай
+                болно. Тиймээс шууд задарсан байдлаар нээнэ. Хувилбар 1-д
+                `categories` хоосон тул энэ блок огт рендерлэгдэхгүй. */}
+            <Accordion
+              type="single"
+              collapsible
+              defaultValue={variant === 2 ? activeName : undefined}
+              className="gap-0.5"
+            >
               {categories.map((category) => {
                 const menu = mobileMegaMenus[category.name];
                 const isDomain = category.name === activeName;
@@ -698,7 +1952,18 @@ function MobileMenuSheet({ variant }: { variant: MobileVariant }) {
           </div>
         )}
 
-        {/* ── 2. Шууд линкүүд — Байгууллага · Unitel Group ──────────── */}
+        {/* ── 2. Тохиргоо ──
+            ⚠️ ДАРААЛАЛ СОЛИГДСОН (2026-09-08, захиалагчийн заавар). Өмнө нь
+            Байгууллага/Unitel Group ДЭЭР, тохиргоо ДООР байв. Одоо эсрэгээр:
+            theme · хэл · бүртгэл нь ӨДӨР ТУТМЫН үйлдэл тул дээр, гадагш
+            гарах (↗) холбоосууд доор. */}
+        <div className="border-border mt-4 space-y-0.5 border-t pt-4">
+          <ThemeRow />
+          <LanguageRow />
+          <AccountRow onDone={close} />
+        </div>
+
+        {/* ── 3. Шууд линкүүд — Байгууллага · Unitel Group ──────────── */}
         {DIRECT_SEGMENTS.length > 0 && (
           <div className="border-border mt-4 space-y-0.5 border-t pt-4">
             {DIRECT_SEGMENTS.map((seg) => (
@@ -716,13 +1981,6 @@ function MobileMenuSheet({ variant }: { variant: MobileVariant }) {
             ))}
           </div>
         )}
-
-        {/* ── 3. Тохиргоо ── */}
-        <div className="border-border mt-4 space-y-0.5 border-t pt-4">
-          <ThemeRow />
-          <LanguageRow />
-          <AccountRow onDone={close} />
-        </div>
       </SheetContent>
     </Sheet>
   );
@@ -757,15 +2015,11 @@ function SubItem({
 
 /** Theme — мөр бүхэлдээ дарагдана (icon товч нэмэхгүй, зай жигд байхын тулд) */
 function ThemeRow() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  // Хувилбар 3-ын `ThemePill`-тэй НЭГ эх сурвалж — доорх `useThemeSwitch`.
+  const { isDark, toggle } = useThemeSwitch();
 
   return (
-    <button
-      type="button"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      className={cn(navType.mobileLink, ROW)}
-    >
+    <button type="button" onClick={toggle} className={cn(navType.mobileLink, ROW)}>
       Theme
       {/* Зөвхөн ICON — "Dark/Light" текст нь icon-той давхардаж байсан тул
           хассан. Screen reader-т одоогийн төлөв `sr-only`-гоор хэвээр хүрнэ. */}

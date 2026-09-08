@@ -7,7 +7,7 @@ import { ArrowUp, ChevronDown, Globe, Layers, Sparkles, X } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AudienceSwitchTabs } from "@/components/layout/audience-switch";
-import { MobileBrandHeader } from "@/components/layout/mobile-header";
+import { MobileBrandHeader, type MobileVariant } from "@/components/layout/mobile-header";
 import {
   AccountMenu,
   BrandLogoLink,
@@ -26,16 +26,60 @@ import { cn } from "@/lib/utils";
 
 type Variant = HeaderVariant;
 
-// ⚠️ Хувилбар 3 (mobile-ын доод tab bar) ба 4 (chat нүүр) нь ХАСАГДСАН —
-// код нь бүрэн устсан. localStorage-д тэр утга үлдсэн бол `useHeaderVariant`
-// 1 рүү унагана (`lib/header-variant.ts`).
+/**
+ * ⚠️ ШОШГО ГУРВУУЛАА ШИНЭЧЛЭГДСЭН (2026-09-08). Өмнөх "Only L1" / "L1 & L2"
+ * нь mobile header дахин бүтэцлэгдэхээс ӨМНӨХ давхаргын тоог тоолж байсан тул
+ * одоогийн бүтэцтэй таарахаа больсон байв. Одоо шошго нь MOBILE-ын навигаци
+ * ХААНА байгааг хэлнэ — хувилбар хоорондын гол ялгаа тэр.
+ *
+ * ⚠️ Хувилбар 4 (chat нүүр) нь ХАСАГДСАН, код нь бүрэн устсан.
+ * localStorage-д "4" үлдсэн бол `useHeaderVariant` 1 рүү унагана.
+ */
 const VARIANTS: { id: Variant; label: string }[] = [
-  { id: 1, label: "Хувилбар 1 · Only L1" },
-  { id: 2, label: "Хувилбар 2 · L1 & L2" },
+  { id: 1, label: "Хувилбар 1 " },
+  { id: 2, label: "Хувилбар 2 " },
+  { id: 3, label: "Хувилбар 3 " },
 ];
 
 /** Хоёр хувилбарын ХУВААЛЦАХ зүүн талын ангилал (Layer 2) */
 const NAV_ITEMS: EcosystemLink[] = appleNavCategories;
+
+/**
+ * LAYER 1-ИЙН АНГИЛАГЧИЙН ТОВЧ — "Хувь хэрэглэгч ⌄ · Байгууллага ↗ ·
+ * Unitel Group ↗".
+ *
+ * ⚠️ 15px → 13px БОЛЖ ЖИЖИГРЭВ (2026-09-08, захиалагчийн заавар).
+ *
+ * ЯАГААД: L1 нь `navType.bar` (15px) байсан — L2-ийн ҮНДСЭН навигацитай ЯГ
+ * ИЖИЛ хэмжээ. Хоёр давхарга ижил жинтэй байвал нүд аль нь чухал болохыг
+ * өөрөө шийдэх шаардлагатай болно. Гэтэл хэрэглээний давтамж ЭРС өөр:
+ *   L1 — "би хэн бэ / ямар сайт руу" гэсэн КОНТЕКСТ сэлгүүр. Нэг хэрэглэгч
+ *        нэг сессэд ХАМГИЙН ИХДЭЭ НЭГ УДАА хүрнэ.
+ *   L2 — бүтээгдэхүүний үндсэн цэс. БАЙНГА хэрэглэгдэнэ.
+ * Проектын лавлагаа болгосон Apple-ийн global nav ч тусламжийн зурвасаа
+ * үндсэн цэснээсээ жижиг байлгадаг (`nav-type.ts`-ийн толгойд бий).
+ *
+ * 13px = `navType.body` — АЛЬ ХЭДИЙН БАЙГАА роль (панелийн тайлбар, бүлгийн
+ * гарчигт хэрэглэгддэг). Шинэ хэмжээ НЭМЭЭГҮЙ. Apple-ийн 12px руу
+ * буугаагүй: кирилл үсэг тэр хэмжээнд уншигдахаа болино.
+ *
+ * `px-2 gap-1` — 15px-д тохируулсан 10px/6px зай нь 13px үсэгт хэт сул.
+ *
+ * ⚠️ МӨРНИЙ ӨНДӨР (`h-8` = 32px) ХӨНДӨӨГҮЙ. Товчны `py-1` (8px) + 13px-ийн
+ * мөрийн өндөр (≈19.5px) = 27.5px хүрэх талбай — WCAG 2.5.8-ын 24px-ээс
+ * ДЭЭГҮҮР. `h-7` болговол `py`-г 4px болгох шаардлагатай бөгөөс тэр үед
+ * хүрэх талбай 23.5px болж ХЯЗГААРААС ДООШ унана. Одоогийн 32px мөрөнд
+ * үсэг жижигрэхэд 1.5px байсан сул зай 4.5px болж, зурвас нь "шахагдсан"
+ * биш ЗУРВАС мэт харагдана.
+ *
+ * ⚠️ Дүрсний хэмжээг ЭНД зааж өгөх шаардлагагүй: `audience-switch.tsx`-ийн
+ * дүрснүүд `em`-ээр тооцогддог тул текстийн хэмжээг дагаж өөрсдөө жижигрэнэ.
+ *
+ * ХОЁР ХУВИЛБАР ХУВААЛЦАНА. Өмнө нь хувилбар 1 ба 2-ын L1 хоёулаа
+ * `navType.bar`-ыг ТУС ТУСДАА бичдэг байв — нэгийг сольж нөгөөг мартвал
+ * хоёр header чимээгүй зөрөх эрсдэлтэй. Одоо ганц эх сурвалж.
+ */
+const CLASSIFIER_TRIGGER = cn(navType.body, "gap-1 px-2");
 
 /**
  * Ангиллын ДАРААЛАЛ — `useBrandMegaMenu` нь панел хооронд шилжихэд агуулгыг
@@ -73,7 +117,14 @@ export function Header() {
   return (
     <>
       <VariantToggle variant={variant} onChange={setHeaderVariant} />
-      {variant === 2 ? <TopClassifierHeader /> : <LogoLeftHeader />}
+      {/**
+       * ⚠️ ХУВИЛБАР 3 нь DESKTOP-д ХУВИЛБАР 1-ТЭЙ ИЖИЛ (`LogoLeftHeader`).
+       * Захиалагчийн 3-р хувилбарын заавар нь ЗӨВХӨН mobile-ын тухай (burger
+       * drawer) — desktop-ийн mega menu нь тэрэнд хөндөгдөөгүй. Тиймээс
+       * desktop бүтцийг ХУВИЛБАР 1-ЭЭС ХУВААЛЦАЖ, зөвхөн `mobileVariant`-ыг
+       * дамжуулна. Ингэснээр desktop-ийн код гурав дахин давхардахгүй.
+       */}
+      {variant === 2 ? <TopClassifierHeader /> : <LogoLeftHeader mobileVariant={variant} />}
     </>
   );
 }
@@ -356,7 +407,7 @@ function MegaLayer({
 }
 
 // =====================================================================
-// ХУВИЛБАР 1 — ЛОГО ЗҮҮН ТАЛД
+// ХУВИЛБАР 1 — ЛОГО ЗҮҮН ТАЛД (DESKTOP)
 //   Layer 1: ангилагч БАРУУН талд (header-ийн баруун ирмэгт шахсан)
 //   Layer 2: [ЛОГО] → араас нь ангиллын mega menu … баруунд хэрэгслүүд
 //
@@ -365,8 +416,15 @@ function MegaLayer({
 //   ├────────────────────────────────────────────────────────────┤
 //   │ [ЛОГО] Unitel Univision Дэлгүүр …          👤  🌐  ☀       │ L2
 //   └────────────────────────────────────────────────────────────┘
+//
+// ⚠️ ЗАХИАЛАГЧИЙН 2026-09-07-НЫ ЗАГВАР нь МОБАЙЛЫНХ байсан тул desktop энд
+// ХӨНДӨГДӨӨГҮЙ. Тэр загварын хэрэгжилтийг `mobile-header.tsx > BrandTabsHeader`
+// дотроос үз (ангиллын мөр + капсул).
+//
+// ⚠️ ХУВИЛБАР 3 ч ЭНЭ DESKTOP БҮТЦИЙГ ХЭРЭГЛЭНЭ — `mobileVariant` prop-оор
+// зөвхөн мобайлын давхарга л сална (1 = ангиллын мөр, 3 = burger drawer).
 // =====================================================================
-function LogoLeftHeader() {
+function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }) {
   const { openMenu, panelBrand, shown, direction, openBrandMenu, closeBrandMenu, closeNow } =
     useBrandMegaMenu(NAV_ORDER);
 
@@ -393,7 +451,7 @@ function LogoLeftHeader() {
               activeId="personal"
               align="end"
               hover={false}
-              triggerClassName={navType.bar}
+              triggerClassName={CLASSIFIER_TRIGGER}
             />
           </div>
         </div>
@@ -410,8 +468,8 @@ function LogoLeftHeader() {
           <HeaderTools />
         </div>
 
-        {/* Mobile — Хувилбар 1: таб төвд */}
-        <MobileBrandHeader variant={1} />
+        {/* Mobile — Хувилбар 1: ангиллын мөр + капсул (2 давхарга) */}
+        <MobileBrandHeader variant={mobileVariant} />
 
         <MegaLayer
           panelBrand={panelBrand}
@@ -532,7 +590,7 @@ function TopClassifierHeader() {
               activeId="personal"
               align="start"
               hover={false}
-              triggerClassName={navType.bar}
+              triggerClassName={CLASSIFIER_TRIGGER}
             />
           </div>
         </div>

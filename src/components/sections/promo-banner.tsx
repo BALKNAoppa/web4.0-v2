@@ -64,6 +64,9 @@ void PromoBannerFull;
 // багцын мөртэй босоо тэнхлэгээр тэгширнэ.
 // =====================================================================
 function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
+  // ⚠️ БРЭНДЭЭР — `PromoHero`-г хоёр брэнд хуваалцдаг тул баннерын зураг
+  // тус бүрийнхээ хавтаснаас ирнэ (`promo-banner.ts > samplePromoCards`).
+  const cards = samplePromoCards[BRAND];
   const [api, setApi] = useState<CarouselApi>();
   /**
    * Одоогийн слайд (1-ээс эхэлнэ). Effect дотор setState СИНХРОНООР
@@ -110,7 +113,7 @@ function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
           ⚠️ CSS-ээр солив (JS media query БИШ): `matchMedia` нь зөвхөн
           хөтөч дээр утга өгдөг тул server ба client өөр зүйл render хийж
           hydration зөрөх эрсдэлтэй. */}
-      <PromoFadeBanner cards={samplePromoCards} />
+      <PromoFadeBanner cards={cards} />
 
       {/* ── DESKTOP (md+) — ХУУЧИН PEEK CAROUSEL, ХӨНДӨӨГҮЙ ── */}
       <div className="hidden w-full md:flex">
@@ -136,19 +139,23 @@ function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
               идэвхтэй banner 234px болж уншигдахгүй; тэнд ирмэг 26px нь
               хангалттай дохио өгнө. Завсар ч 8px (md+ дээр 16px). */}
           <CarouselContent className="-ml-2 h-full md:-ml-4">
-            {samplePromoCards.map((promo) => (
+            {cards.map((promo, i) => (
               <CarouselItem
                 key={promo.id}
                 className="h-full basis-[82%] pl-2 md:basis-[62.5%] md:pl-4"
               >
-                <PromoSlide promo={promo} />
+                {/* ⚠️ `eager` нь ЗӨВХӨН ЭХНИЙХЭД. Гурван слайд бүгд DOM-д
+                    байдаг тул бүгдийг нь `priority` болговол LCP-ийн төлөө
+                    гурван том зураг зэрэг татагдаж, бие биетэйгээ өрсөлдөнө
+                    (Next мөн "too many priority images" гэж анхааруулна). */}
+                <PromoSlide promo={promo} eager={i === 0} />
               </CarouselItem>
             ))}
           </CarouselContent>
 
           <CarouselCounter
             current={current}
-            total={samplePromoCards.length}
+            total={cards.length}
             onPrev={() => api?.scrollPrev()}
             onNext={() => api?.scrollNext()}
           />
@@ -159,23 +166,103 @@ function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
 }
 
 /**
- * Нэг слайд — panel-ийн бүтэн талбайг эзэлнэ.
+ * Нэг слайд (DESKTOP, md+) — panel-ийн бүтэн талбайг эзэлнэ.
  *
  * ӨНГӨ: `bg-card` (= `--background-2`) — `bg-muted` нь dark theme-д ягаан
  * (#27203e) болж үндсэн өнгөнөөс зөрдөг.
+ *
+ * ЗУРАГТАЙ үед бүтэц нь `PromoFadeSlide` (мобайл)-тай ИЖИЛ: зураг бүтэн
+ * дэвсгэр, доогуур нь бага зэргийн scrim, CTA нь доод ЗҮҮН буланд.
+ * Зураггүй үед хуучин голлуулсан placeholder хэвээр.
+ *
+ * ⚠️ МОБАЙЛААС ЯЛГААТАЙ нь ЗОРИУД. Захиалагчийн загварт CTA нь доод БАРУУН
+ * буланд бөгөөд `PromoFadeSlide` (мобайл) тэгж байрлуулсан. Desktop дээр
+ * ТЭР БУЛАНГ `CarouselCounter` (`← n/N →` pill) аль хэдийн эзэлсэн байдаг
+ * тул хоёулаа давхцана. Тиймээс desktop-д CTA зүүн талдаа үлдэв.
+ * Desktop-ыг ч баруун болгох бол ЭХЛЭЭД тоолуурыг өөр газар зөөнө.
+ *
+ * ⚠️⚠️ DESKTOP-Д ЗУРАГ ХҮЧТЭЙ ТАЙРАГДАНА. Энэ panel нь ӨРГӨН (1440px
+ * дэлгэцэнд ≈900×493 = 1.83), харин `public/Unitel/Hero banner/`-ийн зурагнууд
+ * нь 1:1 ба 4:5 БОСОО. `object-cover` тул 1:1 нь босоо тэнхлэгээрээ ~45%,
+ * 4:5 нь ~56% хасагдаж, ЗӨВХӨН ДУНД ХЭСЭГ харагдана. Мобайл дээр карт нь
+ * 3:4 тул асуудалгүй.
+ * → Зөв шийдэл нь КОД БИШ, КОНТЕНТ: desktop-д зориулсан хэвтээ кроп
+ *   (≈1920×1050 буюу 1.83) нэмж, `image`-ийг `<picture>`-маягаар салгах.
+ *   Одоогийн зурагнуудын гол дүрс төвдөө байвал хүлээж болохоор харагдана.
  */
-function PromoSlide({ promo }: { promo: PromoCard }) {
-  return (
-    <div className="bg-card flex h-full flex-col items-center justify-center gap-[clamp(0.75rem,2svh,1.5rem)] rounded-3xl">
-      {/* МОБАЙЛД ЖИЖИГ — 306px өргөнтэй картан дээр 3.4svh (≈28px) нь хэтэрхий
-          том байв. `sm:`-ээс дээш хуучин хэмжээ хэвээр. */}
-      <span className="text-muted-foreground text-[clamp(0.875rem,2.2svh,1.125rem)] font-semibold sm:text-[clamp(1.125rem,3.4svh,2.25rem)]">
-        {promo.placeholderText}
-      </span>
+function PromoSlide({ promo, eager }: { promo: PromoCard; eager: boolean }) {
+  /**
+   * DESKTOP-ЫН ТУСДАА ФАЙЛ (`imageDesktop`) байвал тэр, эс бөгөөс мобайлын
+   * зураг. Мобайлын карт нь 3:4 БОСОО, энэ панел нь ХЭВТЭЭ тул нэг файл
+   * хоёуланд тохирдоггүй (`promo-banner.ts > imageDesktop`-ийн тайлбар).
+   */
+  const src = promo.imageDesktop ?? promo.image;
 
+  if (!src) {
+    return (
+      <div className="bg-card flex h-full flex-col items-center justify-center gap-[clamp(0.75rem,2svh,1.5rem)] rounded-3xl">
+        {/* МОБАЙЛД ЖИЖИГ — 306px өргөнтэй картан дээр 3.4svh (≈28px) нь хэтэрхий
+            том байв. `sm:`-ээс дээш хуучин хэмжээ хэвээр. */}
+        <span className="text-muted-foreground text-[clamp(0.875rem,2.2svh,1.125rem)] font-semibold sm:text-[clamp(1.125rem,3.4svh,2.25rem)]">
+          {promo.placeholderText}
+        </span>
+
+        <Link
+          href={promo.href}
+          className="bg-primary text-primary-foreground focus-visible:ring-ring inline-flex h-[clamp(2.25rem,5svh,3rem)] items-center justify-center gap-2 rounded-full px-7 text-sm font-semibold transition-opacity duration-700 ease-out hover:opacity-85 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          {promo.ctaLabel}
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    // `isolate` — доорх `-z-10` зураг ЭНЭ картын дотоод stacking context-д
+    // хоригдоно. Үүнгүй бол зураг хамгийн ойрын context руу гарч, картын
+    // дэвсгэрийн АРД орох эрсдэлтэй (`PromoFadeSlide`-тай ижил шалтгаан).
+    <div className="relative isolate flex h-full flex-col justify-end overflow-hidden rounded-3xl p-6">
+      <Image
+        src={src}
+        alt={promo.imageAlt ?? ""}
+        fill
+        /**
+         * ⚠️ `63vw` БАЙСНЫГ `1920px` БОЛГОВ (2026-09-08). Панелийн ӨРГӨН нь
+         * 63vw боловч `object-cover` нь зургийг ӨНДРӨӨР томсгодог: 888×466
+         * слот дотор 3.549 харьцаатай баннер нь өндрөө нийцүүлэхийн тулд
+         * 466 × 3.549 = 1654px өргөнтэй болж зурагдана. `63vw` (=907px)
+         * гэж хэлэхэд Next 907px хувилбар нийлүүлж, хөтөч түүнийг 1.8 ДАХИН
+         * ТОМСГОНО — баннер бүдгэрнэ (хэмжсэн: `naturalWidth` 907).
+         *
+         * 1920px нь ХАМГИЙН ТОМ ХЭРЭГТЭЙ хэмжээ бөгөөд эх файлын өргөн ч
+         * тэр (`Unitel Desktop.png` = 1920×541) — түүнээс дээш нь эх
+         * файлаа өөрөө томсгох болно. Next нь 2× DPR-т 3840-ийг ч гаргана
+         * (`Bagtsaa butee Desktop.png` нь 3840 өргөнтэй тул тэр ч хурц).
+         */
+        sizes="(min-width: 768px) 1920px, 100vw"
+        // Эхний слайд нь нүүрний LCP байх магадлалтай тул түүнийг л урьдчилж
+        // татна; үлдсэн хоёр нь carousel-д хүрэх хүртэл хойшилно.
+        priority={eager}
+        /**
+         * ТАЙРАЛТЫН БАЙРЛАЛ нь баннер тус бүрээр (`imageDesktopPosition`).
+         * Панел нь баннераас нарийн тул өргөний ~46% тайрагддаг ба аль хэсэг
+         * үлдэхийг зургийн бүтээц шийднэ — тайлбар нь data дээр.
+         */
+        style={{ objectPosition: promo.imageDesktopPosition ?? "center" }}
+        className="-z-10 object-cover"
+      />
+      {/* CTA нь доод ЗҮҮН буланд суудаг тул тэнд бага зэрэг тогтвор хэрэгтэй.
+          Зургийн дээд 2/3 бүрэн тод үлдэнэ (мобайлтай ижил 20%). */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-black/20 to-transparent"
+      />
+
+      {/* ЦАГААН товч — өнгөний үндэслэлийг `PromoFadeSlide` (мобайл) дээр үз. */}
       <Link
         href={promo.href}
-        className="bg-primary text-primary-foreground focus-visible:ring-ring inline-flex h-[clamp(2.25rem,5svh,3rem)] items-center justify-center gap-2 rounded-full px-7 text-sm font-semibold transition-opacity duration-700 ease-out hover:opacity-85 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="focus-visible:ring-ring inline-flex h-[clamp(2.25rem,5svh,3rem)] w-fit items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-neutral-900 transition-colors duration-300 ease-out hover:bg-neutral-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         {promo.ctaLabel}
         <ArrowRight className="size-4" aria-hidden="true" />
@@ -271,7 +358,7 @@ function PromoFadeSlide({ promo, active }: { promo: PromoCard; active: boolean }
       aria-hidden={!active}
       inert={!active}
       className={cn(
-        // ЗАГВАРЫН ЗАЙ: CTA нь X=40, карт нь X=24 → зүүн 16px.
+        // ЗАГВАРЫН ЗАЙ: CTA нь картын ирмэгээс 16px дотогш, доод БАРУУН буланд.
         // CTA-гийн доод ирмэг 634, картын доод ирмэг 666 → доод 32px.
         "absolute inset-0 isolate flex flex-col justify-end p-4 pb-8 transition-opacity ease-out",
         promo.image ? "bg-foreground/5" : "bg-card",
@@ -300,7 +387,7 @@ function PromoFadeSlide({ promo, active }: { promo: PromoCard; active: boolean }
             className="-z-10 object-cover"
           />
           {/* Linear 20% — загварын хоёр дахь fill. Доошоо л гүнзгийрнэ:
-              CTA нь доод зүүн буланд суудаг тул тэнд бага зэрэг тогтвор
+              CTA нь доод БАРУУН буланд суудаг тул тэнд бага зэрэг тогтвор
               хэрэгтэй, зургийн дээд 2/3 нь бүрэн тод үлдэнэ. */}
           <div
             aria-hidden="true"
@@ -321,13 +408,16 @@ function PromoFadeSlide({ promo, active }: { promo: PromoCard; active: boolean }
       {/* CTA — картын ЦОРЫН ГАНЦ амьд элемент.
           FIGMA: H 36 · радиус 28 · дотоод зай 12/8 · дүрс хоорондын зай 4 ·
           өргөн нь агуулгаараа (Hug).
-          ⚠️ Шошгын өнгө нь `primary-foreground` (бараан) — загварт цагаан
-          боловч манай ногоон дээр цагаан ердөө 2.97:1 (dark theme-д 1.85:1)
-          болж WCAG AA 4.5:1-д хүрэхгүй. Бараан нь 7.07:1. */}
+          ⚠️ ЦАГААН дэвсгэр, БАРААН шошго — захиалагчийн загварын дагуу
+          (өмнө нь брэндийн ногоон `bg-primary` байв).
+          ⚠️ Өнгө нь theme-ийн token БИШ, ТОГТМОЛ `white`/`neutral-900`: товч нь
+          ЗУРГАН дээр суудаг ба зураг нь light/dark-аар өөрчлөгддөггүй тул
+          `bg-background` гэвэл dark theme-д бараан товч бараан зураг дээр
+          уусна. Контраст ≈16.9:1 (WCAG AAA). */}
       <Link
         href={promo.href}
         tabIndex={active ? undefined : -1}
-        className="bg-primary text-primary-foreground focus-visible:ring-ring inline-flex h-9 w-fit items-center justify-center gap-1 rounded-[28px] px-3 text-sm font-semibold transition-opacity duration-700 ease-out hover:opacity-85 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="focus-visible:ring-ring inline-flex h-9 w-fit items-center justify-center gap-1 self-end rounded-[28px] bg-white px-3 text-sm font-semibold text-neutral-900 transition-colors duration-300 ease-out hover:bg-neutral-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         {promo.ctaLabel}
         <ArrowRight className="size-4" aria-hidden="true" />

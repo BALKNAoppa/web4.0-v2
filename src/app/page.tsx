@@ -4,7 +4,7 @@ import { ChatHero } from "@/components/sections/chat-hero";
 import { HeaderHeightVar } from "@/components/layout/header-height-var";
 import { RecommendedPlans } from "@/components/sections/recommended-plans";
 import { unitelRecommendedPlans } from "@/data/recommended-plans";
-import { RecommendedServices } from "@/components/sections/recommended-services";
+import { OtherServices } from "@/components/sections/other-services";
 import { AppPromo } from "@/components/sections/app-promo";
 import { unitelApp } from "@/data/app-promo";
 import { PromoHero } from "@/components/home/promo-hero";
@@ -21,7 +21,7 @@ import { BRAND } from "@/lib/brand";
  *   2. `ChatHero`     — AI assistant, promo-гийн ШУУД доор
  *   3. `RecommendedPlans` — "Санал болгох багц", БҮРЭН хэмжээний section
  *   4. `Promotions`  — "Онцлох урамшуулал", 3 карт (v1-ээс)
- *   5. `RecommendedServices` — "Санал болгох үйлчилгээ", дүрст товчны мөр
+ *   5. `OtherServices` — "Бусад үйлчилгээ", дүрст товчлолын сетка
  *   ~~6. `UnitelHome` — entry tile-ууд, апп~~ ТҮР ИДЭВХГҮЙ (доор comment)
  *
  *   ⚠️ Багцын хэсэг өмнө нь hero-гийн доод 40%-д байсныг AI туслахын ДООШ,
@@ -81,7 +81,7 @@ export default function Home() {
               ⚠️ Картын агуулга нь бүхэлдээ PLACEHOLDER ([promotions.ts]). */}
           <Promotions />
 
-          <RecommendedServices />
+          <OtherServices />
 
           {/* Unitel апп — том гарчиг + store badge + QR.
               ⚠️ Энэ section нь `UnitelHome`-ийн ДОТОР байсан тул түүнийг

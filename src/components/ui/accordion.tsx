@@ -4,7 +4,7 @@ import * as React from "react"
 import { Accordion as AccordionPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+import { ChevronDownIcon } from "lucide-react"
 
 function Accordion({
   className,
@@ -48,8 +48,13 @@ function AccordionTrigger({
         {...props}
       >
         {children}
-        <ChevronDownIcon data-slot="accordion-trigger-icon" className="pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden" />
-        <ChevronUpIcon data-slot="accordion-trigger-icon" className="pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline" />
+        {/* ГАНЦ chevron, 180° ЭРГЭНЭ. Өмнө нь доош/дээш хоёр icon байж, задрах
+            агшинд АГШИН ЗУУР солигддог байв — өндрийн хөдөлгөөний дунд тэр
+            солигдол таслагдсан мэт мэдрэгддэг. Хугацаа, муруй нь
+            AccordionContent-ийнхтэй ЯГ ИЖИЛ.
+            ⚠️ prefers-reduced-motion үед globals.css:257 бүх transition-ыг
+            0.01ms болгодог тул энд тусад нь хамгаалалт хэрэггүй. */}
+        <ChevronDownIcon data-slot="accordion-trigger-icon" className="pointer-events-none shrink-0 transition-transform duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] group-aria-expanded/accordion-trigger:rotate-180" />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   )
@@ -63,7 +68,22 @@ function AccordionContent({
   return (
     <AccordionPrimitive.Content
       data-slot="accordion-content"
-      className="overflow-hidden text-sm data-open:animate-accordion-down data-closed:animate-accordion-up"
+      // ⚠️ `data-[state=open]` — БҮТЭН бичих ЁСТОЙ. Өмнө нь `data-open:` /
+      // `data-closed:` гэж байсан бөгөөд Tailwind тэдгээрээс ЯМАР Ч дүрэм
+      // үүсгэдэггүй тул `animation-name: none` болж, accordion нь өндрийн
+      // хөдөлгөөнгүй ШУУД ҮСЭРЧ нээгддэг байв (CSSOM-оос шалгаж баталсан).
+      //
+      // `duration-*` ба `ease-*` нь `--tw-duration` / `--tw-ease`-ийг ЭНЭ элемент
+      // дээр тавьдаг бөгөөд tw-animate-css-ийн `--animate-accordion-down` тэдгээрийг
+      // яг эндээс уншина (анхны утга нь `.2s ease-out`).
+      //
+      // Муруй нь easeOutCubic. Sheet-ийн `cubic-bezier(.32,.72,0,1)`-ийг ЗОРИУД
+      // авалгүй: тэр нь 50% хугацаанд 96% замыг дуусгадаг — бүтэн дэлгэцийн
+      // хуудсанд тансаг ч, 90-140px-ийн богино зайд "үсэрчихээд зогсонги"
+      // мэт болно. easeOutCubic нь 50%-д ~87% — хөдөлгөөн жигд тархана.
+      // ⚠️ Хугацаа, муруй нь AccordionTrigger-ийн chevron-ыхтой ЯГ ИЖИЛ байх
+      // ёстой — хоёулаа нэг үйлдлийн хэсэг тул зөрвөл салангид мэдрэгдэнэ.
+      className="overflow-hidden text-sm duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up"
       {...props}
     >
       <div

@@ -1468,7 +1468,7 @@ const meshSizeCards: OfferCard[] = wifiOptions.map((option) => ({
   longHeadline: true,
   subline: option.description,
   // Гол хариулт нь ТӨХӨӨРӨМЖИЙН бүрдэл — брэндийн өнгөөр онцолно.
-  note: option.devices,
+  note: option.devices, 
   highlights: [option.previewText],
   cta: { label: "Дэлгэрэнгүй", href: wifiSection.ctaHref },
 }));

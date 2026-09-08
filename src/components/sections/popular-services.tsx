@@ -6,7 +6,6 @@ import { popularServices, popularServicesSection } from "@/data/popular-services
  * "ЭРЭЛТТЭЙ БАЙГАА ҮЙЛЧИЛГЭЭ" — нүүрний section.
  *
  *        Эрэлттэй байгаа үйлчилгээ      ← том гарчиг
- *      Энд онцлох trigger үг байрлана   ← тайлбар
  *   ┌───────────────────────────────┐
  *   │ [        ЗУРАГ  2:1          ]│  ← картын БҮТЭН өргөнөөр
  *   │  Дуудлага хадгалах            │
@@ -34,9 +33,10 @@ export function PopularServices() {
           >
             {popularServicesSection.title}
           </h2>
-          <p className="text-muted-foreground mx-auto mt-3 max-w-2xl text-base text-pretty md:mt-4 md:text-lg">
-            {popularServicesSection.description}
-          </p>
+          {/* ⚠️ ТАЙЛБАР МӨР ХАСАГДСАН (2026-09-07, захиалагчийн шийдвэр).
+              Өмнө нь `popularServicesSection.description` = "Энд онцлох
+              trigger үг байрлана" гэсэн placeholder гардаг байв. Дата талбар
+              нь бүрмөсөн устсан тул буцаах бол хоёуланг нь сэргээнэ. */}
         </div>
 
         {/* МОБАЙЛД БОСОО — хоёрхон карт тул carousel хэрэггүй: гүйлгэх зайг
@@ -68,7 +68,9 @@ function ServiceCard({ service }: { service: (typeof popularServices)[number] })
   return (
     <article className="bg-card border-border flex h-full flex-col overflow-hidden rounded-3xl border">
       {/* 2:1 СЛОТ — эх зургууд ХАРЬЦАА ӨӨРТЭЙ (2048×2048 ба 1600×2000) тул
-          `object-cover` нь төвөөс тайрна. Гол дүрс төвд байх ёстой. */}
+          `object-cover` нь ХАСНА. Тайралтын байрлалыг карт бүр өөрөө
+          `imagePosition`-оор шийднэ — хоёулаа `center top`, учир нь онцлох
+          гарчгийн блок нь зургийн ДЭЭД талд байдаг (дата файлын тооцоог үз). */}
       <div className="relative aspect-[2/1] w-full shrink-0">
         <Image
           src={service.image}
@@ -89,6 +91,19 @@ function ServiceCard({ service }: { service: (typeof popularServices)[number] })
         <p className="text-muted-foreground mt-2 text-sm leading-snug text-pretty">
           {service.description}
         </p>
+
+        {/* ИДЭВХЖҮҮЛЭХ ЗААВАР — заавал биш, байгаа картад л гарна.
+            ⚠️ `text-foreground` (тайлбарын `muted` БИШ) + `font-medium`:
+            энэ мөр нь ҮЙЛДЭЛ заадаг бөгөөд дугаар агуулдаг тул тайлбартай
+            ижил бүдэг өнгөтэй байвал урсгал бичвэрт дарагдана.
+            `mt-auto` — карт нь `flex-1` тул заавар ҮРГЭЛЖ картын ЁРОНД
+            наалдаж, хөрш картын тайлбар хэдэн мөр байснаас үл хамааран
+            хоёулаа нэг шугамд эгнэнэ. */}
+        {service.activation && (
+          <p className="text-foreground mt-auto pt-3 text-sm leading-snug font-medium text-pretty">
+            {service.activation}
+          </p>
+        )}
       </div>
     </article>
   );

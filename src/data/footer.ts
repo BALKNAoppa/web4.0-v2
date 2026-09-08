@@ -29,22 +29,40 @@ export const footerLinks: FooterLink[] = [
   { id: "contact", label: "Холбоо барих", href: "#" },
 ];
 
+/**
+ * FOOTER-ИЙН ГАРЧИГТАЙ БАГАНУУД (desktop-д 2–4-р багана).
+ *
+ * ⚠️ 2026-09-08-НД ЗАХИАЛАГЧИЙН ЗАГВАРААР ШИНЭЧЛЭГДСЭН:
+ *   гарчиг  "Харилцаа холбоо" → "Харилцаа холбооны сүлжээ"
+ *           "Платформ бизнес" → "Платформ"
+ *   нэрс    брэндийн нэрийг ЛАТИНААР (Юнивишн → Univision, Look TV → LookTV,
+ *           Toki App → TOKI, Гэр интернэт → Ger internet) — загварт брэнд
+ *           бүрийг өөрийн бичлэгээр харуулсан
+ *   хасагдсан  "Юнител" — энэ нь Unitel-ийн ӨӨРИЙН сайт тул footer-т өөрийгөө
+ *              линкээр жагсаах нь давхардал
+ *   нэмэгдсэн  "Nexmind" (Дижитал үйлчилгээ)
+ *
+ * ⚠️ `external: true` нь ХАРАГДАХ ↗ тэмдгийг шийднэ (сайтаас гарна гэсэн
+ * мэдээлэл), `target="_blank"` нь ЗӨВХӨН href нь бодит `http` хаяг байхад
+ * тавигдана (`FooterNavLink`). Ингэснээр `#` placeholder нь хоосон tab
+ * нээхгүй, харин жинхэнэ хаяг орж ирэхэд шинэ tab өөрөө ажиллаж эхэлнэ.
+ */
 export const footerSitemap: FooterColumn[] = [
   {
     id: "connectivity",
     title: "Харилцаа холбоо",
-    items: [
-      { id: "unitel", label: "Юнител", href: "#" },
-      { id: "home-internet", label: "Гэр интернэт", href: "#" },
+    items: [{ id: "Current", label: "Unitel", href: "#", external: true },
+      { id: "home-internet", label: "Ger internet", href: "#", external: true },
+    
     ],
   },
   {
     id: "platform",
     title: "Платформ",
     items: [
-      { id: "univision", label: "Юнивишн", href: "#" },
-      { id: "looktv", label: "Look TV", href: "#" },
-      { id: "ddishtv", label: "DDISH TV", href: "#" },
+      { id: "univision", label: "Univision", href: "#", external: true },
+      { id: "looktv", label: "LookTV", href: "https://looktv.mn/", external: true },
+      { id: "ddishtv", label: "DDISH TV", href: "#", external: true },
     ],
   },
   {
@@ -56,6 +74,13 @@ export const footerSitemap: FooterColumn[] = [
     ],
   },
 ];
+
+/**
+ * Брэндийн баганын тайлбар (desktop footer-ийн 1-р багана, логоны доор).
+ * ⚠️ Захиалагчийн загвараас — өмнөх "Монголын тэргүүлэх дижитал үйлчилгээ
+ * хаана ч, хэзээ ч тантай хамт." гэснийг СОЛИВ.
+ */
+export const footerTagline = "Монгол орныг дэлхийтэй холбосон үндэсний харилцаа холбооны групп.";
 
 export const footerContact = {
   title: "Тусламж, холбоо барих",
@@ -81,16 +106,40 @@ export const footerShopLine = {
   callTail: "руу залгана уу.",
 };
 
+/**
+ * КОМПАНИЙН ХОЛБООС — desktop footer-ийн 5-р (ГАРЧИГГҮЙ) багана, мобайл дээр
+ * ангиллын accordion-ы доорх жагсаалт.
+ *
+ * ⚠️ 2026-09-08-НД ЗАХИАЛАГЧИЙН ЗАГВАРААР ШОШГО ШИНЭЧЛЭГДСЭН:
+ *   "Бидний тухай"        → "Юнител групп"
+ *   "Тогтвортой ирээдүй"  → "Тогтвортой хөгжил"
+ *   "Нээлттэй ажлын байр" → "Career"
+ *   НЭМЭГДСЭН             → "Тусламж"
+ * Загвар нь ЗӨВХӨН desktop-ынх боловч шошго нь МОБАЙЛД ч дагаж солигдоно —
+ * нэг линк хоёр өргөнд өөр нэртэй байвал алдаа болно.
+ *
+ * Эдгээр нь ДОТООД хуудсууд тул `external` БАЙХГҮЙ — загварт ч ↗ тэмдэггүй.
+ */
 export const footerStripLinks: FooterLink[] = [
-  { id: "about", label: "Бидний тухай", href: "#" },
-  { id: "sustainability", label: "Тогтвортой ирээдүй", href: "#" },
+  { id: "about", label: "Unitel Group", href: "#" },
+  { id: "sustainability", label: "Тогтвортой хөгжил", href: "#" },
   { id: "news", label: "Хэвлэлийн мэдээ", href: "#" },
-  { id: "careers", label: "Нээлттэй ажлын байр", href: "#" },
+  { id: "careers", label: "Career", href: "#" },
+  { id: "support", label: "Тусламж", href: "#" },
   { id: "contact", label: "Холбоо барих", href: "#" },
 ];
 
 export const footerMeta = {
-  copyrightOwner: "Юнител ХХК",
+  /**
+   * ⚠️ "Юнител ХХК" → "Unitel" (2026-09-08, загвараас: "© 2026 Unitel.").
+   * Мөн "Copyright ©" гэсэн угтвар "©" болж хураагдсан.
+   */
+  copyrightOwner: "Unitel",
   rightsNote: "Бүх эрх хуулиар хамгаалагдсан.",
+  /**
+   * ⚠️ ХЭРЭГЛЭГДЭХЭЭ БОЛЬСОН. Өмнө нь desktop-ийн доод strip-ийн баруун
+   * ирмэгт гардаг байсныг загварт СОШИАЛ ДҮРС эзэлсэн. Data-г устгаагүй —
+   * шаардлагатай бол буцаах зардал бага.
+   */
   region: "Монгол Улс",
 };

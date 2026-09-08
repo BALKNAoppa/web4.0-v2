@@ -11,6 +11,14 @@
 export type AppPromoContent = {
   /** `id` + `-title` нь h2-ийн id болно — нэг хуудсанд хоёр section байвал давхцахгүй */
   id: string;
+  /**
+   * Гарчгийн ДЭЭР суух жижиг ногоон шошго.
+   *
+   * ⚠️ ОДООГООР РЕНДЕРЛЭГДЭХГҮЙ (2026-09-07) — захиалагчийн загварт байхгүй
+   * бөгөөд цайвар дэвсгэр дээр ногоон 12px бичвэр нь ~1.8:1 болж WCAG
+   * 1.4.3-ыг зөрчинө. Талбарыг үлдээв: буцаахад `app-promo.tsx`-ийн
+   * блокийг сэргээхэд л хангалттай.
+   */
   eyebrow: string;
   titlePre: string;
   titleAccent: string;
@@ -24,9 +32,19 @@ export type AppPromoContent = {
   bannerImage: string;
   /** Брэндийн онцлох ногоон — eyebrow, гарчгийн онцлол, focus ring */
   accent: string;
-  /** Section-ий бараан дэвсгэр */
-  background: string;
 };
+
+/*
+ * ⚠️ `background` ТАЛБАР ХАСАГДСАН (2026-09-07). Өмнө нь section нь
+ * `#0a1a14` гэсэн БАРААН hex-ээр буудаг байв (`--app-bg` custom property
+ * болж badge-ийн focus ring-ийн офсет, QR-ийн өнгөнд ч дамждаг байсан).
+ *
+ * Захиалагчийн явуулсан загвар нь ЦАЙВАР тул section одоо хуудасны
+ * theme token-ийг (`bg-background` · `text-foreground`) хэрэглэнэ —
+ * ингэснээр light ба dark хоёуланд зөв буух бөгөөд хөрш section-уудтай
+ * (`Promotions`, `OtherServices`) нэг гадаргатай болно. Hex дэвсгэр нь
+ * dark theme-д ч ХАТУУ бараан хэвээр байж, хуудсын дундаас цухуйдаг байв.
+ */
 
 export const univisionGoApp: AppPromoContent = {
   id: "univision-go",
@@ -42,7 +60,6 @@ export const univisionGoApp: AppPromoContent = {
   qrCaption: "QR кодыг уншуулаад апп-аа татаж ашиглаарай",
   bannerImage: "/univision-go-cropped.png",
   accent: "#0FAA0A",
-  background: "#0a1a14",
 };
 
 export const unitelApp: AppPromoContent = {
@@ -62,5 +79,4 @@ export const unitelApp: AppPromoContent = {
   // зурган дотор давхардахгүй.
   bannerImage: "/unitel-app-phone.png",
   accent: "#45c700",
-  background: "#0a1a14",
 };

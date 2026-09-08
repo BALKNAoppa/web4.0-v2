@@ -146,9 +146,46 @@ export type PromoCard = {
    *
    * ⚠️ ГАРЧИГ, ЛОГО, ТАЙЛБАР нь ЗУРГАН ДЭЭР ӨӨР ДЭЭР НЬ байна — картад
    * зөвхөн CTA товч л амьд элемент болж үлдсэн. Тиймээс бичвэрийг зурагтаа
-   * шигтгэхдээ доод зүүн булангийн ~90×60px талбайг ЧӨЛӨӨТЭЙ үлдээ.
+   * шигтгэхдээ доод БАРУУН булангийн ~110×48px талбайг ЧӨЛӨӨТЭЙ үлдээ
+   * (CTA нь тэнд суудаг).
    */
   image?: string;
+  /**
+   * DESKTOP-ЫН ТУСДАА ЗУРАГ (md+). Өгвөл `PromoSlide` (desktop) үүнийг,
+   * `PromoFadeSlide` (мобайл) нь `image`-ыг хэрэглэнэ. Өгөөгүй бол
+   * desktop ч `image`-ыг авна.
+   *
+   * ⚠️ ЯАГААД ХОЁР ФАЙЛ: мобайлын карт нь 3:4 БОСОО, desktop-ийн панел нь
+   * ХЭВТЭЭ. Нэг файлыг хоёуланд тавибал аль нэг нь 45-56% тайрагдана
+   * (`object-cover`). Загвар зурагч тал өргөнөөр нь ТУСАД НЬ экспорт
+   * хийсэн — код нь зөвхөн зөв файлыг зөв өргөнд өгнө.
+   *
+   * `<picture>`/`srcset` ХЭРЭГГҮЙ: мобайл ба desktop слайд нь ТУСДАА
+   * компонент бөгөөд эцэг нь CSS-ээр (`md:hidden` / `hidden md:flex`)
+   * сольдог тул тус тусын `<Image>` аль хэдийн бий.
+   *
+   * ХЭМЖЭЭ: 1920 × 541 (харьцаа 3.549). Гол бичвэр нь ЗҮҮН талд эсвэл
+   * ТӨВД — хоёр ирмэг тайрагдвал юу ч алдагдахгүй байхаар бүтээ.
+   */
+  imageDesktop?: string;
+  /**
+   * DESKTOP-ЫН ЗУРАГ ХААНААС ТАЙРАГДАХ ВЭ — CSS `object-position`.
+   * Өгөөгүй бол `"center"` (`promo-banner.tsx > PromoSlide`).
+   *
+   * ⚠️ ЯАГААД БАННЕР ТУС БҮРД ТУСДАА: desktop-ийн панел нь баннераас
+   * ХАМААГҮЙ НАРИЙН (1.90 vs 3.55) тул өргөний ~46% тайрагдана. Аль хэсэг
+   * үлдэхийг тухайн зургийн БҮТЭЭЦ шийднэ — нэг тогтмол утга гурвуулангийн
+   * аль нэгийг зайлшгүй эвдэнэ:
+   *   Bagtsaa butee — бичвэр ЗҮҮН талд (3.5%–49%). `center` бол "ДА", "ӨӨ",
+   *                   "50% OFF" тасарна → `left`.
+   *   Unitel        — UNITEL лого ТӨВД (27.6%–71.4%). `left` бол логог
+   *                   ЯГ ХАГАСААР зүсэх тул `center` ЗААВАЛ.
+   *   Immersive exp — харьцаа 1.667 нь панелаас НАРИЙН тул ӨНДРӨӨР
+   *                   тайрагдана; хэвтээ утга нөлөөлөхгүй, `center` хэвээр.
+   *
+   * `popular-services.ts > imagePosition`-той ижил зарчим.
+   */
+  imageDesktopPosition?: string;
   /**
    * Зургийн alt. Зураг нь ЧИМЭГЛЭЛ бол бүү бич — доорх гарчиг, тайлбар
    * бүх мэдээллийг аль хэдийн дамжуулж байгаа тул давхардуулбал дэлгэц
@@ -157,8 +194,84 @@ export type PromoCard = {
   imageAlt?: string;
 };
 
-export const samplePromoCards: PromoCard[] = [
-  { id: "promo-1", placeholderText: "Sample banner 1", ctaLabel: "Sample", href: "#" },
-  { id: "promo-2", placeholderText: "Sample banner 2", ctaLabel: "Sample", href: "#" },
-  { id: "promo-3", placeholderText: "Sample banner 3", ctaLabel: "Sample", href: "#" },
-];
+/**
+ * ⚠️ БРЭНД ТУС БҮРЭЭР. Өмнө нь ганц жагсаалт байсныг `Record<BrandId, …>`
+ * болгов — `PromoHero`-г ХОЁР брэнд хуваалцдаг тул нэг жагсаалтад Unitel-ийн
+ * зураг тавибал Univision-ы нүүрэнд ӨӨР БРЭНДИЙН баннер гарна.
+ * `promoBanners`-тэй ижил бүтэц, `promo-banner.tsx` нь `[BRAND]`-аар авна.
+ *
+ * UNITEL — `public/Unitel/Hero banner/`-аас МОБАЙЛД 3, DESKTOP-Д 3 зураг
+ * холбогдсон. `placeholderText` нь ҮЛДСЭН: зураг ачаалагдаагүй/олдоогүй
+ * үед картыг хоосон биш байлгана. `imageAlt` бичээгүй — баннер бүрийн
+ * мэдээлэл зурган дотроо бий, картад зөвхөн CTA л амьд элемент тул
+ * чимэглэл гэж үзнэ (WCAG 1.1.1).
+ *
+ * ХОСЛОЛЫГ ЗУРГИЙН АГУУЛГААР тааруулсан (таамаглаагүй):
+ *   Image 1.jpg (1080×1350) "ДАРАА ТӨЛБӨРТ БАГЦАА ӨӨРӨӨ БҮТЭЭ · 50% OFF"
+ *     ↔ Bagtsaa butee Desktop.png (3840×1082) — ижил модель, ижил бичвэр
+ *   Image 2.jpg (2048×2048) "IMMERSIVE EXPERIENCE · ӨВӨГ МОНГОЛЧУУДЫН"
+ *     ↔ Immersive experience Desktop.png (1000×600)
+ *   Image 3.jpg → Unitel Desktop.png (1920×541) "UNITEL · ТҮРҮҮЛЖ АЛХАНА"
+ *     (үлдсэн хос — дээрх хоёр нь агуулгаараа баталгаажсан тул хасалтаар)
+ *
+ * ⚠️ МОБАЙЛЫН СЛОТ 3:4 (0.75). `Image 1.jpg` нь 4:5 (0.80) — хажуу тал ~6%
+ * тайрна. `Image 2/3.jpg` нь 1:1 — хажуу тал ~25% ТАЙРАГДАНА.
+ *
+ * ⚠️⚠️ DESKTOP-ЫН ЗУРАГНУУД ХАРЬЦААГААРАА ЗӨРНӨ:
+ *   Bagtsaa butee    3840×1082 = 3.549
+ *   Unitel           1920×541  = 3.549   ← хоёулаа ЯГ ижил (1920×541 канвас)
+ *   Immersive exp.   1000×600  = 1.667   ← ЗӨРСӨН
+ * "Immersive experience" нь 1920×541-ээр ДАХИН экспорт хийгдэх шаардлагатай,
+ * эс бөгөөс тэр слайд бусдаасаа өөр хэмжээгээр тайрагдана.
+ *
+ * UNIVISION — PLACEHOLDER хэвээр. `public/Univision/Hero banner/`-д 3 зураг
+ * бэлэн байгаа ч захиалагч "Unitel дээр" гэж тусгайлан хэлсэн тул хөндөөгүй.
+ */
+export const samplePromoCards: Record<BrandId, PromoCard[]> = {
+  unitel: [
+    {
+      id: "promo-1",
+      placeholderText: "Sample banner 1",
+      ctaLabel: "Дэлгэрэнгүй",
+      href: "#",
+      image: "/Unitel/Hero banner/Image 1.jpg",
+      imageDesktop: "/Unitel/Hero banner/Bagtsaa butee Desktop.png",
+      /**
+       * ЗҮҮН ирмэгээр зэрэгцүүлнэ — зургийг баруун тийш "шахсантай" ижил
+       * үр дүн: харагдах цонх зургийн ЗҮҮН хэсгийг эзэлнэ.
+       *
+       * Хэмжсэн бичвэрийн хүрээ (зургийн өргөний %-иар):
+       *   "3 сарын турш суурь хураамж"        3.8% → 23.3%
+       *   "50% OFF"                            3.5% → 19.5%
+       *   "ДАРАА ТӨЛБӨРТ БАГЦАА"              12.3% → 45.0%
+       *   "ӨӨРӨӨ БҮТЭЭ"                        8.0% → 49.0%
+       * Бүх бичвэр 3.5%–49%-д багтана. Харагдах цонх 53.7% (1440×900) тул
+       * `left` үед [0%, 53.7%] → бичвэр БҮРЭН, баруун талд 4.7% нөөц.
+       * `2%` гэх мэт шилжилт нэмбэл модель жаахан илүү харагдах ч бичвэрийн
+       * зүүн нөөц алга болно — тогтвортой байдлыг сонгов.
+       */
+      imageDesktopPosition: "left center",
+    },
+    {
+      id: "promo-2",
+      placeholderText: "Sample banner 2",
+      ctaLabel: "Дэлгэрэнгүй",
+      href: "#",
+      image: "/Unitel/Hero banner/Image 2.jpg",
+      imageDesktop: "/Unitel/Hero banner/Immersive experience Desktop.png",
+    },
+    {
+      id: "promo-3",
+      placeholderText: "Sample banner 3",
+      ctaLabel: "Дэлгэрэнгүй",
+      href: "#",
+      image: "/Unitel/Hero banner/Image 3.jpg",
+      imageDesktop: "/Unitel/Hero banner/Unitel Desktop.png",
+    },
+  ],
+  univision: [
+    { id: "promo-1", placeholderText: "Sample banner 1", ctaLabel: "Sample", href: "#" },
+    { id: "promo-2", placeholderText: "Sample banner 2", ctaLabel: "Sample", href: "#" },
+    { id: "promo-3", placeholderText: "Sample banner 3", ctaLabel: "Sample", href: "#" },
+  ],
+};

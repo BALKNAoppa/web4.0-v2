@@ -1,6 +1,15 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
-import { footerMeta, footerStripLinks } from "@/data/footer";
+import { BrandLogo } from "@/components/layout/brand-logo";
+import { LogoHomeLink } from "@/components/layout/logo-home-link";
+import {
+  footerMeta,
+  footerSitemap,
+  footerStripLinks,
+  footerTagline,
+  type FooterLink,
+} from "@/data/footer";
 import { appStores, socialLinks, type AppStoreLink, type SocialLink } from "@/data/footer-extras";
 import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/utils";
@@ -19,71 +28,229 @@ import { cn } from "@/lib/utils";
  */
 export const SHOW_APP_DOWNLOAD = BRAND !== "unitel";
 
-/**
- * LegalStrip — Apple маягийн доод strip (3 хувилбарт БҮГДЭД НЬ ижил).
- *
- * Desktop: copyright · компанийн линкүүд · баруун ирмэгт бүс нутаг — нэг мөрөнд,
- *          зүүн ирмэгээс эхэлнэ.
- * Mobile:  бүх агуулга ГОЛЛУУЛСАН — copyright дээрээ, доор нь линкүүд хугарч
- *          хоёр мөр болоод тэдгээр ч мөр бүрдээ голлоно.
- */
-export function LegalStrip() {
+/** Copyright мөр — desktop card ба мобайлын strip ХОЁУЛАА эндээс. */
+export function FooterCopyright({ className }: { className?: string }) {
+  // Он нь ГАРААР бичигдээгүй: загварт "© 2026" гэж байгаа боловч он дараа
+  // жил өөрөө хөгширнө. Дүрс нь ижил, засвар шаардахгүй.
   const year = new Date().getFullYear();
 
   return (
-    <div className="border-border bg-muted/40 text-muted-foreground border-t text-xs">
+    <p className={cn("text-muted-foreground text-xs", className)}>
+      © {year} {footerMeta.copyrightOwner}. {footerMeta.rightsNote}
+    </p>
+  );
+}
+
+/**
+ * LegalStrip — ЗӨВХӨН МОБАЙЛЫН copyright зурвас.
+ *
+ * ⚠️ DESKTOP-ААС ХАСАГДСАН (2026-09-08). Өмнө нь desktop-д мөн харагдаж,
+ * "copyright · компанийн линк | … · Монгол Улс" гэсэн нэг мөр байв. Шинэ
+ * desktop загвар (`DesktopFooterCard`) нь ХОЁУЛАНГ НЬ өөртөө шингээсэн:
+ *   компанийн линкүүд → картын 5-р (гарчиггүй) багана
+ *   copyright        → картын доод мөр, сошиал дүрсний хажууд
+ * Тиймээс энэ зурвас `lg:hidden` болов. Тэгэхгүй бол desktop-д copyright
+ * ХОЁР УДАА гарна. Мөн `StripLink` ба `footerMeta.region`-ийн хэрэглээ
+ * үүнтэй хамт хасагдсан (data-г устгаагүй).
+ */
+export function LegalStrip() {
+  return (
+    <div className="border-border bg-muted/40 border-t lg:hidden">
       <div className="container mx-auto">
-        {/* copyright · компанийн линк · бүс нутаг */}
-        <div className="flex flex-col items-center gap-2 py-4 md:flex-row md:items-center md:gap-8">
-          <p className="text-center md:text-left">
-            Copyright © {year} {footerMeta.copyrightOwner}. {footerMeta.rightsNote}
-          </p>
+        {/* ⚠️ ДООД ЗАЙ ТОМ (`pb-10` = 40px, `pt-4` = 16px хэвээр).
+            Шалтгаан: copyright нь ХУУДАСНЫ ХАМГИЙН СҮҮЛИЙН элемент бөгөөд
+            өмнө нь ердөө 16px зайтай байв. Тэр 49px өндөр зурвасыг мобайл
+            хөтчийн доод хэрэгслийн зурвас, төхөөрөмжийн home bar, эсвэл
+            төхөөрөмжийн mockup-ийн bezel ДАРЖ, "2 дахь layer харагдахгүй"
+            гэсэн шинж үүсгэж байсан (2026-09-07-нд захиалагч мэдэгдсэн).
+            40px нь тэдгээрээс дээш өргөж, зурвасыг үргэлж уншигдахуйц болгоно.
 
-          <nav aria-label="Компанийн холбоос">
-            <ul className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 md:justify-start">
-              {footerStripLinks.map((item, i) => (
-                <li key={item.id} className="flex items-center gap-x-2">
-                  {i > 0 && (
-                    <span aria-hidden="true" className="opacity-40">
-                      |
-                    </span>
-                  )}
-                  <StripLink href={item.href}>{item.label}</StripLink>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* Desktop — бүс нутаг баруун ирмэгт шахагдана */}
-          <p className="hidden md:ml-auto md:block">{footerMeta.region}</p>
+            ⚠️ `env(safe-area-inset-bottom)` ХЭРЭГЛЭЭГҮЙ: тэр нь зөвхөн
+            `viewport-fit=cover` үед 0-ээс өөр утга авдаг ба cover нь хуудсыг
+            safe area руу будаж, БҮХ `fixed` элементэд (чат widget, хүртээмжийн
+            панел) тус тусын inset padding шаардана. Тогтмол 40px нь тэр
+            эрсдэлгүйгээр ижил үр дүн өгнө. */}
+        <div className="flex flex-col items-center pt-4 pb-10">
+          <FooterCopyright className="text-center" />
         </div>
       </div>
     </div>
   );
 }
 
-/** Strip доторх линк — Apple шиг underline-тай, hover дээр тодорно */
-function StripLink({ href, children }: { href: string; children: React.ReactNode }) {
-  const external = href.startsWith("http");
-  const className =
-    "hover:text-foreground underline underline-offset-3 transition-colors focus-visible:ring-ring rounded-xs focus-visible:ring-2 focus-visible:outline-none";
+/**
+ * Footer-ийн линк — гадаад бол ↗ тэмдэгтэй.
+ *
+ * ⚠️ `external` (ХАРАГДАХ ↗) ба `target="_blank"` (ЗАН ТӨЛӨВ) хоёрыг САЛГАВ.
+ * Загварт Univision, DDISH TV, Ger internet бүгд ↗-тэй боловч тэдний зам нь
+ * одоогоор `#` (проектод 179 линк ийм — зам тодроогүй). `target="_blank"`-ыг
+ * `external` талбараар тавибал `#` руу ХООСОН TAB нээгдэнэ. Тиймээс:
+ *   ↗ тэмдэг      ← `item.external` (агуулгын үнэн: сайтаас гарна)
+ *   шинэ tab      ← href нь бодит `http` эсэх (техникийн үнэн)
+ * Жинхэнэ хаяг орж ирэхэд шинэ tab нь ӨӨРӨӨ ажиллаж эхэлнэ, кодыг дахин
+ * засах шаардлагагүй.
+ */
+export function FooterNavLink({
+  item,
+  className,
+  showArrow = false,
+}: {
+  item: FooterLink;
+  className?: string;
+  /** ↗ тэмдгийг харуулах эсэх. Desktop-ийн карт л хэрэглэнэ. */
+  showArrow?: boolean;
+}) {
+  // `no-underline` — AccordionContent нь доторх бүх `<a>`-г underline болгодог
+  const cls = cn(
+    "text-muted-foreground hover:text-foreground text-sm no-underline transition-colors",
+    showArrow && "inline-flex items-center gap-1",
+    className,
+  );
 
-  if (href.startsWith("tel:") || href.startsWith("mailto:")) {
-    return (
-      <a href={href} className={className}>
-        {children}
-      </a>
-    );
-  }
+  const external = item.external ?? item.href.startsWith("http");
+  const newTab = item.href.startsWith("http");
+  const arrow = showArrow && external && (
+    <ArrowUpRight className="size-3.5 shrink-0 opacity-70" aria-hidden="true" />
+  );
 
-  return (
-    <Link
-      href={href}
-      className={className}
-      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+  return newTab ? (
+    <a
+      href={item.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${item.label} (шинэ tab-д нээгдэнэ)`}
+      className={cls}
     >
-      {children}
+      {item.label}
+      {arrow}
+    </a>
+  ) : (
+    <Link href={item.href} className={cls}>
+      {item.label}
+      {arrow}
     </Link>
+  );
+}
+
+// =====================================================================
+// DESKTOP FOOTER — ХӨВӨГЧ КАРТ, 5 БАГАНА (БҮХ ХУВИЛБАРТ ИЖИЛ)
+// =====================================================================
+/**
+ * ⚠️ 2026-09-08 — ЗАХИАЛАГЧИЙН ЗАГВАР. Өмнө нь desktop-д ХОЁР ӨӨР footer
+ * байсан (`footer-v2.tsx > DesktopSitemap` нь хувилбар 1/3-д, `footer.tsx >
+ * FooterClassic` нь хувилбар 2-д). Захиалагч "desktop-ийн БҮХ footer"-ыг
+ * үүгээр солихыг заасан тул хоёулаа ЭНЭ компонентыг дуудна — desktop-ийн
+ * footer нь хувилбараас хамаарахаа больсон.
+ *
+ * ┌─ bg-background ───────────────────────────────────────────────────┐
+ * │ ╭─ bg-card, rounded-2xl ───────────────────────────────────────╮  │
+ * │ │ UNITEL      Харилцаа      Платформ    Дижитал      Юнител групп│ │
+ * │ │             холбооны                  үйлчилгээ    Тогтвортой… │ │
+ * │ │ тайлбар…    сүлжээ                                 Хэвлэлийн… │ │
+ * │ │             Ger internet↗ Univision↗  TOKI↗        Career     │ │
+ * │ │                           LookTV↗     U-Point↗     Тусламж    │ │
+ * │ │                           DDISH TV↗   Nexmind↗     Холбоо…    │ │
+ * │ │ ──────────────────────────────────────────────────────────────│ │
+ * │ │ © 2026 Unitel. Бүх эрх…                       f  𝕏  ◙  ▶     │ │
+ * │ ╰──────────────────────────────────────────────────────────────╯  │
+ * └───────────────────────────────────────────────────────────────────┘
+ *
+ * 5-Р БАГАНА ГАРЧИГГҮЙ — загварынх. Гарчиг зохиож нэмбэл загвараас зөрнө,
+ * гэхдээ screen reader-т бүлэг нь нэрлэгдэх ёстой тул `<nav aria-label>`
+ * -оор ЗӨВХӨН семантик нэр өглөө (харагдахгүй).
+ *
+ * `АППЫГ ТАТАХ` блок ЭНД БАЙХГҮЙ — загварт байхгүй. Univision build-д
+ * (`SHOW_APP_DOWNLOAD`) тэр блок мобайл footer-т хэвээр үлдэнэ.
+ */
+export function DesktopFooterCard() {
+  return (
+    <div className="container mx-auto hidden py-10 lg:block">
+      {/* Карт — хуудасны дэвсгэр (`--background`, light-д #e2e8ec) дээр хөвөх
+          цайвар талбай (`--card`, #f3f5f7). Загварт ЯГ ийм хос өнгө байна тул
+          токенууд ямар ч theme-д зөв дагана. */}
+      <div className="bg-card border-border rounded-2xl border p-10">
+        {/* 1-Р БАГАНА нь бусдаасаа 1.5 дахин ӨРГӨН — доор нь тайлбар бичвэр
+            суудаг тул линкийн баганатай ижил өргөнд 4-5 мөр болж хагарна.
+            `grid-cols-5` дээр `col-span-2` тавих ч болох ч тэгвэл багана
+            хоорондын зай ЗӨРНӨ (брэндийн дараа хоёр багананы зай нэмэгдэнэ).
+
+            ⚠️ `grid-rows-[auto_1fr]` + доорх `grid-rows-subgrid` нь ЗАЙЛШГҮЙ.
+            Загварт 2–4-р баганын ЭХНИЙ ЛИНК бүгд НЭГ шугамаас эхэлдэг —
+            "Харилцаа холбооны сүлжээ" гарчиг ХОЁР мөр болсон ч. Багана
+            тус бүр ӨӨРИЙН урсгалаар бичигдвэл тэр баганын жагсаалт 20px
+            доошилж, гурван багана шаталж харагдана (хэмжсэн: Ger internet
+            y=100, Univision/TOKI y=80).
+
+            subgrid нь гарчгийн мөрийг ГАДНАХ grid-ийн НЭГ track болгож,
+            хамгийн өндөр гарчгаар (2 мөр = 40px) бүгдийг тэгшитгэнэ.
+            `min-h-10` гэж ГАРААР тавих аргаас дээр: гарчиг 3 мөр болбол
+            subgrid өөрөө дагана, харин тогтмол тоо хоцорно. */}
+        <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr] grid-rows-[auto_1fr] gap-x-8 gap-y-4">
+          {/* Брэнд — хоёр мөрийг эзэлнэ, subgrid БИШ: лого ба тайлбар нь
+              гарчиг/жагсаалтын шугамд эгнэх шаардлагагүй, өөрийн урсгалаар. */}
+          <div className="row-span-2">
+            <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
+              <BrandLogo height={28} />
+            </LogoHomeLink>
+            {/* `max-w-xs` — багана өргөссөн ч мөрийн урт 45-75 тэмдэгтийн
+                уншихад тохиромжтой хязгаарт үлдэнэ. */}
+            <p className="text-muted-foreground mt-5 max-w-xs text-xs leading-relaxed">
+              {footerTagline}
+            </p>
+          </div>
+
+          {footerSitemap.map((column) => (
+            <nav
+              key={column.id}
+              aria-labelledby={`footer-col-${column.id}`}
+              className="row-span-2 grid grid-rows-subgrid"
+            >
+              <FooterHeading id={`footer-col-${column.id}`}>{column.title}</FooterHeading>
+              {/* `mt-4` БАЙХГҮЙ — гарчиг/жагсаалтын зайг гаднах grid-ийн
+                  `gap-y-4` өгнө. `mt` нэмбэл subgrid-ийн track-д давхарлаж,
+                  баганууд дахин зөрнө. */}
+              <ul className="space-y-2.5">
+                {column.items.map((item) => (
+                  <li key={item.id}>
+                    <FooterNavLink item={item} showArrow />
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+
+          {/* 5-Р БАГАНА — ГАРЧИГГҮЙ. Загварт линкүүд нь ГАРЧГИЙН эхний
+              мөрөөс эхэлдэг тул subgrid-д ОРОХГҮЙ (орвол хоосон гарчгийн
+              track нь жагсаалтыг 40px доошлуулна).
+
+              ⚠️ ЭДГЭЭР НЬ ЗУЗААН (2026-09-08, захиалагчийн заавар).
+              `font-semibold` нь `FooterHeading`-тэй ЯГ ИЖИЛ жин — багана
+              гарчиггүй тул линкүүд өөрсдөө гарчгийн зэрэглэлд гарч, бусад
+              баганы ГАРЧИГТАЙ нэг шугамд эгнэнэ.
+
+              ⚠️ ӨНГӨ ч `text-foreground` болов. Зузаан + `muted` хосолбол
+              ЖИН нь "чухал", ӨНГӨ нь "хоёрдогч" гэж ЭСРЭГ зүйл хэлж,
+              бичвэр бүдэг зузаан болж уншигдана. Класс нь `<ul>`-ийн
+              `text-muted-foreground`-ыг дарахын тулд линк тус бүрд өгөгдөнө
+              (эцгийн класс нь өвлөгддөг тул `<ul>` дээр л сольсон бол
+              `FooterNavLink`-ийн өөрийн `text-muted-foreground` дийлнэ). */}
+          <nav aria-label="Компанийн холбоос" className="row-span-2">
+            <ul className="space-y-2.5 text-sm">
+              {footerStripLinks.map((item) => (
+                <li key={item.id}>
+                  <FooterNavLink item={item} className="text-foreground font-semibold" />
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        <div className="border-border mt-10 flex items-center gap-6 border-t pt-6">
+          <FooterCopyright />
+          <SocialRow square className="ml-auto" />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -121,7 +288,21 @@ export function AppStoreBadge({ store }: { store: AppStoreLink }) {
 // =====================================================================
 // Сошиал — дугуй icon товчнууд
 // =====================================================================
-export function SocialRow({ className }: { className?: string }) {
+export function SocialRow({
+  className,
+  square = false,
+}: {
+  className?: string;
+  /**
+   * ДӨРВӨЛЖИН (загварын desktop карт) эсвэл ДУГУЙ (мобайл, хуучин хэлбэр).
+   *
+   * ⚠️ Хоёр хэлбэр ЗЭРЭГ байгаа нь зориуд: desktop-ийн карт нь дүүрсэн
+   * дэвсгэртэй 36px бөөрөнхий дөрвөлжин (загвараас), мобайл нь хүрээтэй 40px
+   * дугуй (хуруунд таарах том хэмжээ). Хоёуланг нэг хэлбэрт нийлүүлэх нь
+   * ХОЁР загварын НЭГИЙГ зөрчинө тул props-оор салгав.
+   */
+  square?: boolean;
+}) {
   return (
     <ul className={cn("flex flex-wrap gap-2", className)}>
       {socialLinks.map((social) => (
@@ -131,9 +312,16 @@ export function SocialRow({ className }: { className?: string }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`${social.name} (шинэ tab-д нээгдэнэ)`}
-            className="border-border text-muted-foreground hover:text-foreground hover:border-foreground/40 focus-visible:ring-ring inline-flex size-10 items-center justify-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+            className={cn(
+              "text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
+              square
+                ? // 36px — desktop-ийн хулганы онилолтод WCAG 2.5.8-ын 24px-ээс
+                  // дээгүүр. Дүүрсэн дэвсгэр тул хүрээ шаардлагагүй.
+                  "bg-muted hover:bg-muted/70 size-9 rounded-lg"
+                : "border-border hover:border-foreground/40 size-10 rounded-full border",
+            )}
           >
-            <SocialIcon socialId={social.id} />
+            <SocialIcon socialId={social.id} className={square ? "size-4" : undefined} />
           </Link>
         </li>
       ))}
@@ -141,9 +329,19 @@ export function SocialRow({ className }: { className?: string }) {
   );
 }
 
-/** Багана гарчиг — 3 хувилбарт ижил хэмжээ/жин */
-export function FooterHeading({ children }: { children: React.ReactNode }) {
-  return <h3 className="text-foreground text-sm font-semibold">{children}</h3>;
+/**
+ * Багана гарчиг — бүх хувилбарт ижил хэмжээ/жин.
+ *
+ * `id` — desktop картын багана нь `<nav aria-labelledby>`-гаар өөрийн
+ * гарчгаас нэрээ авдаг (гарчгийг ХОЁР УДАА бичихгүйн тулд `aria-label`
+ * хэрэглээгүй).
+ */
+export function FooterHeading({ children, id }: { children: React.ReactNode; id?: string }) {
+  return (
+    <h3 id={id} className="text-foreground text-sm font-semibold">
+      {children}
+    </h3>
+  );
 }
 
 // =====================================================================
@@ -182,8 +380,23 @@ export function StoreIcon({
   );
 }
 
-export function SocialIcon({ socialId }: { socialId: SocialLink["id"] }) {
-  const className = "size-5";
+export function SocialIcon({
+  socialId,
+  className: classNameProp,
+}: {
+  socialId: SocialLink["id"];
+  className?: string;
+}) {
+  const className = classNameProp ?? "size-5";
+
+  if (socialId === "x") {
+    // X (хуучин Twitter) — албан ёсны тэмдэг: хоёр диагональ зурвас.
+    return (
+      <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      </svg>
+    );
+  }
 
   if (socialId === "facebook") {
     return (
