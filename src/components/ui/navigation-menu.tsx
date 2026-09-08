@@ -3,6 +3,23 @@ import { cva } from "class-variance-authority"
 import { NavigationMenu as NavigationMenuPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
+/**
+ * ⚠️⚠️ АНИМАЦИЙН VARIANT — `data-[state=open]` / `data-[state=closed]` гэж
+ * БҮТЭН бичигдсэн байх ЁСТОЙ (2026-09-08-нд зассан).
+ *
+ * shadcn-ийн үүсгэсэн эх хувилбарт `data-open:` / `data-closed:` гэсэн
+ * ХЯСААСАН хэлбэр байсан. Тэр нь Base UI-ийн атрибутын нэр бөгөөд Tailwind-д
+ * ТОДОРХОЙЛОГДООГҮЙ variant — `globals.css`-д `@custom-variant` зөвхөн `dark`
+ * л бий. Tailwind танихгүй variant-аас ЯМАР Ч дүрэм үүсгэдэггүй тул
+ * `animation-name: none` болж, компонент нь анимацгүй ШУУД ҮСЭРЧ нээгддэг байв.
+ *
+ * Энэ файл нь radix-ui-д тулгуурладаг (дээрх import) ба radix нь
+ * `data-state="open"|"closed"` гаргадаг — тиймээс бүтэн хэлбэр нь зөв.
+ *
+ * ⚠️ `shadcn add` дахин ажиллуулбал энэ файл ДАРАГДАЖ, хясаасан хэлбэр
+ * БУЦАЖ ИРНЭ. Тэр үед `grep -rE "data-(open|closed):" src/components/ui`
+ * -ээр шалгаж дахин засна. `src/components/ui` нь `.prettierignore`-д.
+ */
 import { ChevronDownIcon } from "lucide-react"
 
 function NavigationMenu({
@@ -66,7 +83,7 @@ function NavigationMenuItem({
 }
 
 const navigationMenuTriggerStyle = cva(
-  "group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-all outline-none hover:bg-muted focus:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-muted/50 data-popup-open:hover:bg-muted data-open:bg-muted/50 data-open:hover:bg-muted data-open:focus:bg-muted"
+  "group/navigation-menu-trigger inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-all outline-none hover:bg-muted focus:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 data-popup-open:bg-muted/50 data-popup-open:hover:bg-muted data-[state=open]:bg-muted/50 data-[state=open]:hover:bg-muted data-[state=open]:focus:bg-muted"
 )
 
 function NavigationMenuTrigger({
@@ -125,7 +142,7 @@ function NavigationMenuContent({
         // зөвхөн `viewport=false` тохиолдолд `duration-300` байсан ба
         // viewport=true (mobile header) үед tw-animate-css-ийн үндсэн
         // 150ms-аар тоглодог тул хэтэрхий шуурхай байв.
-        "top-0 left-0 w-full p-2 pr-2.5 duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-data-[viewport=false]/navigation-menu:top-full group-data-[viewport=false]/navigation-menu:mt-1.5 group-data-[viewport=false]/navigation-menu:overflow-hidden group-data-[viewport=false]/navigation-menu:rounded-md group-data-[viewport=false]/navigation-menu:bg-popover group-data-[viewport=false]/navigation-menu:text-popover-foreground group-data-[viewport=false]/navigation-menu:shadow group-data-[viewport=false]/navigation-menu:ring-1 group-data-[viewport=false]/navigation-menu:ring-foreground/10 data-[motion=from-end]:slide-in-from-right-8 data-[motion=from-start]:slide-in-from-left-8 data-[motion=to-end]:slide-out-to-right-8 data-[motion=to-start]:slide-out-to-left-8 data-[motion^=from-]:animate-in data-[motion^=from-]:fade-in data-[motion^=to-]:animate-out data-[motion^=to-]:fade-out **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none md:absolute md:w-auto group-data-[viewport=false]/navigation-menu:data-open:animate-in group-data-[viewport=false]/navigation-menu:data-open:fade-in-0 group-data-[viewport=false]/navigation-menu:data-open:zoom-in-95 group-data-[viewport=false]/navigation-menu:data-closed:animate-out group-data-[viewport=false]/navigation-menu:data-closed:fade-out-0 group-data-[viewport=false]/navigation-menu:data-closed:zoom-out-95",
+        "top-0 left-0 w-full p-2 pr-2.5 duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-data-[viewport=false]/navigation-menu:top-full group-data-[viewport=false]/navigation-menu:mt-1.5 group-data-[viewport=false]/navigation-menu:overflow-hidden group-data-[viewport=false]/navigation-menu:rounded-md group-data-[viewport=false]/navigation-menu:bg-popover group-data-[viewport=false]/navigation-menu:text-popover-foreground group-data-[viewport=false]/navigation-menu:shadow group-data-[viewport=false]/navigation-menu:ring-1 group-data-[viewport=false]/navigation-menu:ring-foreground/10 data-[motion=from-end]:slide-in-from-right-8 data-[motion=from-start]:slide-in-from-left-8 data-[motion=to-end]:slide-out-to-right-8 data-[motion=to-start]:slide-out-to-left-8 data-[motion^=from-]:animate-in data-[motion^=from-]:fade-in data-[motion^=to-]:animate-out data-[motion^=to-]:fade-out **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none md:absolute md:w-auto group-data-[viewport=false]/navigation-menu:data-[state=open]:animate-in group-data-[viewport=false]/navigation-menu:data-[state=open]:fade-in-0 group-data-[viewport=false]/navigation-menu:data-[state=open]:zoom-in-95 group-data-[viewport=false]/navigation-menu:data-[state=closed]:animate-out group-data-[viewport=false]/navigation-menu:data-[state=closed]:fade-out-0 group-data-[viewport=false]/navigation-menu:data-[state=closed]:zoom-out-95",
         className
       )}
       {...props}
@@ -153,7 +170,7 @@ function NavigationMenuViewport({
           // `duration-500` (өмнө 300) — цэс хооронд шилжихэд өндөр нь агуулгын
           // дагуу тэнийх нь агуулгын 500ms гулсалттай ИЖИЛ хугацаанд явна.
           // Хоёр нь зөрвөл өндөр эрт "суугаад" агуулга нь хоцорч ирнэ.
-          "origin-top relative h-(--radix-navigation-menu-viewport-height) w-full overflow-hidden bg-popover text-popover-foreground shadow ring-1 ring-foreground/10 transition-[height,width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+          "origin-top relative h-(--radix-navigation-menu-viewport-height) w-full overflow-hidden bg-popover text-popover-foreground shadow ring-1 ring-foreground/10 transition-[height,width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
           className
         )}
         {...props}

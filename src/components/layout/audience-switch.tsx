@@ -22,9 +22,16 @@ import { cn } from "@/lib/utils";
  *   - Байгууллага    → Unitel Corp / Univision Corp / U-point / Nexmind
  * "Бидний тухай" нь card-гүй, группын сайт руу шууд линк.
  *
- * Хоёр layout хувилбар (хоёулаа ижил hover контенттой):
- *   - AudienceSwitchTabs  → top bar-ын баруун талд таб маягаар
- *   - AudienceSwitchPills → лого хажууд segmented pill маягаар
+ * Хоёр гадаад экспорт:
+ *   - AudienceSwitchTabs   → header-ийн Layer 1-д таб маягаар (desktop)
+ *   - AudienceSwitchMobile → Sheet дотор accordion маягаар
+ *
+ * ⚠️ `AudienceSwitchPills` (лого хажууд segmented pill) нь 2026-09-08-нд
+ * ХАСАГДСАН. Тэр нь УСТСАН хуучин "Хувилбар 3"-д зориулагдсан байсан бөгөөд
+ * түүнээс хойш ХААНААС Ч дуудагдаагүй. Экспортлогдсон байсан тул TypeScript,
+ * ESLint хоёулаа "хэрэглэгдээгүй" гэж хэлдэггүй байв — гэхдээ `AudienceSwitch`
+ * -ийг уншиж байгаа хүн БАЙХГҮЙ хоёр layout-ыг тооцоолох шаардлагатай болдог.
+ * Сэргээх бол git-ээс: `pillClass` + `layout: "tabs" | "pills"` салаа.
  */
 
 function SegmentIcon({ icon, className }: { icon: AudienceSegment["icon"]; className?: string }) {
@@ -115,28 +122,21 @@ const tabClass = cn(
   "text-muted-foreground hover:text-foreground data-[state=open]:text-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-colors",
 );
 
-const pillClass = cn(
-  navType.bar,
-  "text-muted-foreground hover:text-foreground data-[state=open]:bg-background data-[state=open]:text-foreground inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors data-[state=open]:shadow-sm",
-);
-
 /**
  * Audience switcher — нэг Popover, hover хийхэд доторх контент л солигдоно.
  * navigation mega-menu-ийн зарчмаар: панелийн өргөн бүх сегментэд ижил, тогтмол
  * (max-w-[1000px], 1200 grid-д багтсан), зөвхөн брэнд cards солигдоно.
- *   - layout="tabs"  → top bar-ын баруун талд (align="end" → баруун ирмэг grid-д)
- *   - layout="pills" → лого хажууд (align="start" → зүүн ирмэг grid-д)
+ * `align="end"` → панел баруун ирмэгээр, `"start"` → зүүн ирмэгээр grid-д
+ * зэрэгцэнэ (хувилбар 1 нь L1-ээ баруунд, хувилбар 2 нь зүүнд байрлуулдаг).
  * "Бидний тухай" нь card-гүй — hover хийхэд нээлттэй panel хаагдаж, шууд линк.
  */
 function AudienceSwitch({
-  layout,
   align,
   hover = true,
   activeId,
   segments = audienceSegments,
   triggerClassName,
 }: {
-  layout: "tabs" | "pills";
   align: "start" | "end";
   /** hover дээр popover нээх эсэх (false бол зөвхөн click) */
   hover?: boolean;
@@ -179,8 +179,6 @@ function AudienceSwitch({
     closeTimer.current = setTimeout(() => setOpenId(null), 140);
   };
 
-  const isTabs = layout === "tabs";
-  const triggerClass = isTabs ? tabClass : pillClass;
   const activeSeg = segments.find((s) => s.id === openId && s.brands?.length) ?? null;
 
   // Идэвхтэй сегментийн (жишээ нь "Хувь хэрэглэгч") тодотгол — бусад top bar-т
@@ -207,10 +205,7 @@ function AudienceSwitch({
         <nav
           aria-label="Үзэгчийн сегмент"
           onMouseLeave={hoverCloseSoon}
-          className={cn(
-            "flex items-center",
-            isTabs ? "gap-1" : "bg-muted/60 gap-0.5 rounded-full p-0.5",
-          )}
+          className="flex items-center gap-1"
         >
           {segments.map((seg) => {
             // Бидний тухай — card-гүй, группын сайт руу шууд линк
@@ -223,7 +218,7 @@ function AudienceSwitch({
                   rel={seg.external ? "noopener noreferrer" : undefined}
                   onMouseEnter={hoverCloseNow}
                   className={cn(
-                    triggerClass,
+                    tabClass,
                     "group",
                     seg.id === activeId && activeCls,
                     triggerClassName,
@@ -246,7 +241,7 @@ function AudienceSwitch({
                 onMouseEnter={() => hoverOpen(seg.id)}
                 onClick={() => (isOpen ? closeNow() : openSeg(seg.id))}
                 className={cn(
-                  triggerClass,
+                  tabClass,
                   "group",
                   seg.id === activeId && activeCls,
                   triggerClassName,
@@ -314,7 +309,6 @@ export function AudienceSwitchTabs({
 } = {}) {
   return (
     <AudienceSwitch
-      layout="tabs"
       align={align}
       segments={segments}
       activeId={activeId}
@@ -322,11 +316,6 @@ export function AudienceSwitchTabs({
       triggerClassName={triggerClassName}
     />
   );
-}
-
-// ХУВИЛБАР 3 — лого хажууд segmented pill маягаар
-export function AudienceSwitchPills() {
-  return <AudienceSwitch layout="pills" align="start" />;
 }
 
 // =====================================================================

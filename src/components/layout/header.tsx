@@ -82,6 +82,13 @@ const NAV_ITEMS: EcosystemLink[] = appleNavCategories;
 const CLASSIFIER_TRIGGER = cn(navType.body, "gap-1 px-2");
 
 /**
+ * Desktop-ийн mega панелийн id. Ангиллын trigger нь `aria-controls`-оор үүн
+ * рүү заана, мөн ↓ дарахад фокусыг панел руу зөөхөд хаяг болно.
+ * (`CategoryNav` ба `MegaLayer` хоёр ХУВААЛЦАНА.)
+ */
+const MEGA_PANEL_ID = "brand-mega-panel";
+
+/**
  * Ангиллын ДАРААЛАЛ — `useBrandMegaMenu` нь панел хооронд шилжихэд агуулгыг
  * аль чиглэлд гулсуулахыг эндээс тооцно (баруун тийшх ангилал → баруунаас).
  */
@@ -271,8 +278,34 @@ function CategoryNav({
    */
   const highlightedName = openMenu ?? currentName ?? DOMAIN_NAV_NAME;
 
+  /**
+   * ФОКУС NAV-ААС Ч, ПАНЕЛААС Ч ГАРВАЛ ХААНА.
+   *
+   * `relatedTarget === null` бол хаяхгүй: тэр нь хуудасны хоосон зайд дарсан
+   * (эсвэл tab гадагш явсан) гэсэн үг бөгөөс тэр тохиолдлыг scrim ба
+   * `mouseleave` аль хэдийн хаадаг. Хэрэв энд ч хаавал хулганаар панел дээр
+   * дарж линк сонгох гэсэн үйлдэл тасалдана.
+   *
+   * Панел нь ЭНЭ nav-ийн ГАДНА (header-ийн sibling) тул `contains` хоёуланг
+   * тусад нь шалгах ёстой — эс бөгөөс табаар панел руу орох гэхэд цэс хаагдана.
+   */
+  const handleNavBlur = (e: React.FocusEvent<HTMLElement>) => {
+    const next = e.relatedTarget as Node | null;
+    if (!next) return;
+    if (e.currentTarget.contains(next)) return;
+    if (document.getElementById(MEGA_PANEL_ID)?.contains(next)) return;
+    onClose();
+  };
+
   return (
-    <nav aria-label="Үндсэн цэс" className="flex items-center gap-5">
+    <nav
+      aria-label="Үндсэн цэс"
+      onBlur={handleNavBlur}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && openMenu) onClose();
+      }}
+      className="flex items-center gap-5"
+    >
       {NAV_ITEMS.map((item) => {
         const highlighted = !item.external && item.name === highlightedName;
         const isCurrentPage = !item.external && item.name === currentName;
@@ -296,9 +329,10 @@ function CategoryNav({
           item.name === "LookTV" && "glitch-text",
         );
 
-        // appleMegaMenus-д бичлэгтэй ангилал — hover дээр панел задарна
+        // appleMegaMenus-д бичлэгтэй ангилал — hover/гараар панел задарна
         const menu = !item.external ? appleMegaMenus[item.name] : undefined;
         if (menu) {
+          const isOpen = openMenu === item.name;
           return (
             <div
               key={item.name}
@@ -306,14 +340,60 @@ function CategoryNav({
               onMouseEnter={() => onOpen(item.name)}
               onMouseLeave={onClose}
             >
-              <Link
-                href={item.href}
-                aria-current={isCurrentPage ? "page" : undefined}
-                aria-expanded={openMenu === item.name}
-                className={linkClass}
+              {/**
+               * ⚠️ `<Link href="#">` → `<button>` (2026-09-08). ГОЛ ЗАСВАР.
+               *
+               * Өмнө нь энэ trigger нь `aria-expanded`-тай АНКЕР байв. Гурван
+               * зөрчил:
+               *   1. Панел ЗӨВХӨН `mouseenter`-ээр нээгддэг байсан — гараар
+               *      (Tab) явж байгаа хэрэглэгч Unitel/Univision-ы дэд цэсийг
+               *      ХЭЗЭЭ Ч нээж чадахгүй (WCAG 2.1.1 Keyboard).
+               *   2. Enter дарахад анкер нь `href="#"` рүү "шилжиж" юу ч
+               *      болохгүй — хэрэглэгч цэс эвдэрсэн гэж дүгнэнэ.
+               *   3. `aria-expanded` нь товчны атрибут; анкер дээр байх нь
+               *      "энэ линк хаашаа ч явахгүй, панел нээнэ" гэдгийг
+               *      screen reader-т зөрүүтэй хэлнэ.
+               *
+               * `href` нь ЯМАР Ч ААНГИЛАЛД `"#"` (зам хойшлуулсан) тул анкер
+               * болгож үлдээх ямар ч ашиг байхгүй — товч нь хатуу дээр.
+               *
+               * ⚠️ ХЭРЭВ ЖИНХЭНЭ ЗАМ ОРВОЛ: товчийг линк болгож БУЦААХГҮЙ.
+               * W3C APG-ийн загвар нь "линк + хажууд нь дэлгэх ТУСДАА товч"
+               * эсвэл "товч + панелийн ПЕРВЫЙ мөр нь тэр landing зам".
+               * Хоёр үүрэг (шилжих + дэлгэх) НЭГ элемент дээр байх нь гараар
+               * хүрэх боломжийг үргэлж эвддэг.
+               *
+               * `aria-current` ХАСАГДСАН: `isCurrentPage` нь href-ийг замтай
+               * тулгадаг ба href нь `"#"` тул ХЭЗЭЭ Ч true болохгүй байсан —
+               * өөрөөр хэлбэл юу ч алдагдаагүй. Тодотголыг `highlighted`
+               * (доогуур зураас) хариуцна.
+               */}
+              <button
+                type="button"
+                data-mega-trigger={item.name}
+                aria-expanded={isOpen}
+                aria-controls={MEGA_PANEL_ID}
+                onClick={() => (isOpen ? onClose() : onOpen(item.name))}
+                onKeyDown={(e) => {
+                  // ↓ — нээгээд ПАНЕЛ РУУ фокус зөөнө (APG-ийн disclosure
+                  // navigation). Панел нь DOM-д header-ийн ДАРАА байдаг тул
+                  // зүгээр Tab дарвал дараагийн АНГИЛАЛ руу явна, панел руу
+                  // биш — тиймээс зөөлтийг ил хийх шаардлагатай.
+                  if (e.key !== "ArrowDown") return;
+                  e.preventDefault();
+                  onOpen(item.name);
+                  // Панел нээгдэж рендерлэгдэх хүртэл нэг frame хүлээнэ.
+                  requestAnimationFrame(() => {
+                    document
+                      .getElementById(MEGA_PANEL_ID)
+                      ?.querySelector<HTMLElement>("a[href], button")
+                      ?.focus();
+                  });
+                }}
+                className={cn(linkClass, "cursor-pointer")}
               >
                 {label}
-              </Link>
+              </button>
             </div>
           );
         }
@@ -367,6 +447,27 @@ function MegaLayer({
       // тул CSS класс дээр тулгуурласан selector хоёрыг зөрүүлдэг — desktop
       // панелд тогтвортой тэмдэг.
       data-mega-panel={panelBrand}
+      /**
+       * `id` — trigger-ийн `aria-controls` ба гараар фокус зөөх хоёрын
+       * хаяг (`CategoryNav`). Нэг зэрэг ЗӨВХӨН НЭГ `MegaLayer` рендерлэгддэг
+       * (хувилбар 1 ↔ 2 нь хоёулаа биш) тул тогтмол id зөрчил үүсгэхгүй.
+       */
+      id={MEGA_PANEL_ID}
+      /**
+       * ESCAPE — панел дотор фокустай байхад хаагаад фокусыг ГАРСАН
+       * trigger рүү БУЦААНА. Буцаахгүй бол панел алга болоод фокус нь
+       * `<body>` дээр унаж, хэрэглэгч "хаана байгаагаа" алдана.
+       *
+       * `CSS.escape` — `panelBrand` нь одоогоор "Unitel"/"Univision" боловч
+       * ангиллын нэр кирилл эсвэл зайтай болбол сонгогч эвдэрнэ.
+       */
+      onKeyDown={(e) => {
+        if (e.key !== "Escape") return;
+        onCloseNow();
+        document
+          .querySelector<HTMLElement>(`[data-mega-trigger="${CSS.escape(panelBrand)}"]`)
+          ?.focus();
+      }}
       onMouseEnter={() => onOpen(panelBrand)}
       onMouseLeave={onClose}
       className={cn(

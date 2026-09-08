@@ -4,6 +4,23 @@ import * as React from "react"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
+/**
+ * ⚠️⚠️ АНИМАЦИЙН VARIANT — `data-[state=open]` / `data-[state=closed]` гэж
+ * БҮТЭН бичигдсэн байх ЁСТОЙ (2026-09-08-нд зассан).
+ *
+ * shadcn-ийн үүсгэсэн эх хувилбарт `data-open:` / `data-closed:` гэсэн
+ * ХЯСААСАН хэлбэр байсан. Тэр нь Base UI-ийн атрибутын нэр бөгөөд Tailwind-д
+ * ТОДОРХОЙЛОГДООГҮЙ variant — `globals.css`-д `@custom-variant` зөвхөн `dark`
+ * л бий. Tailwind танихгүй variant-аас ЯМАР Ч дүрэм үүсгэдэггүй тул
+ * `animation-name: none` болж, компонент нь анимацгүй ШУУД ҮСЭРЧ нээгддэг байв.
+ *
+ * Энэ файл нь radix-ui-д тулгуурладаг (дээрх import) ба radix нь
+ * `data-state="open"|"closed"` гаргадаг — тиймээс бүтэн хэлбэр нь зөв.
+ *
+ * ⚠️ `shadcn add` дахин ажиллуулбал энэ файл ДАРАГДАЖ, хясаасан хэлбэр
+ * БУЦАЖ ИРНЭ. Тэр үед `grep -rE "data-(open|closed):" src/components/ui`
+ * -ээр шалгаж дахин засна. `src/components/ui` нь `.prettierignore`-д.
+ */
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
@@ -37,7 +54,7 @@ function SheetOverlay({
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
         className
       )}
       {...props}
@@ -62,7 +79,7 @@ function SheetContent({
         data-slot="sheet-content"
         data-side={side}
         className={cn(
-          "fixed z-50 flex flex-col gap-4 bg-popover bg-clip-padding text-sm text-popover-foreground shadow-lg transition duration-200 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-[side=bottom]:data-open:slide-in-from-bottom-10 data-[side=left]:data-open:slide-in-from-left-10 data-[side=right]:data-open:slide-in-from-right-10 data-[side=top]:data-open:slide-in-from-top-10 data-closed:animate-out data-closed:fade-out-0 data-[side=bottom]:data-closed:slide-out-to-bottom-10 data-[side=left]:data-closed:slide-out-to-left-10 data-[side=right]:data-closed:slide-out-to-right-10 data-[side=top]:data-closed:slide-out-to-top-10",
+          "fixed z-50 flex flex-col gap-4 bg-popover bg-clip-padding text-sm text-popover-foreground shadow-lg transition duration-200 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[side=bottom]:data-[state=open]:slide-in-from-bottom-10 data-[side=left]:data-[state=open]:slide-in-from-left-10 data-[side=right]:data-[state=open]:slide-in-from-right-10 data-[side=top]:data-[state=open]:slide-in-from-top-10 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[side=bottom]:data-[state=closed]:slide-out-to-bottom-10 data-[side=left]:data-[state=closed]:slide-out-to-left-10 data-[side=right]:data-[state=closed]:slide-out-to-right-10 data-[side=top]:data-[state=closed]:slide-out-to-top-10",
           className
         )}
         {...props}

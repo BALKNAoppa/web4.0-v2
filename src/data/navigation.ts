@@ -156,27 +156,54 @@ export const appleNavCategories: EcosystemLink[] = [
 // hover панел задардаггүй. Мөрдөх дүрэм: энд нэмбэл панел гарна.
 // =====================================================================
 export type MegaMenuSection = { id: string; title: string; href: string };
+
+/**
+ * ХОЁР ДАХЬ ПАНЕЛИЙН БҮЛЭГ — гарчиг + линкүүд.
+ * (ж: "Дараа төлбөрт" → Priority багц · Premium багц · Plus багц)
+ *
+ * `title` нь заавал биш: нэг л бүлэгтэй мөрөнд гарчиг нь ЗҮҮН талын
+ * сонгосон мөртэйгээ давхардах тул хэрэггүй.
+ */
+export type MegaMenuGroup = { id: string; title?: string; items: MegaMenuSection[] };
+
+/**
+ * ЗҮҮН баганын НЭГ МӨР (ангилал).
+ *
+ * `groups` БАЙВАЛ тэр мөр нь "салаа" болно: hover/focus хийхэд ЗҮҮН багана
+ * ХӨДЛӨХГҮЙ, зөвхөн БАРУУН панел нь тэр мөрийн `groups`-оор солигдоно
+ * (захиалагчийн 2026-09-08-ны загвар). Дарахад `href` рүү шилжинэ.
+ *
+ * `groups` БАЙХГҮЙ бол баруун панел нь "агуулга тодорхойлогдоогүй" гэсэн
+ * шошготой хоосон слот харуулна — цэс эвдрэхгүй, дутуу нь ил харагдана.
+ */
+export type MegaMenuBranch = MegaMenuSection & { groups?: MegaMenuGroup[] };
 export type MegaMenu = {
   name: string;
-  /**
-   * ХУРДАН ҮЙЛДЭЛ — дэд цэсний ХАМГИЙН ДЭЭД мөр, ГАРЧИГГҮЙ.
+  /*
+   * ⚠️ `quickActions` ТАЛБАР ХАСАГДСАН (2026-09-08, захиалагчийн заавар:
+   * "quick action-той хэсгийг Unitel, Univision аль алинаас нь хас").
    *
-   * Ангиллын жагсаалтыг тойрч шууд хийдэг 1-2 үйлдлийн товч. Зориудаар ЕРӨНХИЙ
-   * нэртэй (`quickActions`) — брэнд бүр өөр үйлдэл тавьж болно.
+   * Тэр нь дэд цэсний ХАМГИЙН ДЭЭД, гарчиггүй мөрөнд суудаг 1-2 шууд
+   * үйлдлийн линк байсан ба агуулга нь бүхэлдээ PLACEHOLDER ("Quick action
+   * 1/2") — өөрөөр хэлбэл "энд slot бий" гэдгийг л үзүүлж байсан. Захиалагч
+   * тэр slot-ыг ХЭРЭГГҮЙ гэж шийдсэн тул дата, тип, гурван рендер хэсэг
+   * (desktop `BrandMegaPanel`, хувилбар 1 `SectionMenu`, хувилбар 3
+   * `DrawerSubmenu`) БҮГД хамт устав. `QuickActionChip` компонент ч мөн.
    *
-   * ⚠️ Одоогоор ЗӨВХӨН PLACEHOLDER ("Quick action 1/2"). Header-т ЦЭСНИЙ НЭРС
-   * л тодорхой болсон; товч/CTA/урамшууллын бодит агуулга дараа шийдэгдэнэ.
-   * Тиймээс энд жинхэнэ нэр ЗОХИОХГҮЙ — slot байгааг л үзүүлнэ.
+   * Сэргээх бол git-ээс — нэг талбар биш ДӨРВӨН файлд тархсан.
    */
-  quickActions?: MegaMenuSection[];
   /** 1-р баганын гарчиг. Өгөөгүй бол `name` (ж. "Unitel") харагдана. */
   sectionsLabel?: string;
   /**
-   * ҮНДСЭН АНГИЛАЛ — дэд цэсний ЗҮҮН багана. Бүтээгдэхүүнийг ангилдаг
-   * (ж: Үндсэн бүтээгдэхүүн · Интернэтийн шийдэл · Энтертайнмэнт · Life-style).
+   * ҮНДСЭН АНГИЛАЛ — дэд цэсний ЗҮҮН багана. Бүтээгдэхүүнийг ангилдаг.
    * Hover/идэвхтэй үед ХАР pill + цагаан текстээр тодорно.
+   *
+   * Мөр бүр `groups`-тай байвал панел нь ХОЁР ПАНЕЛТ болно (зүүн тогтмол,
+   * баруун солигддог) — `MegaMenuBranch`-ийн тайлбарыг үз. `groups` нэг ч
+   * мөрөнд байхгүй бол хуучин ХОЁР БАГАНАТ хэлбэр (`sections` + `extras`)
+   * хэвээр рендерлэгдэнэ. Одоогоор: Unitel = хоёр панелт, Univision = хуучин.
    */
-  sections: MegaMenuSection[];
+  sections: MegaMenuBranch[];
   /** 2-р баганын гарчиг. Өгөөгүй бол "Нэмэлт". */
   extrasLabel?: string;
   /**
@@ -186,14 +213,84 @@ export type MegaMenu = {
    * зүйлс (Нэмэлт үйлчилгээ · Хамрах хүрээ · Тусламж г.м) хаана ч суудаггүй —
    * тэднийг энэ баганад цуглуулна.
    *
+   * ⚠️ ЗӨВХӨН ХУУЧИН (хоёр баганат) ХЭЛБЭРТ хэрэглэгдэнэ. Хоёр панелт цэсэнд
+   * (`sections[].groups` бий) энэ багана РЕНДЕРЛЭГДЭХГҮЙ — тэнд "Нэмэлт
+   * үйлчилгээ" нь зүүн баганын өөрийн мөр болсон.
+   *
    * Өгөөгүй бол `BrandMegaPanel` нь бүх брэндэд хуваалцах default жагсаалтыг
    * (Багц сонгох · Төхөөрөмж · Тусламж · Бүх урамшуулал) харуулна.
    */
   extras?: MegaMenuSection[];
 };
 
-const TOKI_FAMILY_HREF =
-  "https://www.toki.mn/family-%D2%AF%D0%B9%D0%BB%D1%87%D0%B8%D0%BB%D0%B3%D1%8D%D1%8D-%D1%88%D0%B8%D0%BD%D1%8D%D1%87%D0%BB%D1%8D%D0%B3%D0%B4%D0%BB%D1%8D%D1%8D/";
+/**
+ * UNITEL-ИЙН ХОЁР ПАНЕЛТ ДЭД ЦЭС — desktop ба mobile ХУВААЛЦАНА.
+ *
+ * Захиалагчийн 2026-09-08-ны гар зураг:
+ *   ЗҮҮН (тогтмол 6 мөр)          БАРУУН (сонгосноор солигдоно)
+ *   ─────────────────────────     ──────────────────────────────
+ *   Багцууд                   →   Дараа төлбөрт     Priority/Premium/Plus багц
+ *   Нэмэлт дата багц              Урьдчилсан төлбөрт Smart Data/Talk/Days
+ *   Гэр интернет
+ *   Олон улсын үйлчилгээ
+ *   For Foreigners
+ *   Нэмэлт үйлчилгээ
+ *
+ * ⚠️ ЗӨВХӨН "Багцууд"-ЫН АГУУЛГА ТОДОРХОЙ. Бусад 5 мөрийн дэд агуулгыг
+ * захиалагч өгөөгүй тул `groups` БИЧЭЭГҮЙ — баруун панел нь шошготой хоосон
+ * слот харуулна. Бүтээгдэхүүний нэр ЗОХИОХГҮЙ (`AGENTS.md`-ийн зарчим:
+ * header-т зөвхөн ЦЭСНИЙ НЭРС батлагдсан).
+ *
+ * ⚠️ "Family" ГАРСАН, "Smart Days" ОРСОН — гар зурган дээр урьдчилсан
+ * төлбөрт бүлэг нь Smart Data · Smart Talk · Smart Days гэж бичигдсэн.
+ * Family нь Toki-гийн гадаад үйлчилгээ байсан (`TOKI_FAMILY_HREF`) —
+ * шаардлагатай бол тэр линк git-д хэвээр.
+ *
+ * ⚠️ Хуучин `extras` (Нэмэлт дата · Нэмэлт үйлчилгээ · Гэр интернэт ·
+ * For foreigners) нь ДӨРВҮҮЛЭЭ зүүн багана руу ДЭВШСЭН — тиймээс Unitel-д
+ * `extras` БАЙХГҮЙ болов, агуулга алдагдаагүй.
+ */
+const unitelBranches: MegaMenuBranch[] = [
+  {
+    id: "packages",
+    title: "Үндсэн багцууд",
+    href: "/main-packages",
+    groups: [
+      {
+        id: "postpaid",
+        title: "Дараа төлбөрт",
+        items: [
+          { id: "priority", title: "Priority багц", href: "/main-packages" },
+          { id: "premium", title: "Premium багц", href: "/main-packages" },
+          { id: "plus", title: "Plus багц", href: "/main-packages" },
+        ],
+      },
+      {
+        id: "prepaid",
+        title: "Урьдчилсан төлбөрт",
+        items: [
+          { id: "smart-data", title: "Smart Data", href: "/main-packages" },
+          { id: "smart-talk", title: "Smart Talk", href: "/main-packages" },
+          { id: "smart-days", title: "Smart Days", href: "/main-packages" },
+        ],
+      },
+    ],
+  },
+  // ⚠️ Доорх 5 мөрийн дэд агуулга ТОДОРХОЙГҮЙ — `groups` нэмэхэд баруун
+  // панел тэр дороо ажиллана, компонент хөндөгдөхгүй.
+  { id: "extra-data", title: "Нэмэлт дата багц", href: "#" },
+  { id: "home-internet", title: "Гэр интернет", href: "/main-packages" },
+  { id: "international", title: "Олон улсын үйлчилгээ", href: "#" },
+  { id: "foreigners", title: "For Foreigners", href: "#" },
+  { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
+];
+
+/*
+ * ⚠️ `TOKI_FAMILY_HREF` ХАСАГДСАН (2026-09-08). "Family" мөр нь Unitel-ийн
+ * шинэ хоёр панелт цэсээс гарч, оронд нь "Smart Days" орсноор энэ тогтмолыг
+ * ХААНААС Ч дуудахаа больсон. Toki-гийн Family үйлчилгээний бүтэн (encode
+ * хийсэн) URL хэрэгтэй бол git-ээс — өөр хаана ч бичигдээгүй байсан.
+ */
 
 /**
  * LookTV-ийн ГАДААД сайт. Кодод `looktv.mn` ба `look.tv` хоёр зэрэг байсныг
@@ -211,31 +308,7 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
    * `sectionsLabel: "Багц"` — 1-р баганын гарчиг брэндийн нэр БИШ. Багана нь
    * тарифын нэрсийг агуулдаг тул "Unitel" гэсэн гарчиг агуулгыг тайлбарлахгүй.
    */
-  Unitel: {
-    name: "Unitel",
-    // ⚠️ PLACEHOLDER — жинхэнэ үйлдлийн нэр ТОДОРХОЙ БОЛООГҮЙ. Энэ мөрөнд
-    // "хурдан үйлдлийн товч ЭНД байрлана" гэдгийг л үзүүлж байна.
-    quickActions: [
-      { id: "quick-1", title: "Quick action 1", href: "#" },
-      { id: "quick-2", title: "Quick action 2", href: "#" },
-    ],
-    sectionsLabel: "Багц",
-    sections: [
-      { id: "premium", title: "Premium", href: "/main-packages" },
-      { id: "priority", title: "Priority", href: "/main-packages" },
-      { id: "plus", title: "Plus", href: "/main-packages" },
-      { id: "smart-data", title: "Smart Data", href: "/main-packages" },
-      { id: "smart-talk", title: "Smart Talk", href: "/main-packages" },
-      { id: "family", title: "Family", href: TOKI_FAMILY_HREF },
-    ],
-    extrasLabel: "Бусад үйлчилгээ",
-    extras: [
-      { id: "extra-data", title: "Нэмэлт дата", href: "#" },
-      { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
-      { id: "home-internet", title: "Гэр интернэт", href: "/main-packages" },
-      { id: "foreigners", title: "For foreigners", href: "#" },
-    ],
-  },
+  Unitel: { name: "Unitel", sections: unitelBranches },
   /**
    * UNIVISION — 4 ангилал + Нэмэлт багана.
    *
@@ -252,10 +325,6 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
   Univision: {
     name: "Univision",
     // ⚠️ PLACEHOLDER — Unitel-тэй ижил. Жинхэнэ үйлдлийн нэр ТОДОРХОЙ БОЛООГҮЙ.
-    quickActions: [
-      { id: "quick-1", title: "Quick action 1", href: "#" },
-      { id: "quick-2", title: "Quick action 2", href: "#" },
-    ],
     sections: [
       { id: "core", title: "Үндсэн бүтээгдэхүүн", href: "/main-packages" },
       { id: "internet", title: "Интернэтийн шийдэл", href: "/mesh" },
@@ -288,41 +357,13 @@ export const appleMegaMenus: Record<string, MegaMenu> = {
 // =====================================================================
 export const mobileMegaMenus: Record<string, MegaMenu> = {
   // Desktop-той ИЖИЛ агуулга — багцын нэрс + Бусад үйлчилгээ + хурдан үйлдэл.
-  Unitel: {
-    name: "Unitel",
-    // ⚠️ PLACEHOLDER — жинхэнэ үйлдлийн нэр ТОДОРХОЙ БОЛООГҮЙ. Энэ мөрөнд
-    // "хурдан үйлдлийн товч ЭНД байрлана" гэдгийг л үзүүлж байна.
-    quickActions: [
-      { id: "quick-1", title: "Quick action 1", href: "#" },
-      { id: "quick-2", title: "Quick action 2", href: "#" },
-    ],
-    sectionsLabel: "Багц",
-    sections: [
-      { id: "premium", title: "Premium", href: "/main-packages" },
-      { id: "priority", title: "Priority", href: "/main-packages" },
-      { id: "plus", title: "Plus", href: "/main-packages" },
-      { id: "smart-data", title: "Smart Data", href: "/main-packages" },
-      { id: "smart-talk", title: "Smart Talk", href: "/main-packages" },
-      { id: "family", title: "Family", href: TOKI_FAMILY_HREF },
-    ],
-    extrasLabel: "Бусад үйлчилгээ",
-    extras: [
-      { id: "extra-data", title: "Нэмэлт дата", href: "#" },
-      { id: "addons", title: "Нэмэлт үйлчилгээ", href: "#" },
-      { id: "home-internet", title: "Гэр интернэт", href: "/main-packages" },
-      { id: "foreigners", title: "For foreigners", href: "#" },
-    ],
-  },
+  Unitel: { name: "Unitel", sections: unitelBranches },
   // Desktop-той ИЖИЛ 4 ангилал (screenshot-ийн бүтэц mobile-д ч мөрдөгдөнө).
   // Mobile-д хажуу зэрэгцүүлэх өргөн байхгүй тул `extras` нь доор тусдаа
   // блок болж, "Нэмэлт" гэсэн жижиг гарчигтай гарна (`SectionMenu`).
   Univision: {
     name: "Univision",
     // ⚠️ PLACEHOLDER — desktop-той ИЖИЛ (`appleMegaMenus.Univision`).
-    quickActions: [
-      { id: "quick-1", title: "Quick action 1", href: "#" },
-      { id: "quick-2", title: "Quick action 2", href: "#" },
-    ],
     sections: [
       { id: "core", title: "Үндсэн бүтээгдэхүүн", href: "/main-packages" },
       { id: "internet", title: "Интернэтийн шийдэл", href: "/mesh" },

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
-import { ArrowRight, Gift, LogOut, User } from "lucide-react";
+import { ArrowRight, ChevronRight, Gift, LogOut, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,8 +22,10 @@ import {
   type AudienceSegment,
   type EcosystemLink,
   type MegaMenu,
+  type MegaMenuBranch,
   type MegaMenuSection,
 } from "@/data/navigation";
+import { promotionCards } from "@/data/promotions";
 import { BRAND, BRAND_LABEL } from "@/lib/brand";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
@@ -152,52 +154,88 @@ export function useCurrentNavName(items: EcosystemLink[]): string | null {
  * дугаар зохиох шаардлага үүсгэдэг байлаа. Одоо тайлбар нь ДЭЭР нэг л удаа,
  * мөрүүд нь өөрсдийн үүргээр (гарчиг + CTA) л ярина.
  */
-export const MENU_PROMOS_HEADING =
-  "Энэ цэстэй холбоотой урамшуулалууд энд байрлана /Онцлох урамшуулал гэсэн title байна/";
+export const MENU_PROMOS_HEADING = "Онцлох урамшуулал";
 
 /**
- * Цэсний урамшуулал — PLACEHOLDER. Мөр бүрийн БҮТЭЦ нь screenshot-ийн дагуу:
+ * Цэсний урамшуулал — ОДОО БОДИТ ДАТА (2026-09-08, захиалагчийн заавар:
+ * "хамгийн ард байрлах урамшууллын хэсэгт homepage дээр ашиглаж байгаа
+ * бодит мэдээллийг ашиглаад болид болго").
  *
- *   ( ◯ дугуй зураг )   Урамшууллын гарчиг
- *                       → CTA
+ * ⚠️ ӨМНӨ НЬ PLACEHOLDER байв: гарчиг нь "Урамшууллыг илтгэх highlight хийх
+ * title энд байрлана" гэсэн ХОЁР ижил мөр, дугуй нь `Gift` дүрс. Одоо
+ * `data/promotions.ts > promotionCards[BRAND]` — нүүрний "Онцлох урамшуулал"
+ * хэсэг ЯГ ТЭР жагсаалтыг уншдаг тул цэс ба нүүр хоёр ХЭЗЭЭ Ч ЗӨРӨХГҮЙ.
+ *
+ * `slice(0, 2)` — панелийн багана хоёр мөрөнд тохирсон өндөртэй (`w-76`,
+ * дугуй 56px). Гурав дахийг харуулбал зүүн баганаас (6 мөр) өндөр болж
+ * панел сунана. "Бүх урамшуулал" рүү хүрэх нь `/campaigns` (мөр бүрийн CTA).
+ *
+ * ⚠️ ГАРЧИГ Ч БОДИТ БОЛОВ: `MENU_PROMOS_HEADING` нь өмнө нь брифийн бичвэр
+ * ("…гэсэн title байна") байсныг нүүрний хэсгийн нэрээр — "Онцлох
+ * урамшуулал" — сольсон.
  *
  * Desktop (`BrandMegaPanel`) ба mobile (`MenuPromoTeaser`) ХОЁУЛАА эндээс
- * уншина тул тоо, бичвэр зөрөхгүй. Жинхэнэ урамшууллын data гарахад энэ
- * жагсаалт цэсээс хамаарч динамик болно.
- *
- * ⚠️ `title` · `ctaLabel` нь ЕРӨНХИЙ шошго — жинхэнэ маркетингийн үг ЗОХИОХГҮЙ.
- * `image` талбар ОДООГООР байхгүй: зураг бэлэн болоход энд `image: string`
- * нэмээд `PromoAvatar` дотор `next/image` болгоно. Түүнийг хүртэл дугуй нь
- * дүрстэй placeholder.
+ * уншина тул тоо, бичвэр, зураг зөрөхгүй.
  */
-export const MENU_PROMOS: { title: string; ctaLabel: string; href: string }[] = [
-  {
-    title: "Урамшууллыг илтгэх highlight хийх title энд байрлана",
-    ctaLabel: "Дэлгэрэнгүй",
-    href: "/campaigns",
-  },
-  {
-    title: "Урамшууллыг илтгэх highlight хийх title энд байрлана",
-    ctaLabel: "Дэлгэрэнгүй",
-    href: "/campaigns",
-  },
-];
+export const MENU_PROMOS: {
+  id: string;
+  title: string;
+  /**
+   * НЭГ ӨГҮҮЛБЭРИЙН тайлбар (2026-09-08, захиалагч: "урамшууллын мэдээллийг
+   * тохирсон нэг өгүүлбэр оруул, title-тай нь хамт").
+   *
+   * ⚠️ ШИНЭ БИЧВЭР ЗОХИООГҮЙ — `promotionCards[…].description` нь нүүрний
+   * "Онцлох урамшуулал" картан дээр аль хэдийн харагддаг ЯГ ТЭР өгүүлбэр
+   * (захиалагчийн 2026-09-07-ны бичвэрээс). Цэс ба нүүр хоёр нэг эх
+   * сурвалжтай тул хэзээ ч зөрөхгүй.
+   */
+  description: string;
+  ctaLabel: string;
+  href: string;
+  image?: string;
+}[] = promotionCards[BRAND].slice(0, 2).map((p) => ({
+  id: p.id,
+  title: p.title,
+  description: p.description,
+  ctaLabel: p.ctaText,
+  href: p.ctaHref,
+  image: p.image,
+}));
 
 /**
- * Урамшууллын ДУГУЙ ЗУРАГ — одоогоор placeholder.
+ * Урамшууллын ДУГУЙ ЗУРАГ.
  *
- * ХЭМЖЭЭ: `size-14` (56px) нь header-ийн мөрний өндөртэй (56–64px) тэнцүү —
- * screenshot дээрх дугуй ч мөрний өндрийн хэрээр байна. Үүнээс томсговол
- * хоёр урамшуулал панелийн зүүн баганаас (Unitel = 6 мөр) илүү өндөр болж,
- * панел сунана.
+ * ⚠️ Зураг БАЙВАЛ бодит кампанийн зураг (`next/image`), эс бөгөөс `Gift`
+ * дүрстэй саарал дугуй. Univision-ы `promotionCards` нь одоогоор
+ * PLACEHOLDER бөгөөд зурaггүй тул тэр build дээр хуучин дугуй хэвээр —
+ * нэг компонент хоёр төлөвийг хариуцна.
+ *
+ * ХЭМЖЭЭ: `size-14` (56px) нь header-ийн мөрний өндөртэй (56–64px) тэнцүү.
+ * Үүнээс томсговол хоёр урамшуулал панелийн зүүн баганаас (Unitel = 6 мөр)
+ * илүү өндөр болж, панел сунана.
  *
  * `shrink-0` — гарчиг хоёр мөр болоход дугуй зууван болохоос сэргийлнэ.
+ * `sizes="56px"` — Next нь баннерын хэмжээгээр бус ЯГ энэ дугуйн хэмжээгээр
+ * файл нийлүүлнэ (кампанийн зураг нь 1000px+ өргөнтэй).
  */
-function PromoAvatar() {
+function PromoAvatar({ image, size = 56 }: { image?: string; size?: number }) {
+  if (image) {
+    return (
+      <span
+        aria-hidden="true"
+        style={{ width: size, height: size }}
+        className="bg-muted relative shrink-0 overflow-hidden rounded-full"
+      >
+        <Image src={image} alt="" fill sizes={`${size}px`} className="object-cover" />
+      </span>
+    );
+  }
+
   return (
     <span
       aria-hidden="true"
-      className="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center rounded-full"
+      style={{ width: size, height: size }}
+      className="bg-muted text-muted-foreground flex shrink-0 items-center justify-center rounded-full"
     >
       <Gift className="size-6" />
     </span>
@@ -298,17 +336,262 @@ function MegaItem({
   );
 }
 
+/**
+ * УРАМШУУЛЛЫН БАГАНА — хоёр хэлбэрт (хоёр панелт ба хуучин) ХУВААЛЦАНА.
+ *
+ * Мөр бүр = дугуй зураг + гарчиг + CTA (захиалагчийн загварын бүтэц).
+ * Баганын ерөнхий тайлбар нь ДЭЭР нэг л удаа (`MENU_PROMOS_HEADING`) —
+ * мөр бүр дээр давтагдахгүй.
+ *
+ * ӨРГӨН: `w-fit` нь дугуй + текстийн баганаас бүрдэх мөрөнд ТОХИРОХГҮЙ
+ * (агуулга нь өөрөө өргөнөө тогтоох гэж зууван болно). Тиймээс `w-76`
+ * (304px) — дугуй 56px + зай 16px ⇒ текстэд ~230px үлдэнэ.
+ */
+function MegaPromoColumn({ onNavigate }: { onNavigate: () => void }) {
+  return (
+    <div className="ml-auto w-76 shrink-0">
+      <h3 className={cn(navType.groupLabel, "mb-4")}>{MENU_PROMOS_HEADING}</h3>
+
+      {/* `gap-5` — хоёр урамшууллыг тод салгана, эс бөгөөс нэгний CTA
+          нөгөөгийн гарчигтай солбицож уншигдана. */}
+      <div className="flex flex-col gap-5">
+        {MENU_PROMOS.map((promo) => (
+          <div key={promo.id} className="flex items-center gap-4">
+            <PromoAvatar image={promo.image} />
+            {/* `min-w-0` — flex хүүхэд нь анхдагчаар агуулгынхаа доод
+                өргөнөөс шахагддаггүй; үүнгүйгээр урт гарчиг баганаас
+                халина. */}
+            <div className="flex min-w-0 flex-col items-start">
+              <p className={cn(navType.secondaryLink, "text-foreground")}>{promo.title}</p>
+              {/* ⚠️ `line-clamp-3` — бичвэрийн урт нь DATA-аас ирдэг тул
+                  хязгааргүй бол урт өгүүлбэр панелийг сунгаж, зүүн баганаас
+                  (~224px) хамаагүй өндөр болгоно. Одоогийн хоёр өгүүлбэр
+                  232px өргөнд 2-3 мөр тул хайчлагдахгүй; хязгаар нь зөвхөн
+                  ирээдүйн урт бичвэрт зориулсан хамгаалалт. */}
+              <p className={cn(navType.body, "text-muted-foreground mt-1 line-clamp-3")}>
+                {promo.description}
+              </p>
+              <Link
+                href={promo.href}
+                onClick={onNavigate}
+                className="text-primary hover:text-primary/80 mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+              >
+                <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
+                {promo.ctaLabel}
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ЗҮҮН БАГАНЫН НЭГ МӨР (хоёр панелт цэс).
+ *
+ * ⚠️ HOVER/FOCUS нь БАРУУН панелийг л сольдог, ХААШАА Ч ШИЛЖҮҮЛДЭГГҮЙ.
+ * Дарахад л `href` рүү явна. Хоёр үүрэг нэг элемент дээр байгаа нь ЗӨВ:
+ * "сонгох" нь пассив (hover/focus), "явах" нь актив (click) тул хоорондоо
+ * зөрчилдөхгүй — `header.tsx > CategoryNav`-ийн trigger дээрх асуудал
+ * (Enter дарахад `#` рүү үсэрч цэс нээгддэггүй) ЭНД гарахгүй.
+ *
+ * `onFocus` нь ЗАЙЛШГҮЙ: `onMouseEnter` л байвал гараар Tab дарж явахад
+ * баруун панел хөдөлгөөнгүй үлдэж, зөвхөн хулганатай хүнд ажиллана.
+ *
+ * ТОДОТГОЛ — ХАР pill (`bg-foreground` / `text-background`): light-д хар
+ * дэвсгэр + цагаан үсэг, dark-д эсрэгээр. Брэнд ногоон хэрэглэхгүй
+ * (header-ийн бусад тодотголтой нэгдсэн байхын тулд).
+ */
+function MegaBranchRow({
+  section,
+  active,
+  onSelect,
+  onNavigate,
+}: {
+  section: MegaMenuBranch;
+  active: boolean;
+  onSelect: () => void;
+  onNavigate: () => void;
+}) {
+  const cls = cn(
+    navType.bar,
+    "flex w-full items-center justify-between gap-3 rounded-full px-3 py-1.5 transition-colors",
+    active ? "bg-foreground text-background" : "text-foreground hover:bg-muted",
+    "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
+  );
+
+  // Сум = "дэд агуулгатай" гэсэн тэмдэг. Агуулга тодорхойлогдоогүй мөрөнд
+  // сум БАЙХГҮЙ — хэрэглэгч дарахаасаа өмнө юу хүлээхээ мэднэ.
+  const body = (
+    <>
+      <span>{section.title}</span>
+      {section.groups?.length ? (
+        <ChevronRight className="size-4 shrink-0 opacity-60" aria-hidden="true" />
+      ) : null}
+    </>
+  );
+
+  const shared = {
+    id: `mega-branch-${section.id}`,
+    onMouseEnter: onSelect,
+    onFocus: onSelect,
+    className: cls,
+  };
+
+  return section.href.startsWith("http") ? (
+    <a {...shared} href={section.href} target="_blank" rel="noopener noreferrer">
+      {body}
+    </a>
+  ) : (
+    <Link {...shared} href={section.href} onClick={onNavigate}>
+      {body}
+    </Link>
+  );
+}
+
+/**
+ * ХОЁР ПАНЕЛТ MEGA MENU (захиалагчийн 2026-09-08-ны загвар).
+ *
+ * ┌────────────────────┬──────────────────────────┬─────────────────────┐
+ * │ Багцууд          → │ Дараа төлбөрт            │ Онцлох урамшуулал   │
+ * │ Нэмэлт дата багц   │   Priority багц          │ ◯ Багцаа бүтээ      │
+ * │ Гэр интернет       │   Premium багц           │   → Дэлгэрэнгүй     │
+ * │ Олон улсын үйлч.   │   Plus багц              │ ◯ Plus багц         │
+ * │ For Foreigners     │ Урьдчилсан төлбөрт       │   → Дэлгэрэнгүй     │
+ * │ Нэмэлт үйлчилгээ   │   Smart Data/Talk/Days   │                     │
+ * └────────────────────┴──────────────────────────┴─────────────────────┘
+ *      ТОГТМОЛ            hover/focus-оор СОЛИГДОНО       бодит дата
+ *
+ * ЗҮҮН БАГАНА ХӨДӨЛДӨГГҮЙ — өргөн нь `w-56` ТОГТМОЛ. `w-fit` бол мөрийн
+ * урт нь баганы өргөнийг тогтоох ба сонголт солигдоход баруун панелийн
+ * агуулга өөр өргөнтэй болж ЗҮҮН багана ч хамт "цүүрнэ".
+ *
+ * ⚠️ Анхны сонголт нь ҮРГЭЛЖ 1-р мөр. Панел нь брэнд солигдох бүрд дахин
+ * mount хийгддэг (`header.tsx > MegaLayer`-ийн `key={panelBrand}`) тул
+ * `useState`-ийн анхны утга нь тухай бүрд шинэчлэгдэнэ — хэрэглэгч сүүлд
+ * хаана байснаа "санахгүй", цэс нээх нь үргэлж ижил байдлаас эхэлнэ.
+ */
+function BranchedMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () => void }) {
+  const [activeId, setActiveId] = useState(menu.sections[0]?.id ?? "");
+  const active = menu.sections.find((s) => s.id === activeId) ?? menu.sections[0];
+
+  const leafCls = cn(
+    navType.bar,
+    "text-foreground/80 hover:text-foreground focus-visible:text-foreground block transition-colors focus-visible:outline-none",
+  );
+
+  return (
+    <div className="mx-auto max-w-300 px-4 pt-4 pb-8">
+      {/**
+       * ⚠️ `items-start` → `items-stretch` (2026-09-08, захиалагч:
+       * "separator-г бүтэн болго").
+       *
+       * Separator нь баруун панелийн `border-l` — өөрөөр хэлбэл ТЭР div-ийн
+       * ӨНДРӨӨР л зурагдана. `items-start` үед хүүхэд бүр өөрийн агуулгын
+       * өндрөөр хумигддаг: зүүн багана 6 мөр (~250px), баруун панел ердөө
+       * 2 бүлэг × 3 мөр (~130px) тул зураас нь зүүн баганаас ХАМААГҮЙ
+       * ДООГУУР тасарч байв. `items-stretch` нь хүүхдүүдийг мөрийн (=хамгийн
+       * өндөр баганы) өндөрт татах тул зураас бүтэн болно.
+       *
+       * `min-h-44` доод хязгаар нь ХЭВЭЭР — зүүн багана богино цэсэнд
+       * (ж. 2-3 мөр) зураас хэтэрхий бахим болохоос сэргийлнэ.
+       */}
+      <div className="flex items-stretch gap-10">
+        {/* ─── ЗҮҮН: тогтмол ангиллын багана ─── */}
+        <nav aria-label={`${menu.name} — ангилал`} className="w-56 shrink-0">
+          {/* `-ml-3` — pill-ийн зүүн padding-ийг нөхөж, үсэг нь панелийн
+              зүүн ирмэгтэй оптикоор жигдэрнэ. */}
+          <ul className="-ml-3 space-y-1">
+            {menu.sections.map((section) => (
+              <li key={section.id}>
+                <MegaBranchRow
+                  section={section}
+                  active={section.id === active?.id}
+                  onSelect={() => setActiveId(section.id)}
+                  onNavigate={onNavigate}
+                />
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* ─── SEPARATOR + БАРУУН: солигддог панел ───
+            `min-h-44` — агуулга нь бүлгийн тоогоор өндөр/намхан болдог тул
+            зураас нь мөр бүрт өөр урттай болж "хэлбэлзэнэ". Доод хязгаар
+            тавихад зураас тогтвортой, зүүн баганаас доогуур харагдана.
+
+            `role="group"` + `aria-labelledby` — зүүн талын СОНГОСОН мөр нь
+            энэ хэсгийн НЭР болно. `role`-гүйгээр `aria-labelledby` нь
+            `<div>` дээр илэрхийлэгддэггүй. */}
+        <div
+          role="group"
+          aria-labelledby={active ? `mega-branch-${active.id}` : undefined}
+          className="border-border min-h-44 flex-1 border-l pl-10"
+        >
+          {active?.groups?.length ? (
+            /* ⚠️ `gap-14` (56px) → `gap-20` (80px) (2026-09-08, захиалагч:
+               "Дараа төлбөрт ба Урьдчилсан төлбөрт байгаагийн 2 дахь баганыг
+               бага зэрэг баруун тийш болго").
+
+               1-р баганын өргөн нь агуулгаараа тогтдог ("Priority багц"
+               ≈ 85px) тул 2-р баганыг зөөх ЦОРЫН ГАНЦ хөшүүрэг нь `gap`.
+               2-р баганад `ml-*` тавибал бүлэг ГУРАВ болоход 2-3-ын хоорондын
+               зай зөрнө — gap нь бүх бүлэгт жигд хэвээр. */
+            <div className="flex items-start gap-20">
+              {active.groups.map((group) => (
+                <div key={group.id}>
+                  {group.title && <h3 className={cn(navType.groupLabel, "mb-4")}>{group.title}</h3>}
+                  <ul className="space-y-2.5">
+                    {group.items.map((item) => (
+                      <li key={item.id}>
+                        <MegaItem section={item} className={leafCls} onNavigate={onNavigate} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* ⚠️ АГУУЛГА ТОДОРХОЙЛОГДООГҮЙ. Захиалагч 2026-09-08-нд зөвхөн
+               "Багцууд"-ын дэд агуулгыг өгсөн. Бүтээгдэхүүний нэр ЗОХИОХГҮЙ
+               (`AGENTS.md`) тул дутууг ИЛЭЭР үзүүлнэ — data-д `groups`
+               нэмэхэд тэр дороо ажиллана. */
+            <p className={cn(navType.body, "text-muted-foreground")}>
+              {active?.title} — дэд агуулга тодорхойлогдоогүй
+            </p>
+          )}
+        </div>
+
+        <MegaPromoColumn onNavigate={onNavigate} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Брэндийн mega панел — ХОЁР ХЭЛБЭР.
+ *
+ * `sections`-ийн нэг ч мөр `groups`-тай бол ХОЁР ПАНЕЛТ (зүүн тогтмол,
+ * баруун солигддог — захиалагчийн шинэ загвар). Эс бөгөөс ХУУЧИН хоёр
+ * баганат (`sections` + `extras`).
+ *
+ * Хоёр хэлбэрийг data-аас ТААМАГЛАНА, тусдаа туг тавьдаггүй — codebase-ийн
+ * бусад хэсэгтэй ижил зарчим (`mobileMegaMenus[name]` байгаа эсэхээр цэс
+ * задрах эсэх шийдэгддэгтэй адил).
+ *
+ * Одоогоор: Unitel = хоёр панелт · Univision = хуучин.
+ */
 export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: () => void }) {
+  if (menu.sections.some((s) => s.groups?.length)) {
+    return <BranchedMegaPanel menu={menu} onNavigate={onNavigate} />;
+  }
+
   /**
    * ҮНДСЭН АНГИЛАЛ — hover/focus дээр ХАР pill + цагаан текст.
    *
-   * Өмнө 24px (`primaryLink`) + hover дээр ногоон текст байсан. Одоо 15px
-   * (`navType.bar`) бөгөөд тодотгол нь ӨНГӨ БИШ, БҮТЭН ДЭВСГЭР — ингэснээр
-   * "хаана байна" гэдэг нь тодхон харагдана.
-   *
    * `bg-foreground` / `text-background` — theme-ийн токеноор: light-д хар
-   * дэвсгэр + цагаан үсэг, dark-д цагаан дэвсгэр + хар үсэг. Брэнд ногоон
-   * хэрэглэхгүй (header-ийн бусад тодотголтой нэгдсэн байхын тулд).
+   * дэвсгэр + цагаан үсэг, dark-д цагаан дэвсгэр + хар үсэг.
    *
    * `w-fit` — pill нь баганы бүтэн өргөнөөр татагдахгүй, үсгээ л ална.
    */
@@ -321,65 +604,18 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
 
   /**
    * НЭМЭЛТ багана — туслах шинжтэй тул pill-гүй, зөвхөн өнгө хүчждэг.
-   *
-   * ⚠️ `navType.secondaryLink` (13px · **600**) байсныг `body` (13px · 400)
-   * болгов. Үндсэн багана нь `navType.bar` (15px · **400**) тул туслах багана
-   * нь үндсэнээсээ ЗУЗААН байж, зэрэглэл нүдэнд ЭСРЭГ уншигдаж байв.
-   * Mobile-ийн `SectionRow`-д ч ижил алдаа байсныг хамт зассан.
+   * `navType.body` (13px · 400) — үндсэн багана 15px · 400 тул зэрэглэл зөв.
    */
   const extraCls = cn(
     navType.body,
     "text-muted-foreground hover:text-foreground block transition-colors",
   );
 
-  /**
-   * ХУРДАН ҮЙЛДЭЛ — дээд мөр. МИНИМАЛ: хүрээтэй pill байсныг хассан.
-   * Ангиллын линкээс ялгарах нь хэлбэрээр биш БАЙРЛАЛААР шийдэгдэнэ —
-   * дээд мөрөнд, доогуураа зааглагдсан. Тод илэрхийлэл нь өнгө + underline.
-   */
-  // `navType.body` (13px) — өмнөх `navType.bar` (15px)-ээс ЖИЖИГ. Эдгээр нь
-  // ангиллын үндсэн линкүүдээс дэд зэрэглэлийн шууд үйлдэл тул мөрний
-  // линкүүдтэй ижил хэмжээтэй байх шаардлагагүй.
-  // Underline ХЭРЭГЛЭХГҮЙ — доогуур зураас нь ИДЭВХТЭЙ ангиллын тэмдэг
-  // (`header.tsx > CategoryNav`), quick action-д тавибал утга давхцана.
-  const quickCls = cn(
-    navType.body,
-    "text-foreground/75 hover:text-foreground focus-visible:text-foreground inline-flex items-center transition-colors focus-visible:outline-none",
-  );
-
   const extras = menu.extras ?? MEGA_RELATED_LINKS;
 
   return (
-    // `py-8` (32px) байсныг ДЭЭД талд `pt-4` (16px) болгов — панел header-ийн
-    // доод ирмэгээс шууд задардаг тул дээд зай нь header-тэй хамт хуримтлагдаж
-    // хэтэрхий сул харагдаж байв. Доод `pb-8` хэвээр: панелийн доод ирмэг нь
-    // хуудасны агуулгатай зааглагдах зай хэрэгтэй.
     <div className="mx-auto max-w-300 px-4 pt-4 pb-8">
-      {/* ХУРДАН ҮЙЛДЭЛ — ГАРЧИГГҮЙ дээд мөр, доогуураа зааглана.
-          `quickActions` өгөөгүй цэс дээр мөр бүхэлдээ рендерлэгдэхгүй —
-          хоосон зай гаргахгүй. (Одоо панелтай хоёр цэс — Unitel · Univision —
-          хоёулаа өгсөн байгаа тул энэ салаа ажиллахгүй, гэхдээ шинэ цэс
-          нэмэхэд хамгаалалт болж үлдэнэ.) */}
-      {menu.quickActions && menu.quickActions.length > 0 && (
-        // pill-ийн padding явсан тул элементүүд хоорондоо `gap-x-6`-аар
-        // амьсгална — эс бөгөөс текстүүд нэг урт мөр шиг нийлж уншигдана.
-        <div className="border-border mb-7 flex flex-wrap items-center gap-x-6 gap-y-2 border-b pb-6">
-          {menu.quickActions.map((action) => (
-            <MegaItem
-              key={action.id}
-              section={action}
-              className={quickCls}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </div>
-      )}
-
       <div className="flex items-start gap-16">
-        {/* Багана 1 — үндсэн ангилал. `-ml-3` нь pill-ийн зүүн padding-ийг
-            нөхөж, үсэг нь гарчигтай оптикоор жигдэрнэ.
-            Гарчиг нь брэндийн нэр БИШ байж болно (`sectionsLabel`) — Unitel-д
-            "Багц", учир нь багана нь тарифын нэрсийг агуулдаг. */}
         <div>
           <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.sectionsLabel ?? menu.name}</h3>
           <ul className="-ml-3 space-y-1">
@@ -391,7 +627,6 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
           </ul>
         </div>
 
-        {/* Багана 2 — Нэмэлт / Бусад үйлчилгээ (`sections`-ийн ард) */}
         <div className="w-52 shrink-0">
           <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.extrasLabel ?? "Нэмэлт"}</h3>
           <ul className="space-y-2.5">
@@ -403,43 +638,7 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
           </ul>
         </div>
 
-        {/* Багана 3 — УРАМШУУЛАЛ. Мөр бүр = дугуй зураг + гарчиг + CTA
-            (screenshot-ийн бүтэц). Баганын ерөнхий тайлбар нь ДЭЭР нэг л удаа
-            (`MENU_PROMOS_HEADING`) — мөр бүр дээр давтагдахгүй.
-
-            ӨРГӨН: `w-fit` нь дугуй + текстийн баганаас бүрдэх мөрөнд ТОХИРОХГҮЙ
-            (агуулга нь өөрөө өргөнөө тогтоох гэж зууван болно). Тиймээс `w-76`
-            (304px) — дугуй 56px + зай 16px ⇒ текстэд ~230px үлдэнэ, ерөнхий
-            гарчиг хоёр мөрөнд багтана. */}
-        <div className="ml-auto w-76 shrink-0">
-          <h3 className={cn(navType.groupLabel, "mb-4")}>{MENU_PROMOS_HEADING}</h3>
-
-          {/* `gap-5` — хоёр урамшууллыг тод салгана, эс бөгөөс нэгний CTA
-              нөгөөгийн гарчигтай солбицож уншигдана. */}
-          <div className="flex flex-col gap-5">
-            {MENU_PROMOS.map((promo, i) => (
-              // Гарчиг/CTA нь ХОЁУЛАА placeholder тул `key`-д давтагдашгүй
-              // зүйл алга — index хэрэглэв. Жинхэнэ data орж ирэхэд promo.id.
-              <div key={i} className="flex items-center gap-4">
-                <PromoAvatar />
-                {/* `min-w-0` — flex хүүхэд нь анхдагчаар агуулгынхаа доод
-                    өргөнөөс шахагддаггүй; үүнгүйгээр урт гарчиг баганаас
-                    халина. */}
-                <div className="flex min-w-0 flex-col items-start">
-                  <p className={cn(navType.secondaryLink, "text-foreground")}>{promo.title}</p>
-                  <Link
-                    href={promo.href}
-                    onClick={onNavigate}
-                    className="text-primary hover:text-primary/80 mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
-                  >
-                    <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
-                    {promo.ctaLabel}
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <MegaPromoColumn onNavigate={onNavigate} />
       </div>
     </div>
   );

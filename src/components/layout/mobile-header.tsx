@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -1209,35 +1210,57 @@ function DrawerSubmenu({
         {menu.name}
       </h2>
 
-      {/* ХУРДАН ҮЙЛДЭЛ — ГАРЧИГГҮЙ мөр, минимал текст линк. Хувилбар 1-ийн
-          `SectionMenu`-тэй ижил зарчим. ⚠️ Одоогоор PLACEHOLDER агуулга. */}
-      {menu.quickActions && menu.quickActions.length > 0 && (
-        <div className="mb-1 flex flex-wrap gap-x-5 px-2">
-          {menu.quickActions.map((action) => (
-            <DrawerLink
-              key={action.id}
-              href={action.href}
-              onNavigate={onNavigate}
-              className={cn(
-                navType.mobileLink,
-                "text-foreground/75 hover:text-foreground inline-flex min-h-11 items-center transition-colors",
-              )}
-            >
-              {action.title}
-            </DrawerLink>
+      {/* ⚠️ ХУРДАН ҮЙЛДЛИЙН МӨР ХАСАГДСАН (2026-09-08, захиалагчийн заавар).
+          Гарчгийн доор 2 текст линк байв. Desktop (`BrandMegaPanel`) ба
+          хувилбар 1 (`SectionMenu`)-ээс ч ХАМТ хасагдсан — гурав нь нэг
+          `quickActions` дата уншдаг байсан. */}
+
+      {/**
+       * ⚠️ ХОЁР ПАНЕЛТ ДАТАГ МОБАЙЛД ХЭВТЭЭ БИШ, БОСООГООР (2026-09-08).
+       *
+       * Desktop-д зүүн 6 мөр тогтмол, баруун панел hover-оор солигддог
+       * (`BrandMegaPanel > BranchedMegaPanel`). Мобайлд тэр хоёр панелыг
+       * зэрэгцүүлэх өргөн БАЙХГҮЙ, мөн hover ч байхгүй. Тиймээс ижил
+       * ДАТАГ нэг гүйдэг жагсаалт болгож дэлгэв: ангиллын мөр, доор нь
+       * (байвал) бүлгийн шошго + дэд линкүүд.
+       *
+       * `groups`-гүй ангилал нь ердөө нэг мөр — desktop дээрх "агуулга
+       * тодорхойлогдоогүй" слот мобайлд ХЭРЭГГҮЙ: мөр өөрөө линк тул
+       * хоосон панел харуулах шаардлага гарахгүй.
+       */}
+      {menu.sections.map((branch) => (
+        <div key={branch.id} className="mt-3">
+          <ul className="flex flex-col">
+            <li>
+              <DrawerLink href={branch.href} onNavigate={onNavigate} className={DRAWER_LEAF_ROW}>
+                {branch.title.trim()}
+              </DrawerLink>
+            </li>
+          </ul>
+
+          {branch.groups?.map((group) => (
+            // `pl-3` — дэд бүлэг нь ангиллынхаа ДОР харьяалагдаж байгааг
+            // догол мөрөөр л хэлнэ (зураас, хүрээ нэмэхгүй — цэс шуугиантай
+            // болно).
+            <div key={group.id} className="mt-1 pl-3">
+              {group.title && <p className={cn(navType.groupLabel, "mb-1 px-2")}>{group.title}</p>}
+              <ul aria-label={group.title} className="flex flex-col">
+                {group.items.map((item) => (
+                  <li key={item.id}>
+                    <DrawerLink
+                      href={item.href}
+                      onNavigate={onNavigate}
+                      className={cn(navType.mobileLink, ROW, "text-muted-foreground no-underline")}
+                    >
+                      {item.title.trim()}
+                    </DrawerLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
         </div>
-      )}
-
-      <DrawerGroup label={menu.sectionsLabel ?? menu.name}>
-        {menu.sections.map((s) => (
-          <li key={s.id}>
-            <DrawerLink href={s.href} onNavigate={onNavigate} className={DRAWER_LEAF_ROW}>
-              {s.title.trim()}
-            </DrawerLink>
-          </li>
-        ))}
-      </DrawerGroup>
+      ))}
 
       {menu.extras && menu.extras.length > 0 && (
         <DrawerGroup label={menu.extrasLabel ?? "Нэмэлт"}>
@@ -1262,17 +1285,23 @@ function DrawerSubmenu({
       <div className="border-border mt-4 border-t px-2 pt-4">
         <h3 className={cn(navType.groupLabel, "mb-3")}>{MENU_PROMOS_HEADING}</h3>
         <div className="flex flex-col gap-4">
-          {MENU_PROMOS.map((promo, i) => (
-            // Гарчиг/CTA ХОЁУЛАА placeholder тул давтагдашгүй `key` алга —
-            // жинхэнэ data орж ирэхэд `promo.id`.
-            <div key={i} className="flex items-center gap-3">
-              <MobilePromoAvatar />
+          {MENU_PROMOS.map((promo) => (
+            // `key` нь одоо `promo.id` — өмнө нь агуулга placeholder бөгөөд
+            // хоёр мөр ЯГ ижил бичвэртэй байсан тул index хэрэглэж байв.
+            // ⚠️ `items-center` → `items-start`: тайлбар нэмэгдэхэд мөр нь
+            // 3-4 мөрт болох тул дугуйг голлуулбал гарчгаас доогуур унана.
+            <div key={promo.id} className="flex items-start gap-3">
+              <MobilePromoAvatar image={promo.image} />
               <div className="flex min-w-0 flex-col items-start">
                 <p className={cn(navType.secondaryLink, "text-foreground")}>{promo.title}</p>
+                {/* НЭГ ӨГҮҮЛБЭР — desktop-той нэг эх сурвалж (`MENU_PROMOS`). */}
+                <p className={cn(navType.body, "text-muted-foreground mt-1 line-clamp-3")}>
+                  {promo.description}
+                </p>
                 <Link
                   href={promo.href}
                   onClick={onNavigate}
-                  className="text-primary mt-1 inline-flex items-center gap-1.5 text-xs font-semibold no-underline"
+                  className="text-primary mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold no-underline"
                 >
                   <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
                   {promo.ctaLabel}
@@ -1634,18 +1663,27 @@ function SectionMenu({ menu }: { menu?: MegaMenu }) {
           Мөрүүдийн хооронд `gap-0.5` байсныг хассан — мөр бүр 44px өндөртэй
           тул зай нэмэх нь урт жагсаалтыг ор дэмий сунгаж байв. */}
       <div className="mx-auto flex max-w-300 flex-col">
-        {/* ХУРДАН ҮЙЛДЭЛ — ГАРЧИГГҮЙ дээд мөр, минимал текст линк.
-            Desktop-той ижил: ангиллын жагсаалтыг тойрч шууд үйлдэл. */}
-        {menu.quickActions && menu.quickActions.length > 0 && (
-          <div className="mb-1 flex flex-wrap gap-x-6 px-3">
-            {menu.quickActions.map((action) => (
-              <QuickActionChip key={action.id} section={action} />
+        {/* ⚠️ ХУРДАН ҮЙЛДЛИЙН МӨР ХАСАГДСАН (2026-09-08, захиалагчийн
+            заавар). `QuickActionChip` компонент ч түүнтэй хамт устсан —
+            өөр хаана ч дуудагддаггүй байсан. */}
+
+        {/* ⚠️ ХОЁР ПАНЕЛТ ДАТАГ БОСООГООР (2026-09-08) — хувилбар 3-ын
+            `DrawerSubmenu`-тэй ИЖИЛ зарчим, тэндхийн тайлбарыг үз.
+            Ангиллын мөр, доор нь (байвал) бүлгийн шошго + дэд линкүүд. */}
+        {menu.sections.map((branch) => (
+          <div key={branch.id} className="flex flex-col">
+            <SectionRow section={branch} />
+            {branch.groups?.map((group) => (
+              <div key={group.id} className="pl-3">
+                {group.title && (
+                  <p className={cn(navType.groupLabel, "mt-1 mb-1 px-3")}>{group.title}</p>
+                )}
+                {group.items.map((item) => (
+                  <SectionRow key={item.id} section={item} secondary />
+                ))}
+              </div>
             ))}
           </div>
-        )}
-
-        {menu.sections.map((section) => (
-          <SectionRow key={section.id} section={section} />
         ))}
 
         {extras && extras.length > 0 && (
@@ -1660,46 +1698,6 @@ function SectionMenu({ menu }: { menu?: MegaMenu }) {
         <MenuPromoTeaser />
       </div>
     </NavigationMenuContent>
-  );
-}
-
-/** Хурдан үйлдэл — МИНИМАЛ, жижиг текст линк (desktop-той ижил зарчим). */
-function QuickActionChip({ section }: { section: MegaMenuSection }) {
-  // ⚠️ `NavigationMenuLink` нь ӨӨРИЙН үндсэн класстай ирдэг:
-  //      `p-2 rounded-md hover:bg-muted focus:bg-muted`
-  // Тэр нь текст линкийг саарал дэвсгэртэй ТОВЧ шиг харагдуулж, 8px padding
-  // нэмж хэтэрхий өргөн болгож байв. Тиймээс `p-0` ба `bg-transparent!`-ээр
-  // бүгдийг нь буцаана (`!` — hover/focus-ийн default-ыг гүйцэд дарахад).
-  //
-  // Underline ХЭРЭГЛЭХГҮЙ — доогуур зураас нь ИДЭВХТЭЙ ангиллын тэмдэг
-  // (`BrandTab`), quick action-д тавибал утга давхцана.
-  //
-  // `min-h-11` = 44px ХЭВЭЭР. Хүрээ, padding явсан ч эдгээр нь ДАРАГДАХ
-  // үйлдэл тул хүрэх талбайн доод хязгаар мөрдөгдөнө — зөвхөн текстийн
-  // өндөр (~16px) болбол хуруугаар онилоход хэцүү болно.
-  const cls = cn(
-    navType.mobileTab,
-    "text-foreground/75 inline-flex min-h-11 items-center p-0 transition-colors",
-    // ⚠️ `!` ЗААВАЛ: tailwind-merge нь `hover:bg-muted` ба `hover:bg-transparent!`
-    // -ыг ИЖИЛ бүлэг гэж танихгүй тул хоёулаа класс мөрөнд үлддэг —
-    // `!important` л саарал дэвсгэрийг бодитоор дардаг.
-    "hover:text-foreground! hover:bg-transparent!",
-    "focus-visible:text-foreground! focus:bg-transparent! focus-visible:ring-0",
-    // `data-[active=true]:bg-muted/50` нь href жинхэнэ болоход ажиллаж
-    // саарал дэвсгэрийг буцааж авчирна — түүнийг ч хаав.
-    "data-[active=true]:bg-transparent!",
-  );
-
-  return section.href.startsWith("http") ? (
-    <NavigationMenuLink asChild className={cls}>
-      <a href={section.href} target="_blank" rel="noopener noreferrer">
-        {section.title}
-      </a>
-    </NavigationMenuLink>
-  ) : (
-    <NavigationMenuLink asChild className={cls}>
-      <Link href={section.href}>{section.title}</Link>
-    </NavigationMenuLink>
   );
 }
 
@@ -1779,14 +1777,20 @@ function MenuPromoTeaser() {
           нь урт placeholder бичвэрээс үүдэлтэй — гарчиг богино болсноор тэр
           шалтгаан алга болж, хоёр давхарга нэг хэлбэрт орлоо. */}
       <div className="flex flex-col gap-4">
-        {MENU_PROMOS.map((promo, i) => (
-          <div key={i} className="flex items-center gap-3">
-            <MobilePromoAvatar />
+        {MENU_PROMOS.map((promo) => (
+          // `items-start` — тайлбар 3 мөр болоход дугуй гарчигтай эгнэнэ
+          // (`items-center` бол дугуй доогуур унана).
+          <div key={promo.id} className="flex items-start gap-3">
+            <MobilePromoAvatar image={promo.image} />
             <div className="flex min-w-0 flex-col items-start">
               <p className={cn(navType.secondaryLink, "text-foreground")}>{promo.title}</p>
+              {/* НЭГ ӨГҮҮЛБЭР — desktop-той нэг эх сурвалж (`MENU_PROMOS`). */}
+              <p className={cn(navType.body, "text-muted-foreground mt-1 line-clamp-3")}>
+                {promo.description}
+              </p>
               <NavigationMenuLink
                 asChild
-                className="text-primary hover:text-primary! mt-1 inline-flex w-auto items-center gap-1.5 bg-transparent! p-0 text-xs font-semibold"
+                className="text-primary hover:text-primary! mt-1.5 inline-flex w-auto items-center gap-1.5 bg-transparent! p-0 text-xs font-semibold"
               >
                 <Link href={promo.href}>
                   <ArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
@@ -1806,7 +1810,23 @@ function MenuPromoTeaser() {
  * гэхдээ `size-12` (48px). Desktop нь 56px: 375px дэлгэцэнд 56px дугуй нь
  * текстэд 280px-аас бага зай үлдээж гарчгийг гурван мөр болгодог.
  */
-function MobilePromoAvatar() {
+function MobilePromoAvatar({ image }: { image?: string }) {
+  // ⚠️ Зураг БАЙВАЛ бодит кампанийн зураг (2026-09-08 — `MENU_PROMOS` нь
+  // одоо `promotionCards`-аас бодит дата уншдаг). Univision-ы кампанийн дата
+  // одоогоор placeholder бөгөөд зурaггүй тул тэр build дээр `Gift` хэвээр.
+  // `sizes="48px"` — кампанийн зураг 1000px+ өргөнтэй тул үүнгүйгээр Next
+  // 100vw гэж үзэж дэмий том файл татна.
+  if (image) {
+    return (
+      <span
+        aria-hidden="true"
+        className="bg-muted relative size-12 shrink-0 overflow-hidden rounded-full"
+      >
+        <Image src={image} alt="" fill sizes="48px" className="object-cover" />
+      </span>
+    );
+  }
+
   return (
     <span
       aria-hidden="true"
