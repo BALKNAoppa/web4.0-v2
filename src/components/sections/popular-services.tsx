@@ -1,6 +1,9 @@
 import Image from "next/image";
 
 import { popularServices, popularServicesSection } from "@/data/popular-services";
+import { sectionType } from "@/lib/section-type";
+import { sectionBg } from "@/lib/section-bg";
+import { cn } from "@/lib/utils";
 
 /**
  * "ЭРЭЛТТЭЙ БАЙГАА ҮЙЛЧИЛГЭЭ" — нүүрний section.
@@ -24,13 +27,10 @@ import { popularServices, popularServicesSection } from "@/data/popular-services
  */
 export function PopularServices() {
   return (
-    <section aria-labelledby="popular-services-title" className="bg-background w-full">
+    <section aria-labelledby="popular-services-title" className={cn(sectionBg.page, "w-full")}>
       <div className="mx-auto w-full max-w-300 px-4 py-8 lg:py-12">
         <div className="mx-auto max-w-3xl text-center">
-          <h2
-            id="popular-services-title"
-            className="text-foreground text-3xl font-extrabold tracking-tight text-balance md:text-4xl lg:text-5xl"
-          >
+          <h2 id="popular-services-title" className={sectionType.title}>
             {popularServicesSection.title}
           </h2>
           {/* ⚠️ ТАЙЛБАР МӨР ХАСАГДСАН (2026-09-07, захиалагчийн шийдвэр).

@@ -12,6 +12,9 @@ import {
 
 import { otherServices, otherServicesTitle, type OtherServiceIcon } from "@/data/other-services";
 import { ACCENT } from "@/lib/brand";
+import { sectionType } from "@/lib/section-type";
+import { cn } from "@/lib/utils";
+import { sectionBg } from "@/lib/section-bg";
 
 /**
  * "БУСАД ҮЙЛЧИЛГЭЭ" — `Promotions`-ийн ШУУД дор.
@@ -54,13 +57,10 @@ export function OtherServices() {
   return (
     <section
       aria-labelledby="other-services-title"
-      className="bg-background w-full pt-6 pb-14 md:pt-8 md:pb-20 lg:pt-10 lg:pb-24"
+      className={cn(sectionBg.page, "w-full pt-6 pb-14 md:pt-8 md:pb-20 lg:pt-10 lg:pb-24")}
     >
       <div className="mx-auto max-w-300 px-4">
-        <h2
-          id="other-services-title"
-          className="text-foreground text-center text-3xl font-extrabold tracking-tight text-balance md:text-4xl lg:text-5xl"
-        >
+        <h2 id="other-services-title" className={cn("text-center", sectionType.title)}>
           {otherServicesTitle}
         </h2>
 

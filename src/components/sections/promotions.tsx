@@ -5,6 +5,8 @@ import { ArrowRight } from "lucide-react";
 import { promotionCards, promotionsSection, type PromotionCard } from "@/data/promotions";
 import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/utils";
+import { sectionType } from "@/lib/section-type";
+import { sectionBg } from "@/lib/section-bg";
 
 export function Promotions() {
   // ⚠️ БРЭНДЭЭР — энэ section-ийг Unitel ба Univision ХОЁУЛАА дууддаг тул
@@ -12,23 +14,18 @@ export function Promotions() {
   const cards = promotionCards[BRAND];
 
   return (
-    <section aria-labelledby="promotions-title" className="bg-background w-full">
+    <section aria-labelledby="promotions-title" className={cn(sectionBg.band, "w-full")}>
       <div className="mx-auto w-full max-w-[1200px] px-4 py-8 lg:py-12">
         {/* ============ HEADER — гарчиг + нэг мөр тайлбар ============
             Хэмжээ/эгнүүлэлт нь `RecommendedPlans` · `OtherServices`-тэй
             НЭГ: `text-center` + `text-3xl md:text-4xl lg:text-5xl`. Нүүрний
             section-ууд нэг хэмнэлтэй байх ёстой тул гурвыг зэрэг өөрчил. */}
         <div className="mx-auto max-w-3xl text-center">
-          <h2
-            id="promotions-title"
-            className="text-foreground text-3xl font-extrabold tracking-tight text-balance md:text-4xl lg:text-5xl"
-          >
+          <h2 id="promotions-title" className={sectionType.title}>
             {promotionsSection.title}
           </h2>
 
-          <p className="text-muted-foreground mx-auto mt-3 max-w-2xl text-base text-pretty md:mt-4 md:text-lg">
-            {promotionsSection.description}
-          </p>
+          <p className={sectionType.subtitle}>{promotionsSection.description}</p>
         </div>
 
         {/* ============ CARDS — Swiss / Be inspired-маягийн 3 card ============ */}

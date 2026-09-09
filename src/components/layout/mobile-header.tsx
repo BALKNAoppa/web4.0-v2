@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 import {
   ArrowLeft,
   ArrowRight,
@@ -45,8 +44,14 @@ import { LogoHomeLink } from "@/components/layout/logo-home-link";
 import {
   MENU_PROMOS,
   MENU_PROMOS_HEADING,
+  BranchStatusNote,
+  LOOKTV_MORPH_TEXTS,
+  LanguagePill,
+  ProfilePill,
+  ThemePill,
   classifierSegments,
   useActiveNavName,
+  useThemeSwitch,
 } from "@/components/layout/header-shared";
 import {
   appleNavCategories,
@@ -58,6 +63,7 @@ import {
 import { BRAND } from "@/lib/brand";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
+import { MorphingText } from "@/components/ui/morphing-text";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════
@@ -1118,9 +1124,13 @@ function BurgerDrawerHeader() {
                       ДАРААЛАЛ нь загварынх: хэл → профайл → theme
                       (`HeaderTools`-ийнхоос эсрэг). */}
                   <div className="mt-4 flex items-stretch gap-2">
-                    <LanguagePill />
-                    <ProfilePill onDone={dismiss} />
-                    <ThemePill />
+                    {/* ХЭЛБЭР нь ЭНДЭЭС (`className`) — компонентууд нь
+                        `header-shared.tsx`-д, desktop-ийн капсултай
+                        ХУВААЛЦАНА. `LanguagePill` нь дарагддаггүй тул
+                        `_ACTIVE` (hover) хувилбарыг АВАХГҮЙ. */}
+                    <LanguagePill className={cn(DRAWER_TOOL_PILL, navType.mobileLink)} />
+                    <ProfilePill className={DRAWER_TOOL_PILL_ACTIVE} onDone={dismiss} />
+                    <ThemePill className={DRAWER_TOOL_PILL_ACTIVE} />
                   </div>
                 </div>
 
@@ -1238,6 +1248,12 @@ function DrawerSubmenu({
             </li>
           </ul>
 
+          {/* АНГИЛЛЫН СТАТУС — desktop-той НЭГ бичвэр (`BranchStatusNote`).
+              `"link-only"` бол `null` буцаах тул юу ч гарахгүй.
+              `pl-5` нь доорх бүлгийн догол мөр (`pl-3`) + мөрийн `px-2`-той
+              эгнэж, статус нь ангиллынхаа ДОР харьяалагдаж байгааг хэлнэ. */}
+          {branch.status && <BranchStatusNote status={branch.status} className="mt-1 pl-5" />}
+
           {branch.groups?.map((group) => (
             // `pl-3` — дэд бүлэг нь ангиллынхаа ДОР харьяалагдаж байгааг
             // догол мөрөөр л хэлнэ (зураас, хүрээ нэмэхгүй — цэс шуугиантай
@@ -1351,108 +1367,12 @@ const DRAWER_TOOL_PILL =
 const DRAWER_TOOL_PILL_ACTIVE = cn(DRAWER_TOOL_PILL, "hover:bg-muted/70");
 
 /**
- * Theme-ийн төлөв + солих үйлдэл — `ThemeRow` (хувилбар 1/2) ба `ThemePill`
- * (хувилбар 3) ХОЁУЛАА эндээс уншина.
- *
- * ⚠️ Хоёр газар `useTheme()`-ийг тусад нь бичих нь `resolvedTheme === "dark"`
- * гэсэн шалгалтыг давхардуулна — нэгийг сольж (жишээ нь system-ийг гурав дахь
- * төлөв болгож) нөгөөг мартвал хоёр хувилбар өөр өөр зан гаргана.
- * `components/theme-toggle.tsx` нь desktop-ийн ТУСДАА компонент тул тэр
- * үүнийг хэрэглэхгүй (shadcn-ийн үүсгэсэн файл, `.prettierignore`-д).
+ * ⚠️ `useThemeSwitch` · `LanguagePill` · `ProfilePill` · `ThemePill` ДӨРВҮҮЛЭЭ
+ * `header-shared.tsx` РУУ ЗӨӨГДСӨН (2026-09-09). Desktop-ийн капсул ч ЯГ
+ * ижил гурван pill хэрэглэдэг болсон тул хоёр давхарга нэг эх сурвалжаас
+ * уншина. ХЭЛБЭР нь дуудагчаас (`className`) — эндээс `DRAWER_TOOL_PILL`
+ * дамжуулна, desktop нь өөрийн дугуй хэлбэрийг өгнө.
  */
-function useThemeSwitch() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-  return { isDark, toggle: () => setTheme(isDark ? "light" : "dark") };
-}
-
-/**
- * ХЭЛ — дүрс + одоогийн хэлний код.
- *
- * ОДООГООР ХАРАГДАХ ТАЛ ЛЭ: проектод i18n давхарга байхгүй (`layout.tsx`-д
- * `lang="mn"` тогтмол, бүх data монгол) тул дарахад сольж болох зүйл байхгүй.
- * `<div aria-disabled>` — товч болгож дүр эсгэвэл дарж үзсэн хэрэглэгч "эвдэрсэн"
- * гэж дүгнэнэ. `hover` мөн байхгүй — дарагдахгүй гэдгийг хэлбэр нь өгнө.
- * i18n нэмэгдмэгц энэ pill-ийг MN/EN сонголттой болгоно.
- */
-function LanguagePill() {
-  return (
-    <div
-      aria-disabled="true"
-      aria-label="Хэл — одоо MN"
-      className={cn(DRAWER_TOOL_PILL, navType.mobileLink)}
-    >
-      <Globe className="text-muted-foreground size-5 shrink-0" aria-hidden="true" />
-      <span className="text-[13px]">MN</span>
-    </div>
-  );
-}
-
-/**
- * ПРОФАЙЛ — `AccountRow`-той ИЖИЛ зан төлөв, зөвхөн хэлбэр нь pill.
- *
- * ⚠️ ДҮРС нь ТӨЛӨВӨӨС ХАМААРНА, ингэснээр ХАРАГДАХ дүрс нь ҮЙЛДЭЛТЭЙГЭЭ
- * үргэлж таарна:
- *   нэвтрээгүй → `User`   (дарвал нэвтрэх хэлбэр нээгдэнэ)
- *   нэвтэрсэн  → `LogOut` (дарвал ГАРНА)
- * Зөвхөн `User` дүрсийг үлдээвэл нэвтэрсэн хэрэглэгч "профайл харах" гэж
- * бодоод дарж, санамсаргүй гарах болно. Загварт хүний дүрс байгаа нь
- * нэвтрээгүй төлөв (sample дээрх өгөгдмөл).
- *
- * Нэр нь `sr-only`-д — 130px өргөн pill-д "Батаа" гэсэн урт нэр багтахгүй,
- * харин screen reader хэрэглэгчид ХЭН гарах нь тодорхой байх ёстой.
- */
-function ProfilePill({ onDone }: { onDone: () => void }) {
-  const { isAuthenticated, user, openLogin, logout } = useAuth();
-
-  if (!isAuthenticated) {
-    return (
-      <button
-        type="button"
-        aria-label="Нэвтрэх"
-        onClick={() => {
-          onDone();
-          // Drawer хаагдаж фокусаа буцаах хугацаа — эс бөгөөс login
-          // хэлбэр нээгдэнгүүт фокусаа алдана (`AccountRow`-той ижил).
-          setTimeout(() => openLogin(), 220);
-        }}
-        className={DRAWER_TOOL_PILL_ACTIVE}
-      >
-        <User className="text-muted-foreground size-5 shrink-0" aria-hidden="true" />
-      </button>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        logout();
-        onDone();
-      }}
-      className={DRAWER_TOOL_PILL_ACTIVE}
-    >
-      <LogOut className="text-destructive size-5 shrink-0" aria-hidden="true" />
-      <span className="sr-only">Гарах — {user?.name}</span>
-    </button>
-  );
-}
-
-/** THEME — light ⇄ dark. Одоогийн төлөвийн дүрс харагдана (`ThemeRow`-той ижил). */
-function ThemePill() {
-  const { isDark, toggle } = useThemeSwitch();
-
-  return (
-    <button type="button" onClick={toggle} className={DRAWER_TOOL_PILL_ACTIVE}>
-      {isDark ? (
-        <Moon className="text-muted-foreground size-5 shrink-0" aria-hidden="true" />
-      ) : (
-        <Sun className="text-muted-foreground size-5 shrink-0" aria-hidden="true" />
-      )}
-      <span className="sr-only">Theme солих — одоо {isDark ? "Dark" : "Light"}</span>
-    </button>
-  );
-}
 
 /**
  * Drawer доторх линк — дотоод/гадаадыг ӨӨРӨӨ шийднэ.
@@ -1566,10 +1486,11 @@ function BrandTab({
         // энд анимаци шаардлагагүй тул шууд `underline`.
         "text-foreground underline underline-offset-4"
       : "text-foreground/75 group-hover/tab:text-foreground",
-    // LookTV — RGB glitch (`globals.css` → `.glitch-text`).
-    // ⚠️ `text-shadow` нь layout-д өргөн НЭМДЭГГҮЙ тул дээрх табын өргөний
-    // тооцоо (375px дээр 5 таб = 284px, нөөц 38px) хөндөгдөхгүй.
-    tab.name === "LookTV" && "glitch-text",
+    // ⚠️ `glitch-text` ХАСАГДСАН (2026-09-09) — LookTV нь одоо
+    // `MorphingText` (`TabLabel`-ийг үз). Уусалт нь `absolute` давхаргаар
+    // хийгддэг бөгөөс өргөн нь ХАМГИЙН УРТ бичвэрээр тогтдог тул табын
+    // өргөний тооцоо (375px дээр 5 таб = 284px, нөөц 38px) ХӨНДӨГДӨХГҮЙ
+    // хэвээр — "Илүүг Үз" нь "LookTV"-ээс ~8px өргөн, нөөцөд багтана.
   );
 
   const label = (
@@ -1621,7 +1542,14 @@ function BrandTab({
 function TabLabel({ name, isDomain }: { name: string; isDomain: boolean }) {
   return (
     <>
-      {name}
+      {/* ⚠️ LOOKTV — MagicUI-ийн `MorphingText`. Хугацаа нь desktop-ийн
+          `CategoryNav`-тай ЯГ ижил (0.9 / 2.6) — хоёр давхарга өөр хэмнэлээр
+          хөдөлбөл нэг хуудсан дээр хоёр өөр зан гарна. */}
+      {name === "LookTV" ? (
+        <MorphingText texts={LOOKTV_MORPH_TEXTS} morphTime={0.9} cooldownTime={2.6} />
+      ) : (
+        name
+      )}
       {isDomain && <span className="sr-only"> (одоо байгаа домэйн)</span>}
     </>
   );
@@ -1673,6 +1601,11 @@ function SectionMenu({ menu }: { menu?: MegaMenu }) {
         {menu.sections.map((branch) => (
           <div key={branch.id} className="flex flex-col">
             <SectionRow section={branch} />
+            {/* АНГИЛЛЫН СТАТУС — desktop ба хувилбар 3-тай НЭГ бичвэр.
+                `px-3` нь `SectionRow`-ийн дотоод зайтай эгнэнэ. */}
+            {branch.status && (
+              <BranchStatusNote status={branch.status} className="mt-0.5 mb-1 px-3" />
+            )}
             {branch.groups?.map((group) => (
               <div key={group.id} className="pl-3">
                 {group.title && (

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ImageIcon, Sparkles, Star } from "lucide-react";
+import { ImageIcon, Phone, Play, Sparkles, Star, Tv, Wifi, type LucideIcon } from "lucide-react";
 
 import {
   Carousel,
@@ -20,30 +20,67 @@ import {
   type RecommendedPlansContent,
 } from "@/data/recommended-plans";
 import { mobilePlans, type MobilePlan } from "@/data/mobile-plans";
+import { type PlanGroup } from "@/data/plans";
 import { ACCENT } from "@/lib/brand";
 import { cn } from "@/lib/utils";
+import { sectionType } from "@/lib/section-type";
+import { sectionBg } from "@/lib/section-bg";
+
+/**
+ * `plans.ts`-ийн бүлгийн дүрсийн нэр → lucide компонент.
+ *
+ * ⚠️ `/main-packages`-ийн `iconMap`-тай ИЖИЛ дөрвөн хос. Хоёр газарт
+ * тархсан нь ЗӨРӨХ эрсдэлтэй — `plans.ts`-д `icon` төрөл нэмэгдвэл ХОЁУЛАА
+ * шинэчлэх шаардлагатай (TypeScript `Record` тул алдаа build-д илэрнэ).
+ */
+const PLAN_GROUP_ICONS: Record<PlanGroup["icon"], LucideIcon> = {
+  wifi: Wifi,
+  tv: Tv,
+  play: Play,
+  phone: Phone,
+};
 
 /**
  * "САНАЛ БОЛГОХ БАГЦ" — БҮРЭН ХЭМЖЭЭНИЙ section.
  *
- *          Санал болгох багц           ← том гарчиг
- *      Энд онцлох trigger үг байрлана  ← тайлбар
- *      [ Танд санал болгох | Бусад ]   ← таб, төвд
+ *          Танд санал болгох багц      ← том гарчиг
+ *      Хэрэглээнд тань тохирох …       ← тайлбар
+ *      [ Танд санал болгох | Бусад ]   ← таб, төвд · ЗААВАЛ БИШ
+ *              [ картууд ]
+ *      [ Бусад багцын мэдээллийг … ]   ← section-ийн CTA · ЗААВАЛ БИШ
  *
- * МОБАЙЛ (< md) — ХЯЗГААРГҮЙ (loop) CAROUSEL. Нэг карт төвд, хоёр талд нь
- *   хөршүүдийн ирмэг харагдана; доор нь цэгэн заагч.
- * md+ — тэнцүү багана: 3 карттай таб → 3, 2 карттай ("Бусад багцууд") → 2.
+ * МОБАЙЛ (< md) — CAROUSEL. Нэг карт төвд, хоёр талд нь хөршүүдийн ирмэг
+ *   харагдана; доор нь цэгэн заагч. Хязгааргүй (loop) эргэх эсэх нь
+ *   data-аас (`content.loop`) — анхдагч нь ХЯЗГААРТАЙ.
+ * md+ — тэнцүү багана: 3 карттай → 3, 2 карттай → 2.
  *
  * ⚠️ ЯАГААД МОБАЙЛД CAROUSEL: гурван карт босоо жагсвал section нь ~2000px
  * болж, доорх бүх агуулгыг түлхдэг байв. Хэвтээ carousel нь гурвыг НЭГ
  * дэлгэцэнд багтаана.
+ *
+ * ⚠️ ХОЁР БРЭНД ХОЁР ХЭЛБЭР (2026-09-09):
+ *   Unitel    — таб (Танд санал болгох | Бусад багцууд) · loop ON · CTA-гүй
+ *   Univision — табгүй, 3 багц шууд · loop OFF · доод CTA-тай
+ * Хэлбэрийг ЗӨВХӨН data шийднэ (`tabs` / `cta` / `loop` талбарууд байгаа
+ * эсэх) — компонентод брэндийн шалгалт БАЙХГҮЙ.
  *
  * ⚠️ `<section>` байх ЁСТОЙ бөгөөд `#main-content`-ийн ШУУД хүүхэд —
  * `SectionSnapScroller` тэгж хайдаг.
  */
 export function RecommendedPlans({ content }: { content: RecommendedPlansContent }) {
   const [tab, setTab] = useState<PlanTabId>("recommended");
-  const cards = content.cards[tab];
+  /**
+   * ⚠️ `?? []` — `cards.other` нь ЗААВАЛ БИШ болсон (2026-09-09). Табгүй
+   * section-д `tab` нь "recommended"-ээс хэзээ ч хөдлөхгүй тул практикт
+   * хоосон болохгүй, гэхдээ тип нь `undefined`-ыг зөвшөөрдөг.
+   */
+  const cards = content.cards[tab] ?? [];
+  /**
+   * ТАБЫГ РЕНДЕРЛЭХ ЭСЭХ — ХОЁРООС БАГА бол ОГТ ҮГҮЙ. Нэг товчтой
+   * segmented control нь дарах юмгүй, гэхдээ таб мэт харагдаж хэрэглэгчийг
+   * "хаана нөгөө нь вэ?" гэж хайлгана.
+   */
+  const showTabs = (content.tabs?.length ?? 0) > 1;
 
   return (
     // ДЭЭД зай нь ДООДООС бага — энэ section нь AI туслахын ШУУД дараа
@@ -51,23 +88,18 @@ export function RecommendedPlans({ content }: { content: RecommendedPlansContent
     // байв. Доод зай нь дараагийн section-оос салгах үүрэгтэй тул хэвээр.
     <section
       aria-labelledby="plans-title"
-      className="bg-background w-full pt-6 pb-14 md:pt-8 md:pb-20 lg:pt-10 lg:pb-24"
+      className={cn(sectionBg.band, "w-full pt-6 pb-14 md:pt-8 md:pb-20 lg:pt-10 lg:pb-24")}
     >
       <div className="mx-auto max-w-300 px-4">
         {/* ТОЛГОЙ — ТӨВД. Зүүн эгнүүлэлтийг туршаад БУЦААСАН: section бүр өөр
             өргөнтэй (туслах 768px · багц/үйлчилгээ 1200px) тул зүүн ирмэг нь
             зөрж, хуудас замбараагүй харагдаж байв. */}
-        <h2
-          id="plans-title"
-          className="text-foreground text-center text-3xl font-extrabold tracking-tight text-balance md:text-4xl lg:text-5xl"
-        >
+        <h2 id="plans-title" className={cn("text-center", sectionType.title)}>
           {content.heading.title}
         </h2>
-        <p className="text-muted-foreground mx-auto mt-3 max-w-2xl text-center text-base text-pretty md:mt-4 md:text-lg">
-          {content.heading.subtitle}
-        </p>
+        <p className={cn("text-center", sectionType.subtitle)}>{content.heading.subtitle}</p>
 
-        <PlanTabs tabs={content.tabs} value={tab} onChange={setTab} />
+        {showTabs && content.tabs && <PlanTabs tabs={content.tabs} value={tab} onChange={setTab} />}
       </div>
 
       {/* МОБАЙЛ — ХЯЗГААРГҮЙ CAROUSEL.
@@ -79,7 +111,7 @@ export function RecommendedPlans({ content }: { content: RecommendedPlansContent
           хуучин байрлалдаа (жишээ нь 3 дахь карт) гацаж, шинэ табын эхний
           карт харагдахгүй. */}
       <div className="mt-8 md:hidden">
-        <PlanCarousel key={tab} cards={cards} />
+        <PlanCarousel key={tab} cards={cards} loop={content.loop ?? false} />
       </div>
 
       {/* md+ — тэнцүү багана (тоо нь доор, картаас). `items-stretch` — картууд
@@ -100,6 +132,29 @@ export function RecommendedPlans({ content }: { content: RecommendedPlansContent
           ))}
         </ul>
       </div>
+
+      {/**
+       * SECTION-ИЙН ДООД CTA — бүх багцын хуудас руу (2026-09-09).
+       *
+       * ⚠️ КОНТЕЙНЕРИЙН ГАДНА, өөрийн `mx-auto`-той: дээрх `md:block`
+       * контейнер нь мобайлд НУУГДДАГ (`hidden`) тул CTA-г түүний дотор
+       * тавибал утсан дээр ОГТ гарахгүй байсан.
+       *
+       * `border` + `bg-transparent` — картын дотоод CTA нь дүүрэн хар
+       * (`bg-foreground`) тул ижил хэлбэр давхарлавал аль нь гол үйлдэл
+       * болох нь мэдэгдэхгүй. Section-ийн CTA нь ХОЁРДОГЧ: хэрэглэгч
+       * гурван багцаас сонгож чадаагүй үед л хэрэгтэй.
+       */}
+      {content.cta && (
+        <div className="mt-10 flex justify-center px-4 md:mt-12">
+          <Link
+            href={content.cta.href}
+            className="border-border text-foreground hover:bg-muted focus-visible:ring-ring inline-flex h-12 items-center justify-center rounded-full border px-7 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none md:text-base"
+          >
+            {content.cta.label}
+          </Link>
+        </div>
+      )}
     </section>
   );
 }
@@ -114,7 +169,7 @@ export function RecommendedPlans({ content }: { content: RecommendedPlansContent
  * ⚠️ ЦЭГЭН ЗААГЧ нь promo banner-тайгаа ИЖИЛ (`CarouselDots`) — нэг хуудсан
  * дээр хоёр өөр хэлбэрийн заагч байвал систем задарна.
  */
-function PlanCarousel({ cards }: { cards: PlanCardContent[] }) {
+function PlanCarousel({ cards, loop }: { cards: PlanCardContent[]; loop: boolean }) {
   /**
    * ГУРВААС ЦӨӨН КАРТ ДЭЭР LOOP ХИЙХ БОЛОМЖГҮЙ — embla өөрөө унтраадаг.
    *
@@ -140,8 +195,15 @@ function PlanCarousel({ cards }: { cards: PlanCardContent[] }) {
    * дээрх томьёогоор ЗАРЧМЫН ХУВЬД боломжгүй.
    *
    * ⚠️ `basis-[84%]`-ийг өөрчилвөл энэ 3-ын босгыг ДАХИН тооц.
+   *
+   * ⚠️⚠️ `loop` PROP НЭМЭГДСЭН (2026-09-09, захиалагч Univision-ы багцын
+   * carousel дээр: "Infinity биш байна"). Data-аас `false` ирвэл дээрх
+   * тооцоо ямар байхаас үл хамааран loop УНТАРНА, тэр үед доорх
+   * `containScroll: false` нь картыг голлуулсан хэвээр байлгах ба хоёр
+   * талын peek нь ЭХНИЙ/СҮҮЛИЙН слайд дээр л алга болно (хөрш байхгүй тул
+   * зарчмын хувьд гаргах боломжгүй) — дунд слайд дээр хэвээр.
    */
-  const canLoop = cards.length > 2;
+  const canLoop = loop && cards.length > 2;
   const [api, setApi] = useState<CarouselApi>();
   /**
    * Идэвхтэй индекс. Effect-ийн БИЕД `setState` дуудахгүй
@@ -274,26 +336,180 @@ function PlanTabs({
  * SMART DATA/TALK) дээр дата pill ба үнийн мөр ОГТ гарахгүй, `title` нь
  * нэрийн оронд орно.
  */
+/**
+ * ХОЁР ХЭЛБЭРИЙН ХУВААРИЛАГЧ.
+ *
+ * `groups` бий → ҮЗҮҮЛЭЛТИЙН карт (Univision, захиалагчийн 2026-09-09-ны
+ *   screenshot). Зураг байхгүй, badge · нэр+үнэ · хүснэгт · линк.
+ * эс бөгөөс → ЗУРАГТАЙ карт (Unitel) — 1:1 слот + ✦ жагсаалт + доод CTA.
+ *
+ * Брэндийн шалгалт БАЙХГҮЙ: хэлбэрийг ЗӨВХӨН дата шийднэ. Тиймээс Unitel
+ * дээр `groups` өгөх өдөр компонент хөндөгдөхгүй, эсрэгээр ч мөн адил.
+ */
 function PlanCard({ card }: { card: PlanCardContent }) {
+  if (card.groups?.length) return <PlanSpecCard card={card} />;
+  return <PlanPhotoCard card={card} />;
+}
+
+/**
+ * ҮЗҮҮЛЭЛТИЙН КАРТ — захиалагчийн 2026-09-09-ны screenshot.
+ *
+ *   ┌───────────────────────────────┐
+ *   │ (САНАЛ БОЛГОХ)                │ ← ногоон pill, зөвхөн `recommended`
+ *   │ L+                   79'900₮  │ ← нэр зүүн, үнэ баруун
+ *   │            / сарын суурь …/   │ ← `priceNote`
+ *   │ ᯤ Интернэт                    │
+ *   │   Үндсэн хурд   100Mbps* хүр… │
+ *   │   Дата эрх              1 TB  │
+ *   │ ▭ IPTV · ▶ Энтертайнмент · ☎  │
+ *   │        Дэлгэрэнгүй харах      │ ← төвд, доогуур зураастай
+ *   └───────────────────────────────┘
+ *
+ * ⚠️ БҮТЭН КАРТ ЛИНК БИШ. Доод линк нь ГАНЦ дарах цэг: хүснэгтэн дэх
+ * шошго/утга нь унших зүйл тул тэднийг дарагдах талбай болгох нь хэрэглэгчийг
+ * "юуг дарж болох вэ" гэж таамаглуулна. (Зурагтай карт нь мөн ижил зарчим —
+ * тэнд ч зөвхөн CTA линк.)
+ *
+ * ⚠️ `<dl>` — шошго → утга нь ТОДОРХОЙЛОЛТЫН жагсаалт, `<div>` биш.
+ * Screen reader "Үндсэн хурд: 100Mbps" гэж ХОСООР уншина; `<div>` бол хоёр
+ * тусдаа мөр болж, аль утга алинд хамаарахыг хэлэхгүй.
+ */
+function PlanSpecCard({ card }: { card: PlanCardContent }) {
+  const featured = card.recommended === true;
+
+  return (
+    <article
+      className={cn(
+        "bg-card relative flex h-full flex-col rounded-3xl border p-5 md:p-6",
+        featured ? "shadow-lg" : "border-border hover:shadow-md",
+      )}
+      // ⚠️ Ногоон хүрээ — захиалагчийн "activated мэт ногоон border-той
+      // байна" (2026-09-09). Screenshot дээр хүрээ тод харагдахгүй ч
+      // бичгээр ирсэн зааврыг дагав.
+      style={featured ? { borderWidth: 2, borderColor: ACCENT } : undefined}
+    >
+      {/* ── BADGE ──
+          ⚠️ ХООСОН ЗАЙ ХАДГАЛАГДАНА (`h-7` — badge-гүй картад ч).
+          Үүнгүй бол L+ карт бусдаасаа 28px өндөр болж, `md:grid-cols-3`
+          эгнээнд нэр+үнэ мөр нь хөршүүдтэйгээ ЭГНЭХГҮЙ. */}
+      <div className="mb-3 h-7">
+        {featured && (
+          <span
+            className="inline-flex h-7 items-center rounded-full px-3 text-[11px] font-bold tracking-wide text-white uppercase"
+            style={{ backgroundColor: ACCENT }}
+          >
+            {/* `uppercase` нь CSS-ээр — тогтмол нь "Санал болгох" (захиалагчийн
+                2026-09-09-ны бичвэр), screenshot дээр ТОМ үсгээр харагдана.
+                Ингэснээр хоёр заавар зэрэг биелнэ, мөн screen reader
+                хашгирахгүй (CSS transform нь уншилтад нөлөөлөхгүй). */}
+            {RECOMMENDED_BADGE}
+          </span>
+        )}
+      </div>
+
+      {/* ── НЭР + ҮНЭ ── */}
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-foreground text-3xl leading-none font-extrabold tracking-tight">
+          {card.title}
+        </h3>
+        {card.price && (
+          <div className="shrink-0 text-right">
+            <p className="text-foreground text-2xl leading-none font-extrabold tracking-tight">
+              {card.price}
+            </p>
+            {card.priceNote && (
+              <p className="text-muted-foreground mt-1.5 text-[11px] leading-tight">
+                {card.priceNote}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── ҮЗҮҮЛЭЛТИЙН БҮЛГҮҮД ──
+          `flex-1` — багц бүр өөр тооны бүлэгтэй (M+ нь 3, L+/XL+ нь 4) тул
+          зөрүүг энэ шингээж, доод линк бүх картад НЭГ шугамд эгнэнэ. */}
+      <div className="mt-6 flex-1 space-y-5">
+        {card.groups?.map((group) => (
+          <PlanSpecGroup key={group.title} group={group} />
+        ))}
+      </div>
+
+      {/* ── ДООД ЛИНК — ТӨВД, доогуур зураастай ──
+          ⚠️ Дүүрэн товч БИШ (зурагтай картын `bg-foreground` CTA-аас
+          өөр): screenshot дээр энэ нь энгийн текст линк. `min-h-11` нь
+          хүрэх талбайг 44px болгоно (WCAG 2.5.8). */}
+      <div className="border-border mt-6 flex justify-center border-t pt-4">
+        <Link
+          href={card.href}
+          className="text-foreground focus-visible:ring-ring inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold underline decoration-1 underline-offset-4 transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:outline-none"
+        >
+          {card.ctaLabel}
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+/** Дүрс + бүлгийн гарчиг, доор нь шошго → утга мөрүүд. */
+function PlanSpecGroup({ group }: { group: PlanGroup }) {
+  const Icon = PLAN_GROUP_ICONS[group.icon];
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <Icon className="size-5 shrink-0" style={{ color: ACCENT }} aria-hidden="true" />
+        <h4 className="text-foreground text-sm font-bold">{group.title}</h4>
+      </div>
+      {/* `pl-7` = дүрс (20) + зай (8) — утгын мөрүүд гарчигтайгаа эгнэнэ. */}
+      <dl className="mt-1.5 space-y-1 pl-7">
+        {group.features.map((feature) => (
+          <div key={feature.label} className="flex items-baseline justify-between gap-3 text-sm">
+            <dt className="text-muted-foreground">{feature.label}</dt>
+            <dd className="text-foreground text-right font-semibold">{feature.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+function PlanPhotoCard({ card }: { card: PlanCardContent }) {
   const plan = card.planId ? mobilePlans.find((p) => p.id === card.planId) : undefined;
   const featured = card.recommended === true;
   const hasImage = Boolean(card.image);
+  /**
+   * ҮНЭ — ХОЁР ЭХ СУРВАЛЖ, `planId` нь ЭРХ ЧӨЛӨӨТЭЙ:
+   *   `planId` бий  → `mobile-plans.ts` (Unitel-ийн мобайл тариф)
+   *   эс бөгөөс     → `card.price` (Univision — `plans.ts`-ээс уншсан)
+   * Хоёр зэрэг өгвөл `planId` хожино: тэр нь НЭГ эх сурвалжийн зарчмыг
+   * (тариф нэг файлд) хамгаална.
+   */
+  const price = plan?.price ?? card.price;
 
   return (
     <article
       className={cn(
         // `overflow-hidden` — зураг нь картын дугуй буланг давахгүй.
         "bg-card relative flex h-full flex-col overflow-hidden rounded-3xl border p-3 md:p-4",
-        // ⚠️ НОГООН ХҮРЭЭ ХАСАГДСАН (2026-09-07, захиалагчийн шийдвэр).
-        // Өмнө нь санал болгож буй карт `border-2` + `borderColor: ACCENT`
-        // (брэндийн ногоон) авдаг байв. Одоо хүрээ нь бусадтай ИЖИЛ.
+        // ⚠️⚠️ НОГООН ХҮРЭЭ СЭРГЭВ (2026-09-09, захиалагч Univision-ы L+
+        // багц дээр: "activated мэт ногоон border-той байна").
         //
-        // Онцлохыг заасан ХОЁР дохио ҮЛДСЭН тул карт танигдахаа болиогүй:
-        //   1. `shadow-lg` — хөрш картуудын `hover:shadow-md`-ээс тод
-        //   2. зургийн баруун дээд булангийн ★ "ТАНД ТОХИРНО" тэмдэг,
-        //      түүний дугуй нь брэндийн ногоон хэвээр
-        featured ? "border-border shadow-lg" : "border-border hover:shadow-md",
+        // ТҮҮХ: 2026-09-07-нд ЭНЭ ХҮРЭЭ ЗАХИАЛАГЧИЙН ШИЙДВЭРЭЭР ХАСАГДСАН
+        // байсан. Одоо тэр шийдвэр эргэсэн тул буцаав — өмнөх шийдвэрийг
+        // "мартаж" биш, ЗӨРИУД дарж бичиж байгааг тэмдэглэв.
+        //
+        // ⚠️ ЭНЭ НЬ UNITEL-Д Ч ХАМААРНА: `unitelRecommendedPlans`-ийн
+        // PRIORITY карт `recommended: true` тул тэнд ч ногоон хүрээ
+        // гарна. Unitel-ыг хүрээгүй байлгах бол `recommended`-аас ТУСДАА
+        // туг (ж. `PlanCardContent.activeBorder`) хэрэгтэй — захиалагчийн
+        // шийдвэрийг хүлээж, одоогоор НЭГ зан хоёр брэндэд.
+        //
+        // `shadow-lg` ба ★ badge нь ХЭВЭЭР — гурав дахин дохиолох нь
+        // хэтэрхий гэж үзвэл `shadow-lg`-ийг л хасна (хүрээ нь илүү
+        // тодорхой дохио).
+        featured ? "shadow-lg" : "border-border hover:shadow-md",
       )}
+      style={featured ? { borderWidth: 2, borderColor: ACCENT } : undefined}
     >
       {/* ── 1:1 СЛОТ + дээр нь суух мэдээлэл ──
           ⚠️ ЭНЭ СЛОТ КАРТ БҮРД ГАРНА, зурагтай эсэхээс ҮЛ ХАМААРЧ. Түр
@@ -362,8 +578,11 @@ function PlanCard({ card }: { card: PlanCardContent }) {
           зай. Зургийн слот нь картын ирмэгээс 12px байхад бичвэр нь 20px
           дотогш суух нь оптик тэнцвэрийг өгнө (зураг өөрөө ирмэгтэй,
           бичвэр биш). */}
+      {/* `?? []` — `highlights` нь заавал биш болсон (`groups`-тай карт
+          түүнийг хэрэглэдэггүй). Хоосон үед `flex-1` нь зайг эзэлсэн
+          хэвээр байх тул үнэ/CTA мөр доод ирмэгтээ үлдэнэ. */}
       <ul className="flex-1 space-y-3 px-2 pt-5">
-        {card.highlights.map((h) => (
+        {(card.highlights ?? []).map((h) => (
           <li key={h} className="text-foreground flex items-start gap-2.5 text-sm">
             <span
               aria-hidden="true"
@@ -385,13 +604,22 @@ function PlanCard({ card }: { card: PlanCardContent }) {
           ⚠️ `planId` байхгүй карт дээр зөвхөн CTA гарна (үнэ нь хаанаас ч
           ирэхгүй тул хуурамч тоо зохиохгүй). */}
       <div className="border-border mt-5 flex items-center justify-between gap-3 border-t px-2 pt-4">
-        {plan ? (
+        {price ? (
           <div className="min-w-0">
-            <p className="text-muted-foreground text-xs">Суурь хураамж:</p>
-            {/* ⚠️ `mobile-plans.ts`-ийн үнэ нь НӨАТ-ГҮЙ (тэр файлын тайлбарт
-                заасан). Тэр тэмдэглэлийг картад бичээгүй — загварт байхгүй
-                бөгөөд `/main-packages` хуудсанд бүрэн тайлбар байдаг. */}
-            <p className="text-foreground text-xl font-extrabold tracking-tight">{plan.price}</p>
+            {/* ⚠️ ХОЁР ЭХ СУРВАЛЖ, ХОЁР ТЭМДЭГЛЭЛ:
+                `planId` (Unitel, `mobile-plans.ts`) → "Суурь хураамж:"
+                `card.price` (Univision, `plans.ts`) → захиалагчийн бичсэн
+                  "/ сарын суурь хураамж /НӨАТ-гүй үнэ/" (`priceNote`)
+                Тэмдэглэл нь ҮНЭЭС ӨМНӨ эсвэл ХОЙНО байхыг эх сурвалж
+                өөрөө шийднэ — Unitel-д дээр (шошго), Univision-д доор
+                (тодотгол) байх нь захиалагчийн загварын дагуу. */}
+            {!card.priceNote && <p className="text-muted-foreground text-xs">Суурь хураамж:</p>}
+            <p className="text-foreground text-xl font-extrabold tracking-tight">{price}</p>
+            {card.priceNote && (
+              <p className="text-muted-foreground mt-0.5 text-[11px] leading-tight">
+                {card.priceNote}
+              </p>
+            )}
           </div>
         ) : (
           <span aria-hidden="true" />

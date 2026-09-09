@@ -5,13 +5,19 @@
  *  - `apps`   — ТОМ center-peek carousel (гарчиг · тайлбар · CTA харагдана)
  *  - `movies` — ЖИЖИГ center-peek carousel (зөвхөн нэр, md+ дээр)
  *
- * ⚠️ АГУУЛГА БҮХЭЛДЭЭ PLACEHOLDER. Зураг ч, бичвэр ч жинхэнэ биш —
- * зөвхөн слотуудыг НЭРЛЭСЭН. Компонент нь `image` байхгүй үед `shade`
- * дэвсгэр + `photoLabel`-ийн том бүдэг бичээсээр буулгадаг.
+ * ⚠️ ЗУРАГ БОЛОН НЭР 2026-09-09-НД БОДИТ БОЛОВ (захиалагчийн заавар:
+ * "Univision-ы веб-г сайжруулъя … энтертайнмэнт хэсгийн зургийг авч
+ * оруулъя"). Өмнө нь "Package picture N" / "Movie picture N" гэсэн
+ * шошготой хоосон слот байв.
  *
- * Жинхэнэ контент холбогдох үед: `photoLabel` → `image`, `name`/
- * `description`-д бодит бичвэр. Компонент хөндөх шаардлагагүй.
+ * ⚠️ `photoLabel` ТАЛБАР ХЭВЭЭР. Зураг ачаалагдаагүй/олдоогүй үед карт
+ * хоосон биш байлгах нөөц (`promo-banner.ts`-ийн `placeholderText`-тэй
+ * ижил зарчим) — тиймээс `image` бүх мөрөнд байгаа ч хассангүй.
  */
+import { tvodMovies } from "@/data/tvod-movies";
+
+/** Univision-ы ТВ апп-ын зургийн хавтас. */
+const UNIVISION_APPS = "/Univision/apps";
 
 export type MarqueeItem = {
   id: string;
@@ -28,66 +34,139 @@ export type MarqueeItem = {
   shade: "light" | "medium" | "dark";
   /** Landscape зураг — байхгүй үед `shade` + `photoLabel` placeholder */
   image?: string;
+  /**
+   * НАСАНД ХҮРЭГЧДИЙН КОНТЕНТ (2026-09-09, захиалагчийн заавар: "4-ләнг нь
+   * харуулах гэхдээ blur хийгдсэн, насанд хүрэгчдийн контент гэсэн
+   * анхааруулгатайгаар л харуул").
+   *
+   * `true` бол `CarouselCard` нь зургийг ЗАМБАРААГҮЙ болгож (blur) дээр нь
+   * бичвэрээр анхааруулга гаргана. Гарчиг, тайлбар, CTA нь ХЭВЭЭР —
+   * хэрэглэгч юу байгааг мэдэх ёстой, зөвхөн ЗУРАГ нь хаагдана.
+   *
+   * ⚠️ Blur нь ЗӨВХӨН ХАРАГДАХ хамгаалалт — зураг өөрөө татагдсаар байна
+   * (DOM-д `src` хэвээр). Жинхэнэ хязгаарлалт (нас батлах, контент нуух)
+   * серверийн талд, нэвтрэлтийн дараа хийгдэх ёстой. Энэ туг нь нүүр
+   * хуудсан дээрх ХАРАГДАЦЫН асуудлыг л шийднэ.
+   */
+  restricted?: boolean;
 };
 
 // ====================================================
-// APPS — ТОМ carousel. Дугаарласан шалтгаан: carousel-д нэг зэрэг НЭГ карт
-// харагддаг тул бүгд ижил бичвэртэй байвал шилжиж байгаа эсэх нь мэдэгдэхгүй.
-// (`promo-banner.ts > samplePromoCards`-тай ижил зарчим.)
+// ТВ АПП — ТОМ carousel. `public/Univision/apps/`-ийн 4 зураг.
+//
+// ⚠️ НЭРС нь ЗУРАГ/ФАЙЛААС гарсан, ЗОХИОГООГҮЙ:
+//   hbo-max.png     → зурган дээр "HBO max" лого
+//   sport-app.png   → MBA × EASL, "THE LEAGUE · ҮНДЭСНИЙ ДЭЭД ЛИГ",
+//                     "2025-2026 SEASON" (файлын нэр "sport-app")
+//   m-karaoke.jpg   → микрофоны зураг, файлын нэр "m-karaoke"
+//   adult-app.png   → зурган дээр "НУУЦ ӨРӨӨ" + "+18"
+//
+// ⚠️⚠️ ТАЙЛБАР БИЧВЭР — ХОЁР ТӨРӨЛ, ялгааг мэдэж байх шаардлагатай:
+//   HBO Max     creative-ийн бичвэрийг ЯГ ТЭР ЧИГЭЭР буулгасан
+//               ("Дэлхийн шилдэг стрийминг платформ ЮНИВИШНД" —
+//               `Most  popular/attachment.jpeg` дээр бий)
+//   Спорт Апп   зурган дээрх лого/бичээсээс эмхэлсэн (лиг, сезон).
+//               ⚠️ БИЧИГЛЭЛ "Спорт Апп" (том А) — захиалагчийн 2026-09-09-ны
+//               бичвэрийн дагуу. Creative дээр "Спорт апп" гэж жижгээр
+//               бичигдсэн боловч нэг нүүрэн дээр (энэ carousel · "Эрэлттэй
+//               байгаа үйлчилгээ" · "Онцлох урамшуулал") нэг бүтээгдэхүүн
+//               ГУРВАН газар гарах тул бичиглэлийг нэгтгэв.
+//   M-Karaoke   ЗУРГАН ДЭЭР БИЧВЭР БАЙХГҮЙ — нэрнээс гарах хамгийн
+//               бага мэдэгдэл л бичсэн. ⚠️ ЖИНХЭНЭ COPY ХЭРЭГТЭЙ.
+//   Нууц өрөө   "+18" тэмдгээс гарсан бодит статус
+// Маркетингийн нэхэмжлэл (үнэ, "хамгийн", "шууд дамжуулалт" г.м) ХААНА Ч
+// нэмээгүй — creative дээр байхгүй зүйлийг цэс/нүүрэнд бичихгүй.
 // ====================================================
 export const apps: MarqueeItem[] = [
   {
-    id: "package-1",
-    photoLabel: "Package picture 1",
-    name: "Package name 1",
-    description: "Description",
-    href: "#",
+    id: "hbo-max",
+    photoLabel: "HBO Max",
+    name: "HBO Max",
+    description: "Дэлхийн шилдэг стрийминг платформ Юнивишнд.",
+    href: "/#",
     shade: "dark",
+    image: `${UNIVISION_APPS}/hbo-max.png`,
   },
   {
-    id: "package-2",
-    photoLabel: "Package picture 2",
-    name: "Package name 2",
-    description: "Description",
-    href: "#",
+    id: "sport-app",
+    photoLabel: "Спорт Апп",
+    name: "Спорт Апп",
+    description: "Үндэсний дээд лиг ба EASL — 2025-2026 оны тэмцээн.",
+    href: "/#",
+    shade: "dark",
+    image: `${UNIVISION_APPS}/sport-app.png`,
+  },
+  {
+    id: "m-karaoke",
+    photoLabel: "M-Karaoke",
+    name: "M-Karaoke",
+    description: "Караоке апп.",
+    href: "/#",
     shade: "medium",
+    image: `${UNIVISION_APPS}/m-karaoke.jpg`,
   },
   {
-    id: "package-3",
-    photoLabel: "Package picture 3",
-    name: "Package name 3",
-    description: "Description",
-    href: "#",
-    shade: "light",
-  },
-  {
-    id: "package-4",
-    photoLabel: "Package picture 4",
-    name: "Package name 4",
-    description: "Description",
-    href: "#",
+    id: "adult-app",
+    photoLabel: "Нууц өрөө",
+    name: "Нууц өрөө",
+    description: "Насанд хүрэгчдэд зориулсан контент.",
+    href: "/#",
     shade: "dark",
+    image: `${UNIVISION_APPS}/adult-app.png`,
+    restricted: true,
   },
 ];
 
 // ====================================================
-// MOVIES — ЖИЖИГ carousel.
+// КИНО — ЖИЖИГ carousel.
 //
-// ⚠️ Өмнө нь `tvod-movies.ts`-ээс бодит 8 киног (Dune, Oppenheimer …)
-// постертой нь татдаг байсныг ХАСАВ: агуулга placeholder болсон тул тэр
-// хамаарал шаардлагагүй, мөн тэнд id таарахгүй бол `throw` хийдэг байв.
+// ⚠️ `tvod-movies.ts`-ЭЭС ДАХИН ХОЛБОГДЛОО (2026-09-09, захиалагч:
+// "public/tvod энд кинонууд байгаа"). Тэнд 55 кино, `public/tvod/`-д 50
+// бодит постер бий — өөрөөр хэлбэл Univision-д ШИНЭ зураг шаардахгүй.
+//
+// ⚠️ ЯАГААД ХАСАГДСАН БАЙСАН: агуулгыг placeholder болгох үед хамаарлыг
+// таслав, мөн хуучин код id таарахгүй бол `throw` хийдэг байсан. Одоо
+// `slice` хэрэглэж байгаа тул тэр эрсдэл БАЙХГҮЙ — id гараар бичээгүй.
+//
+// ⚠️ ЭХНИЙ 8 — `tvodMovies`-ийн дараалал нь тэр файлд ГАРААР эрэмбэлэгдсэн
+// (эхний 5 нь "бодит постертой" гэж тэмдэглэгдсэн блок). Найман постер
+// бүгд `public/tvod/`-д БАЙГАА эсэхийг шалгасан:
+//   obsession · mortal-kombat-2 · demon-slayer-infinity-castle · michael ·
+//   normal · dune-part-two · oppenheimer · barbie
+// Эрэмбийг сольвол ДАХИН шалгах шаардлагатай (постергүй 5 кино бий).
+//
+// ⚠️ `poster` нь `undefined` байж болох тип тул `image`-д шууд дамжуулна —
+// байхгүй бол компонент нь `photoLabel` placeholder буулгана, эвдрэхгүй.
+//
+// ⚠️⚠️ `href` нь `/#` — `/entertainment/movie/${id}` руу заавал ҮГҮЙ.
+// 2026-09-09-ны шийдвэрээр НҮҮРНЭЭС БУСАД бүх зам ажиллахгүй болсон
+// (захиалагч: "home page-ээс бусад бүх path-г ажиллахааргүй болгохоор
+// home page дээрх href-г /# болго"). Кино хуудсууд өөрсдөө УСТААГҮЙ тул
+// замууд сэргэх үед энд `/entertainment/movie/${movie.id}` болгоно.
 // ====================================================
-export const movies: MarqueeItem[] = Array.from({ length: 8 }, (_, i) => ({
-  id: `movie-${i + 1}`,
-  photoLabel: `Movie picture ${i + 1}`,
-  name: `Movie name ${i + 1}`,
-  description: "Description",
-  href: "#",
+export const movies: MarqueeItem[] = tvodMovies.slice(0, 8).map((movie, i) => ({
+  id: movie.id,
+  photoLabel: movie.title,
+  name: movie.title,
+  /**
+   * ЖИЖИГ картанд тайлбар РЕНДЕРЛЭГДДЭГГҮЙ (`featured-marquee.tsx` нь
+   * `variant === "small"` үед зөвхөн `name` гаргана) — тип шаарддаг тул
+   * жанр л тавив. Постер дээр бичвэр давхарлахгүй.
+   */
+  description: movie.genres.slice(0, 2).join(" · "),
+  href: "/#",
   shade: (["light", "medium", "dark"] as const)[i % 3],
+  image: movie.poster,
 }));
 
 export const featuredSection = {
-  title: "Энтертайнмэнттэй холбоотой гарчиг энд байрлана",
+  /**
+   * ⚠️ ГАРЧИГ ЗАСВАРЛАГДСАН. Өмнө нь "Энтертайнмэнттэй холбоотой гарчиг энд
+   * байрлана" гэсэн ил placeholder байв. Одоо mega menu-ийн ангиллын
+   * нэртэй (`Энтертайнмэнт`) НЭГ үг — хоёр давхарга ижил үгээр ярина.
+   * Маркетингийн уриа ЗОХИООГҮЙ; батлагдсан уриа гарвал энд солино.
+   */
+  title: "Энтертайнмент",
   /** ТОМ картын товчны бичвэр */
-  ctaLabel: "CTA button",
+  ctaLabel: "Дэлгэрэнгүй",
 };

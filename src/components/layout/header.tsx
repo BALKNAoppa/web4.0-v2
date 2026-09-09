@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, ChevronDown, Globe, Layers, Sparkles, X } from "lucide-react";
+import { ArrowUp, ChevronDown, Layers, Sparkles, X } from "lucide-react";
 
-import { ThemeToggle } from "@/components/theme-toggle";
 import { AudienceSwitchTabs } from "@/components/layout/audience-switch";
 import { MobileBrandHeader, type MobileVariant } from "@/components/layout/mobile-header";
 import {
@@ -14,6 +13,9 @@ import {
   BrandMegaPanel,
   DOMAIN_NAV_NAME,
   IconButton,
+  LOOKTV_MORPH_TEXTS,
+  LanguagePill,
+  ThemePill,
   classifierSegments,
   useBrandMegaMenu,
   useCurrentNavName,
@@ -23,6 +25,8 @@ import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/he
 import { navType } from "@/lib/nav-type";
 import { ASSISTANT_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
+import { sectionBg } from "@/lib/section-bg";
+import { MorphingText } from "@/components/ui/morphing-text";
 
 type Variant = HeaderVariant;
 
@@ -95,21 +99,44 @@ const MEGA_PANEL_ID = "brand-mega-panel";
 const NAV_ORDER = NAV_ITEMS.map((item) => item.name);
 
 /**
- * Баруун талын хэрэгслүүд — хоёр хувилбарт ИЖИЛ: профайл · хэл · theme.
+ * КАПСУЛ ДОТОРХ ХЭРЭГСЛИЙН БҮЛЭГ — ⊕MN · профайл · theme
+ * (2026-09-09, захиалагчийн screenshot).
  *
- * Анхаар: "Хэл солих" нь ОДООГООР зөвхөн харагдах тал. Проектод i18n
- * давхарга байхгүй (`layout.tsx` дээр `lang="mn"` тогтмол, бүх data монгол)
- * тул дарахад сольж болох зүйл байхгүй. i18n нэмэгдмэгц MN/EN сонголттой
- * dropdown болгоно. `header-archive.tsx`-д ч ижил placeholder байсан.
+ * ⚠️ ХЭЛБЭР Л ЭНД, КОМПОНЕНТ НЬ `header-shared.tsx`-Д. `LanguagePill` ба
+ * `ThemePill` нь мобайлын хувилбар 3-ын drawer-тай ЯГ ижил компонент —
+ * зөвхөн `className` (дугуй, 36px) нь өөр. Тиймээс дүрс, өнгө, зан төлөв
+ * хоёр давхаргад хэзээ ч зөрөхгүй.
+ *
+ * `bg-muted/60` бүлгийн дэвсгэр — screenshot дээр гурав нь НЭГ саарал
+ * капсулын дотор сууж, лого/цэснээс тусдаа "хэрэгслийн" блок болж
+ * харагдана. Тусад нь тавибал капсул дотор капсул биш, гурван цэг л болно.
  */
+const HEADER_TOOL_GROUP = "bg-muted/60 flex items-center gap-0.5 rounded-full p-1";
+
+/** Бүх хэрэгслийн ХУВААЛЦАХ суурь — дугуй, 36px, төвлөрсөн. */
+const HEADER_TOOL_BASE =
+  "text-foreground focus-visible:ring-ring inline-flex items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none";
+
+/** Бичвэртэй (MN) — өргөн нь агуулгаараа. */
+const HEADER_TOOL_TEXT = cn(HEADER_TOOL_BASE, "h-9 gap-1.5 px-3");
+
+/**
+ * Зөвхөн дүрстэй — 36×36 дөрвөлжин (WCAG 2.5.8-ын 24px-ээс дээгүүр).
+ * `hover:bg-background` — саарал бүлгийн дотор ЦАЙВАР болж тодрох нь
+ * `hover:bg-muted` -ээс тод (бүлэг өөрөө аль хэдийн muted).
+ */
+const HEADER_TOOL_ICON = cn(HEADER_TOOL_BASE, "hover:bg-background size-9");
+
 function HeaderTools() {
   return (
-    <div className="flex items-center gap-0.5">
-      <AccountMenu />
-      <IconButton label="Хэл солих">
-        <Globe className="size-5" />
-      </IconButton>
-      <ThemeToggle />
+    <div className={HEADER_TOOL_GROUP}>
+      {/* ДАРААЛАЛ = screenshot: ⊕MN → профайл → theme */}
+      <LanguagePill className={HEADER_TOOL_TEXT} />
+      {/* ⚠️ `ProfilePill` БИШ `AccountMenu` — dropdown (нэр + Гарах) нь
+          desktop-д хэрэгтэй, `ProfilePill` нь шууд гаргадаг. Тайлбарыг
+          `header-shared.tsx > AccountMenu`-д үз. */}
+      <AccountMenu className={HEADER_TOOL_ICON} />
+      <ThemePill className={HEADER_TOOL_ICON} />
     </div>
   );
 }
@@ -309,7 +336,27 @@ function CategoryNav({
       {NAV_ITEMS.map((item) => {
         const highlighted = !item.external && item.name === highlightedName;
         const isCurrentPage = !item.external && item.name === currentName;
-        const label = item.name;
+        /**
+         * ⚠️ LOOKTV — MagicUI-ийн `MorphingText` (2026-09-09, захиалагчийн
+         * заавар). Бусад ангилал нь ердөө нэр.
+         *
+         * `morphTime`/`cooldownTime` нь MagicUI-ийн анхдагч (1.5 / 0.5)-аас
+         * ӨӨР: тэр нь 2 сек тутам солигддог бөгөөс header-т байнга хөдөлж
+         * байгаа бичвэр нь навигацийг уншихад саад болно. 0.9 + 2.6 = нэг
+         * бичвэр ~3.5 сек тогтоно, LookTV → Илүүг Үз → LookTV нь ~7 сек —
+         * хуучин glitch-ийн 6 сек мөчлөгтэй ойролцоо хэмнэл.
+         *
+         * ⚠️ ӨРГӨН нь компонентын дотоод "хэмжээ тогтоогч"-оос гарна
+         * ("Илүүг Үз" нь "LookTV"-ээс урт) тул хажуугийн ангиллууд уусалтын
+         * үед ХӨДЛӨХГҮЙ — хуучин glitch-ийн layout-д нөлөөлөхгүй шинжийг
+         * хадгалав.
+         */
+        const label =
+          item.name === "LookTV" ? (
+            <MorphingText texts={LOOKTV_MORPH_TEXTS} morphTime={0.9} cooldownTime={2.6} />
+          ) : (
+            item.name
+          );
         const linkClass = cn(
           // ⚠️ ҮСГИЙН ЗУЗААН СОЛИГДОХГҮЙ (`navType.bar` бүгдэд). Тодотгол нь
           // hover-оор зөөгддөг болсон тул зузаан сольвол элементийн өргөн
@@ -323,10 +370,9 @@ function CategoryNav({
               // түүнийг тогтмол болгоно (шинэ элемент нэмэхгүй).
               "text-foreground after:scale-x-100"
             : "text-foreground/75 hover:text-foreground",
-          // LookTV — RGB glitch (`globals.css` → `.glitch-text`). Зөвхөн
-          // `text-shadow` хөдөлдөг тул элементийн ӨРГӨН өөрчлөгдөхгүй,
-          // хажуугийн ангиллууд хөдлөхгүй.
-          item.name === "LookTV" && "glitch-text",
+          // ⚠️ `glitch-text` ХАСАГДСАН — LookTV нь одоо `MorphingText`
+          // (доорх `label`-ийг үз). `globals.css`-ийн `.glitch-text` дүрэм
+          // ба хоёр keyframe ч хамт устсан.
         );
 
         // appleMegaMenus-д бичлэгтэй ангилал — hover/гараар панел задарна
@@ -471,7 +517,36 @@ function MegaLayer({
       onMouseEnter={() => onOpen(panelBrand)}
       onMouseLeave={onClose}
       className={cn(
-        "border-border bg-popover text-popover-foreground absolute inset-x-0 top-full z-50 hidden overflow-hidden border-t shadow-xl lg:block",
+        /**
+         * ⚠️ БҮТЭН ӨРГӨН → ГОЛЛУУЛСАН ХӨВӨГЧ ПАНЕЛ (2026-09-09, захиалагч:
+         * "header дээрх mega menu-г голлуулаад …").
+         *
+         * ӨМНӨ НЬ: `inset-x-0` + `border-t` — панел нь дэлгэцийн ЗАХААС ЗАХ
+         * хүрч, дөрвөлжин булантай, header-ийн доод зураас мэт наалддаг байв.
+         * Тэр нь ХАВТГАЙ header-т зохилдож байсан; header нь одоо
+         * бөөрөнхий ХӨВӨГЧ КАПСУЛ болсон тул хоёр хэлбэр зөрж, панел нь
+         * "өөр системийн" хэсэг мэт харагдаж байлаа.
+         *
+         * ОДОО: `mx-auto max-w-300` (капсултай ЯГ ижил өргөн) +
+         * `rounded-[32px]` + `border` (дөрвөн талд) + `mt-2` зай. Панел нь
+         * капсулын ЯГ ДООР, ижил хүрээнд, ижил хэлбэрийн хэлээр байрлана.
+         *
+         * ⚠️ `inset-x-0` ХЭВЭЭР: `absolute` элемент нь өргөнөө агуулгаасаа
+         * авдаг тул түүнгүйгээр `mx-auto` голлуулах ЮМ БАЙХГҮЙ болно
+         * (`max-w-300` нь дээд хязгаар л, өргөн биш). `px-4` нь нарийн
+         * дэлгэцэнд панелыг ирмэгт наалдуулахгүй.
+         *
+         * ⚠️ `BranchedMegaPanel`-ийн ДОТООД `mx-auto max-w-300` нь одоо
+         * ДАВХАРДАЛ боловч ХӨНДӨӨГҮЙ: 1200px хүрээ дотор 1200px хязгаар нь
+         * no-op бөгөөс тэр компонентыг `header-archive.tsx` ч дуудаж болно.
+         *
+         * ⚠️ ДЭВСГЭР, ХҮРЭЭ, БУЛАН нь ДООРХ хүүхэд (`key={panelBrand}`) дээр
+         * — энэ гаднах элемент нь ЗӨВХӨН байрлал ба opacity/translate-ийн
+         * шилжилтийг хариуцна. Хоёрыг нэг элемент дээр хамт тавибал
+         * `px-4` доторх дэвсгэр нь ирмэг хүртэл татагдаж, голлуулалт
+         * үгүй болно.
+         */
+        "absolute inset-x-0 top-full z-50 hidden px-4 lg:block",
         // ӨНДРИЙН ШИЛЖИЛТ — Unitel (6 мөр) → Univision (4 мөр) сольвол панелийн
         // өндөр ҮСРЭХГҮЙ, зөөлөн тэнийнэ. Mobile-ын `NavigationMenuViewport`
         // үүнийг `--radix-…-viewport-height` хувьсагчаар хийдэг; desktop-д тэр
@@ -494,6 +569,14 @@ function MegaLayer({
       <div
         key={panelBrand}
         className={cn(
+          /**
+           * ГОЛЛУУЛСАН ХАВТАН — header-ийн капсултай ИЖИЛ хүрээ (1200px) ба
+           * хэлбэрийн хэл. `rounded-[32px]` нь капсулын `rounded-[100px]`-аас
+           * ЖИЖИГ: 96px өндөр капсулд 100px нь бүтэн дугуй болдог, харин
+           * ~300px өндөр панелд ижил радиус нь хэт бөөрөнхий "шахмал" болно.
+           * `mt-2` (8px) — капсулаас салгах зай.
+           */
+          "border-border bg-popover text-popover-foreground mx-auto mt-2 max-w-300 overflow-hidden rounded-[32px] border shadow-xl",
           // `duration-500` — mobile-ын Content/Viewport-той ИЖИЛ хугацаа.
           // Өмнө 300 байсан тул хоёр давхарга өөр хэмнэлтэй мэдрэгддэг байв.
           "animate-in fade-in duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -543,9 +626,25 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
         />
       )}
 
-      <header className="bg-background border-border relative top-0 z-50 border-b" role="banner">
-        {/* Layer 1 — ангилагч header-ийн БАРУУН ирмэгт шахсан (зөвхөн desktop) */}
-        <div className="bg-muted/40 border-border hidden border-b lg:block">
+      {/**
+       * ⚠️ `border-b` ХАСАГДСАН (2026-09-09, захиалагчийн screenshot). Header
+       * нь одоо ХӨВӨГЧ КАПСУЛ — доод зураас нь капсулын доор өөр нэг ирмэг
+       * үүсгэж, "хөвж байгаа" мэдрэмжийг эвдэнэ. Хуудсаас салгах үүргийг
+       * капсулын `shadow-sm` авна.
+       */}
+      <header className="bg-background relative top-0 z-50" role="banner">
+        {/**
+         * Layer 1 — ангилагч header-ийн БАРУУН ирмэгт шахсан (зөвхөн desktop).
+         *
+         * ⚠️ `sectionBg.band` (=`bg-card`, #f3f5f7) ИЛ БИЧИГДСЭН. Өмнө нь
+         * дэвсгэр огт өгөөгүй, `<header>`-ийн `bg-background`-ыг өвлөж
+         * байсан — ГЭТЭЛ энэ палитрт `--background` нь #e2e8ec буюу САААРАЛ
+         * (`lib/section-bg.ts`-ийн тайлбарыг үз). Тиймээс "цагаан" гэж
+         * төлөвлөсөн зурвас саарал болж, доорх капсулын нууртай нэгдэж
+         * байв. Захиалагч: "Layer 1 буюу Хувь хэрэглэгч/Байгууллага гэдэг
+         * нь ЦАГААН bg-тэй байх ёстой".
+         */}
+        <div className={cn(sectionBg.band, "hidden lg:block")}>
           <div className="mx-auto flex h-8 max-w-300 items-center justify-end px-4">
             <AudienceSwitchTabs
               segments={classifierSegments}
@@ -557,16 +656,60 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
           </div>
         </div>
 
-        {/* Layer 2 — лого ЗҮҮН ирмэгт шахаад, араас нь ангиллын mega menu.
-            `mr-auto` нь хэрэгслүүдийг баруун ирмэг рүү түлхэнэ. */}
-        <div className="mx-auto hidden h-11 max-w-300 items-center gap-6 px-4 lg:flex">
-          <BrandLogoLink />
+        {/**
+         * Layer 2 — ХӨВӨГЧ КАПСУЛ: лого · ангиллын цэс · хэрэгслүүд
+         * (2026-09-09, захиалагч: "desktop дээрх header-ийн design-г
+         * screenshot-оор оруулсанс шиг болгоё, mobile дээр ашигласан
+         * style-уудаа ашигла").
+         *
+         * ⚠️⚠️ ХЭМЖЭЭ БА ЭФФЕКТ нь ЗАХИАЛАГЧИЙН FIGMA-ИЙН СПЕКЭЭР
+         * (2026-09-09-ны Properties панелийн screenshot). ТАМГА тус бүр:
+         *
+         *   Flow      Horizontal            → `flex`
+         *   Width     Fill (1,216px)        → `max-w-300` (1200px) + `px-4`
+         *   Height    Hug (96px)            → `h-24`
+         *   Radius    100px                 → `rounded-[100px]`
+         *   Justify   space-between         → `justify-between`
+         *   Padding   12 / 24 / 12 / 24     → `px-6` (+ өндөр нь тогтмол тул
+         *                                     босоо 12px нь `items-center`-ээр
+         *                                     автоматаар тэнцэнэ)
+         *   Fill      #000000 · 0.1%        → `bg-black/[0.001]`
+         *   Shadow    0 4 12 8 · #000 5%    → `shadow-[0_4px_12px_8px_…]`
+         *   Effects   (background blur)     → `backdrop-blur-xl`
+         *
+         * ⚠️ `bg-card` (цагаан) → `bg-black/[0.001]` + blur = ГЯЛГАР ШИЛ.
+         * Figma-ийн 0.1% хар бол ПРАКТИКТ ХАРАГДАХГҮЙ — тэр нь blur-ийг
+         * ажиллуулах "зөөлөн зөөлт" л. Тиймээс капсулыг ХАРАГДУУЛДАГ зүйл нь
+         * ЗӨВХӨН drop shadow (spread 8, 5% хар = зөөлөн хүрээлэл).
+         *
+         * ⚠️⚠️ BACKDROP BLUR НЬ ОДООГООР ҮЗЭГДЭХГҮЙ. `backdrop-filter` нь
+         * ЭЛЕМЕНТИЙН АРД байгаа зургийг л бүдгэрүүлдэг; header нь `relative`
+         * (sticky БИШ) тул капсулын ард зөвхөн `sectionBg.page`-ийн ЦУЛГУЙ
+         * саарал байна ⇒ бүдгэрүүлэх зүйл байхгүй. Шил нь ЖИНХЭНЭЭР
+         * ажиллахын тулд header нь агуулгыг ДАРЖ хөвөх (`sticky top-0`)
+         * шаардлагатай — тэр нь ЗАН ТӨЛӨВИЙН өөрчлөлт тул захиалагчийн
+         * шийдвэрийг хүлээв. Класс нь одооноос бий, sticky болмогц шууд
+         * ажиллана.
+         *
+         * ⚠️ `h-16` (64px) → `h-24` (96px). Header-ийн бодит өндрийг
+         * `HeaderHeightVar` ДИНАМИКААР хэмждэг тул hero-гийн `--header-h`
+         * тооцоо өөрөө зөв дагана — тогтмол засах шаардлагагүй.
+         */}
+        <div className={cn(sectionBg.page, "hidden lg:block")}>
+          <div className="mx-auto max-w-300 px-4 py-3">
+            {/* `justify-between` (Figma) + `gap-6` — лого ↔ цэс хоорондын
+                доод хязгаарын зай. `mr-auto` нь хэрэгслүүдийг баруун ирмэг
+                рүү түлхэнэ (space-between-тэй хамт ажиллана). */}
+            <div className="flex h-24 items-center justify-between gap-6 rounded-[100px] bg-black/[0.001] px-6 shadow-[0_4px_12px_8px_rgba(0,0,0,0.05)] backdrop-blur-xl">
+              <BrandLogoLink />
 
-          <div className="mr-auto">
-            <CategoryNav openMenu={openMenu} onOpen={openBrandMenu} onClose={closeBrandMenu} />
+              <div className="mr-auto">
+                <CategoryNav openMenu={openMenu} onOpen={openBrandMenu} onClose={closeBrandMenu} />
+              </div>
+
+              <HeaderTools />
+            </div>
           </div>
-
-          <HeaderTools />
         </div>
 
         {/* Mobile — Хувилбар 1: ангиллын мөр + капсул (2 давхарга) */}

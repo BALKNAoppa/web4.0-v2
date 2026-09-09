@@ -54,6 +54,11 @@ export const plans: Plan[] = [
         icon: "tv",
         title: "IPTV",
         features: [
+          // ⚠️ "ТВ суваг" МӨР НЭМЭГДСЭН (2026-09-09, захиалагчийн ирүүлсэн
+          // бодит тоо: M+ 80+ · L+ 120+ · XL+ 160+). Өмнө нь сувгийн тоо
+          // ХААНА Ч байхгүй байсан — нүүрний "Танд санал болгох багц"
+          // карт болон `/main-packages` хоёулаа эндээс уншина.
+          { label: "ТВ суваг", value: "80+" },
           { label: "Кино эрх", value: "8 BOX-гүй" },
           { label: "Кино багц", value: "Холливуд" },
         ],
@@ -86,6 +91,7 @@ export const plans: Plan[] = [
         icon: "tv",
         title: "IPTV",
         features: [
+          { label: "ТВ суваг", value: "120+" },
           { label: "Кино эрх", value: "20 BOX-гүй" },
           { label: "Кино багц", value: "Холливуд, Ази" },
         ],
@@ -122,6 +128,7 @@ export const plans: Plan[] = [
         icon: "tv",
         title: "IPTV",
         features: [
+          { label: "ТВ суваг", value: "160+" },
           { label: "Кино эрх", value: "100+ BOX-гүй" },
           { label: "Кино багц", value: "Холливуд, Ази, Монгол" },
         ],

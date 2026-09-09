@@ -18,7 +18,7 @@ import { univisionRecommendedPlans } from "@/data/recommended-plans";
  *   4. `FeaturedServices`     — Онцлох / эрэлттэй үйлчилгээ  ← ШИНЭ
  *   5. `Promotions`           — Урамшуулал
  *   6. `FeaturedMarquee`     — Энтертайнмэнт (v1-ээс, зураггүй)
- *   7. `TrustBuild`          — Итгэл төрүүлэх, 3 блок (Jio загвар)
+ *   ~~7. `TrustBuild` — Итгэл төрүүлэх, 3 блок~~ ХАСАГДСАН (доор үз)
  *   8. `AppPromo`             — Апп татах
  *
  * ⚠️ `TrustOrbit` (wifi pulse) ТҮР ИДЭВХГҮЙ. Устгаагүй — компонент бүрэн
@@ -30,6 +30,12 @@ import { univisionRecommendedPlans } from "@/data/recommended-plans";
  * `#main-content`-ийн ШУУД хүүхэд байх ёстой.
  */
 void TrustOrbit;
+/**
+ * ⚠️ `TrustBuild` ч мөн ТҮР ИДЭВХГҮЙ болов (2026-09-09) — доорх рендерийн
+ * тайлбарыг үз. Import хэвээр байгаа нь ЗӨРИУД: буцаахад ганц мөрийн
+ * comment авахад л хангалттай.
+ */
+void TrustBuild;
 
 export function UnivisionHome() {
   return (
@@ -55,11 +61,21 @@ export function UnivisionHome() {
           болмогц зөвхөн data-д `image` нэмнэ, компонент хөндөгдөхгүй. */}
       <FeaturedMarquee />
 
-      {/* 7 — Trust build. Jio-гийн нүүрний загвараар гурван блок, текст ↔
-          медиа эргэлдэж байрлана. Медиа нь ВИДЕОны байр (одоогоор
-          "Video N" шошготой), гарчиг/тайлбар/CTA бүгд placeholder.
-          `TrustOrbit` (wifi pulse) -ийг ЗОРИУД хэрэглээгүй, арай өөр үед. */}
-      <TrustBuild />
+      {/* ⚠️ 7 — `TrustBuild` ХАСАГДСАН (2026-09-09, захиалагчийн заавар:
+          "мөн entertainment-ны доор байгаа screenshot-оор оруулсныг хас").
+          Screenshot дээр ЯГ ЭНЭ section байсан: "Title / Description /
+          CTA button" + "Video 1" · "Video 2" гэсэн хар талбайнууд.
+
+          ЯАГААД: гурван блокийн бичвэр (гарчиг · тайлбар · CTA) БҮГД
+          placeholder, медиа нь видеоны хоосон байр. Нүүрний бусад хэсэг
+          бодит агуулгатай болсон тул энэ нь ганцаараа "дуусаагүй" мэт
+          харагдаж байв.
+
+          Компонент ӨӨРӨӨ УСТААГҮЙ (`sections/trust-build.tsx` +
+          `data/trust-build.ts` хэвээр). Бодит бичвэр, видео бэлэн болоход
+          доорх мөрийн `//`-г авахад л буцна. `TrustOrbit` (wifi pulse) ч
+          мөн адил нөөцөд байна — доорх `void`-ийг үз. */}
+      {/* <TrustBuild /> */}
 
       {/* 8 — Апп татах.
           ⚠️ `unitelApp` (Univision GO БИШ) — Unitel апп нь Юнивишний төлбөр

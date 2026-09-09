@@ -4,7 +4,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
-import { ArrowRight, ChevronRight, Gift, LogOut, User } from "lucide-react";
+import { useTheme } from "next-themes";
+import {
+  ArrowRight,
+  ChevronRight,
+  Clock,
+  Gift,
+  Globe,
+  LogOut,
+  Moon,
+  Sun,
+  User,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +35,7 @@ import {
   type AudienceSegment,
   type EcosystemLink,
   type MegaMenu,
+  type MegaBranchStatus,
   type MegaMenuBranch,
   type MegaMenuSection,
 } from "@/data/navigation";
@@ -155,6 +169,255 @@ export function useCurrentNavName(items: EcosystemLink[]): string | null {
  * мөрүүд нь өөрсдийн үүргээр (гарчиг + CTA) л ярина.
  */
 export const MENU_PROMOS_HEADING = "Онцлох урамшуулал";
+
+/**
+ * LOOKTV-ИЙН УУСАХ БИЧВЭР — desktop-ийн `CategoryNav` ба мобайлын `TabLabel`
+ * ХОЁУЛАА эндээс уншина (2026-09-09).
+ *
+ * ⚠️ RGB GLITCH ХАСАГДСАН (захиалагчийн заавар: "LookTV-ийн glitch effect-г
+ * хасаад MagicUI-ийн morphing-text component-г ашиглаад уурчилдуг болго").
+ * Өмнө нь `globals.css`-ийн `.glitch-text` класс нь 6 сек тутам RGB-split
+ * хийж, `::before`-ийн `content: "Илүүг Үз"` давхаргыг гаргадаг байв.
+ * ХОЁР БИЧВЭР ХАДГАЛАГДСАН — зөвхөн ХӨДӨЛГӨӨН нь уусалт болов.
+ *
+ * ⚠️ `texts[0]` нь КАНОНИК нэр: `MorphingText` нь дэлгэц уншигчид зөвхөн
+ * түүнийг л дамжуулна ("LookTV"). Дараалал сольвол цэсний хүртээмжит нэр
+ * "Илүүг Үз" болно — тэр нь ангиллын нэр БИШ.
+ */
+export const LOOKTV_MORPH_TEXTS = ["LookTV", "Илүүг Үз"];
+
+// =====================================================================
+// ХЭРЭГСЛИЙН ГУРВАН PILL — ХЭЛ · ПРОФАЙЛ · THEME
+//
+// ⚠️ 2026-09-09-НД `mobile-header.tsx`-ЭЭС ЭНД ЗӨӨГДСӨН (захиалагч:
+// "desktop дээрх header-ийн design-г screenshot-оор оруулсанс шиг болгоё,
+// mobile дээр ашигласан style-уудаа ашигла").
+//
+// Тэдгээр нь хувилбар 3-ын burger drawer-ийн доод мөрөнд бүтээгдсэн байсан.
+// Одоо desktop-ийн капсулын БАРУУН талд ч ЯГ ижил гурав суух тул хоёр
+// давхарга НЭГ эх сурвалжаас уншина — эс бөгөөс `useTheme` шалгалт,
+// нэвтрэлтийн зан төлөв, дүрсний сонголт гурвуулаа ХОЁР газар давхардаж,
+// нэгийг сольж нөгөөг мартах эрсдэл үүснэ.
+//
+// ⚠️ ХЭЛБЭР нь ГАДНААС (`className`). Drawer-т pill нь `min-h-11 flex-1
+// rounded-xl` (мөрийг тэнцүү хуваана), desktop-ийн капсулд `size-9
+// rounded-full` (дугуй). Хэлбэрийг компонент дотор шигтгэвэл хоёр
+// контекстийн аль нэг нь зайлшгүй эвдэрнэ. Дотор нь үлдсэн нь: дүрс, өнгө,
+// дүрсний хэмжээ, a11y, ҮЙЛДЭЛ.
+//
+// ⚠️ `components/theme-toggle.tsx` НЬ ОДОО ХААНА Ч ДУУДАГДАХГҮЙ БОЛОВ —
+// desktop-ийн header түүнийг хэрэглэдэг байсныг `ThemePill` орлов. Файлыг
+// УСТГААГҮЙ (shadcn-ийн үүсгэсэн, `.prettierignore`-д) боловч зан төлөв нь
+// `useThemeSwitch`-тэй ЯГ ижил байсан тул юу ч алдагдаагүй.
+// =====================================================================
+
+/**
+ * Theme-ийн төлөв + солих үйлдэл — `ThemePill` (капсул ба drawer) ба
+ * `ThemeRow` (хувилбар 1/2-ын Sheet) БҮГД эндээс уншина.
+ *
+ * ⚠️ Гурван газар `useTheme()`-ийг тусад нь бичих нь `resolvedTheme === "dark"`
+ * гэсэн шалгалтыг давхардуулна — нэгийг сольж (жишээ нь system-ийг гурав дахь
+ * төлөв болгож) нөгөөг мартвал давхаргууд өөр өөр зан гаргана.
+ * `components/theme-toggle.tsx` нь shadcn-ийн үүсгэсэн ТУСДАА компонент
+ * (`.prettierignore`-д) тул тэр үүнийг хэрэглэхгүй.
+ */
+export function useThemeSwitch() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  return { isDark, toggle: () => setTheme(isDark ? "light" : "dark") };
+}
+
+/** Гурван pill-ийн ДОТООД дүрс — хэмжээ, өнгө нэг л газарт. */
+const TOOL_PILL_ICON = "text-muted-foreground size-5 shrink-0";
+
+/**
+ * ХЭЛ — дүрс + одоогийн хэлний код.
+ *
+ * ОДООГООР ХАРАГДАХ ТАЛ ЛЭ: проектод i18n давхарга байхгүй (`layout.tsx`-д
+ * `lang="mn"` тогтмол, бүх data монгол) тул дарахад сольж болох зүйл байхгүй.
+ * `<div aria-disabled>` — товч болгож дүр эсгэвэл дарж үзсэн хэрэглэгч
+ * "эвдэрсэн" гэж дүгнэнэ. `hover` мөн байхгүй — дарагдахгүй гэдгийг хэлбэр
+ * нь өгнө. i18n нэмэгдмэгц энэ pill-ийг MN/EN сонголттой болгоно.
+ */
+export function LanguagePill({ className }: { className?: string }) {
+  return (
+    <div aria-disabled="true" aria-label="Хэл — одоо MN" className={className}>
+      <Globe className={TOOL_PILL_ICON} aria-hidden="true" />
+      <span className="text-[13px]">MN</span>
+    </div>
+  );
+}
+
+/**
+ * ПРОФАЙЛ — `AccountRow`/`AccountMenu`-тай ИЖИЛ зан төлөв, хэлбэр нь pill.
+ *
+ * ⚠️ ДҮРС нь ТӨЛӨВӨӨС ХАМААРНА, ингэснээр ХАРАГДАХ дүрс нь ҮЙЛДЭЛТЭЙГЭЭ
+ * үргэлж таарна:
+ *   нэвтрээгүй → `User`   (дарвал нэвтрэх хэлбэр нээгдэнэ)
+ *   нэвтэрсэн  → `LogOut` (дарвал ГАРНА)
+ * Зөвхөн `User` дүрсийг үлдээвэл нэвтэрсэн хэрэглэгч "профайл харах" гэж
+ * бодоод дарж, санамсаргүй гарах болно.
+ *
+ * `onDone` — ЗААВАЛ БИШ. Drawer-аас дуудахад тэр хаагдах ёстой; desktop-ийн
+ * капсулд хаах юм байхгүй тул өгөхгүй.
+ */
+export function ProfilePill({ className, onDone }: { className?: string; onDone?: () => void }) {
+  const { isAuthenticated, user, openLogin, logout } = useAuth();
+
+  if (!isAuthenticated) {
+    return (
+      <button
+        type="button"
+        aria-label="Нэвтрэх"
+        onClick={() => {
+          onDone?.();
+          /**
+           * ⚠️ 220ms — ЗӨВХӨН drawer-тай үед шаардлагатай: тэр хаагдаж
+           * фокусаа буцаах хугацаа, эс бөгөөс login хэлбэр нээгдэнгүүт
+           * фокусаа алдана. Desktop-д `onDone` байхгүй ч ижил хугацаа
+           * хэрэглэсэн нь мэдэгдэхүйц биш (220ms).
+           */
+          setTimeout(() => openLogin(), 220);
+        }}
+        className={className}
+      >
+        <User className={TOOL_PILL_ICON} aria-hidden="true" />
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        logout();
+        onDone?.();
+      }}
+      className={className}
+    >
+      <LogOut className="text-destructive size-5 shrink-0" aria-hidden="true" />
+      {/* Нэр нь `sr-only`-д — нарийн pill-д урт нэр багтахгүй, харин screen
+          reader хэрэглэгчид ХЭН гарах нь тодорхой байх ёстой. */}
+      <span className="sr-only">Гарах — {user?.name}</span>
+    </button>
+  );
+}
+
+/** THEME — light ⇄ dark. Одоогийн төлөвийн дүрс харагдана. */
+export function ThemePill({ className }: { className?: string }) {
+  const { isDark, toggle } = useThemeSwitch();
+
+  return (
+    <button type="button" onClick={toggle} className={className}>
+      {isDark ? (
+        <Moon className={TOOL_PILL_ICON} aria-hidden="true" />
+      ) : (
+        <Sun className={TOOL_PILL_ICON} aria-hidden="true" />
+      )}
+      <span className="sr-only">Theme солих — одоо {isDark ? "Dark" : "Light"}</span>
+    </button>
+  );
+}
+
+/**
+ * ЦЭСНИЙ АНГИЛЛЫН СТАТУС — дэд агуулга нь ХЭРЭГЛЭГЧИД харагдах шалтгаанаар
+ * бэлэн биш ангиллын мэдэгдэл (2026-09-09, захиалагчийн заавар).
+ *
+ * ⚠️ БИЧВЭР НЭГ Л ГАЗАРТ. Desktop-ийн mega панел ба мобайлын ХОЁР рендер
+ * (хувилбар 1 `SectionMenu`, хувилбар 3 `DrawerSubmenu`) — гурвуулаа
+ * үүнийг дууддаг. Өмнөх "дэд агуулга тодорхойлогдоогүй" бичвэр нь ГУРВАН
+ * газарт тархвал нэгийг сольж нөгөөг мартах эрсдэлтэй байв.
+ *
+ * ⚠️ ХЭРЭГЛЭГЧИЙН чиглэсэн үг. "Агуулга тодорхойлогдоогүй" нь ХӨГЖҮҮЛЭГЧИЙН
+ * дотоод төлөв (агуулга шийдэгдээгүй), харин "maintain хийгдэж байгаа" /
+ * "Coming soon…" нь хэрэглэгчид хандсан статус — өөр зүйл тул кодод ч
+ * салангид.
+ */
+export const MAINTENANCE_TEXT = "Maintain хийгдэж байгаа";
+
+/**
+ * ⚠️ ТӨЛӨВ ХОЁР БОЛОВ (2026-09-09, захиалагч: Univision > Life-style дээр
+ * "Maintain хийгдэж байна биш Coming soon… гэж оруул").
+ *
+ * Бичвэр ба дүрсийг ЭНД ХОСООР хадгална — рендер хийдэг гурван газар
+ * (desktop `BranchedMegaPanel`, мобайл `SectionMenu`, `DrawerSubmenu`)
+ * `if (status === …)` бичихгүй, зөвхөн `BRANCH_STATUS[status]`-ыг уншина.
+ * Дөрөв дэх төлөв нэмэхэд ЗӨВХӨН энэ мап өснө.
+ *
+ * `"link-only"` ЭНД БАЙХГҮЙ — тэр нь "мэдэгдэл харуулахгүй" гэсэн утга тул
+ * харуулах юмгүй. `BRANCH_STATUS[...]` нь `undefined` буцаах ба рендерүүд
+ * түүнийг чимээгүй алгасна (доорх `BranchStatusNote`-ийн `if (!info)`).
+ *
+ * Дүрс — зөвхөн статусын дохио, `aria-hidden`. Бичвэр өөрөө бүх мэдээллийг
+ * дамжуулна (WCAG 1.1.1).
+ */
+export const BRANCH_STATUS: Partial<Record<MegaBranchStatus, { text: string; Icon: LucideIcon }>> =
+  {
+    maintenance: { text: MAINTENANCE_TEXT, Icon: Wrench },
+    /**
+     * `…` нь ГУРВАН ТОМЬЁОЛСОН ЦЭГ (U+2026), гурван цуваа цэг БИШ —
+     * захиалагчийн бичсэн "Coming soon..." нь ижил уншигдана, гэхдээ typographic
+     * ellipsis нь өөр фонт/өргөнд ч тогтвортой, screen reader ч зөв уншина.
+     */
+    "coming-soon": { text: "Coming soon…", Icon: Clock },
+  };
+
+export function BranchStatusNote({
+  /**
+   * Аль төлөв. `"link-only"` (эсвэл мапд байхгүй утга) бол ЮУ Ч рендерлэхгүй —
+   * дуудагч тал нь `status &&` шалгалт бичих шаардлагагүй.
+   */
+  status,
+  className,
+  /**
+   * ГОЛЛУУЛСАН ХУВИЛБАР — desktop-ийн mega панелийн БАРУУН талд, өөр агуулга
+   * байхгүй үед (2026-09-09, захиалагч: "icon-г томруулаад div дотроо
+   * голлуул").
+   *
+   * ⚠️ Мобайлд ХЭРЭГЛЭХГҮЙ. Тэнд статус нь ЖАГСААЛТЫН МӨРНИЙ ДОР суудаг —
+   * голлуулбал өмнөх мөртэйгээ хамааралгүй мэт таслагдана. Тиймээс хоёр
+   * харагдац: `centered` (хоосон талбайн төлөв) ба мөрийн доорх нэг мөр.
+   */
+  centered = false,
+}: {
+  status: MegaBranchStatus;
+  className?: string;
+  centered?: boolean;
+}) {
+  const info = BRANCH_STATUS[status];
+  if (!info) return null;
+  const { text, Icon } = info;
+
+  if (centered) {
+    return (
+      /**
+       * `h-full` — эцэг панел нь `items-stretch`-ээр мөрийн (=зүүн баганын)
+       * бүтэн өндөрт татагдсан байдаг тул тодорхой өндөртэй; түүнгүйгээр
+       * `justify-center` төвлөрөх зүйлгүй болно. `min-h-44` нь зүүн багана
+       * богино байсан ч гэсэн доод хязгаар өгнө.
+       *
+       * Дүрс 14px → 40px (`size-10`), `opacity-40` — хоосон талбайн
+       * төлөвийн жишгээр: анхаарал татна, гэхдээ бичвэрээ дийлэхгүй.
+       */
+      <div
+        className={cn(
+          "flex h-full min-h-44 flex-col items-center justify-center gap-3 text-center",
+          className,
+        )}
+      >
+        <Icon className="text-muted-foreground size-10 opacity-40" aria-hidden="true" />
+        <p className={cn(navType.body, "text-muted-foreground")}>{text}</p>
+      </div>
+    );
+  }
+
+  return (
+    <p className={cn(navType.body, "text-muted-foreground flex items-center gap-2", className)}>
+      <Icon className="size-3.5 shrink-0 opacity-70" aria-hidden="true" />
+      {text}
+    </p>
+  );
+}
 
 /**
  * Цэсний урамшуулал — ОДОО БОДИТ ДАТА (2026-09-08, захиалагчийн заавар:
@@ -421,8 +684,18 @@ function MegaBranchRow({
     "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
   );
 
-  // Сум = "дэд агуулгатай" гэсэн тэмдэг. Агуулга тодорхойлогдоогүй мөрөнд
-  // сум БАЙХГҮЙ — хэрэглэгч дарахаасаа өмнө юу хүлээхээ мэднэ.
+  const external = section.href.startsWith("http");
+
+  /**
+   * БАРУУН ТАЛЫН ТЭМДЭГ — ЗӨВХӨН `ChevronRight`, зөвхөн дэд агуулгатай мөрөнд
+   * (баруун панел задарна гэсэн дохио).
+   *
+   * ⚠️ ГАДААД ЛИНКИЙН ↗ ТЭМДЭГ ХАСАГДСАН (2026-09-09, захиалагчийн заавар).
+   * Өмнө нь "For Foreigners" (unitel.mn руу заадаг) дээр `ArrowUpRight`
+   * гардаг байв. Захиалагч зүүн баганыг цэвэр үсгэн жагсаалт байлгахыг
+   * сонгосон тул хассан. Гадагш гарах нь `target="_blank"`-аар ХЭВЭЭР
+   * ажиллана — зөвхөн ХАРАГДАХ тэмдэг л алга болсон.
+   */
   const body = (
     <>
       <span>{section.title}</span>
@@ -439,7 +712,7 @@ function MegaBranchRow({
     className: cls,
   };
 
-  return section.href.startsWith("http") ? (
+  return external ? (
     <a {...shared} href={section.href} target="_blank" rel="noopener noreferrer">
       {body}
     </a>
@@ -482,7 +755,26 @@ function BranchedMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: (
   );
 
   return (
-    <div className="mx-auto max-w-300 px-4 pt-4 pb-8">
+    /**
+     * ⚠️ `pt-4 pb-8` → `py-8` (2026-09-09, захиалагч: "pb нь илүү байгааг ижил
+     * болго … pt-8 pb-8 болго ижил хэмжээтэй").
+     *
+     * ЯАГААД pb ИЛҮҮ БАЙСАН: панелийн ДООД захад ямар ч зааг байхгүй (`border`
+     * зөвхөн доор нь, дэвсгэр нь хуудастай нэг өнгө) тул сүүлийн мөр ирмэгт
+     * "цавчигдсан" харагдахгүйн тулд илүү зай авсан байв. ДЭЭД тал нь
+     * header-ийн мөртэй зэрэгцдэг тул тэр эрсдэл байхгүй байсан. Захиалагч
+     * тэгш зайг сонгосон — контент header-ийн доороос 32px-т эхэлж амьсгаа
+     * авна, доод тал нь мөн 32px.
+     *
+     * ⚠️ `pt-8 pb-8` БИШ `py-8`. Хоёр нь ЯГ ижил CSS (padding-block: 32px)
+     * гаргах ба Tailwind-ийн жишиг нь хосыг нэгтгэх — ингэснээр дараа нь
+     * нэгийг сольж нөгөөг мартах боломж үндсээрээ үгүй болно.
+     *
+     * ⚠️ ХУУЧИН хоёр баганат рендер (`BrandMegaPanel`-ийн доод хэсэг) ч ИЖИЛ
+     * болов — хоёр хэлбэрийн панел өөр өндөртэй бол хэлбэр солигдоход цэс
+     * "цохилно".
+     */
+    <div className="mx-auto max-w-300 px-4 py-8">
       {/**
        * ⚠️ `items-start` → `items-stretch` (2026-09-08, захиалагч:
        * "separator-г бүтэн болго").
@@ -530,33 +822,61 @@ function BranchedMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: (
           className="border-border min-h-44 flex-1 border-l pl-10"
         >
           {active?.groups?.length ? (
-            /* ⚠️ `gap-14` (56px) → `gap-20` (80px) (2026-09-08, захиалагч:
-               "Дараа төлбөрт ба Урьдчилсан төлбөрт байгаагийн 2 дахь баганыг
-               бага зэрэг баруун тийш болго").
+            /* БҮЛГИЙН БАГАНА — ӨРГӨН ТОГТМОЛ (`w-52` = 208px).
+               ⚠️ 2026-09-09, захиалагч: "Дараа төлбөрт ба Урьдчилсан төлбөрт
+               үйлчилгээний дэд агуулгын хоорондын зайг Гэр интернет шиг
+               болго … цаашдаа ийм хэмжээтэй хий".
 
-               1-р баганын өргөн нь агуулгаараа тогтдог ("Priority багц"
-               ≈ 85px) тул 2-р баганыг зөөх ЦОРЫН ГАНЦ хөшүүрэг нь `gap`.
-               2-р баганад `ml-*` тавибал бүлэг ГУРАВ болоход 2-3-ын хоорондын
-               зай зөрнө — gap нь бүх бүлэгт жигд хэвээр. */
-            <div className="flex items-start gap-20">
-              {active.groups.map((group) => (
-                <div key={group.id}>
-                  {group.title && <h3 className={cn(navType.groupLabel, "mb-4")}>{group.title}</h3>}
-                  <ul className="space-y-2.5">
-                    {group.items.map((item) => (
-                      <li key={item.id}>
-                        <MegaItem section={item} className={leafCls} onNavigate={onNavigate} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+               ЯАГААД ЗАЙ БИШ, ӨРГӨН: `gap` нь ХОЁР салаанд аль хэдийн ИЖИЛ
+               (80px) байсан — зөрж байсан нь 1-р баганын ӨРГӨН, учир нь
+               өргөн нь агуулгаараа тогтдог байв:
+                 Үндсэн багцууд  "Priority багц"               ≈  85px
+                 Гэр интернет    "4.5G Гэр интернет төхөөрөмж" ≈ 203px
+               Тиймээс 2-р багана салаа сольвол ~120px үсэрч, "Багцууд" дээр
+               баруун тал хоосон харагдаж байв.
+
+               `w-52` нь хамгийн урт мөрийг (203px) нэг мөрөнд багтаах бөгөөд
+               ХАМГИЙН БАГА тогтмол: 2-р багана одоо БҮХ салаанд ЯГ 288px
+               (208 + 80)-д суух тул салаа сольвол ХӨДӨЛӨХГҮЙ.
+
+               ⚠️ `shrink-0` ТАВИАГҮЙ ЗОРИУД. Бүлэг ГУРАВ болбол
+               3×208 + 2×80 = 784px нь панелийн ~520px-ээс халина; `shrink`
+               нээлттэй тул тэр үед баганууд агуулгынхаа доод өргөн хүртэл
+               өөрсдөө хумигдаж, хэвтээ халилт гарахгүй. */
+            <>
+              <div className="flex items-start gap-20">
+                {active.groups.map((group) => (
+                  <div key={group.id} className="w-52">
+                    {group.title && (
+                      <h3 className={cn(navType.groupLabel, "mb-4")}>{group.title}</h3>
+                    )}
+                    <ul className="space-y-2.5">
+                      {group.items.map((item) => (
+                        <li key={item.id}>
+                          <MegaItem section={item} className={leafCls} onNavigate={onNavigate} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+
+              {/* Дэд нэрс БЭЛЭН боловч зам нь `#` — жагсаалтын ДООР статус
+                  (ж. Олон улсын үйлчилгээ). Хэрэглэгч дарахаасаа өмнө
+                  хүлээлтээ тааруулна. */}
+              {active.status && <BranchStatusNote status={active.status} className="mt-6" />}
+            </>
+          ) : active?.status ? (
+            /* ⚠️ `"link-only"` ч ЭНД унана — `BranchStatusNote` нь тэр үед
+               `null` буцаах тул баруун панел ЗӨРИУД ХООСОН болно
+               (ж. Univision > Үндсэн бүтээгдэхүүн: дэд цэс байх ёсгүй, зүгээр
+               линк). `min-h-44` + `border-l` тул зураас, layout хөдлөхгүй. */
+            <BranchStatusNote status={active.status} centered />
           ) : (
-            /* ⚠️ АГУУЛГА ТОДОРХОЙЛОГДООГҮЙ. Захиалагч 2026-09-08-нд зөвхөн
-               "Багцууд"-ын дэд агуулгыг өгсөн. Бүтээгдэхүүний нэр ЗОХИОХГҮЙ
-               (`AGENTS.md`) тул дутууг ИЛЭЭР үзүүлнэ — data-д `groups`
-               нэмэхэд тэр дороо ажиллана. */
+            /* ⚠️ АГУУЛГА ТОДОРХОЙЛОГДООГҮЙ — `maintenance` ч ТАВИАГҮЙ.
+               Энэ нь "хөгжүүлэлт дээр" гэсэн ӨӨР төлөв: агуулга нь өөрөө
+               ШИЙДЭГДЭЭГҮЙ. Хоёрыг хутгахгүй — data-д `groups` эсвэл
+               `maintenance` нэмэхэд тэр дороо ажиллана. */
             <p className={cn(navType.body, "text-muted-foreground")}>
               {active?.title} — дэд агуулга тодорхойлогдоогүй
             </p>
@@ -614,7 +934,8 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
   const extras = menu.extras ?? MEGA_RELATED_LINKS;
 
   return (
-    <div className="mx-auto max-w-300 px-4 pt-4 pb-8">
+    // `py-8` — хоёр панелт рендертэй ИЖИЛ (тайлбарыг `BranchedMegaPanel`-д үз).
+    <div className="mx-auto max-w-300 px-4 py-8">
       <div className="flex items-start gap-16">
         <div>
           <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.sectionsLabel ?? menu.name}</h3>
@@ -708,13 +1029,25 @@ export function BrandLogoLink() {
 /**
  * Account товч — нэвтрээгүй бол login dialog нээнэ, нэвтэрсэн бол хэрэглэгчийн
  * нэр + "Гарах"-тай dropdown харуулна.
+ *
+ * ⚠️ `className` НЭМЭГДСЭН (2026-09-09). Desktop-ийн капсулын хэрэгслийн
+ * бүлэгт дугуй хэлбэрээр суух шаардлагатай болсон. `ProfilePill`-ЭЭР
+ * ОРЛУУЛААГҮЙ ЗӨРИУД: тэр нь нэвтэрсэн үед ШУУД гаргадаг, харин энэ нь
+ * хэрэглэгчийн нэр + "Гарах" гэсэн dropdown үзүүлдэг — desktop-д тэр илүү
+ * баялаг зан төлөв бөгөөс түүнийг хэлбэрийн төлөө алдах нь регресс болно.
  */
-export function AccountMenu() {
+export function AccountMenu({ className }: { className?: string }) {
   const { isAuthenticated, user, openLogin, logout } = useAuth();
 
   if (!isAuthenticated) {
     return (
-      <Button variant="ghost" size="icon" aria-label="Нэвтрэх" onClick={() => openLogin()}>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Нэвтрэх"
+        onClick={() => openLogin()}
+        className={className}
+      >
         <User className="size-5" />
       </Button>
     );
@@ -723,7 +1056,12 @@ export function AccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Миний бүртгэл" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Миний бүртгэл"
+          className={cn("relative", className)}
+        >
           <User className="size-5" />
           <span
             className="bg-primary ring-background absolute top-1.5 right-1.5 size-2 rounded-full ring-2"

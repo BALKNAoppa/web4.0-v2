@@ -99,7 +99,7 @@ export const promoBanners: Record<BrandId, PromoBannerContent> = {
     title: "Шинэ дугаар — эхний сарын төлбөр үнэгүй",
     subtitle: "Дараа төлбөрт дугаар авах амархан.",
     cta: { label: "Багц харах", href: "#", owner: "unitel" },
-    secondaryCta: { label: "Бүх урамшуулал", href: "/campaigns" },
+    secondaryCta: { label: "Бүх урамшуулал", href: "/#" },
   },
   univision: {
     media: { kind: "gradient" },
@@ -107,8 +107,8 @@ export const promoBanners: Record<BrandId, PromoBannerContent> = {
     eyebrow: "Цаг үеийн урамшуулал",
     title: "Интернэт + ТВ — сард 39,900₮",
     subtitle: "Шинэ хэрэглэгчдэд үнэгүй суурилуулалттай, 1 жилийн багц.",
-    cta: { label: "Багц харах", href: "/main-packages", owner: "univision" },
-    secondaryCta: { label: "Бүх урамшуулал", href: "/campaigns" },
+    cta: { label: "Багц харах", href: "/#", owner: "univision" },
+    secondaryCta: { label: "Бүх урамшуулал", href: "/#" },
   },
 };
 
@@ -224,8 +224,10 @@ export type PromoCard = {
  * "Immersive experience" нь 1920×541-ээр ДАХИН экспорт хийгдэх шаардлагатай,
  * эс бөгөөс тэр слайд бусдаасаа өөр хэмжээгээр тайрагдана.
  *
- * UNIVISION — PLACEHOLDER хэвээр. `public/Univision/Hero banner/`-д 3 зураг
- * бэлэн байгаа ч захиалагч "Unitel дээр" гэж тусгайлан хэлсэн тул хөндөөгүй.
+ * UNIVISION — 2026-09-09-НД БОДИТ БОЛОВ (доорх `univision` массивын
+ * тайлбарыг үз). Мобайлд 3, desktop-д 3 зураг холбогдсон, гэхдээ гурав дахь
+ * ("Хэрэглээ") нь desktop-д ч БОСОО файл хэрэглэж байгаа — хэвтээ экспорт
+ * байхгүй.
  */
 export const samplePromoCards: Record<BrandId, PromoCard[]> = {
   unitel: [
@@ -269,9 +271,87 @@ export const samplePromoCards: Record<BrandId, PromoCard[]> = {
       imageDesktop: "/Unitel/Hero banner/Unitel Desktop.png",
     },
   ],
+  /**
+   * UNIVISION — БОДИТ 3 БАННЕР (2026-09-09, захиалагч: "одоо Univision дээр
+   * banner-г оруул. HBO Max, Univision Go, Хэрэглээ гэж нэрлэсэн файлуудыг
+   * ашигла").
+   *
+   * ДАРААЛАЛ = захиалагчийн нэрлэсэн дараалал.
+   *
+   * ⚠️⚠️ ХЭРЭГЛЭЭ-Д DESKTOP LANDSCAPE БАЙХГҮЙ. `Hereglee Desktop.jpg` нь
+   * нэрэндээ "Desktop" гэж байгаа ч 1639×2048 = **0.80 БОСОО** (мобайлын
+   * файлтай бараг ижил). Захиалагч өөрөө: "landscape-ийн хувилбар олдоогүй
+   * тул доод хэсгийг харуулахаар байрлуулаад үзье, чанар нь болохгүй бол
+   * солиё" ⇒ `imageDesktopPosition: "center bottom"` тавив.
+   *
+   * ⚠️ ТООЦОО (desktop панел ≈1.90:1, зураг 0.80:1):
+   *   харагдах ЗУРВАС = 0.80 / 1.90 = зургийн ӨНДРИЙН ердөө **42%**
+   *   `bottom` ⇒ y 58%–100%  (доод тал)
+   *   `center` ⇒ y 29%–71%   (дунд тал)
+   * Зургийн бүтэц (өндрийн %-иар хэмжсэн):
+   *   9–23%  гарчиг "Юнивишнийн хэрэглээгээ хянах амархан боллоо"
+   *   27–31% "Юнител апп › Юнивишн" гэсэн хоёр pill
+   *   38–65% модель + сандал
+   *   55–68% ширээ, түүн дээрх зүйлс
+   *   68–92% хивс, шал
+   *   91–95% UNIVISION лого (баруун доод)
+   * ⇒ `bottom` бол ГАРЧИГ БА МОДЕЛЬ ХОЁУЛАА ГАРНА, зөвхөн ширээний доод
+   *   тал + хивс + лого харагдана. `center` бол модель, ширээ харагдах ч
+   *   гарчиг мөн адил гарна. ХОЁР ХУВИЛБАРТ Ч ГАРЧИГ БАГТАХГҮЙ — босоо
+   *   зургийг 1.9 слотод багтаах нь зарчмын хувьд боломжгүй.
+   *   Захиалагчийн заасан `bottom`-оор тавив; `center` болгох бол доорх
+   *   нэг мөрийг л засна. Жинхэнэ шийдэл нь 1920×1010 хэвтээ экспорт.
+   *
+   * ⚠️ ЧАНАР — МОБАЙЛЫН ХОЁР ФАЙЛ ЖИЖИГ. `663188328_…` ба `728828243_…`
+   * нь ердөө **512×640**. Мобайлын карт 390px дэлгэцэнд ≈342px өргөн тул
+   * 2× DPR-т 684px хэрэгтэй ⇒ 512px нь ~1.34 дахин томсоно, бага зэрэг
+   * бүдгэрнэ. `Hereglee`-гийн 1638px нь асуудалгүй. Хоёр файлыг ≥1080×1440
+   * -аар дахин экспорт хийвэл гурвуулаа хурц болно.
+   *
+   * ⚠️ `imageAlt` БИЧЭЭГҮЙ — гарчиг, лого, тайлбар бүгд зурган ДЭЭР
+   * шигтгэгдсэн бөгөөс картад зөвхөн CTA л амьд элемент. Зураг нь
+   * чимэглэл (WCAG 1.1.1), Unitel-ийн гурван баннертай ижил зарчим.
+   */
   univision: [
-    { id: "promo-1", placeholderText: "Sample banner 1", ctaLabel: "Sample", href: "#" },
-    { id: "promo-2", placeholderText: "Sample banner 2", ctaLabel: "Sample", href: "#" },
-    { id: "promo-3", placeholderText: "Sample banner 3", ctaLabel: "Sample", href: "#" },
+    {
+      id: "promo-1",
+      placeholderText: "HBO Max",
+      ctaLabel: "Дэлгэрэнгүй",
+      href: "/#",
+      image: "/Univision/Hero banner/663188328_1418753500294305_8290439988204494409_n.jpg",
+      /**
+       * 2047×742 = 2.76. Панел 1.90 ⇒ харагдах зурвас = 1.90/2.76 = өргөний
+       * 69%, төвлөрвөл x 15.5%–84.5%. Зурган дээрх агуулга: лого 32%–68%,
+       * "Дэлхийн шилдэг стрийминг платформ ЮНИВИШНД" 26%–74% ⇒ ХОЁУЛАА
+       * зурвасын дотор БҮРЭН багтана, тиймээс `center` (default) зөв.
+       */
+      imageDesktop: "/Univision/Hero banner/HBO max DEsktop.jpg",
+    },
+    {
+      id: "promo-2",
+      placeholderText: "Univision GO",
+      ctaLabel: "Дэлгэрэнгүй",
+      href: "/#",
+      image: "/Univision/Hero banner/728828243_1013884858044719_4355270358319999956_n.jpg",
+      /**
+       * 1640×624 = 2.63 ⇒ харагдах зурвас = өргөний 72%, x 14%–86%.
+       * "UNIVISION go / нэвтэрлээ" блок нь x 29%–70% ⇒ багтана. `center`.
+       */
+      imageDesktop: "/Univision/Hero banner/Univision Go Desktop.jpg",
+    },
+    {
+      id: "promo-3",
+      placeholderText: "Хэрэглээ",
+      ctaLabel: "Дэлгэрэнгүй",
+      href: "/#",
+      image: "/Univision/Hero banner/784181930_1958676971757199_2722433891345112408_n.jpg",
+      /**
+       * ⚠️ БОСОО ФАЙЛ (0.80) — дээрх блокийн тооцоог үз. `Hereglee
+       * Desktop.jpg` нь мобайлын файлаас ердөө 1px өргөн (1639 vs 1638) тул
+       * практикт ИЖИЛ зураг; хэвтээ экспорт гарах хүртэл түр зуурын шийдэл.
+       */
+      imageDesktop: "/Univision/Hero banner/Hereglee Desktop.jpg",
+      imageDesktopPosition: "center bottom",
+    },
   ],
 };

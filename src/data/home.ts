@@ -33,8 +33,8 @@ export const homeHero: HomeHero = {
   eyebrow: "Цаг үеийн урамшуулал",
   title: "Интернэт + ТВ — сард 39,900₮",
   subtitle: "1 жилийн багц. Шинэ хэрэглэгчдэд үнэгүй суурилуулалттай.",
-  primaryCta: { label: "Багц авах", href: "/main-packages" },
-  secondaryCta: { label: "Бүх урамшуулал", href: "/campaigns" },
+  primaryCta: { label: "Багц авах", href: "/#" },
+  secondaryCta: { label: "Бүх урамшуулал", href: "/#" },
 };
 
 export type EntryTileIcon =
@@ -69,7 +69,7 @@ export const unitelEntryTiles: EntryTile[] = [
   {
     title: "Гэр интернэт",
     description: "Утасгүй, гэрийн интернэт.",
-    href: "/main-packages",
+    href: "/#",
     ctaLabel: "Багц харах",
     icon: "wifi",
     tint: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
@@ -113,7 +113,7 @@ export const univisionEntryTiles: EntryTile[] = [
   {
     title: "Univision Go",
     description: "Хүссэн газраа, хүссэн үедээ — гар утаснаасаа.",
-    href: "/univision-go",
+    href: "/#",
     ctaLabel: "Апп татах",
     icon: "monitor-play",
     tint: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
@@ -129,7 +129,7 @@ export const univisionEntryTiles: EntryTile[] = [
   {
     title: "Mesh",
     description: "FTTR, Wi-Fi 6 — гэрийн булан бүрт тасралтгүй сүлжээ.",
-    href: "/mesh",
+    href: "/#",
     ctaLabel: "Шийдэл харах",
     icon: "router",
     tint: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",

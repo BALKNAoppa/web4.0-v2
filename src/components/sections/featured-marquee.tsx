@@ -3,9 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Pause, Play, ArrowRight } from "lucide-react";
+import { Pause, Play, ArrowRight, Lock } from "lucide-react";
 
 import { apps, movies, featuredSection, type MarqueeItem } from "@/data/marquee-items";
+import { cn } from "@/lib/utils";
+import { sectionType } from "@/lib/section-type";
+import { sectionBg } from "@/lib/section-bg";
 
 const AUTOPLAY_INTERVAL = 5000;
 const REPEAT_COUNT = 3;
@@ -100,7 +103,7 @@ export function FeaturedMarquee() {
   return (
     <section
       aria-labelledby="featured-title"
-      className="bg-background overflow-hidden py-6 lg:py-7"
+      className={cn(sectionBg.page, "overflow-hidden py-6 lg:py-7")}
     >
       <div className="container mx-auto px-4">
         {/* ⚠️ Өмнө нь `eyebrow` (дээр) ба `description` (доор) хоёр
@@ -108,10 +111,7 @@ export function FeaturedMarquee() {
             `marquee-items.ts`-ээс гарсан тул зөвхөн эргэлзээ төрүүлнэ.
             Хэрэгтэй бол git түүхээс. */}
         <div className="mb-8 text-center">
-          <h2
-            id="featured-title"
-            className="text-foreground text-2xl font-bold tracking-tight text-balance md:text-4xl"
-          >
+          <h2 id="featured-title" className={sectionType.title}>
             {featuredSection.title}
           </h2>
         </div>
@@ -279,12 +279,30 @@ function CarouselCard({
       {item.image ? (
         <Image
           src={item.image}
-          alt={item.name}
+          /**
+           * ⚠️ ХЯЗГААРЛАСАН КАРТАД `alt=""`. Зураг нь бүрхэгдсэн (blur)
+           * УТГА нь харагдахгүй болсон тул харааны хэрэглэгчид түүнээс юу ч
+           * авахгүй; screen reader-т агуулгыг нэрлэвэл ХАРАХГҮЙ хүнд
+           * ХАРАГДАХ хүнээс ИЛҮҮ мэдээлэл өгөх ба бүрхсэн шалтгаан нь
+           * үгүйсгэгдэнэ. Анхааруулгын бичвэр доор ил байгаа тул мэдээлэл
+           * алдагдахгүй (WCAG 1.1.1 — чимэглэлийн зураг).
+           */
+          alt={item.restricted ? "" : item.name}
           fill
           sizes={
             variant === "large" ? "(min-width: 768px) 60vw, 85vw" : "(min-width: 768px) 10vw, 26vw"
           }
-          className="object-cover"
+          /**
+           * ⚠️ `blur-2xl` + `scale-110` (2026-09-09, захиалагчийн заавар:
+           * "4-ләнг нь харуулах гэхдээ blur хийгдсэн, насанд хүрэгчдийн
+           * контент гэсэн анхааруулгатайгаар л харуул").
+           *
+           * `scale-110` нь ЗАЙЛШГҮЙ: CSS `blur` нь элементийн ирмэгийн
+           * пикселийг гадагш "тарааж" уусгадаг тул ирмэг дагуу тунгалаг
+           * зурвас гарч, доорх `shade` дэвсгэр цухуйна. 10% томсгосноор
+           * бүрхэг ирмэг картын гадна гарч, `overflow-hidden` тайрна.
+           */
+          className={cn("object-cover", item.restricted && "scale-110 blur-2xl")}
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
@@ -304,6 +322,57 @@ function CarouselCard({
           className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"
           aria-hidden="true"
         />
+      )}
+
+      {/**
+       * НАСАНД ХҮРЭГЧДИЙН КОНТЕНТЫН АНХААРУУЛГА (2026-09-09, захиалагч).
+       *
+       * ⚠️ Blur ДЭЭР БИЧВЭР. Зөвхөн бүрхэх нь хангалтгүй: хэрэглэгч зургийг
+       * "ачаалагдаагүй" эсвэл "эвдэрсэн" гэж уншиж, дарж шалгах магадлалтай.
+       * Ил бичвэр нь ЯАГААД бүрхэгдснийг хэлж, дарахаасаа өмнө сонголт
+       * өгнө — контентын анхааруулгын үндсэн зарчим.
+       *
+       * ⚠️ `variant` ЯЛГААГҮЙ: жижиг картад ч ижил хамгаалалт хэрэгтэй
+       * (одоогоор `restricted` нь зөвхөн ТВ апп-д тавигдсан, гэхдээ кинонд
+       * гарвал автоматаар ажиллана).
+       *
+       * `pointer-events-none` — эцэг `Link`-ийн даралтыг хаахгүй.
+       * `aria-hidden` ТАВИАГҮЙ: screen reader-т хязгаарлалтыг хэлэх ёстой,
+       * зурганд `alt=""` тавьсны нөхөн мэдээлэл нь ЯГ энэ бичвэр.
+       */}
+      {item.restricted && (
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-0 flex flex-col items-center gap-2 px-4 text-center text-white",
+            /**
+             * ⚠️ ТОМ КАРТАД ДЭЭД тал, ЖИЖИГ картад ГОЛ. Том картын доод
+             * 1/3-д гарчиг + тайлбар + CTA аль хэдийн суудаг (`bottom-6`,
+             * ~150px). Хамгийн намхан үед (`min-h-[300px]`) голлуулсан
+             * анхааруулга тэр блоктой ДАВХЦАНА — тиймээс дээш зөөв.
+             * Жижиг картад доод бичвэр нь ердөө нэг мөр (`bottom-3`) тул
+             * гол нь чөлөөтэй.
+             */
+            variant === "large" ? "justify-start pt-8 md:pt-12" : "justify-center",
+          )}
+        >
+          <Lock className={variant === "large" ? "size-8" : "size-5"} aria-hidden="true" />
+          <p
+            className={cn(
+              "font-semibold",
+              variant === "large" ? "text-base md:text-lg" : "text-xs",
+            )}
+          >
+            Насанд хүрэгчдийн контент
+          </p>
+          <span
+            className={cn(
+              "rounded-full border border-white/60 font-bold",
+              variant === "large" ? "px-3 py-0.5 text-sm" : "px-2 text-[10px]",
+            )}
+          >
+            18+
+          </span>
+        </div>
       )}
 
       {variant === "large" && (

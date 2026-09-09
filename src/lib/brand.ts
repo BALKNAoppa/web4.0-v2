@@ -94,7 +94,17 @@ export type ResolvedHref = {
  */
 export function resolveHref(path: string, owner: Owner = "self"): ResolvedHref {
   if (path.startsWith("http")) return { href: path, external: true };
-  if (path === "#") return { href: path, external: false };
+  /**
+   * ⚠️ `"/#"` НЭМЭГДСЭН (2026-09-09). Нүүрнээс бусад бүх зам ажиллахгүй
+   * болгохын тулд дотоод замуудыг `/#` болгосон. Түүнийг ЭНД таслаагүй бол
+   * `owner`-той мөрүүд (ж. `promo-banner.ts`-ийн Univision-ы CTA) нөгөө
+   * брэндийн build дээр `https://univision.mn/#` болж, ШИНЭ TAB-аар
+   * ХӨНДЛӨН ДОМЭЙН руу үсэрнэ — "юу ч ажиллахгүй" гэсэн зорилгын ЭСРЭГ.
+   *
+   * `"#"` (хуучин placeholder) ба `"/#"` (одоогийн идэвхгүй зам) ХОЁУЛАА
+   * хөндөгдөхгүй дамжина.
+   */
+  if (path === "#" || path === "/#") return { href: path, external: false };
   if (owner === "self" || owner === BRAND) return { href: path, external: false };
   return { href: `${SITE_URL[owner]}${path}`, external: true };
 }

@@ -54,6 +54,7 @@ import {
 import type { Owner } from "@/lib/brand";
 import { ASSISTANT_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
+import { sectionBg } from "@/lib/section-bg";
 /**
  * Оролтын градиент хүрээ ба туяа.
  *
@@ -492,7 +493,18 @@ export function ChatHero({
       // `[data-glass] .glass-surface` дүрэм зөвхөн энэ дотор ажиллана тул
       // нүүр хуудас хөндөгдөхгүй.
       data-glass={isPage ? "true" : undefined}
-      className="bg-background animate-in fade-in relative w-full overflow-hidden duration-1000 ease-out"
+      /**
+       * ⚠️ ДЭВСГЭР НЬ КОНТЕКСТООС ХАМААРНА (2026-09-09).
+       *   нүүр (`isPage` false) → `sectionBg.alt`: header-ийн Layer 2 ба
+       *     PromoHero-той НЭГ өнгө үргэлжилнэ (захиалагчийн заавар).
+       *   `/assistant` хуудас (`isPage` true) → `sectionBg.base` ХЭВЭЭР:
+       *     тэр нь бүтэн хуудас, нүүрний хэмнэлд ОРОХГҮЙ. Нэг класс
+       *     тавибал нүүрний засвар тэр хуудсыг ч чимээгүй өнгөлнө.
+       */
+      className={cn(
+        sectionBg.page,
+        "animate-in fade-in relative w-full overflow-hidden duration-1000 ease-out",
+      )}
     >
       {/* ШИЛНИЙ ГАЖУУДАЛ — `backdrop-filter: url(#glass-warp)`-аар дэвсгэрийг
           долгиолуулна (`globals.css`, `@supports` дотор). Chromium дээр

@@ -1,4 +1,6 @@
 import { PromoBanner } from "@/components/sections/promo-banner";
+import { sectionBg } from "@/lib/section-bg";
+import { cn } from "@/lib/utils";
 
 /**
  * НҮҮРНИЙ PROMO HERO — ЗӨВХӨН promo carousel. ХОЁР БРЭНД ХУВААЛЦАНА.
@@ -49,7 +51,17 @@ export function PromoHero() {
       // 342×456 = ЯГ 3:4 харьцаатай тул өндрийг нь өргөнөөс гаргах нь зөв:
       // 390px дэлгэцэнд 456px гарна, бусад өргөнд харьцаагаа хадгална.
       // svh-д тулгуурлавал өргөн дэлгэцэнд карт нь загвараас ТОВГОР болно.
-      className="w-full pt-[clamp(1rem,3svh,2rem)] md:h-[calc((100svh-var(--header-h))*0.6)]"
+      /**
+       * ⚠️ `sectionBg.page` НЭМЭГДСЭН (2026-09-09). Өмнө нь дэвсгэр ОГТ
+       * байхгүй (`<main>`-ийнхийг өвлөдөг) байсан. Захиалагчийн заавраар
+       * header-ийн Layer 2 → PromoHero → ChatHero ГУРАВ нь НЭГ өнгө
+       * үргэлжлэх ёстой; өвлөх нь `<main>`-ийг өнгөтэй болгохыг шаардах ба
+       * тэр нь ДООРХ бүх section-д ч тархах тул ил бичив.
+       */
+      className={cn(
+        sectionBg.page,
+        "w-full pt-[clamp(1rem,3svh,2rem)] md:h-[calc((100svh-var(--header-h))*0.6)]",
+      )}
     >
       <PromoBanner fill />
     </section>

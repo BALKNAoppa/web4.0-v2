@@ -3,6 +3,9 @@ import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 
 import type { AppPromoContent } from "@/data/app-promo";
+import { sectionType } from "@/lib/section-type";
+import { sectionBg } from "@/lib/section-bg";
+import { cn } from "@/lib/utils";
 
 /**
  * APP PROMO — "апп-аа тат" section. Unitel болон Univision ХОЁУЛАА үүнийг
@@ -39,7 +42,7 @@ export function AppPromo({ content }: { content: AppPromoContent }) {
     <section
       id={content.id}
       aria-labelledby={titleId}
-      className="bg-background relative w-full overflow-hidden"
+      className={cn(sectionBg.band, "relative w-full overflow-hidden")}
       style={sectionStyle}
     >
       {/* Бусад section-уудтай ижил 1200px контентын хүрээнд тэгшилнэ */}
@@ -55,10 +58,7 @@ export function AppPromo({ content }: { content: AppPromoContent }) {
             `content.eyebrow` дата талбар нь ҮЛДСЭН (доорх тайлбарыг үз) —
             буцаах бол зөвхөн энэ блокийг сэргээнэ. */}
         <div className="order-2 lg:order-1">
-          <h2
-            id={titleId}
-            className="text-foreground text-4xl font-extrabold tracking-tight md:text-5xl lg:text-6xl"
-          >
+          <h2 id={titleId} className={sectionType.titleHero}>
             {content.titlePre}
             <span style={{ color: content.accent }}>{content.titleAccent}</span>
             {content.titlePost}
