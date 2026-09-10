@@ -11,22 +11,22 @@ import {
   type FooterLink,
 } from "@/data/footer";
 import { appStores, socialLinks, type AppStoreLink, type SocialLink } from "@/data/footer-extras";
-import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 /**
- * Footer-т "Апп татах" блок харуулах эсэх.
+ * ⚠️ `SHOW_APP_DOWNLOAD` УСТСАН (2026-09-10). Тэр нь `BRAND !== "unitel"`
+ * байсан бөгөөд ЗӨВХӨН Univision-ы footer-т "Апп татах" блок гаргадаг байв.
+ * Захиалагч: "Univision дээр тусдаа байгаа апп татах хэсгийг хас, би огт
+ * нэм гэж хэлээгүй" — тэр блок нүүрний `AppPromo` section-той давхардаж,
+ * нэг хуудсанд ижил CTA хоёр удаа гаргаж байсан.
  *
- * Unitel дээр нүүрэнд `AppPromo` section (том гарчиг + badge + QR) байгаа тул
- * footer-т дахин давтвал нэг хуудсанд ижил CTA хоёр удаа гарна. Тиймээс
- * ЗӨВХӨН Univision дээр үлдээв.
+ * ⇒ Апп татах CTA нь одоо ХОЁУЛАН БРЭНД дээр ЗӨВХӨН `AppPromo` section-д.
+ * Footer-ийн ГУРВАН хувилбарт (`footer.tsx`, `footer-v2.tsx`,
+ * `DesktopFooterCard`) энэ блок аль нь ч БАЙХГҮЙ болов.
  *
- * `BRAND` нь build-ийн үеийн тогтмол (`NEXT_PUBLIC_BRAND`) тул брэнд бүр
- * өөрийн build дээр энэ утга тогтмол хэвээр — runtime-д хэзээ ч солигдохгүй.
- * Footer-ийн 3 хувилбар БҮГД үүнийг шалгана — хэрэглэгч header-ийн toggle-оор
- * хувилбар солиход зан төлөв зөрөхгүй.
+ * `AppStoreRow` компонент нь ХЭВЭЭР (доор) — `AppPromo` буцаад footer-т
+ * хэрэгтэй болвол дахин бичих шаардлагагүй.
  */
-export const SHOW_APP_DOWNLOAD = BRAND !== "unitel";
 
 /** Copyright мөр — desktop card ба мобайлын strip ХОЁУЛАА эндээс. */
 export function FooterCopyright({ className }: { className?: string }) {
@@ -35,7 +35,7 @@ export function FooterCopyright({ className }: { className?: string }) {
   const year = new Date().getFullYear();
 
   return (
-    <p className={cn("text-muted-foreground text-xs", className)}>
+    <p className={cn("text-muted-foreground text-sm lg:text-xs", className)}>
       © {year} {footerMeta.copyrightOwner}. {footerMeta.rightsNote}
     </p>
   );
@@ -55,7 +55,15 @@ export function FooterCopyright({ className }: { className?: string }) {
  */
 export function LegalStrip() {
   return (
-    <div className="border-border bg-muted/40 border-t lg:hidden">
+    /**
+     * ⚠️ `border-t bg-muted/40` ХАСАГДСАН (2026-09-10, захиалагчийн загвар).
+     * Copyright нь өмнө нь ӨӨРИЙН зурвастай, дээрээ зураастай байв. Загварт
+     * бол `MobileSitemap`-ийн цайвар КАРТ дуусаад, доор нь copyright нь
+     * хуудасны САААРАЛ дэвсгэр дээр ил, ямар ч хайрцаг/зураасгүй суудаг —
+     * тэгснээр карт л "footer" мэт харагдана. Дэвсгэр өгвөл картын доор
+     * ХОЁР ДАХЬ зурвас үүсч, хөвөгч мэдрэмж эвдэрнэ.
+     */
+    <div className="lg:hidden">
       <div className="container mx-auto">
         {/* ⚠️ ДООД ЗАЙ ТОМ (`pb-10` = 40px, `pt-4` = 16px хэвээр).
             Шалтгаан: copyright нь ХУУДАСНЫ ХАМГИЙН СҮҮЛИЙН элемент бөгөөд
@@ -102,7 +110,20 @@ export function FooterNavLink({
 }) {
   // `no-underline` — AccordionContent нь доторх бүх `<a>`-г underline болгодог
   const cls = cn(
-    "text-muted-foreground hover:text-foreground text-sm no-underline transition-colors",
+    /**
+     * ⚠️⚠️ ЗӨВХӨН МОБАЙЛД ТОМ: `text-base` (16px) → `lg:text-sm` (14px).
+     *
+     * 2026-09-10-нд эхлээд БҮХ өргөнд 16px болгосон нь ЗӨРҮҮ байлаа —
+     * захиалагч: "би footer-ийн текстийн хэмжээг МОБАЙЛ ДЭЭР Л өөрчил гэж
+     * хэлж байсан, desktop дээр биш". Desktop нь 14px-ээрээ БУЦСАН.
+     *
+     * ⚠️ Энэ компонент нь desktop-ийн карт (`DesktopFooterCard`) БА мобайлын
+     * жагсаалт ХОЁУЛАНД дуудагддаг тул хоёр тусдаа класс бичих боломжгүй —
+     * `lg:` таслалт нь цорын ганц зөв арга. Мобайл-онцгой хэсгүүд
+     * (`FOOTER_ROW` г.м) нь `lg:hidden` савандаа байдаг тул тэнд `lg:`
+     * ХЭРЭГГҮЙ.
+     */
+    "text-muted-foreground hover:text-foreground text-base no-underline transition-colors lg:text-sm",
     showArrow && "inline-flex items-center gap-1",
     className,
   );
@@ -159,8 +180,8 @@ export function FooterNavLink({
  * гэхдээ screen reader-т бүлэг нь нэрлэгдэх ёстой тул `<nav aria-label>`
  * -оор ЗӨВХӨН семантик нэр өглөө (харагдахгүй).
  *
- * `АППЫГ ТАТАХ` блок ЭНД БАЙХГҮЙ — загварт байхгүй. Univision build-д
- * (`SHOW_APP_DOWNLOAD`) тэр блок мобайл footer-т хэвээр үлдэнэ.
+ * `АППЫГ ТАТАХ` блок ЭНД БАЙХГҮЙ — загварт байхгүй. 2026-09-10-наас хойш
+ * МОБАЙЛД Ч БАЙХГҮЙ (`SHOW_APP_DOWNLOAD` устсан, энэ файлын толгойг үз).
  */
 export function DesktopFooterCard() {
   return (
@@ -338,7 +359,7 @@ export function SocialRow({
  */
 export function FooterHeading({ children, id }: { children: React.ReactNode; id?: string }) {
   return (
-    <h3 id={id} className="text-foreground text-sm font-semibold">
+    <h3 id={id} className="text-foreground text-base font-semibold lg:text-sm">
       {children}
     </h3>
   );

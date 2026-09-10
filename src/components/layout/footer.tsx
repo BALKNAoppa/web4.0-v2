@@ -4,13 +4,7 @@ import Link from "next/link";
 
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { LogoHomeLink } from "@/components/layout/logo-home-link";
-import {
-  AppStoreRow,
-  DesktopFooterCard,
-  FooterHeading,
-  SHOW_APP_DOWNLOAD,
-  SocialRow,
-} from "@/components/layout/footer-shared";
+import { DesktopFooterCard, FooterHeading, SocialRow } from "@/components/layout/footer-shared";
 import { FooterSitemapVariant } from "@/components/layout/footer-v2";
 import { footerLinks, footerTagline } from "@/data/footer";
 import { useHeaderVariant } from "@/lib/header-variant";
@@ -64,18 +58,16 @@ function FooterClassic() {
               </LogoHomeLink>
               {/* Тайлбар нь одоо data-аас (`footerTagline`) — desktop картын
                   тайлбартай НЭГ эх сурвалж, хоёр өргөнд зөрөхгүй. */}
-              <p className="text-muted-foreground max-w-sm text-sm leading-relaxed">
+              <p className="text-muted-foreground max-w-sm text-base leading-relaxed">
                 {footerTagline}
               </p>
             </div>
 
-            {/* Дунд — Апп татах (3-ыг нэг мөрөнд). Unitel дээр харагдахгүй. */}
-            {SHOW_APP_DOWNLOAD && (
-              <div>
-                <FooterHeading>Апп татах</FooterHeading>
-                <AppStoreRow className="mt-4" />
-              </div>
-            )}
+            {/* ⚠️ "АПП ТАТАХ" БЛОК ХАСАГДСАН (2026-09-10) — `footer-v2.tsx`-ийн
+                `MobileSitemap`-тай ИЖИЛ шалтгаанаар (захиалагч: "Univision дээр
+                тусдаа байгаа апп татах хэсгийг хас"). Хоёр footer хувилбар
+                зан төлвөөрөө зөрөх ёсгүй тул энд ч хамт хасав.
+                Апп татах CTA нь одоо ЗӨВХӨН нүүрний `AppPromo` section-д. */}
 
             {/* Баруун — Сошиал хаяг */}
             <div>
@@ -93,7 +85,7 @@ function FooterClassic() {
                 <li key={item.id}>
                   <Link
                     href={item.href}
-                    className="text-foreground text-sm transition-opacity hover:opacity-70"
+                    className="text-foreground text-base transition-opacity hover:opacity-70"
                   >
                     {item.label}
                   </Link>

@@ -939,3 +939,68 @@ html[style*="--a11y-content"] span {
     backdrop-filter: url(#glass-warp) blur(12px) saturate(200%);
   }
 }
+
+/* =====================================================================
+   HEADER-ИЙН КАПСУЛ — LIQUID GLASS (2026-09-10)
+   =====================================================================
+   Захиалагч: "light shadow effect нэмэхгүй бол харагдахгүй байна, dark theme
+   дээр бүр харагдахгүй байна" + гурван screenshot (Figma-гийн Properties,
+   dark header, ирмэг нь тодруулсан light header).
+
+   ЯАГААД FIGMA-ЫН СПЕК ДАНГААРАА ХАНГАЛТГҮЙ ВЭ:
+   Figma нь ГУРВАН зүйл өгсөн — fill `#000 0.1%`, drop shadow
+   `0 4 12 8 · #000 5%`, background blur. Гэтэл:
+     · 0.1% fill    — практикт БҮРЭН ил тод, юу ч нэмэхгүй
+     · background blur — header нь `relative` тул ард нь юу ч гүйдэггүй
+       (захиалагчийн 2026-09-10-ны шийдвэр) ⇒ ҮР ДҮНГҮЙ
+     · drop shadow  — 5% ХАР. Цайвар дэвсгэр дээр л мэдэгдэнэ; БАРААН
+       дэвсгэр дээр хар сүүдэр нь харагдах ямар ч боломжгүй.
+   ⇒ Гурвуулаа хасагдвал капсул нь ХООСОН тэгш өнцөгт болно. Тиймээс шилний
+   ЗУЗААНЫГ өөрөө зурах ёстой: `screenshot 3`-т улаанаар тэмдэглэсэн ДЭЭД ба
+   ДООД ирмэгийн ЦАЙВАР ЗУРААС яг энэ — гэрэл шилний иртэй мөргөлдөх тусгал.
+
+   ДӨРВӨН ДАВХАРГА (эрэмбэ нь ЧУХАЛ, box-shadow нь эхнийхээ ДЭЭР зурдаг):
+     ① inset ДЭЭД ирмэг  — хамгийн тод. "Гэрэл дээрээс тусна" гэсэн дүр.
+     ② inset ДООД ирмэг  — сулхан. Доороос ойсон гэрэл.
+     ③ inset 1px ring    — бүх периметрийг холбож, шилийг ХАВТГАЙ биш
+                           ЗУЗААН мэт харуулна.
+     ④ outer drop shadow — Figma-гийнх. Хуудаснаас салгана.
+
+   ⚠️ ХОЁР ТЕМД ТУС ТУСДАА ТОХИРУУЛСАН, `opacity` ганцаар нь солиод болохгүй:
+   light дээр цайвар ирмэг нь цайвар дэвсгэрээс ЯЛГАРАХ ёстой (⇒ өндөр альфа
+   + бараанавтар outer shadow), dark дээр бол эсрэгээр цайвар ирмэг ӨӨРӨӨ
+   бүх ажлыг хийнэ (⇒ бага альфа хангалттай, харин outer shadow нь ХАРАНХУЙ
+   дээр ажиллахын тулд ХАМААГҮЙ гүн байх ёстой).
+
+   ⚠️ `color-mix(... white ...)` — `--foreground` БИШ. Тусгал нь ГЭРЭЛ, темийн
+   бичвэрийн өнгө биш: dark theme-д ч тусгал нь ЦАЙВАР хэвээр байх ёстой.
+
+   Хэрэглэгч: desktop капсул (`header.tsx`) ба мобайлын капсул
+   (`mobile-header.tsx`) — ХОЁУЛАА. Нэг л газраас уншина. */
+.glass-capsule {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, white 62%, transparent) 0%,
+    color-mix(in oklab, white 20%, transparent) 55%,
+    color-mix(in oklab, white 40%, transparent) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 90%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, white 65%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, white 35%, transparent),
+    0 4px 12px 8px rgb(0 0 0 / 0.05);
+}
+
+.dark .glass-capsule {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, white 10%, transparent) 0%,
+    color-mix(in oklab, white 3%, transparent) 55%,
+    color-mix(in oklab, white 7%, transparent) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 24%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, white 10%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, white 9%, transparent),
+    0 6px 18px 4px rgb(0 0 0 / 0.45);
+}

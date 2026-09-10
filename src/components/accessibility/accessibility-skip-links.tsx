@@ -5,6 +5,22 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useAccessibility } from "./accessibility-provider";
 
+/**
+ * ⚠️⚠️ ТҮР УНТРААСАН (2026-09-10, захиалагч: "одоо tab дарах үед гарч ирж
+ * байгаа accessibility-г түр хугацаанд унтраа, Unitel Univision аль алин
+ * дээр нь"). Энэ файл `layout.tsx`-д mount хийгдсэн хэвээр — зөвхөн энэ
+ * ганц тогтмолыг `true` болгоход БҮРЭН сэргэнэ, өөр юу ч хөндөгдөөгүй.
+ *
+ * ⚠️ ЮУ АЛДАГДАЖ БАЙГАА НЬ: эхний Tab дээр "Үндсэн агуулга руу очих"
+ * гэсэн skip link гардаг байсан нь WCAG 2.4.1 (Bypass Blocks) -ийн
+ * шаардлага. Түүнгүйгээр гарын хэрэглэгч header-ийн бүх линкийг дамжиж
+ * байж үндсэн агуулгад хүрнэ. Танилцуулга дууссаны дараа `true` болгоно.
+ *
+ * `#main-content` id ба `AccessibilityPanel` хоёр ХЭВЭЭР — панелийг
+ * хөвөгч товчоороо нээх боломж алдагдаагүй.
+ */
+const SKIP_LINKS_ENABLED = false;
+
 export function AccessibilitySkipLinks() {
   const { setOpen } = useAccessibility();
   const [visible, setVisible] = React.useState(false);
@@ -13,6 +29,10 @@ export function AccessibilitySkipLinks() {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
+    // Унтраасан үед Tab-ыг ОГТ СОНСОХГҮЙ — `preventDefault` хийхгүй тул
+    // фокус хэвийн, дараагийн элемент рүү шууд шилжинэ.
+    if (!SKIP_LINKS_ENABLED) return;
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Tab" || e.shiftKey) return;
       if (hasInterceptedRef.current) return;
@@ -59,6 +79,10 @@ export function AccessibilitySkipLinks() {
 
   const linkClass =
     "inline-flex items-center gap-2 rounded-b-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg ring-1 ring-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+
+  // ⚠️ DOM-д ОГТ РЕНДЕРЛЭХГҮЙ (зөвхөн нуухгүй): нуугдсан ч tab-order-т үлдэж,
+  // Tab дарахад "хаа нэгтээ" фокус алга болсон мэт мэдрэгдэнэ.
+  if (!SKIP_LINKS_ENABLED) return null;
 
   return (
     <div

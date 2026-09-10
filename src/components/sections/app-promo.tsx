@@ -42,7 +42,24 @@ export function AppPromo({ content }: { content: AppPromoContent }) {
     <section
       id={content.id}
       aria-labelledby={titleId}
-      className={cn(sectionBg.band, "relative w-full overflow-hidden")}
+      /**
+       * ⚠️⚠️ `sectionBg.band` → `sectionBg.page` (2026-09-10, захиалагчийн
+       * загварын screenshot: "footer хэсгийн bg өөрчлөгдсөн байна … загварын
+       * дагуу байх ёстой").
+       *
+       * ЯАГААД ЭНЭ НЬ ЗҮГЭЭР НЭГ ӨНГӨ СОЛИХ БИШ: `band` (=`bg-card`,
+       * #f3f5f7) нь доорх утасны зургийн картын дэвсгэртэй ЯГ ИЖИЛ токен
+       * байсан ⇒ карт нь section дээр огт ялгарахгүй, зөвхөн ring/shadow-оороо
+       * л мэдэгддэг байв. `page` (=`bg-background`, #e2e8ec) болгосноор карт
+       * нэг шат ЦАЙВАР болж, загварынх шиг тодорхой хайрцаг болно.
+       *
+       * ⚠️ ЭНЭ НЬ 2026-09-09-НЫ ХЭМНЭЛЭЭС ЗӨРЛӨӨ. `lib/section-bg.ts`-ийн
+       * диаграмд "Апп татах = band" гэж бичигдсэн байсныг захиалагч
+       * 2026-09-10-нд ЗӨВШӨӨРӨН өөрчилсөн. Үр дагавар: "Бусад үйлчилгээ" →
+       * "Апп татах" → footer ГУРВУУЛАА саарал болж, хооронд нь зааг
+       * үлдэхгүй — энэ нь ЗОРИУД (загварт тэгж харагдана).
+       */
+      className={cn(sectionBg.page, "relative w-full overflow-hidden")}
       style={sectionStyle}
     >
       {/* Бусад section-уудтай ижил 1200px контентын хүрээнд тэгшилнэ */}

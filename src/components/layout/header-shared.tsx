@@ -40,7 +40,7 @@ import {
   type MegaMenuSection,
 } from "@/data/navigation";
 import { promotionCards } from "@/data/promotions";
-import { BRAND, BRAND_LABEL } from "@/lib/brand";
+import { BRAND, BRAND_LABEL, type BrandId } from "@/lib/brand";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
@@ -440,7 +440,7 @@ export function BranchStatusNote({
  * Desktop (`BrandMegaPanel`) ба mobile (`MenuPromoTeaser`) ХОЁУЛАА эндээс
  * уншина тул тоо, бичвэр, зураг зөрөхгүй.
  */
-export const MENU_PROMOS: {
+export type MenuPromo = {
   id: string;
   title: string;
   /**
@@ -456,14 +456,46 @@ export const MENU_PROMOS: {
   ctaLabel: string;
   href: string;
   image?: string;
-}[] = promotionCards[BRAND].slice(0, 2).map((p) => ({
-  id: p.id,
-  title: p.title,
-  description: p.description,
-  ctaLabel: p.ctaText,
-  href: p.ctaHref,
-  image: p.image,
-}));
+};
+
+/**
+ * ЦЭСНИЙ НЭР → БРЭНД. `appleMegaMenus`-ийн түлхүүр нь "Unitel" / "Univision".
+ * Бусад нэр (LookTV г.м) нь mega цэсгүй тул энд байхгүй.
+ */
+const MENU_BRAND: Record<string, BrandId> = {
+  Unitel: "unitel",
+  Univision: "univision",
+};
+
+/**
+ * ⚠️⚠️ УРАМШУУЛЛЫГ BUILD-ИЙН БИШ, НЭЭГДСЭН ЦЭСНИЙ БРЭНДЭЭР СОНГОНО
+ * (2026-09-10, захиалагч: "desktop дээр Univision-ий mega menu дээрх
+ * урамшуулал Univision-ийх биш байна").
+ *
+ * ӨМНӨ НЬ `MENU_PROMOS = promotionCards[BRAND]` гэсэн ТОГТМОЛ байв — `BRAND`
+ * нь `NEXT_PUBLIC_BRAND` буюу BUILD-ийн брэнд. Гэтэл header дээр ХОЁУЛАН
+ * брэндийн цэс (Unitel · Univision) зэрэг байдаг тул Unitel build дээр
+ * Univision-ы цэс нээхэд Unitel-ийн урамшуулал ("Багцаа бүтээ", "Plus багц")
+ * гарч байлаа. Одоо Univision-ы цэс нээвэл Univision-ы урамшуулал
+ * ("Flash Deals", "Спорт Апп") гарна — хоёр build дээр ч ижил.
+ *
+ * ⚠️ FALLBACK нь `BRAND`: цэсний нэр танигдахгүй бол (шинэ mega цэс нэмэгдэх
+ * г.м) хоосон биш, build-ийн брэндийн урамшуулал гарна — өмнөх зан төлөв.
+ *
+ * ⚠️ ФУНКЦ болсон нь ЗОРИУД: тогтмол үлдээвэл модуль ачаалагдах үедээ НЭГ
+ * л удаа бодогдох тул цэс солигдоход дагахгүй.
+ */
+export function menuPromos(menuName?: string): MenuPromo[] {
+  const brand = (menuName && MENU_BRAND[menuName]) || BRAND;
+  return promotionCards[brand].slice(0, 2).map((p) => ({
+    id: p.id,
+    title: p.title,
+    description: p.description,
+    ctaLabel: p.ctaText,
+    href: p.ctaHref,
+    image: p.image,
+  }));
+}
 
 /**
  * Урамшууллын ДУГУЙ ЗУРАГ.
@@ -610,7 +642,12 @@ function MegaItem({
  * (агуулга нь өөрөө өргөнөө тогтоох гэж зууван болно). Тиймээс `w-76`
  * (304px) — дугуй 56px + зай 16px ⇒ текстэд ~230px үлдэнэ.
  */
-function MegaPromoColumn({ onNavigate }: { onNavigate: () => void }) {
+/**
+ * ⚠️ `menuName` — АЛЬ ЦЭС нээгдсэн бэ. Урамшуулал нь build-ийн брэндээр БИШ,
+ * ҮҮГЭЭР сонгогдоно (`menuPromos`-ийн тайлбарыг үз). Дуудагч нь `menu.name`-г
+ * дамжуулна; өгөөгүй бол build-ийн брэнд рүү унана.
+ */
+function MegaPromoColumn({ menuName, onNavigate }: { menuName?: string; onNavigate: () => void }) {
   return (
     <div className="ml-auto w-76 shrink-0">
       <h3 className={cn(navType.groupLabel, "mb-4")}>{MENU_PROMOS_HEADING}</h3>
@@ -618,7 +655,7 @@ function MegaPromoColumn({ onNavigate }: { onNavigate: () => void }) {
       {/* `gap-5` — хоёр урамшууллыг тод салгана, эс бөгөөс нэгний CTA
           нөгөөгийн гарчигтай солбицож уншигдана. */}
       <div className="flex flex-col gap-5">
-        {MENU_PROMOS.map((promo) => (
+        {menuPromos(menuName).map((promo) => (
           <div key={promo.id} className="flex items-center gap-4">
             <PromoAvatar image={promo.image} />
             {/* `min-w-0` — flex хүүхэд нь анхдагчаар агуулгынхаа доод
@@ -773,8 +810,23 @@ function BranchedMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: (
      * ⚠️ ХУУЧИН хоёр баганат рендер (`BrandMegaPanel`-ийн доод хэсэг) ч ИЖИЛ
      * болов — хоёр хэлбэрийн панел өөр өндөртэй бол хэлбэр солигдоход цэс
      * "цохилно".
+     *
+     * ⚠️⚠️ `px-4` → `px-6` (2026-09-10, захиалагч: "хэт наалдсан харагдаж
+     * байна", дараа нь дахин "container-ын padding бага харагдаж байна").
+     *
+     * ⚠️ 24px нь ДЭЭД ХЯЗГААР, СОНГОЛТ БИШ. Мөрний агуулга нь тогтмол
+     * өргөнүүдийн нийлбэр = **1144px** (`w-56` + `gap-10` + `pl-10` +
+     * `w-52` + `gap-20` + `w-52` + `gap-10` + `w-76`), хавтан нь 1200px:
+     *     (1200 − 1144) / 2 = 28px
+     * ⇒ `px-7`-оос ДЭЭШ тавибал агуулга `overflow-hidden`-д ТАЙРАГДАНА.
+     * (`px-10` туршиж үзэхэд баруун талын promo багана 59px-ээр таслагдсан.)
+     * Илүү зай хэрэгтэй бол ЭНИЙГ БИШ, дээрх тогтмол өргөнүүдийг
+     * захиалагчтай ярьж багасгана — тэдгээр нь бүгд 09-09-ний шийдвэр.
+     *
+     * ЗАЙГ БОДИТООР НЭМСЭН ЗАСВАР нь `-ml-3` ХАСАГДСАН явдал (доор үз):
+     * өмнө нь 16 − 12 = ердөө **4px** үлддэг байсан бол одоо бүтэн 24px.
      */
-    <div className="mx-auto max-w-300 px-4 py-8">
+    <div className="mx-auto max-w-300 px-6 py-8">
       {/**
        * ⚠️ `items-start` → `items-stretch` (2026-09-08, захиалагч:
        * "separator-г бүтэн болго").
@@ -792,9 +844,20 @@ function BranchedMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: (
       <div className="flex items-stretch gap-10">
         {/* ─── ЗҮҮН: тогтмол ангиллын багана ─── */}
         <nav aria-label={`${menu.name} — ангилал`} className="w-56 shrink-0">
-          {/* `-ml-3` — pill-ийн зүүн padding-ийг нөхөж, үсэг нь панелийн
-              зүүн ирмэгтэй оптикоор жигдэрнэ. */}
-          <ul className="-ml-3 space-y-1">
+          {/* ⚠️⚠️ `-ml-3` ХАСАГДСАН (2026-09-10, захиалагч: "container-ын
+              padding бага харагдаж байна").
+
+              Тэр нь pill-ийн зүүн padding-ийг нөхөж ҮСГИЙГ панелийн ирмэгтэй
+              оптикоор жигдрүүлдэг байв. Гэвч pill нь ДЭВСГЭРТЭЙ (идэвхтэй
+              мөр дээр цагаан капсул) тул жигдэрч байсан зүйл нь үсэг, харин
+              НҮД нь дэвсгэрийн ирмэгийг хардаг: 24px padding − 12px = ердөө
+              **12px** үлдэж, цагаан капсул хавтангийн ирмэгт наалддаг байлаа.
+
+              Одоо pill-ийн дэвсгэр бүтэн 24px-т эхэлнэ; үсэг нь 36px-т
+              (pill-ийн өөрийн `px-3`-ийн улмаас) буух ба энэ нь баруун
+              талын бүлгийн гарчгуудаас бага зэрэг доогуур эхэлж байгаа нь
+              pill-тэй жагсаалтад ХЭВИЙН. */}
+          <ul className="space-y-1">
             {menu.sections.map((section) => (
               <li key={section.id}>
                 <MegaBranchRow
@@ -883,7 +946,7 @@ function BranchedMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: (
           )}
         </div>
 
-        <MegaPromoColumn onNavigate={onNavigate} />
+        <MegaPromoColumn menuName={menu.name} onNavigate={onNavigate} />
       </div>
     </div>
   );
@@ -934,12 +997,15 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
   const extras = menu.extras ?? MEGA_RELATED_LINKS;
 
   return (
-    // `py-8` — хоёр панелт рендертэй ИЖИЛ (тайлбарыг `BranchedMegaPanel`-д үз).
-    <div className="mx-auto max-w-300 px-4 py-8">
+    // `px-6 py-8` — салаалсан рендертэй ИЖИЛ. Хоёулангийнх нь тайлбарыг
+    // `BranchedMegaPanel`-д үз; нэгийг сольвол НӨГӨӨГ НЬ ч дагаж засна.
+    <div className="mx-auto max-w-300 px-6 py-8">
       <div className="flex items-start gap-16">
         <div>
           <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.sectionsLabel ?? menu.name}</h3>
-          <ul className="-ml-3 space-y-1">
+          {/* `-ml-3` ХАСАГДСАН — салаалсан рендертэй ИЖИЛ шалтгаанаар
+              (`BranchedMegaPanel`-ийн тайлбарыг үз). */}
+          <ul className="space-y-1">
             {menu.sections.map((section) => (
               <li key={section.id}>
                 <MegaItem section={section} className={sectionCls} onNavigate={onNavigate} />
@@ -959,7 +1025,7 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
           </ul>
         </div>
 
-        <MegaPromoColumn onNavigate={onNavigate} />
+        <MegaPromoColumn menuName={menu.name} onNavigate={onNavigate} />
       </div>
     </div>
   );

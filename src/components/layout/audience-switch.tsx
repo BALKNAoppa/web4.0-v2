@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Building2, User, Info, Smartphone, Home, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Building2, User, Info, Smartphone, Home, ArrowUpRight } from "lucide-react";
 
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import {
@@ -111,10 +111,16 @@ function BrandCardsPanel({ seg }: { seg: AudienceSegment }) {
  * том). `em` нь ЭЦГИЙН `font-size`-аас тооцогддог тул одоо ГАНЦ КНОП —
  * текстийн хэмжээ — бүх элементийг зэрэг дагуулна.
  *
- *   1.05em → 15px үсэгт 15.75px (өмнөх 16px), 13px үсэгт 13.65px
- *   0.9em  → 15px үсэгт 13.5px  (өмнөх 14px), 13px үсэгт 11.7px
+ *   0.9em → 15px үсэгт 13.5px (өмнөх 14px), 13px үсэгт 11.7px
+ *
+ * ⚠️ `SEG_ICON` (1.05em) УСТСАН (2026-09-10, захиалагч: "Desktop дээр header-ийн
+ * layer 1-г ийм болгоё" + screenshot). Тэр нь сегмент бүрийн ӨМНӨХ дүрс
+ * (👤 Хувь хэрэглэгч · 🏢 Байгууллага · ⓘ Unitel Group) байсныг загвараас
+ * ХАСАВ — зурвас нь одоо ЗӨВХӨН бичвэр + гадаад линкийн ↗.
+ *
+ * `SegmentIcon` компонент ба `icon` дата талбар нь ХЭВЭЭР: мобайлын
+ * `AudienceSwitchMobile` тэднийг ашигласаар байна.
  */
-const SEG_ICON = "size-[1.05em] shrink-0";
 const SEG_AFFIX = "size-[0.9em] shrink-0 opacity-60";
 
 const tabClass = cn(
@@ -181,9 +187,15 @@ function AudienceSwitch({
 
   const activeSeg = segments.find((s) => s.id === openId && s.brands?.length) ?? null;
 
-  // Идэвхтэй сегментийн (жишээ нь "Хувь хэрэглэгч") тодотгол — бусад top bar-т
-  // ашигладагтай ижил: хар текст + саарал дэвсгэр
-  const activeCls = "bg-foreground/10 text-foreground!";
+  /**
+   * Идэвхтэй сегментийн ("Хувь хэрэглэгч") тодотгол.
+   *
+   * ⚠️⚠️ САААРАЛ ДЭВСГЭР (`bg-foreground/10`) ХАСАГДАЖ, ЖИН нэмэгдсэн
+   * (2026-09-10, захиалагчийн загварын screenshot). Загварт идэвхтэй мөр нь
+   * ямар ч pill/дэвсгэргүй, зүгээр л ХАР бөгөөд ТОД бичвэр — зурвас
+   * бүхэлдээ хөнгөн болж, доорх шилэн капсултай өрсөлдөхөө болино.
+   */
+  const activeCls = "text-foreground! font-semibold";
   // hover=false үед hover-оор нээх/хаах бүх үйлдэл no-op болно (зөвхөн click)
   const hoverOpen = (id: AudienceSegment["id"]) => {
     if (hover) openSeg(id);
@@ -220,11 +232,16 @@ function AudienceSwitch({
                   className={cn(
                     tabClass,
                     "group",
-                    seg.id === activeId && activeCls,
                     triggerClassName,
+                    // ⚠️ ИДЭВХТЭЙ КЛАСС нь triggerClassName-ий ДАРАА байх ЁСТОЙ:
+                    // тэр нь `navType.body` (=`font-normal`)-ыг агуулдаг тул
+                    // өмнө нь бичвэл tailwind-merge-ээр `font-semibold` дарагдана.
+                    seg.id === activeId && activeCls,
                   )}
                 >
-                  <SegmentIcon icon={seg.icon} className={SEG_ICON} />
+                  {/* ⚠️ Өмнөх дүрс ХАСАГДСАН (2026-09-10) — `SEG_ICON`-ий
+                      тайлбарыг үз. ↗ нь ХЭВЭЭР: тэр нь чимэглэл БИШ,
+                      "сайтаас гарна" гэсэн мэдээлэл. */}
                   <span>{seg.label}</span>
                   <ArrowUpRight className={SEG_AFFIX} aria-hidden="true" />
                 </a>
@@ -243,19 +260,26 @@ function AudienceSwitch({
                 className={cn(
                   tabClass,
                   "group",
-                  seg.id === activeId && activeCls,
                   triggerClassName,
+                  // ⚠️ Дарааллын тайлбарыг дээрх салаанаас үз.
+                  seg.id === activeId && activeCls,
                 )}
               >
-                <SegmentIcon icon={seg.icon} className={SEG_ICON} />
+                {/**
+                 * ⚠️⚠️ ӨМНӨХ ДҮРС ба CHEVRON ХОЁУЛАА ХАСАГДСАН (2026-09-10,
+                 * захиалагчийн загварын screenshot: "Хувь хэрэглэгч" нь
+                 * дүрсгүй, сумгүй, зөвхөн ТОД бичвэр).
+                 *
+                 * ⚠️ ЭНЭ МӨР НЬ DROPDOWN-ТОЙ ХЭВЭЭР — `brands` (Unitel ·
+                 * Univision · LookTV …) бүхий Popover нь ажиллаж байгаа,
+                 * зөвхөн ТЭМДЭГ нь алга болсон. Тиймээс хэрэглэгч дарж
+                 * болохыг НҮДЭЭР мэдэхгүй. `hover={false}` тул зөвхөн
+                 * дарлагаар нээгдэнэ ⇒ практикт олдохгүй байх магадлалтай.
+                 * ⇒ Хоёр гарц: (1) chevron-ыг буцаах, (2) энэ мөрийг
+                 *   dropdown-гүй, зүгээр л ИДЭВХТЭЙ ШОШГО болгох.
+                 *   Захиалагчаас лавлана — өөрөө шийдээгүй.
+                 */}
                 <span>{seg.label}</span>
-                <ChevronDown
-                  className={cn(
-                    SEG_AFFIX,
-                    "transition-transform duration-200 group-data-[state=open]:rotate-180",
-                  )}
-                  aria-hidden="true"
-                />
               </button>
             );
           })}

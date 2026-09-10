@@ -42,7 +42,7 @@ import { SmartLink } from "@/components/layout/smart-link";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { LogoHomeLink } from "@/components/layout/logo-home-link";
 import {
-  MENU_PROMOS,
+  menuPromos,
   MENU_PROMOS_HEADING,
   BranchStatusNote,
   LOOKTV_MORPH_TEXTS,
@@ -713,10 +713,16 @@ function BrandTabsHeader() {
  * захиалагчийн загварт UNITEL-ийн үгэн лого байна. Footer-ийнхтэй ижил
  * хослол (`LogoHomeLink` + `BrandLogo`) тул nested anchor үүсэхгүй.
  */
+/**
+ * ⚠️ `bg-card` + `shadow-sm` → `.glass-capsule` (2026-09-10). Desktop-ийн
+ * капсултай ЯГ НЭГ эх сурвалж (globals.css) — тусгалын альфа, градиент,
+ * сүүдрийн тоо хоёр давхаргад хэзээ ч зөрөхгүй. Хэлбэрийг (өндөр, радиус,
+ * padding) нь энд, ХАРАГДАЦЫГ нь тэнд гэж хуваасан.
+ */
 function CapsuleRow({ burger }: { burger: React.ReactNode }) {
   return (
     <div className="px-4 py-3">
-      <div className="bg-card flex h-16 items-center rounded-full px-5 shadow-sm">
+      <div className="glass-capsule flex h-16 items-center rounded-full px-5">
         <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
           <BrandLogo height={24} preload />
         </LogoHomeLink>
@@ -1198,6 +1204,24 @@ function DrawerSubmenu({
 }) {
   const headingId = `${DRAWER_ID}-${menu.name}-heading`;
 
+  /**
+   * ⚠️ ЭХНИЙ САЛАА АНХНААСАА НЭЭЛТТЭЙ (2026-09-10, захиалагч: "Unitel дээр
+   * default-р үндсэн багцыг нээлттэй байлгамаар байна").
+   *
+   * ЯАГААД `menu.name === "Unitel"` ГЭЖ ХАТУУ БИЧЭЭГҮЙ ВЭ: desktop-ийн
+   * `BranchedMegaPanel` нь ХОЁУЛАН БРЭНД дээр `menu.sections[0]`-ыг
+   * идэвхтэйгээр эхлүүлдэг. Мобайл дээр брэнд шалгавал хоёр давхарга,
+   * хоёр брэнд дөрвөн өөр зан гаргана. Тиймээс ижил дүрэм: "эхний
+   * ЗАДАРЧ ЧАДАХ салаа нээлттэй".
+   *   Unitel    → "Үндсэн багцууд" (захиалагчийн хүссэн зүйл)
+   *   Univision → "Интернэтийн шийдэл" (эхний нь `core` бол `groups`-гүй
+   *               тул алгасагдана)
+   *
+   * ⚠️ `defaultValue` (uncontrolled) — `value` БИШ. Хэрэглэгч нээсэн/хаасан
+   * бүхнээ өөрөө удирдана; бид зөвхөн ЭХНИЙ төлөвийг өгнө.
+   */
+  const defaultOpen = menu.sections.find((s) => s.groups?.length)?.id;
+
   return (
     <section aria-labelledby={headingId}>
       {/* БУЦАХ — панелийн ХАМГИЙН ДЭЭД мөр. Сум нь ЗҮҮН тийш: агуулга
@@ -1238,45 +1262,105 @@ function DrawerSubmenu({
        * тодорхойлогдоогүй" слот мобайлд ХЭРЭГГҮЙ: мөр өөрөө линк тул
        * хоосон панел харуулах шаардлага гарахгүй.
        */}
-      {menu.sections.map((branch) => (
-        <div key={branch.id} className="mt-3">
-          <ul className="flex flex-col">
-            <li>
+      {/**
+       * ⚠️⚠️ БҮГД ЗАДАРСАН ЖАГСААЛТ → ACCORDION (2026-09-10, захиалагч:
+       * "хувилбар 3 дээр дэд category буюу үндсэн багцууд, гэр интернет гэх
+       * мэтийг extent хийдэг байдлаар … хэрэглэгч дарах үед нээгддэг").
+       *
+       * ӨМНӨ НЬ: салаа бүрийн БҮХ бүлэг, БҮХ линк нэг дор задарсан байдаг
+       * байв. Unitel-д тэр нь 6 салаа × дэд линкүүд = дэлгэц дүүрэн гүйлт;
+       * хэрэглэгч хайж байгаа ангиллаа олохын тулд бүхнийг өнгөрөөх ёстой.
+       *
+       * ОДОО: `groups`-тай салаа нь ХААЛТТАЙ accordion мөр (chevron-той),
+       * дарахад л агуулга нь задарна. `groups`-гүй салаа нь ӨМНӨХ ШИГЭЭ
+       * ердөө нэг ЛИНК — дарвал шууд шилжинэ (chevron БАЙХГҮЙ тул хэрэглэгч
+       * "задрах" ба "шилжих"-ийг дарахаасаа өмнө ялгана).
+       *
+       * ⚠️ `type="multiple"` + анхны төлөв ХООСОН: footer-ийн мобайл
+       * accordion-тай ЯГ ижил зан (`footer-v2.tsx`). Нэгийг нээхэд нөгөө нь
+       * хаагдвал харьцуулж үзэх боломжгүй болно.
+       *
+       * ⚠️ САЛААНЫ `href` РУУ ОРОХ ЗАМ БАЙХГҮЙ БОЛСОН: өмнө нь салааны мөр
+       * өөрөө линк байсан, одоо accordion-ы trigger буюу ТОВЧ.
+       *
+       * ЭНЭ НЬ ОДООГООР ЮУ Ч АЛДАГДУУЛААГҮЙ: салаануудын `href` нь бүгд
+       * `"/#"` — 2026-09-09-ны шийдвэрээр нүүрнээс бусад бүх зам
+       * ажиллахгүй болсон (`data/navigation.ts`). Өөрөөр хэлбэл тэр линк
+       * хаашаа ч аваачихгүй байсан.
+       *
+       * ⇒ Жинхэнэ замууд орж ирэх үед ЭНД дахин шийднэ (trigger-ийг линк +
+       * тусдаа chevron товч болгох г.м). ӨӨРӨӨСӨӨ "Бүгдийг үзэх" гэх мэт
+       * мөр БҮҮ НЭМ — 2026-09-10-нд нэмээд захиалагч хассан.
+       */}
+      <Accordion type="multiple" defaultValue={defaultOpen ? [defaultOpen] : []} className="mt-3">
+        {menu.sections.map((branch) =>
+          branch.groups?.length ? (
+            <AccordionItem key={branch.id} value={branch.id} className="border-b-0">
+              <AccordionTrigger
+                className={cn(
+                  DRAWER_PRIMARY_ROW,
+                  // Chevron нь ӨӨРӨӨ баруун ирмэгт (`ml-auto` анхны утга) —
+                  // 1-р давхаргын `ArrowRight`-тай ижил байрлал тул хоёр
+                  // давхарга нэг хэлээр ярина.
+                  "py-0 hover:no-underline",
+                )}
+              >
+                {branch.title.trim()}
+              </AccordionTrigger>
+
+              {/* ⚠️ `[&_a]:no-underline` ЗААВАЛ. `AccordionContent` нь анхны
+                  утгаараа `[&_a]:underline`-тай бөгөөд тэр нь DESCENDANT
+                  сонгогч тул линк дээрх ӨӨРИЙНХ нь `no-underline`-ыг
+                  спецификээрээ ЯЛНА. Тиймээс ЯГ ижил хэлбэрээр дарж,
+                  tailwind-merge-ээр солиулна. (2026-09-10-нд accordion болгох
+                  үед мартаж, бүх линк доогуур зураастай болсон.)
+                  Footer-ийн мобайл accordion ч ЯГ ижил заслыг хэрэглэдэг —
+                  `footer-v2.tsx`-ийн `AccordionContent`-ийг үз. */}
+              <AccordionContent className="pb-0 [&_a]:no-underline">
+                {/* АНГИЛЛЫН СТАТУС — desktop-той НЭГ бичвэр
+                    (`BranchStatusNote`). `"link-only"` бол `null` буцаана. */}
+                {branch.status && <BranchStatusNote status={branch.status} className="mb-1 pl-5" />}
+
+                {branch.groups.map((group) => (
+                  // `pl-3` — дэд бүлэг нь ангиллынхаа ДОР харьяалагдаж
+                  // байгааг догол мөрөөр л хэлнэ (зураас, хүрээ нэмэхгүй —
+                  // цэс шуугиантай болно).
+                  <div key={group.id} className="mt-1 pl-3">
+                    {group.title && (
+                      <p className={cn(navType.groupLabel, "mb-1 px-2")}>{group.title}</p>
+                    )}
+                    <ul aria-label={group.title} className="flex flex-col">
+                      {group.items.map((item) => (
+                        <li key={item.id}>
+                          <DrawerLink
+                            href={item.href}
+                            onNavigate={onNavigate}
+                            className={cn(
+                              navType.mobileLink,
+                              ROW,
+                              "text-muted-foreground no-underline",
+                            )}
+                          >
+                            {item.title.trim()}
+                          </DrawerLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </AccordionContent>
+            </AccordionItem>
+          ) : (
+            // ДЭД АГУУЛГАГҮЙ САЛАА — accordion БИШ, ердөө линк мөр.
+            <div key={branch.id}>
               <DrawerLink href={branch.href} onNavigate={onNavigate} className={DRAWER_LEAF_ROW}>
                 {branch.title.trim()}
               </DrawerLink>
-            </li>
-          </ul>
-
-          {/* АНГИЛЛЫН СТАТУС — desktop-той НЭГ бичвэр (`BranchStatusNote`).
-              `"link-only"` бол `null` буцаах тул юу ч гарахгүй.
-              `pl-5` нь доорх бүлгийн догол мөр (`pl-3`) + мөрийн `px-2`-той
-              эгнэж, статус нь ангиллынхаа ДОР харьяалагдаж байгааг хэлнэ. */}
-          {branch.status && <BranchStatusNote status={branch.status} className="mt-1 pl-5" />}
-
-          {branch.groups?.map((group) => (
-            // `pl-3` — дэд бүлэг нь ангиллынхаа ДОР харьяалагдаж байгааг
-            // догол мөрөөр л хэлнэ (зураас, хүрээ нэмэхгүй — цэс шуугиантай
-            // болно).
-            <div key={group.id} className="mt-1 pl-3">
-              {group.title && <p className={cn(navType.groupLabel, "mb-1 px-2")}>{group.title}</p>}
-              <ul aria-label={group.title} className="flex flex-col">
-                {group.items.map((item) => (
-                  <li key={item.id}>
-                    <DrawerLink
-                      href={item.href}
-                      onNavigate={onNavigate}
-                      className={cn(navType.mobileLink, ROW, "text-muted-foreground no-underline")}
-                    >
-                      {item.title.trim()}
-                    </DrawerLink>
-                  </li>
-                ))}
-              </ul>
+              {branch.status && <BranchStatusNote status={branch.status} className="mt-1 pl-5" />}
             </div>
-          ))}
-        </div>
-      ))}
+          ),
+        )}
+      </Accordion>
 
       {menu.extras && menu.extras.length > 0 && (
         <DrawerGroup label={menu.extrasLabel ?? "Нэмэлт"}>
@@ -1301,7 +1385,7 @@ function DrawerSubmenu({
       <div className="border-border mt-4 border-t px-2 pt-4">
         <h3 className={cn(navType.groupLabel, "mb-3")}>{MENU_PROMOS_HEADING}</h3>
         <div className="flex flex-col gap-4">
-          {MENU_PROMOS.map((promo) => (
+          {menuPromos(menu.name).map((promo) => (
             // `key` нь одоо `promo.id` — өмнө нь агуулга placeholder бөгөөд
             // хоёр мөр ЯГ ижил бичвэртэй байсан тул index хэрэглэж байв.
             // ⚠️ `items-center` → `items-start`: тайлбар нэмэгдэхэд мөр нь
@@ -1628,7 +1712,7 @@ function SectionMenu({ menu }: { menu?: MegaMenu }) {
           </div>
         )}
 
-        <MenuPromoTeaser />
+        <MenuPromoTeaser menuName={menu?.name} />
       </div>
     </NavigationMenuContent>
   );
@@ -1698,7 +1782,7 @@ function SectionRow({
  * Одоогоор SAMPLE: жинхэнэ урамшуулал холбогдох үед энэ текст/CTA-г тухайн
  * ангиллын promo data-гаар солино.
  */
-function MenuPromoTeaser() {
+function MenuPromoTeaser({ menuName }: { menuName?: string }) {
   return (
     <div className="border-border mt-2 border-t px-1 pt-3 pb-1">
       {/* Баганын ерөнхий тайлбар — desktop-той ИЖИЛ эх сурвалжаас, нэг л удаа.
@@ -1710,7 +1794,7 @@ function MenuPromoTeaser() {
           нь урт placeholder бичвэрээс үүдэлтэй — гарчиг богино болсноор тэр
           шалтгаан алга болж, хоёр давхарга нэг хэлбэрт орлоо. */}
       <div className="flex flex-col gap-4">
-        {MENU_PROMOS.map((promo) => (
+        {menuPromos(menuName).map((promo) => (
           // `items-start` — тайлбар 3 мөр болоход дугуй гарчигтай эгнэнэ
           // (`items-center` бол дугуй доогуур унана).
           <div key={promo.id} className="flex items-start gap-3">

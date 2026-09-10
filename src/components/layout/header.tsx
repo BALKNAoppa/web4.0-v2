@@ -6,10 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUp, ChevronDown, Layers, Sparkles, X } from "lucide-react";
 
 import { AudienceSwitchTabs } from "@/components/layout/audience-switch";
+import { BrandLogo } from "@/components/layout/brand-logo";
+import { LogoHomeLink } from "@/components/layout/logo-home-link";
 import { MobileBrandHeader, type MobileVariant } from "@/components/layout/mobile-header";
 import {
   AccountMenu,
-  BrandLogoLink,
   BrandMegaPanel,
   DOMAIN_NAV_NAME,
   IconButton,
@@ -107,25 +108,34 @@ const NAV_ORDER = NAV_ITEMS.map((item) => item.name);
  * зөвхөн `className` (дугуй, 36px) нь өөр. Тиймээс дүрс, өнгө, зан төлөв
  * хоёр давхаргад хэзээ ч зөрөхгүй.
  *
- * `bg-muted/60` бүлгийн дэвсгэр — screenshot дээр гурав нь НЭГ саарал
- * капсулын дотор сууж, лого/цэснээс тусдаа "хэрэгслийн" блок болж
- * харагдана. Тусад нь тавибал капсул дотор капсул биш, гурван цэг л болно.
+ * ⚠️ БҮЛГИЙН НЭГДСЭН ДЭВСГЭР ХАСАГДСАН (2026-09-10, захиалагч: "гурвыг
+ * тусад нь салгах"). Өмнө нь `bg-muted/60 rounded-full p-1` нь гурвыг НЭГ
+ * саарал капсулд багтаадаг байв — капсул дотор капсул болж, header өөрөө
+ * шил болсны дараа хоёр давхар "тамга" мэт харагдаж эхэлсэн. Одоо дэвсгэр
+ * нь ХЭРЭГСЭЛ ТУС БҮР дээр (`HEADER_TOOL_BASE`), хооронд нь `gap-2` зай.
  */
-const HEADER_TOOL_GROUP = "bg-muted/60 flex items-center gap-0.5 rounded-full p-1";
+const HEADER_TOOL_GROUP = "flex items-center gap-2";
 
-/** Бүх хэрэгслийн ХУВААЛЦАХ суурь — дугуй, 36px, төвлөрсөн. */
+/**
+ * Бүх хэрэгслийн ХУВААЛЦАХ суурь — дугуй, 36px, төвлөрсөн, ӨӨРИЙН дэвсгэртэй.
+ *
+ * ⚠️ `bg-muted/60` нь одоо ЭНД (өмнө нь бүлгийн div дээр байсан). Шилэн
+ * капсулын дотор бүрэн ил тод үлдээвэл дүрснүүд hero-гийн бараан зураг дээр
+ * уншигдахаа болино — хагас тунгалаг саарал нь тэдэнд ӨӨРИЙН суурь өгнө.
+ */
 const HEADER_TOOL_BASE =
-  "text-foreground focus-visible:ring-ring inline-flex items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none";
+  "text-foreground focus-visible:ring-ring bg-muted/60 inline-flex items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none";
 
 /** Бичвэртэй (MN) — өргөн нь агуулгаараа. */
 const HEADER_TOOL_TEXT = cn(HEADER_TOOL_BASE, "h-9 gap-1.5 px-3");
 
 /**
  * Зөвхөн дүрстэй — 36×36 дөрвөлжин (WCAG 2.5.8-ын 24px-ээс дээгүүр).
- * `hover:bg-background` — саарал бүлгийн дотор ЦАЙВАР болж тодрох нь
- * `hover:bg-muted` -ээс тод (бүлэг өөрөө аль хэдийн muted).
+ * ⚠️ `hover:bg-background` → `hover:bg-muted`. Өмнөх нь "саарал бүлгийн
+ * дотор ЦАЙВАР болж тодрох" зарчимтай байсан; бүлэг арилсан тул одоо эсрэгээр
+ * — өөрийнх нь `bg-muted/60`-оос БҮДЭГ болж hover мэдэгдэнэ.
  */
-const HEADER_TOOL_ICON = cn(HEADER_TOOL_BASE, "hover:bg-background size-9");
+const HEADER_TOOL_ICON = cn(HEADER_TOOL_BASE, "hover:bg-muted size-9");
 
 function HeaderTools() {
   return (
@@ -570,13 +580,38 @@ function MegaLayer({
         key={panelBrand}
         className={cn(
           /**
-           * ГОЛЛУУЛСАН ХАВТАН — header-ийн капсултай ИЖИЛ хүрээ (1200px) ба
-           * хэлбэрийн хэл. `rounded-[32px]` нь капсулын `rounded-[100px]`-аас
-           * ЖИЖИГ: 96px өндөр капсулд 100px нь бүтэн дугуй болдог, харин
-           * ~300px өндөр панелд ижил радиус нь хэт бөөрөнхий "шахмал" болно.
+           * ГОЛЛУУЛСАН ХАВТАН — header-ийн капсултай ИЖИЛ ИРМЭГ ба хэлбэрийн
+           * хэл. `rounded-[32px]` нь капсулын `rounded-[100px]`-аас ЖИЖИГ:
+           * 96px өндөр капсулд 100px нь бүтэн дугуй болдог, харин ~300px
+           * өндөр панелд ижил радиус нь хэт бөөрөнхий "шахмал" болно.
            * `mt-2` (8px) — капсулаас салгах зай.
+           *
+           * ⚠️⚠️ `max-w-292` (1168px) = КАПСУЛЫН БОДИТ ӨРГӨН (2026-09-10,
+           * захиалагч: "mega menu-г header-д голлуул, тэр нь horizontally
+           * гэсэн үг"). Панелийн зүүн/баруун ирмэг капсултай ЯГ таарна.
+           *
+           * ⚠️ ЯАГААД 300 БИШ ВЭ: `max-w-300` (1200px) нь капсулын ГАДНАХ
+           * хүрээ. Капсул өөрөө тэр хүрээний `px-4`-ийн дотор суудаг тул
+           * бодит өргөн нь 1200 − 32 = 1168. 300 үлдээвэл панел хоёр талдаа
+           * 16px-ээр халж, "header-тэй эгнээгүй" харагдана.
+           *
+           * ⚠️⚠️ ЭНЭ НЬ ӨМНӨ ХИЙГДЭЭД БУЦААГДСАН — ОДОО Л БОЛОМЖТОЙ БОЛСОН.
+           * Тэр үед Unitel-ийн "Үндсэн багцууд" салаа ХОЁР бүлэгтэй байсан
+           * тул мөрийн агуулга 1144px шаардаж, 1168px хавтанд `px-6`-тай
+           * (=1120px) багтахгүй ТАЙРАГДДАГ байв. 2026-09-10-ны цэсний
+           * бүтцийн өөрчлөлтөөр (2 mega category, салаа бүр НЭГ бүлэгтэй)
+           * шаардлага 856px болж буурсан:
+           *     w-56 (224) + gap-10 (40) + [pl-10 (40) + w-52 (208)]
+           *     + gap-10 (40) + w-76 (304) = 856
+           * Univision-ы хоёр салаа ч мөн НЭГ бүлэгтэй тул хоёр брэндэд
+           * 1120px нөөцтэй.
+           *
+           * ⚠️ ХЭЗЭЭ ДАХИН ЭВДЭРЧ БОЛОХ ВЭ: аль нэг салаанд ХОЁР ДАХЬ бүлэг
+           * нэмбэл шаардлага 856 → 1144 болж ДАХИН тайрагдана (208 + 80
+           * gap-20). Тэр үед энэ тоог 300 руу буцаах БИШ, харин `w-52` /
+           * `gap-20`-г захиалагчтай ярина.
            */
-          "border-border bg-popover text-popover-foreground mx-auto mt-2 max-w-300 overflow-hidden rounded-[32px] border shadow-xl",
+          "border-border bg-popover text-popover-foreground mx-auto mt-2 max-w-292 overflow-hidden rounded-[32px] border shadow-xl",
           // `duration-500` — mobile-ын Content/Viewport-той ИЖИЛ хугацаа.
           // Өмнө 300 байсан тул хоёр давхарга өөр хэмнэлтэй мэдрэгддэг байв.
           "animate-in fade-in duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -632,6 +667,30 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
        * үүсгэж, "хөвж байгаа" мэдрэмжийг эвдэнэ. Хуудсаас салгах үүргийг
        * капсулын `shadow-sm` авна.
        */}
+      {/**
+       * ⚠️⚠️ `relative` — STICKY БИШ. ЗАХИАЛАГЧИЙН ШИЙДВЭР (2026-09-10):
+       * "banner дээр sticky байдлаар биш" + screenshot. Header нь хуудастай
+       * хамт дээш гүйж алга болно, banner нь дугуй булангуудаараа БҮТНЭЭР,
+       * header-ийн ДООР харагдана.
+       *
+       * ⚠️ ЭНЭ НЬ GLASS-ЫГ УНТРААДАГ — тэгэхээр л зөв. `backdrop-filter` нь
+       * элементийн АРД байгаа зургийг л бүдгэрүүлдэг; `relative` header-ийн
+       * ард юу ч гүйдэггүй тул капсулын `backdrop-blur-xl` нь ЯМАР Ч ҮР ДҮНГҮЙ
+       * (Figma спекийн бүрэлдэхүүн болж үлдсэн). Капсулыг харагдуулах зүйл нь
+       * ЗӨВХӨН drop shadow.
+       *
+       * ⇒ "Шил харагдахгүй байна" гэдэг нь АЛДАА БИШ. Түүнийг асаах гурван
+       * нөхцөлийг (2026-09-10-нд туршиж, хөтөч дээр ажиллуулж үзсэн) бүгдийг
+       * НЭГ ДОР хийж байж болно:
+       *   1. энд `sticky top-0`
+       *   2. энд `bg-background` хасах
+       *   3. доорх Layer 2-ын нуурын `sectionBg.page` хасах
+       *   4. `page.tsx`-ийн `<main>`-д `-mt-[var(--header-h)]` (эхний
+       *      дэлгэцэнд ч шил харагдуулах бол) + `PromoHero`-гийн өндөрт
+       *      `+ var(--header-h)` нөхөлт
+       * Захиалагч 4-ийг харчихаад ХАССАН (капсул banner-ыг дарж байсан) тул
+       * 1-3-ыг ч хамт буцаав. Дахин асаахаас өмнө ЗААВАЛ лавлана.
+       */}
       <header className="bg-background relative top-0 z-50" role="banner">
         {/**
          * Layer 1 — ангилагч header-ийн БАРУУН ирмэгт шахсан (зөвхөн desktop).
@@ -673,23 +732,28 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
          *   Padding   12 / 24 / 12 / 24     → `px-6` (+ өндөр нь тогтмол тул
          *                                     босоо 12px нь `items-center`-ээр
          *                                     автоматаар тэнцэнэ)
-         *   Fill      #000000 · 0.1%        → `bg-black/[0.001]`
-         *   Shadow    0 4 12 8 · #000 5%    → `shadow-[0_4px_12px_8px_…]`
-         *   Effects   (background blur)     → `backdrop-blur-xl`
+         *   Fill · Shadow · Effects         → `.glass-capsule` (globals.css)
          *
-         * ⚠️ `bg-card` (цагаан) → `bg-black/[0.001]` + blur = ГЯЛГАР ШИЛ.
-         * Figma-ийн 0.1% хар бол ПРАКТИКТ ХАРАГДАХГҮЙ — тэр нь blur-ийг
-         * ажиллуулах "зөөлөн зөөлт" л. Тиймээс капсулыг ХАРАГДУУЛДАГ зүйл нь
-         * ЗӨВХӨН drop shadow (spread 8, 5% хар = зөөлөн хүрээлэл).
+         * ⚠️⚠️ FILL/SHADOW-ЫГ `.glass-capsule` АВСАН (2026-09-10). Өмнө нь энд
+         * `bg-black/[0.001]` + `shadow-[0_4px_12px_8px_…]` гэж Figma-гийн
+         * тоонууд ШУУД бичигдсэн байв. Гэвч тэр гурав (0.1% fill, 5% хар
+         * сүүдэр, background blur) нь ХОЁУЛАНГ НЬ БИШ, зөвхөн ЦАЙВАР темийг
+         * бодсон байсан тул dark theme дээр капсул БҮРЭН АЛГА болдог байлаа
+         * (захиалагчийн screenshot 2). `.glass-capsule` нь Figma-гийн drop
+         * shadow-г хадгалаад дээр нь ирмэгийн ЦАЙВАР ТУСГАЛ нэмж, хоёр темд
+         * тус тусдаа тохируулсан. Бүтэн тайлбар нь globals.css-д.
          *
-         * ⚠️⚠️ BACKDROP BLUR НЬ ОДООГООР ҮЗЭГДЭХГҮЙ. `backdrop-filter` нь
-         * ЭЛЕМЕНТИЙН АРД байгаа зургийг л бүдгэрүүлдэг; header нь `relative`
-         * (sticky БИШ) тул капсулын ард зөвхөн `sectionBg.page`-ийн ЦУЛГУЙ
-         * саарал байна ⇒ бүдгэрүүлэх зүйл байхгүй. Шил нь ЖИНХЭНЭЭР
-         * ажиллахын тулд header нь агуулгыг ДАРЖ хөвөх (`sticky top-0`)
-         * шаардлагатай — тэр нь ЗАН ТӨЛӨВИЙН өөрчлөлт тул захиалагчийн
-         * шийдвэрийг хүлээв. Класс нь одооноос бий, sticky болмогц шууд
-         * ажиллана.
+         * ⚠️ `backdrop-blur-xl` нь ОДООГООР ҮР ДҮНГҮЙ (header нь `relative`) —
+         * Figma спекийн бүрэлдэхүүн болж л үлдсэн. Шил нь одоо `.glass-capsule`
+         * -ийн ирмэг/градиентээр гардаг тул blur асаагүй ч БҮРЭН харагдана.
+         *
+         * ⚠️⚠️ `backdrop-blur-xl` НЬ ОДООГООР ЯМАР Ч ҮР ДҮНГҮЙ — Figma спекийн
+         * бүрэлдэхүүн болж л үлдсэн. Шалтгаан нь ЭНД БИШ, дээрх `<header>`
+         * дээр: тэр нь `relative` (захиалагчийн 2026-09-10-ны шийдвэр) тул
+         * капсулын ард юу ч гүйдэггүй. Бүтэн тайлбар ба асаах 4 нөхцөлийг
+         * `<header>`-ийн тайлбараас үз.
+         *
+         * ⇒ Энэ мөрийг "blur ажиллахгүй байна" гэж БҮҮ ЗАС. Засвар нь энд биш.
          *
          * ⚠️ `h-16` (64px) → `h-24` (96px). Header-ийн бодит өндрийг
          * `HeaderHeightVar` ДИНАМИКААР хэмждэг тул hero-гийн `--header-h`
@@ -697,17 +761,64 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
          */}
         <div className={cn(sectionBg.page, "hidden lg:block")}>
           <div className="mx-auto max-w-300 px-4 py-3">
-            {/* `justify-between` (Figma) + `gap-6` — лого ↔ цэс хоорондын
-                доод хязгаарын зай. `mr-auto` нь хэрэгслүүдийг баруун ирмэг
-                рүү түлхэнэ (space-between-тэй хамт ажиллана). */}
-            <div className="flex h-24 items-center justify-between gap-6 rounded-[100px] bg-black/[0.001] px-6 shadow-[0_4px_12px_8px_rgba(0,0,0,0.05)] backdrop-blur-xl">
-              <BrandLogoLink />
+            {/**
+             * ⚠️⚠️ `flex justify-between` → `grid grid-cols-[1fr_auto_1fr]`
+             * (2026-09-10, захиалагч: "mega menu-г голлуул гэсэн нь улаанаар
+             * тэмдэглэсэн дээр голлуул гэсэн юм" + капсулын ЯГ ГОЛД зурсан
+             * тэмдэг).
+             *
+             * ЯАГААД FLEX-ЭЭР БОЛОХГҮЙ ВЭ: өмнө нь лого · цэс · хэрэгсэл
+             * гурав `justify-between`-ээр тарж, цэс нь `mr-auto`-той байсан
+             * тул ЛОГОНЫ ЯГ ХАЖУУД наалддаг байв. Flex-ийн space-between нь
+             * үлдсэн зайг ТЭНЦҮҮ тарааж чадах ч дунд элементийг капсулын ГОЛД
+             * авчирдаггүй — учир нь лого (≈150px) ба хэрэгсэл (≈190px) хоёр
+             * ӨӨР ӨРГӨНТЭЙ.
+             *
+             * `1fr auto 1fr` нь хажуугийн хоёр баганыг ХҮЧЭЭР тэнцүү болгодог
+             * тул дунд багана нь агуулгынхаа өргөнөөс үл хамааран капсулын
+             * ЖИНХЭНЭ голд суух баталгаатай. (Хувилбар 2-ын төв лого мөн
+             * ЯГ ЭНЭ торыг хэрэглэдэг — шинэ хэв маяг нэмээгүй.)
+             *
+             * ⚠️ `justify-items` тавиагүй: лого нь 1-р баганын ЭХЭНД, хэрэгсэл
+             * нь 3-рынхаа ТӨГСГӨЛД байх ёстой тул тэдгээр нь өөрсдийн
+             * `justify-self`-ээ доор авна.
+             */}
+            <div className="glass-capsule grid h-24 grid-cols-[1fr_auto_1fr] items-center gap-6 rounded-[100px] px-6 backdrop-blur-xl">
+              {/**
+               * ⚠️⚠️ `BrandLogoLink` (ЭКО ТЭМДЭГ) → `BrandLogo` (ҮГЭН ЛОГО)
+               * (2026-09-10, захиалагч: "desktop хувилбар дээр Unitel
+               * Univision-ий ТОМ лого-г ашигла").
+               *
+               * `BrandLogoLink` нь `eco-logo.png` / `univision-mark-mono.svg`
+               * буюу дугуй ТЭМДЭГ — 96px өндөр капсулд хэт жижиг, брэндийн
+               * нэр уншигдахгүй байв. `BrandLogo` нь `lib/brand.ts`-ийн
+               * `BRAND_LOGO` -оос брэнд бүрийн ҮГЭН логог (light/dark хос)
+               * авна — мобайлын капсул 2026-09-08-наас хойш ЭНИЙГ хэрэглэж
+               * байсан ба одоо хоёр өргөн НЭГ логотой боллоо.
+               *
+               * `height={28}` — мобайлын 24-өөс арай том: капсул 64 → 96px
+               * болсныг дагасан. Бодит өндөр нь `BRAND_LOGO[BRAND].scale`-аар
+               * үржигдэнэ (Univision 1.2 тул түүнийх ~34px) — тэр scale нь
+               * хоёр брэндийн логог ОПТИКООР тэнцүү харагдуулах зорилготой
+               * тул энд брэнд шалгах ШААРДЛАГАГҮЙ.
+               */}
+              {/* 1-Р БАГАНА — лого нь баганынхаа ЗҮҮН ирмэгт (`justify-self`
+                  -гүй бол `1fr` багана дүүрэн татагдана). */}
+              <LogoHomeLink
+                className="inline-flex items-center justify-self-start"
+                aria-label="Нүүр"
+              >
+                <BrandLogo height={28} preload />
+              </LogoHomeLink>
 
-              <div className="mr-auto">
-                <CategoryNav openMenu={openMenu} onOpen={openBrandMenu} onClose={closeBrandMenu} />
+              {/* 2-Р БАГАНА — КАПСУЛЫН ГОЛ. `auto` тул цэсний бодит өргөнөөр
+                  хумигдаж, хажуугийн хоёр `1fr` түүнийг голлуулна. */}
+              <CategoryNav openMenu={openMenu} onOpen={openBrandMenu} onClose={closeBrandMenu} />
+
+              {/* 3-Р БАГАНА — хэрэгслүүд баганынхаа БАРУУН ирмэгт. */}
+              <div className="justify-self-end">
+                <HeaderTools />
               </div>
-
-              <HeaderTools />
             </div>
           </div>
         </div>
@@ -824,6 +935,9 @@ function TopClassifierHeader() {
         />
       )}
 
+      {/* ⚠️ `relative` — ХУВИЛБАР 1-ТЭЙ ИЖИЛ. Sticky БОЛГОХГҮЙ (2026-09-10-ны
+          захиалагчийн шийдвэр); шалтгааныг `LogoLeftHeader`-ийн `<header>`-ээс
+          үз. Хоёр хувилбар зан төлвөөрөө зөрөх ёсгүй. */}
       <header className="bg-background border-border relative top-0 z-50 border-b" role="banner">
         {/* Layer 1 — ангилагч header-ийн ЗҮҮН ирмэгт шахсан (зөвхөн desktop).
             `align="start"` — hover панел ч зүүн ирмэгээр зэрэгцэнэ. */}
@@ -844,7 +958,12 @@ function TopClassifierHeader() {
           <CategoryNav openMenu={openMenu} onOpen={openBrandMenu} onClose={closeBrandMenu} />
 
           <div className="flex justify-center">
-            <BrandLogoLink />
+            {/* ⚠️ Хувилбар 1-тэй ИЖИЛ үгэн лого (2026-09-10). `grid`-ийн дунд
+                багана нь `auto` тул үгэн логоны илүү өргөн нь хажуугийн хоёр
+                `1fr`-ээс өөрөө хасагдана — тор эвдрэхгүй. */}
+            <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
+              <BrandLogo height={24} />
+            </LogoHomeLink>
           </div>
 
           <div className="flex items-center justify-end">
