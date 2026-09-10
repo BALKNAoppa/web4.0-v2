@@ -63,7 +63,7 @@ import {
 import { BRAND } from "@/lib/brand";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
-import { MorphingText } from "@/components/ui/morphing-text";
+import { SparklesText } from "@/components/ui/sparkles-text";
 
 /**
  * ═══════════════════════════════════════════════════════════════════════
@@ -1626,11 +1626,20 @@ function BrandTab({
 function TabLabel({ name, isDomain }: { name: string; isDomain: boolean }) {
   return (
     <>
-      {/* ⚠️ LOOKTV — MagicUI-ийн `MorphingText`. Хугацаа нь desktop-ийн
-          `CategoryNav`-тай ЯГ ижил (0.9 / 2.6) — хоёр давхарга өөр хэмнэлээр
-          хөдөлбөл нэг хуудсан дээр хоёр өөр зан гарна. */}
+      {/* ⚠️ LOOKTV — `SparklesText`. Тохиргоо нь desktop-ийн `CategoryNav`-тай
+          ЯГ ижил (8 оч, брэндийн ногоон) — хоёр давхарга өөр харагдвал нэг
+          хуудсан дээр хоёр өөр зан гарна. Шалтгаан ба түүхийг `header.tsx`-ийн
+          `label`-ийн тайлбараас үз. */}
       {name === "LookTV" ? (
-        <MorphingText texts={LOOKTV_MORPH_TEXTS} morphTime={0.9} cooldownTime={2.6} />
+        <SparklesText
+          sparklesCount={8}
+          colors={{
+            first: "var(--primary)",
+            second: "color-mix(in oklab, var(--primary) 45%, white)",
+          }}
+        >
+          {LOOKTV_MORPH_TEXTS[0]}
+        </SparklesText>
       ) : (
         name
       )}

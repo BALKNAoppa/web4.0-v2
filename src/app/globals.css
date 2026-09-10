@@ -420,6 +420,49 @@
   animation: neon-spin 5s linear infinite;
 }
 
+/* =====================================================================
+   SPARKLES TEXT — оч (MagicUI, 2026-09-10)
+   =====================================================================
+   Захиалагч: "morph нь хэтэрхий common effect байна … MagicUI-ийн энэ
+   component-оор хийе" (sparkles-text).
+
+   ⚠️⚠️ ЯАГААД CSS, `motion` САН БИШ ВЭ: MagicUI-ийн эх файл нь
+   `motion/react`-ийн `<motion.svg animate={{opacity:[0,1,0], scale:[0,s,0],
+   rotate:[75,120,150]}} transition={{duration:0.8, repeat:Infinity, delay}}/>`
+   -г хэрэглэдэг. Тэр нь ~60KB (gz) шинэ хамаарал — НЭГ цэсний шошгоны
+   чимэглэлд хэт өндөр үнэ. Массив бүхий `animate` нь 0%/50%/100% гэсэн
+   keyframe-тэй ЯГ ижил утгатай тул доорх дүрэм нь ижил хөдөлгөөнийг
+   хамааралгүйгээр өгнө. Проектын бусад бүх анимаци ч ингэж хийгдсэн.
+
+   ⚠️ ХУГАЦАА, ӨНЦӨГ, ДАРААЛАЛ нь эх хувилбараас ЗӨРӨӨГҮЙ:
+   0.8s · linear · infinite · opacity 0→1→0 · scale 0→N→0 · rotate 75→120→150.
+   Оч тус бүрийн ХЭМЖЭЭ (`--sparkle-scale`) ба ХОЦРОЛТ нь санамсаргүй тул
+   inline `style`-аар ирнэ (`sparkles-text.tsx`). */
+@keyframes sparkle-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(75deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(var(--sparkle-scale, 1)) rotate(120deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(150deg);
+  }
+}
+
+/* ⚠️ Хөдөлгөөн багасгах сонголтыг ЭНД ч хамгаалав. `sparkles-text.tsx` нь
+   JS талаас оч ОГТ үүсгэхгүй болгодог — энэ нь хоёр дахь хаалт: хэрэглэгч
+   тохиргоогоо ЯВЦ ДУНД сольвол аль хэдийн зурагдсан оч зогсоно. */
+@media (prefers-reduced-motion: reduce) {
+  [data-sparkle] {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
 /* ⚠️ GLITCH БЛОК УСТСАН (2026-09-09, захиалагч: "LookTV-ийн glitch effect-г
    хасаад MagicUI-ийн morphing-text component-г ашиглаад уурчилдуг болго").
    Устсан нь: `@keyframes glitch-rgb`, `@keyframes glitch-swap`,

@@ -27,7 +27,7 @@ import { navType } from "@/lib/nav-type";
 import { ASSISTANT_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { sectionBg } from "@/lib/section-bg";
-import { MorphingText } from "@/components/ui/morphing-text";
+import { SparklesText } from "@/components/ui/sparkles-text";
 
 type Variant = HeaderVariant;
 
@@ -347,23 +347,40 @@ function CategoryNav({
         const highlighted = !item.external && item.name === highlightedName;
         const isCurrentPage = !item.external && item.name === currentName;
         /**
-         * ⚠️ LOOKTV — MagicUI-ийн `MorphingText` (2026-09-09, захиалагчийн
-         * заавар). Бусад ангилал нь ердөө нэр.
+         * ⚠️⚠️ LOOKTV — `MorphingText` → `SparklesText` (2026-09-10,
+         * захиалагч: "morph нь хэтэрхий common effect байна … MagicUI-ийн
+         * энэ component-оор хийе" + sparkles-text-ийн холбоос).
          *
-         * `morphTime`/`cooldownTime` нь MagicUI-ийн анхдагч (1.5 / 0.5)-аас
-         * ӨӨР: тэр нь 2 сек тутам солигддог бөгөөс header-т байнга хөдөлж
-         * байгаа бичвэр нь навигацийг уншихад саад болно. 0.9 + 2.6 = нэг
-         * бичвэр ~3.5 сек тогтоно, LookTV → Илүүг Үз → LookTV нь ~7 сек —
-         * хуучин glitch-ийн 6 сек мөчлөгтэй ойролцоо хэмнэл.
+         * ТҮҮХ (гурав дахь эффект): glitch (09-09-нд хасагдсан) → morph
+         * (09-09…09-10) → sparkles. Morph нь хоёр өөр урттай үгийг нэг
+         * байрлалд уусгадаг тул дунд нь уншигдахгүй болдог асуудалтай байв;
+         * оч нь бичвэрийг ОГТ хөдөлгөхгүй, зөвхөн эргэн тойронд нь анивчина.
          *
-         * ⚠️ ӨРГӨН нь компонентын дотоод "хэмжээ тогтоогч"-оос гарна
-         * ("Илүүг Үз" нь "LookTV"-ээс урт) тул хажуугийн ангиллууд уусалтын
-         * үед ХӨДЛӨХГҮЙ — хуучин glitch-ийн layout-д нөлөөлөхгүй шинжийг
-         * хадгалав.
+         * ⚠️ "ИЛҮҮГ ҮЗ" ГЭСЭН ХОЁР ДАХЬ БИЧВЭР ОДООГООР ГАРАХГҮЙ.
+         * `SparklesText` нь бичвэр СОЛИХ БИШ, чимэглэх компонент. Хоёуланг
+         * хамт хүсвэл `<SparklesText><MorphingText …/></SparklesText>` гэж
+         * үүрлүүлж болно — захиалагчаас лавласны дараа.
+         * `LOOKTV_MORPH_TEXTS[0]` нь каноник нэр тул түүнийг л үлдээв.
+         *
+         * ⚠️ ӨНГӨ нь брэндийн ногоон (`--primary`) ба түүний цайвар хувилбар
+         * — MagicUI-ийн анхдагч ягаан/нил нь Unitel-ийн палитрт харш.
+         * `sparklesCount={8}` — анхдагч 10 нь 15px шошгоны эргэн тойронд
+         * шигүү, цэсний бусад нэрийг бүдгэрүүлнэ.
+         *
+         * ⚠️ ӨРГӨН нь одоо ЗӨВХӨН "LookTV" гэсэн үгээр тогтоно (morph-ийн
+         * "хэмжээ тогтоогч" хэрэггүй болсон) тул цэс нь ~35px нарийсна.
          */
         const label =
           item.name === "LookTV" ? (
-            <MorphingText texts={LOOKTV_MORPH_TEXTS} morphTime={0.9} cooldownTime={2.6} />
+            <SparklesText
+              sparklesCount={8}
+              colors={{
+                first: "var(--primary)",
+                second: "color-mix(in oklab, var(--primary) 45%, white)",
+              }}
+            >
+              {LOOKTV_MORPH_TEXTS[0]}
+            </SparklesText>
           ) : (
             item.name
           );
