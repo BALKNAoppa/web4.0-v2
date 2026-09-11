@@ -16,6 +16,7 @@
  *   Univision — БОДИТ багцууд (`plans.ts`-ийн M+ · L+ · XL+)
  */
 
+import { planTierHighlights } from "@/data/mobile-plans";
 import { plans, type Plan, type PlanGroup } from "@/data/plans";
 import type { PlanId } from "@/data/main-packages-quiz";
 
@@ -203,11 +204,9 @@ export const unitelRecommendedPlans: RecommendedPlansContent = {
         image: "/Unitel/Recommandation/Plus.jpg",
         photoLabel: "Card photo",
         title: "PLUS",
-        highlights: [
-          "Хэрэглээндээ тохируулан багцаа бүтээх боломж",
-          "8GB-32GB дата эрх",
-          "Сүлжээндээ хязгааргүй ярих эрх",
-        ],
+        // ⚠️ Эрхүүд нь `mobile-plans.ts > planTierHighlights`-ээс. AI туслахын
+        // карттай НЭГ эх сурвалж — доорх PREMIUM-ийн түүхийг үз.
+        highlights: planTierHighlights.plus,
         ctaLabel: "Дэлгэрэнгүй",
         href: "#",
       },
@@ -217,11 +216,7 @@ export const unitelRecommendedPlans: RecommendedPlansContent = {
         image: "/Unitel/Recommandation/Priority.png",
         photoLabel: "Card photo",
         title: "PRIORITY",
-        highlights: [
-          "Сүлжээний ачаалалтай цагуудад x3 өндөр хурд",
-          "Лавлах төвийн хүлээлэггүй үйлчилгээ",
-          "16GB-88GB дата эрх",
-        ],
+        highlights: planTierHighlights.priority,
         ctaLabel: "Дэлгэрэнгүй",
         href: "#",
         recommended: true,
@@ -232,15 +227,15 @@ export const unitelRecommendedPlans: RecommendedPlansContent = {
         image: "/Unitel/Recommandation/Premium.png",
         photoLabel: "Card photo",
         title: "PREMIUM",
-        // ⚠️⚠️ ЭДГЭЭР 3 МӨР нь PRIORITY-гийнхтэй ЯГ ИЖИЛ. Захиалагчийн
-        // өгсөн жагсаалтад 3 дахь багц нь "Priority" гэж ХОЁР ДАХЬ УДАА
-        // бичигдсэн (хуулсан алдаа бололтой) тул PREMIUM-ийн ӨӨРИЙН
-        // эрхүүд ХҮЛЭЭГДЭЖ БАЙНА. Ирэхэд зөвхөн энэ гурван мөрийг солино.
-        highlights: [
-          "Сүлжээний ачаалалтай цагуудад x3 өндөр хурд",
-          "Лавлах төвийн хүлээлэггүй үйлчилгээ",
-          "16GB-88GB дата эрх",
-        ],
+        // ⚠️⚠️ ЗАСАГДСАН (2026-09-11). Энэ гурван мөр нь PRIORITY-гийнхтэй ЯГ
+        // ИЖИЛ байсан: захиалагчийн 09-09-ны жагсаалтад 3 дахь багц "Priority"
+        // гэж ХОЁР ДАХЬ УДАА бичигдсэнийг тэр хэвээр авсан байв. Захиалагч
+        // PREMIUM-ийн өөрийн эрхүүдийг өгсний дараа засагдав.
+        //
+        // ⚠️ Гол шалтгаан нь ДАВХАРДАЛ байсан: AI туслах (`hero-assistant.ts`)
+        // нь PREMIUM-ийн ЗӨВ мөрүүдийг аль хэдийн барьж байсан ч энэ файл
+        // өөрийн хуулбартай тул хоцорсон. Одоо хоёулаа `planTierHighlights`.
+        highlights: planTierHighlights.premium,
         ctaLabel: "Дэлгэрэнгүй",
         href: "#",
       },

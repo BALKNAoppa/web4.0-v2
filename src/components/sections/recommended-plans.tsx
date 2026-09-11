@@ -380,13 +380,17 @@ function PlanSpecCard({ card }: { card: PlanCardContent }) {
   return (
     <article
       className={cn(
-        "bg-card relative flex h-full flex-col rounded-3xl border p-5 md:p-6",
-        featured ? "shadow-lg" : "border-border hover:shadow-md",
+        // ⚠️ `border-border` нь ОДОО ХОЁУЛАНД. Өмнө нь зөвхөн featured БИШ
+        // салаанд байсан: featured картын хүрээний өнгийг inline `style` нь
+        // өгдөг байв. Тэр style хасагдсан тул хүрээ өнгөгүй үлдэж, Tailwind
+        // v4-т `border` нь `currentColor` рүү унаж БИЧВЭРИЙН өнгөтэй бараан
+        // хүрээ гарна. Токеныг хоёуланд тавьж тэгшитгэв.
+        "bg-card border-border relative flex h-full flex-col rounded-3xl border p-5 md:p-6",
+        featured ? "shadow-lg" : "hover:shadow-md",
       )}
-      // ⚠️ Ногоон хүрээ — захиалагчийн "activated мэт ногоон border-той
-      // байна" (2026-09-09). Screenshot дээр хүрээ тод харагдахгүй ч
-      // бичгээр ирсэн зааврыг дагав.
-      style={featured ? { borderWidth: 2, borderColor: ACCENT } : undefined}
+      // ⚠️⚠️ НОГООН ХҮРЭЭ ХАСАГДСАН (2026-09-11, захиалагч: "санал болгох
+      // багцын green border-г хас, би тэрийг бас хас гэж хэлж байсан").
+      // Дэлгэрэнгүй түүхийг `PlanPhotoCard`-ын ижил мөрөнд бичсэн.
     >
       {/* ── BADGE ──
           ⚠️ ХООСОН ЗАЙ ХАДГАЛАГДАНА (`h-7` — badge-гүй картад ч).
@@ -490,26 +494,29 @@ function PlanPhotoCard({ card }: { card: PlanCardContent }) {
     <article
       className={cn(
         // `overflow-hidden` — зураг нь картын дугуй буланг давахгүй.
-        "bg-card relative flex h-full flex-col overflow-hidden rounded-3xl border p-3 md:p-4",
-        // ⚠️⚠️ НОГООН ХҮРЭЭ СЭРГЭВ (2026-09-09, захиалагч Univision-ы L+
-        // багц дээр: "activated мэт ногоон border-той байна").
+        // ⚠️ `border-border` нь ОДОО ХОЁУЛАНД — `PlanSpecCard`-тай ижил
+        // шалтгаан (inline хүрээний өнгө хасагдсан).
+        "bg-card border-border relative flex h-full flex-col overflow-hidden rounded-3xl border p-3 md:p-4",
+        // ⚠️⚠️ НОГООН ХҮРЭЭ БҮРМӨСӨН ХАСАГДСАН (2026-09-11, захиалагч: "санал
+        // болгох багцын green border-г хас, би тэрийг бас хас гэж хэлж байсан"
+        // — хоёр брэндээс).
         //
-        // ТҮҮХ: 2026-09-07-нд ЭНЭ ХҮРЭЭ ЗАХИАЛАГЧИЙН ШИЙДВЭРЭЭР ХАСАГДСАН
-        // байсан. Одоо тэр шийдвэр эргэсэн тул буцаав — өмнөх шийдвэрийг
-        // "мартаж" биш, ЗӨРИУД дарж бичиж байгааг тэмдэглэв.
+        // ТҮҮХ — ГУРВАН ШИЙДВЭР, ЭНЭ НЬ ГУРАВДАХЬ:
+        //   09-07  захиалагч хасав
+        //   09-09  захиалагч Univision-ы L+ дээр "activated мэт ногоон
+        //          border-той байна" гэж СЭРГЭЭВ
+        //   09-11  захиалагч ДАХИН хасав, энэ удаа ХОЁР БРЭНДЭЭС (тодорхой
+        //          баталсан). ⇒ Дахин нэмэх санаа гарвал энэ дарааллыг үз:
+        //          "хасагдсаныг мартсан" биш, ГУРВАН УДАА үзэгдсэн асуудал.
         //
-        // ⚠️ ЭНЭ НЬ UNITEL-Д Ч ХАМААРНА: `unitelRecommendedPlans`-ийн
-        // PRIORITY карт `recommended: true` тул тэнд ч ногоон хүрээ
-        // гарна. Unitel-ыг хүрээгүй байлгах бол `recommended`-аас ТУСДАА
-        // туг (ж. `PlanCardContent.activeBorder`) хэрэгтэй — захиалагчийн
-        // шийдвэрийг хүлээж, одоогоор НЭГ зан хоёр брэндэд.
+        // ⇒ `PlanCardContent.activeBorder` гэсэн брэнд тус бүрийн туг ХЭРЭГГҮЙ
+        // болов (09-09-нд хүлээлтэд байсан) — хоёр брэнд одоо ижил.
         //
-        // `shadow-lg` ба ★ badge нь ХЭВЭЭР — гурав дахин дохиолох нь
-        // хэтэрхий гэж үзвэл `shadow-lg`-ийг л хасна (хүрээ нь илүү
-        // тодорхой дохио).
-        featured ? "shadow-lg" : "border-border hover:shadow-md",
+        // `recommended` нь ОДОО `shadow-lg` ба ★ badge ХОЁРООР дохионо. Тэр
+        // хоёр нь ХЭВЭЭР: ногоон хүрээ хасагдсанаар санал болгосон карт
+        // ямар ч ялгаагүй болох нь захиалагчийн хүссэн зүйл БИШ.
+        featured ? "shadow-lg" : "hover:shadow-md",
       )}
-      style={featured ? { borderWidth: 2, borderColor: ACCENT } : undefined}
     >
       {/* ── 1:1 СЛОТ + дээр нь суух мэдээлэл ──
           ⚠️ ЭНЭ СЛОТ КАРТ БҮРД ГАРНА, зурагтай эсэхээс ҮЛ ХАМААРЧ. Түр

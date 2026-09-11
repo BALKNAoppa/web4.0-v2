@@ -26,6 +26,7 @@ import {
   assistantQuestions,
   buildFollowUp,
   CLARIFY_OUTRO,
+  featuredQuestions,
   findTvodMovies,
   matchQuestion,
   resolveClarify,
@@ -658,7 +659,6 @@ export function ChatHero({
                 key={block.key}
                 ref={i === blocks.length - 1 ? latestRef : undefined}
                 block={block}
-                questions={questions}
                 onPick={ask}
                 onAnswers={(next) => setAnswers(block.key, next)}
                 latest={i === blocks.length - 1}
@@ -724,7 +724,8 @@ export function ChatHero({
 }
 
 /**
- * PERSONA ТОВЧНУУД — оролтын доор, дугаарын дарааллаар.
+ * PERSONA ТОВЧНУУД — оролтын доор. ДӨРӨВ: домэйн тус бүрээс хоёр
+ * (`hero-assistant.ts > PERSONA_IDS`-ийн тайлбарыг үз).
  *
  * ⚠️ Товч нь асуултыг ИЛГЭЭХГҮЙ, зөвхөн оролтыг БӨГЛӨНӨ (`onFill`). Хэрэглэгч
  * өөрөө уншиж, хүсвэл засаад Enter дарна. Автоматаар илгээвэл юу асуусан нь
@@ -739,18 +740,42 @@ export function ChatHero({
  */
 function PersonaShortcuts({ onFill }: { onFill: (text: string) => void }) {
   return (
-    <div className="mt-2.5 flex w-full flex-wrap items-center justify-center gap-2 sm:mt-3 sm:max-w-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
+    /**
+     * ⚠️⚠️ `whitespace-nowrap` ХАСАГДСАН, БОСОО ЖАГСААЛТ БОЛОВ (2026-09-11).
+     * Товчны бичвэр нь "Persona 3" гэсэн 9 тэмдэгтээс БҮТЭН АСУУЛТ (40-50
+     * тэмдэгт) болсон тул хуучин "дугуй чип, мөрөнд 3" загвар ажиллахаа
+     * больсон: nowrap-тай бол чип нь дэлгэцээс ХАЛЬЖ хэвтээ scroll үүсгэнэ.
+     *
+     * Тиймээс мобайлд НЭГ БАГАНА (`flex-col`) — товч бүр бүтэн өргөн, бичвэр
+     * дотроо зөөлөн мөр шилжинэ. `sm:`-ээс хойш хоёр багана (`sm:grid-cols-2`)
+     * — тэнд өргөн хүрэлцэх ба 4 товч 2×2 болж хоосон зай үүсгэхгүй.
+     *
+     * ⚠️ 6 → 4 болсон нь ЭНЭ шийдлийг боломжтой болгосон: 6 урт товч нь
+     * нүүрний эхний дэлгэцээс халих байсан. Persona дахин нэмэгдвэл өндрийг
+     * ДАХИН шалгах хэрэгтэй.
+     *
+     * ⚠️ `items-stretch` — `items-center` бол багана дахь товчнууд бичвэрийн
+     * уртаараа ӨӨР ӨРГӨНТЭЙ болно.
+     */
+    <div className="mt-2.5 grid w-full items-stretch gap-2 sm:mt-3 sm:max-w-lg sm:grid-cols-2 [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
       {personaShortcuts.map((item) => (
         <button
-          key={item.label}
+          // `key` нь id — асуулт нь засагдах бичвэр тул түүнийг key болгохгүй.
+          key={item.id}
           type="button"
           onClick={() => onFill(item.question)}
-          // Шошго нь БОГИНО тул нарийн утсанд ч мөрөнд 3 багтана. Асуултын
-          // бүтэн текстийг тавибал 6 товч 6 мөр болно.
-          title={item.question}
-          className="border-border bg-card/70 text-muted-foreground hover:border-primary hover:text-foreground flex items-center rounded-full border px-2.5 py-1 text-xs whitespace-nowrap backdrop-blur transition-colors sm:px-3"
+          /**
+           * ⚠️ `title` ХАСАГДСАН. Өмнө нь асуултыг hover-т НУУЖ байсан ба тэр
+           * нь хүрэлцэх төхөөрөмж дээр хэзээ ч харагддаггүй байв. Одоо бичвэр
+           * нь өөрөө асуулт тул `title` нь ЯГ ИЖИЛ текстийг давхардуулж,
+           * screen reader-т нэг зүйл хоёр удаа уншигдана.
+           *
+           * `rounded-full` → `rounded-2xl`: хоёр мөр болох бичвэрт бүтэн дугуй
+           * ирмэг нь хажуу талд хэт их хоосон зай үүсгэдэг.
+           */
+          className="border-border bg-card/70 text-muted-foreground hover:border-primary hover:text-foreground rounded-2xl border px-3 py-2 text-left text-xs leading-snug backdrop-blur transition-colors"
         >
-          {item.label}
+          {item.question}
         </button>
       ))}
     </div>
@@ -776,7 +801,6 @@ function PersonaShortcuts({ onFill }: { onFill: (text: string) => void }) {
 function ResultBlock({
   ref,
   block,
-  questions,
   onPick,
   onAnswers,
   latest = false,
@@ -785,7 +809,6 @@ function ResultBlock({
 }: {
   ref?: React.Ref<HTMLElement>;
   block: Block;
-  questions: AssistantQuestion[];
   onPick: (question: string) => void;
   onAnswers: (next: Record<string, string>) => void;
   /**
@@ -837,7 +860,6 @@ function ResultBlock({
     ) : (
       <Answer
         block={block}
-        questions={questions}
         onPick={onPick}
         onAnswers={onAnswers}
         latest={latest}
@@ -977,7 +999,6 @@ function AnswerSkeleton({ kind }: { kind?: AssistantResult["kind"] }) {
 // =====================================================================
 function Answer({
   block,
-  questions,
   onPick,
   onAnswers,
   latest,
@@ -985,7 +1006,6 @@ function Answer({
   onIntroDone,
 }: {
   block: Block;
-  questions: AssistantQuestion[];
   onPick: (question: string) => void;
   onAnswers: (next: Record<string, string>) => void;
   /** Ярианы СҮҮЛИЙН блок мөн үү — 👍👎 мөр зөвхөн тэнд гарна */
@@ -1007,20 +1027,25 @@ function Answer({
           Уучлаарай, энэ асуултыг таньсангүй. Доорхоос сонгоно уу.
         </p>
         {/* ЗӨВХӨН үндсэн сэдвүүд. Бүгдийг жагсвал сонголт хэт олон болж,
-            хэрэглэгч юунаас эхлэхээ мэдэхгүй болно. */}
+            хэрэглэгч юунаас эхлэхээ мэдэхгүй болно.
+
+            ⚠️ ШҮҮЛТ ЭНД БАЙХАА БОЛЬСОН (2026-09-11). Өмнө нь `questions
+            .filter((q) => q.featured)` гэж UI өөрөө шүүдэг байв. Одоо
+            `featuredQuestions` нь `featured` БА БРЭНДИЙН дүрэм хоёуланг
+            дататай нэг дор агуулна — Unitel build-д Unitel-ийн 2 кейс,
+            Univision-д Univision-ы 2 л гарна. Хоёр дүрэм хоёр газар
+            байвал persona товч ба энэ жагсаалт чимээгүй зөрнө. */}
         <div className="mt-3 flex flex-col gap-2">
-          {questions
-            .filter((q) => q.featured)
-            .map((q) => (
-              <button
-                key={q.id}
-                type="button"
-                onClick={() => onPick(q.question)}
-                className="border-border hover:border-primary/50 hover:bg-muted/40 text-foreground rounded-xl border px-3 py-2 text-left text-sm transition-colors"
-              >
-                {q.question}
-              </button>
-            ))}
+          {featuredQuestions.map((q) => (
+            <button
+              key={q.id}
+              type="button"
+              onClick={() => onPick(q.question)}
+              className="border-border hover:border-primary/50 hover:bg-muted/40 text-foreground rounded-xl border px-3 py-2 text-left text-sm transition-colors"
+            >
+              {q.question}
+            </button>
+          ))}
         </div>
       </div>
     );

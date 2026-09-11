@@ -18,8 +18,8 @@
  *
  * Асуулт солих = зөвхөн энэ файлыг засах.
  */
-import type { Owner } from "@/lib/brand";
-import { mobilePlans, type MobilePlanTier } from "./mobile-plans";
+import { BRAND, type Owner } from "@/lib/brand";
+import { mobilePlans, planTierHighlights } from "./mobile-plans";
 import { plans } from "./plans";
 import { wifiOptions, wifiSection, type WifiOption } from "./wifi-options";
 // ⚠️ `tvod-movies.ts` нь ~35KB (50 кино, англи тайлбартай). Нүүрний
@@ -650,7 +650,14 @@ export const THINKING_STEP_MS = 420;
 const dataOfferCase: AssistantQuestion = {
   id: "data-package-offer",
   owner: "unitel",
-  featured: true,
+  /**
+   * ⚠️ `true` → `false` (2026-09-11, захиалагч: "домэйн бүрээс зөвхөн 2-ыг ав,
+   * тэр 4 persona-г үлдээгээд бусдыг хас"). `featured` нь ЗӨВХӨН таниагүй
+   * асуултын жагсаалтад нөлөөлдөг тул ЭНЭ КЕЙС АЖИЛЛАХАА БОЛЬСОНГҮЙ:
+   * `youth-new-plan`-ийн 2-р шат нь түүнийг `followUps`-аар дуудсаар байна.
+   * Устгавал ТЭР ХОЛБООС эвдэрнэ.
+   */
+  featured: false,
   question: "Дата багц авах",
   followUps: ["data-long-term", "complaint-billing"],
   // 1-2 өгүүлбэрт СОНГОЛТЫН ХҮРЭЭГ хэлж, туслах юу мэддэгээ харуулна.
@@ -724,32 +731,16 @@ const dataOfferCase: AssistantQuestion = {
 const YOUTH_PLAN_IDS = ["plus-16", "priority-24", "premium-88"];
 
 /**
- * Картын онцлохууд — БАГЦЫН ГЭР БҮЛЭЭР (`tier`), тухайн ШАТААР биш.
+ * ⚠️⚠️ КАРТЫН ОНЦЛОХУУД ЭНД БАЙХАА БОЛЬСОН (2026-09-11).
  *
- * ⚠️ Датаны эрх нь ХҮРЭЭ ("8GB-32GB"), тухайн шатны тоо БИШ — PLUS гэр бүлд
- * 8, 12, 16, 32GB шатууд байдгийг илэрхийлнэ. Картын ТОМ тоо (`plan.data`)
- * нь харин ТОДОРХОЙ шат. Хоёр нь өөр зүйлийг хэлж байгааг санах.
+ * Өмнө нь `YOUTH_PLAN_HIGHLIGHTS` гэсэн ТӨСТЭЙ ЖАГСААЛТ энд бие даан бичигдэж,
+ * нүүрний "Санал болгох багц" карт (`recommended-plans.ts`) нь ӨӨРИЙН хуулбарыг
+ * барьдаг байв. Захиалагч эрхүүдийг шинэчлэхэд зөвхөн нэг нь засагдаж, нөгөө нь
+ * хоцорсон — нүүрний PREMIUM карт PRIORITY-гийн мөрүүдийг харуулж байлаа.
  *
- * ⚠️ `mobile-plans.ts`-ийн `extras` (LookTV, MMusic & MBook) ХЭРЭГЛЭХЭЭ
- * БОЛИВ — эдгээр гурван онцлохыг агуулга бичигч тодорхой заасан.
+ * ⇒ Одоо `mobile-plans.ts > planTierHighlights` НЭГ эх сурвалж. Эрх солих
+ * шаардлага гарвал ЗӨВХӨН тэр файлыг засна, хоёр газар зөрөх боломжгүй.
  */
-const YOUTH_PLAN_HIGHLIGHTS: Record<MobilePlanTier, string[]> = {
-  plus: [
-    "Хэрэглээндээ тохируулан багцаа бүтээх боломж",
-    "8GB-32GB дата эрх",
-    "Сүлжээндээ хязгааргүй ярих эрх",
-  ],
-  priority: [
-    "Сүлжээний ачаалалтай цагуудад x3 өндөр хурд",
-    "Лавлах төвийн хүлээлэггүй үйлчилгээ",
-    "16GB-88GB дата эрх",
-  ],
-  premium: [
-    "24/7 Юнител, Юнивишн хувийн туслах үйлчилгээ",
-    "Сүлжээний ачаалалтай цагуудад x3 өндөр хурд",
-    "88GB-200GB дата эрх",
-  ],
-};
 
 /**
  * Багцын бүлэг. Санал болгосон нь ЭХЭНД, тэмдэгтэй — мобайл дээр карт зурвас
@@ -777,7 +768,7 @@ function youthPlanGroup(picked: string): OfferGroup {
           // ("24GB") гарчигт байвал нэг картан дээр хоёр өөр тоо зөрчилдөнө.
           headline: plan.name,
           badge: id === picked ? "ТАНД ТОХИРСОН БАГЦ" : undefined,
-          highlights: YOUTH_PLAN_HIGHLIGHTS[plan.tier],
+          highlights: planTierHighlights[plan.tier],
           cta: { label: "Багцын мэдээлэл харах", href: plan.detailHref },
         },
       ];
@@ -997,7 +988,12 @@ const phoneLeasingCase: AssistantQuestion = {
 const businessNexmindCase: AssistantQuestion = {
   id: "business-nexmind",
   owner: "self",
-  featured: true,
+  /**
+   * ⚠️ `true` → `false` (2026-09-11). Захиалагчийн 4 persona нь Unitel-ийн 2 ба
+   * Univision-ы 2 — `owner: "self"` домэйнд ХУВААРЬ АЛГА. Кейс нь датад хэвээр:
+   * бичвэр, Nexmind-ийн чиглэл дахин хэрэгтэй болвол `featured`-ыг л сэргээнэ.
+   */
+  featured: false,
   question: "Байгууллагадаа интернэт, IT шийдэл авах",
   summary:
     "Байгууллагын дотоод сүлжээ, дата төв, IT шийдлийг Unitel Group-ийн байгууллагын " +
@@ -1476,7 +1472,13 @@ const meshSizeCards: OfferCard[] = wifiOptions.map((option) => ({
 const internetSlowCase: AssistantQuestion = {
   id: "internet-slow",
   owner: "univision",
-  featured: true,
+  /**
+   * ⚠️ `true` → `false` (2026-09-11). Univision-ы хоёр хуваарь нь
+   * `univision-new-customer` ба `tvod-content-search` рүү явсан. Энэ кейс нь
+   * `EscalateView` (гомдол → чат widget) урсгалыг `complaint-billing`-тэй
+   * ХУВААЛЦДАГ тул устгахгүй — зөвхөн жагсаалтаас хасав.
+   */
+  featured: false,
   question: "Интернэтийн хурд удаан байна",
   summary:
     "Хурд удаашрах шалтгаан хэд хэдэн байж болно. Доор хэрэглэгчдэд тулгардаг " +
@@ -1843,8 +1845,23 @@ export const assistantQuestions: AssistantQuestion[] = [
 // PERSONA ТОВЧНУУД — нүүрний оролтын доор
 // =====================================================================
 /**
- * Хэрэглэгчийн 6 persona-г ДУГААРЫН дарааллаар (2026-08-28-ны жагсаалт).
- * Товч дарахад тухайн persona-гийн ТРИГГЕР асуултыг оролтод бөглөнө.
+ * ⚠️⚠️ 6 → 4 PERSONA (2026-09-11, захиалагч: "AI дээрх статик хариулт
+ * харуулж байгаагаас домэйн бүрээс зөвхөн 2-ыг ав … гэх 4 persona-г
+ * үлдээгээд бусдыг хас").
+ *
+ * Домэйн бүрээс ХОЁР — хэрэглэгчийн ЗАН ҮЙЛЭЭР хосолсон:
+ *   Unitel     · `phone-leasing`            — гар утас авах гэж байгаа
+ *              · `youth-new-plan`           — шинэ хэрэглэгч болох гэж байгаа
+ *   Univision  · `univision-new-customer`   — шинэ хэрэглэгч болох гэж байгаа
+ *              · `tvod-content-search`      — контент судлах гэж байгаа
+ *
+ * ХАСАГДСАН ХОЁР (кейс нь датад ХЭВЭЭР, зөвхөн энэ жагсаалт ба `featured`-аас
+ * гарсан — тус бүрийн `featured: false`-ийн дэргэд шалтгааныг бичсэн):
+ *   · `business-nexmind` — `owner: "self"`, хоёр брэндийн хуваарьт таарахгүй
+ *   · `internet-slow`    — Univision-ы хоёр хуваарь аль хэдийн эзэлсэн
+ *
+ * ⚠️ Дараалал нь захиалагчийн хэлсэн дарааллаар: Unitel дээр "гар утас авах"
+ * НЭГДҮГЭЭРТ. Өмнө нь `youth-new-plan` эхэлдэг байсан.
  *
  * ⚠️ Асуултын текстийг ЭНД давхардуулж бичихгүй — `assistantQuestions`-ээс
  * id-гаар нь уншина. Асуулт өөрчлөгдвөл товч өөрөө дагаж шинэчлэгдэнэ.
@@ -1853,19 +1870,66 @@ export const assistantQuestions: AssistantQuestion[] = [
  * хоосон товч үлдэхгүй.
  */
 const PERSONA_IDS = [
-  "youth-new-plan",
   "phone-leasing",
-  "business-nexmind",
+  "youth-new-plan",
   "univision-new-customer",
   "tvod-content-search",
-  "internet-slow",
 ];
 
-export const personaShortcuts: { label: string; question: string }[] = PERSONA_IDS.flatMap(
-  (id, index) => {
-    const item = assistantQuestions.find((question) => question.id === id);
-    return item ? [{ label: `Persona ${index + 1}`, question: item.question }] : [];
-  },
+/**
+ * ЭНЭ BUILD-Д ХАРАГДАХ УУ (2026-09-11, захиалагч: "Unitel-ийн case-г Unitel
+ * дээр л харуулаад, Univision-ий case-г Univision дээр харуулахаар хийе").
+ *
+ * Хоёр сайт НЭГ кодоос build хийгддэг (`lib/brand.ts`) тул өмнө нь дөрвөн
+ * persona БҮГД хоёр брэнд дээр хоёуланд гарч байв — Unitel-ийн нүүрэн дээр
+ * "Гэртээ интернэт, телевиз шинээр холбуулах" гэсэн товч сууж, дарахад
+ * Univision рүү шинэ tab нээгддэг байсан. Тэр нь нүүрний ГОЛ CTA-г нөгөө
+ * домэйн рүү зугтаах гарц болгож байв.
+ *
+ * `"self"` нь ХОЁУЛАНД — тэр нь домэйн бүр өөрийн хувилбартай кейс (гомдол
+ * гэх мэт), нөгөө сайт руу үсрэхгүй.
+ *
+ * ⚠️ ЭНЭ НЬ ХАРАГДАХ ЖАГСААЛТЫГ Л шүүнэ, ТААЛТЫГ (`matchQuestion`) ШҮҮХГҮЙ.
+ * `assistantQuestions` нь БҮТНЭЭР хэвээр дамжсаар байна. Шалтгаан:
+ *   · `followUps` нь домэйн давж холбогддог (жишээ нь `complaint-billing`),
+ *   · `/assistant?q=…` гэсэн линкийг нөгөө домэйноос хуваалцаж болно,
+ *   · таасан хариултын картууд `SmartLink`-ээр аль хэдийн зөв домэйн руу
+ *     явдаг тул хариулт өөрөө БУРУУ болохгүй.
+ * Шүүлт нь "аль нүүрэн дээр юуг САНАЛ БОЛГОХ" гэсэн асуултад л хамаарна.
+ */
+function isVisibleInThisBuild(owner: Owner) {
+  return owner === "self" || owner === BRAND;
+}
+
+/**
+ * ⚠️⚠️ `label` ТАЛБАР УСТСАН (2026-09-11, захиалагч: "Persona гэсэн текстийн
+ * оронд асуултыг нь харуулъя"). Өмнө нь `label: \`Persona ${index + 1}\`` гэсэн
+ * ХИЙСВЭР шошго байсан бөгөөд асуулт нь зөвхөн `title` (hover) дотор нуугдаж,
+ * хүрэлцэх төхөөрөмж дээр ХЭЗЭЭ Ч харагддаггүй байв — өөрөөр хэлбэл товч нь
+ * "Persona 3" гэж юу болохыг хэлдэггүй. Одоо товчны бичвэр нь асуулт өөрөө.
+ *
+ * `id` нь React-ийн `key`-д — шошго нь одоо урт бичвэр тул түүнийг key
+ * болгох нь эмзэг (асуулт засагдахад key өөрчлөгдөж элемент дахин үүснэ).
+ */
+export const personaShortcuts: { id: string; question: string }[] = PERSONA_IDS.flatMap((id) => {
+  const item = assistantQuestions.find((question) => question.id === id);
+  return item && isVisibleInThisBuild(item.owner) ? [{ id, question: item.question }] : [];
+});
+
+/**
+ * ТАНИАГҮЙ АСУУЛТЫН ЖАГСААЛТ — `chat-hero.tsx > Answer`-ийн fallback.
+ *
+ * ⚠️ Шүүлтийг ЭНД хийсэн нь САНААТАЙ: `featured` ба брэндийн дүрэм ХОЁУЛАА
+ * нэг л газар байх ёстой. Өмнө нь UI нь `questions.filter((q) => q.featured)`
+ * гэж өөрөө шүүдэг байсан тул брэндийн дүрэм нэмэхэд ХОЁР газар зөрөх
+ * эрсдэлтэй байв (persona товч энд, жагсаалт тэнд).
+ *
+ * ⇒ Unitel build-д 2 сонголт, Univision build-д 2 — `personaShortcuts`-тай
+ * ЯГ ижил хоёр кейс, өөрөөр хэлбэл хэрэглэгч аль замаар ирсэн ч ижил
+ * санал хардаг.
+ */
+export const featuredQuestions: AssistantQuestion[] = assistantQuestions.filter(
+  (q) => q.featured && isVisibleInThisBuild(q.owner),
 );
 
 // =====================================================================
