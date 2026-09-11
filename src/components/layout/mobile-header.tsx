@@ -372,6 +372,74 @@ function useKeyboardOpen(ref: React.RefObject<HTMLElement | null>) {
 }
 
 /**
+ * ХӨТЧИЙН ӨӨРИЙН ХЭРЭГСЛИЙН МӨРИЙГ DOCK-ТОЙ НЭГ ӨНГӨ БОЛГОНО (2026-09-11).
+ *
+ * Захиалагчийн бодит утасны screenshot: dock нь бараан, яг доор нь хөтчийн
+ * address bar нь ЦАЙВАР — хоёр зэрэгцсэн зурвас өөр өнгөтэй байснаас dock нь
+ * дэлгэцэнд наалдсан биш, "тасарсан" мэт харагдаж байв.
+ *
+ * ГАНЦ ХӨШҮҮРЭГ нь `<meta name="theme-color">` — хуудас хөтчийн chrome-ын
+ * өнгийг СОНГОХ цорын ганц стандарт арга (Chrome/Samsung Internet Android,
+ * Safari iOS 15+). CSS-ээс хөтчийн UI-д хүрэх ямар ч зам БАЙХГҮЙ.
+ *
+ * ⚠️ ЯАГААД `app/layout.tsx`-ийн `viewport.themeColor`-ыг ШУУД СОЛИОГҮЙ ВЭ:
+ * тэр нь БҮХ хуудас, БҮХ хувилбарт хүчинтэй статик утга. Dock нь зөвхөн
+ * ХУВИЛБАР 2-т, зөвхөн МОБАЙЛД байдаг — хувилбар 1/3 дээр хөтчийн мөр бараан
+ * болбол хуудасны цайвар дэвсгэртэй зөрнө. Тиймээс dock ӨӨРӨӨ хариуцна:
+ * mount хийгдэхэд солино, unmount-д БУЦААНА.
+ *
+ * ⚠️ 1024px-ЭЭС ДЭЭШ ХӨНДӨХГҮЙ. Dock нь `lg:hidden` боловч компонент нь
+ * desktop дээр ч рендерлэгддэг (зөвхөн CSS-ээр нуугдана). macOS Safari нь
+ * theme-color-ыг ТООЛ ДООД мөртөө хэрэглэдэг тул хамгаалалтгүй бол desktop
+ * Safari-ийн toolbar шалтгаангүй бараан болно.
+ *
+ * ⚠️ ӨНГӨ НЬ ОЙРОЛЦООЛОЛ, ЯГ ТААРАХГҮЙ. Dock нь ШИЛ — түүний харагдах өнгө
+ * доогуур нь юу гүйж байгаагаас хамаарч ХӨДӨЛНӨ, харин theme-color нь нэг
+ * тогтмол утга байх ёстой. Тиймээс хамгийн түгээмэл тохиолдлыг сонгосон:
+ * хуудасны ЦЭВЭР дэвсгэр дээрх dock-ийн ДООД ирмэгийн өнгө (хөтчийн мөртэй
+ * ЯГ хиллэдэг зурвас). Тооцоо: дэвсгэр → `brightness(1.1)` → `black 72%`
+ * тинт → доод `black 26%` градиент.
+ *   light  #e2e8ec → #343535
+ *   dark   #10131b → #030407
+ *
+ * ⚠️ `media` нь OS-ийн сонголтыг л уншина — `layout.tsx`-ийн адил хязгаар.
+ * Хэрэглэгч `next-themes`-ээр ГАРААР light сонгоод OS нь dark бол хөтчийн
+ * мөр бараан хэвээр үлдэнэ. Засах бол theme-г ч хамт сонсох хэрэгтэй.
+ */
+const DOCK_CHROME_COLOR = { light: "#343535", dark: "#030407" };
+
+function useDockBrowserChrome() {
+  useEffect(() => {
+    const metas = Array.from(
+      document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]'),
+    );
+    if (metas.length === 0) return;
+
+    // Анхны утгуудыг ХАДГАЛНА — unmount-д яг эдгээр рүү буцаана. Hardcode
+    // хийвэл `layout.tsx`-ийн өнгө солигдоход энэ файл чимээгүй хоцорно.
+    const original = metas.map((m) => m.content);
+    const mq = window.matchMedia("(max-width: 1023px)");
+
+    const apply = () => {
+      metas.forEach((m, i) => {
+        if (!mq.matches) {
+          m.content = original[i];
+          return;
+        }
+        m.content = m.media.includes("dark") ? DOCK_CHROME_COLOR.dark : DOCK_CHROME_COLOR.light;
+      });
+    };
+
+    apply();
+    mq.addEventListener("change", apply);
+    return () => {
+      mq.removeEventListener("change", apply);
+      metas.forEach((m, i) => (m.content = original[i]));
+    };
+  }, []);
+}
+
+/**
  * ХУВИЛБАР 2-ЫН ДООД NAVIGATION (dock) — 5 ангилал, БҮТЭН ӨРГӨН, sticky.
  *
  * Хувилбар 1-ийн Layer 1 (ангиллын мөр) нь энд ДООШ зөөгдсөн — захиалагчийн
@@ -391,6 +459,7 @@ function useKeyboardOpen(ref: React.RefObject<HTMLElement | null>) {
 function BottomTabBar() {
   const ref = useRef<HTMLElement>(null);
   useKeyboardOpen(ref);
+  useDockBrowserChrome();
   const pathname = usePathname() ?? "";
 
   /**
@@ -479,9 +548,21 @@ function BottomTabBar() {
        * (`translate` + `opacity`) — Tailwind v4-т `translate-y-full` нь
        * `transform` БИШ, `translate` property.
        *
-       * ⚠️⚠️ `bg-black shadow-2xl` → `.glass-dock` + `backdrop-blur-xl`
-       * `backdrop-saturate-150` (2026-09-11, захиалагч: "хувилбар 2-ын dock буюу
-       * bottom nav-г liquid glass effect-тэй болго").
+       * ⚠️⚠️ `bg-black shadow-2xl` → `.glass-dock` + `backdrop-blur-2xl`
+       * `backdrop-saturate-200 backdrop-brightness-110` (2026-09-11, захиалагч:
+       * "хувилбар 2-ын dock буюу bottom nav-г liquid glass effect-тэй болго",
+       * дараа нь бодит утасны screenshot-той хамт "хэтэрхий хуучны харагдаж
+       * байна, бодит ч юм шиг болгомоор байна").
+       *
+       * ⚠️ ГУРВУУЛАА ХЭРЭГТЭЙ, blur нь ганцаараа ХАНГАЛТГҮЙ:
+       *   `blur-2xl` (40px)      — хэлбэрийг уусгана
+       *   `saturate-200`         — доорх өнгийг АМЬД байлгана. Үүнгүйгээр
+       *     72% хар тинт нь бүх өнгийг саарал болгож, "бохир шил" болно.
+       *   `brightness-110`       — тинтний дор дарагдсан гэрлийг буцааж авна.
+       *     Энэ хоёргүйгээр шил нь зүгээр л БҮДЭГ ХАР ХАВТАН шиг харагддаг —
+       *     бодит утасны screenshot дээр яг тэр асуудал илэрсэн.
+       * Контрастын нөөц: brightness-110 нь цайвар хуудсан дээр суурийг
+       * ≈#3f4142 → #454647 болгоно, шошгоны харьцаа 5.6:1 → 5.1:1 (AA хэвээр).
        *
        * Тинт, ирмэгийн тусгал, сүүдэр нь `globals.css > .glass-dock`-д —
        * `.glass-capsule`-тай ИЖИЛ хуваалт (класс нь шилний ЗУЗААНЫГ, Tailwind
@@ -505,7 +586,7 @@ function BottomTabBar() {
        * a11y-high-contrast-д харин ШАР дээд зураас `globals.css`-ээс орно
        * (тэнд хуудас ч #000 болдог тул зааг үгүй болно).
        */
-      className="glass-dock fixed inset-x-0 bottom-0 z-50 rounded-t-[28px] backdrop-blur-xl backdrop-saturate-150 transition-[opacity,translate] duration-300 ease-out data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
+      className="glass-dock fixed inset-x-0 bottom-0 z-50 rounded-t-[28px] backdrop-blur-2xl backdrop-brightness-110 backdrop-saturate-200 transition-[opacity,translate] duration-300 ease-out data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
     >
       {/**
        * ӨНДӨР НЬ FIGMA-ААС ТОГТМОЛ 73px — ӨРГӨН нь одоо дэлгэцийнх.
