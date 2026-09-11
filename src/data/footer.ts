@@ -21,6 +21,17 @@ export type FooterColumn = {
   items: FooterLink[];
 };
 
+/**
+ * ⚠️ ХЭРЭГЛЭГДЭХЭЭ БОЛЬСОН (2026-09-11). Энэ жагсаалтыг ЗӨВХӨН `FooterClassic`
+ * (header-ийн хувилбар 2-ын мобайл footer) ашигладаг байсан бөгөөд footer-ийг
+ * бүх хувилбарт ижил болгоход тэр компонент устсан.
+ *
+ * Агуулгаараа `footerStripLinks`-тэй ДАВХАРДДАГ (Бидний тухай/Unitel Group,
+ * Хэвлэлийн мэдээ, Холбоо барих — гагцхүү шошго нь 2026-09-08-ны загвараар
+ * шинэчлэгдээгүй хуучин хувилбар). Шинэ газар footer-ийн линк хэрэгтэй бол
+ * ҮҮНИЙГ БИШ, `footerStripLinks`-ийг ав. `footerMeta.region`-той ижил
+ * шалтгаанаар data-г устгаагүй — буцаах зардал бага.
+ */
 export const footerLinks: FooterLink[] = [
   { id: "about", label: "Бидний тухай", href: "#" },
   { id: "news", label: "Хэвлэлийн мэдээ", href: "#" },
@@ -51,9 +62,9 @@ export const footerSitemap: FooterColumn[] = [
   {
     id: "connectivity",
     title: "Харилцаа холбоо",
-    items: [{ id: "Current", label: "Unitel", href: "#", external: true },
+    items: [
+      { id: "Current", label: "Unitel", href: "#", external: true },
       { id: "home-internet", label: "Ger internet", href: "#", external: true },
-    
     ],
   },
   {
