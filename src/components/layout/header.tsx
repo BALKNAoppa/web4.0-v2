@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, ChevronDown, Layers, Sparkles, X } from "lucide-react";
+import { ChevronDown, Layers, X } from "lucide-react";
 
 import { AudienceSwitchTabs } from "@/components/layout/audience-switch";
 import { BrandLogo } from "@/components/layout/brand-logo";
@@ -13,7 +13,6 @@ import {
   AccountMenu,
   BrandMegaPanel,
   DOMAIN_NAV_NAME,
-  IconButton,
   LOOKTV_MORPH_TEXTS,
   LanguagePill,
   ThemePill,
@@ -24,7 +23,6 @@ import {
 import { appleMegaMenus, appleNavCategories, type EcosystemLink } from "@/data/navigation";
 import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/header-variant";
 import { navType } from "@/lib/nav-type";
-import { ASSISTANT_PATH } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { sectionBg } from "@/lib/section-bg";
 import { SparklesText } from "@/components/ui/sparkles-text";
@@ -32,18 +30,19 @@ import { SparklesText } from "@/components/ui/sparkles-text";
 type Variant = HeaderVariant;
 
 /**
- * ⚠️ ШОШГО ГУРВУУЛАА ШИНЭЧЛЭГДСЭН (2026-09-08). Өмнөх "Only L1" / "L1 & L2"
- * нь mobile header дахин бүтэцлэгдэхээс ӨМНӨХ давхаргын тоог тоолж байсан тул
- * одоогийн бүтэцтэй таарахаа больсон байв. Одоо шошго нь MOBILE-ын навигаци
- * ХААНА байгааг хэлнэ — хувилбар хоорондын гол ялгаа тэр.
+ * ⚠️⚠️ ХОЁР ХУВИЛБАР ҮЛДСЭН. ДУГААРЛАЛТ 2026-09-14-нд ХОЁР УДАА өөрчлөгдсөн
+ * (бүтэн хөрвүүлэгчийг `lib/header-variant.ts`-ээс үз). ЭЦСИЙН БАЙДАЛ:
+ *     1 = ШИЛЭН КАПСУЛ (хуучин загвар, хөндөхгүй жишиг)
+ *     2 = ХАВТГАЙ 2 давхарга (лого·профайл·burger + брэндийн дэд цэс) + dock
+ * Хуучин "ангиллын мөр + таб dropdown" хувилбар нь БҮРМӨСӨН ХАСАГДСАН.
  *
- * ⚠️ Хувилбар 4 (chat нүүр) нь ХАСАГДСАН, код нь бүрэн устсан.
- * localStorage-д "4" үлдсэн бол `useHeaderVariant` 1 рүү унагана.
+ * Шошго нь MOBILE-ын навигаци ХААНА байгааг хэлнэ — DESKTOP нь хоёр
+ * хувилбарт ЯГ ИЖИЛ (доорх `Header`-ийн тайлбарыг үз) тул ялгаа нь
+ * зөвхөн мобайлд л харагдана.
  */
 const VARIANTS: { id: Variant; label: string }[] = [
   { id: 1, label: "Хувилбар 1 " },
   { id: 2, label: "Хувилбар 2 " },
-  { id: 3, label: "Хувилбар 3 " },
 ];
 
 /** Хоёр хувилбарын ХУВААЛЦАХ зүүн талын ангилал (Layer 2) */
@@ -162,13 +161,18 @@ export function Header() {
     <>
       <VariantToggle variant={variant} onChange={setHeaderVariant} />
       {/**
-       * ⚠️ ХУВИЛБАР 3 нь DESKTOP-д ХУВИЛБАР 1-ТЭЙ ИЖИЛ (`LogoLeftHeader`).
-       * Захиалагчийн 3-р хувилбарын заавар нь ЗӨВХӨН mobile-ын тухай (burger
-       * drawer) — desktop-ийн mega menu нь тэрэнд хөндөгдөөгүй. Тиймээс
-       * desktop бүтцийг ХУВИЛБАР 1-ЭЭС ХУВААЛЦАЖ, зөвхөн `mobileVariant`-ыг
-       * дамжуулна. Ингэснээр desktop-ийн код гурав дахин давхардахгүй.
+       * ⚠️⚠️ DESKTOP НЬ ХОЁР ХУВИЛБАРТ ЯГ ИЖИЛ — `LogoLeftHeader` (2026-09-14,
+       * захиалагч: "desktop дээр бүх header-г хувилбар 3 шиг болго, тэр нь
+       * desktop дээр батлагдсан хувилбар"). Хувилбар нь ЗӨВХӨН `mobileVariant`
+       * -ыг л сольж, desktop-ийн бүтэц хөндөгдөхгүй.
+       *
+       * ⚠️ ХУУЧИН `TopClassifierHeader` (лого төвд, L1 зүүн ирмэгт) БҮРМӨСӨН
+       * УСТСАН. Түүнтэй хамт ЗӨВХӨН тэр дээр байсан DESKTOP-ИЙН AI ОРОЛТ
+       * (`useHeaderAsk` — ✦ товч + header-ээс гулсдаг асуултын зурвас) ч
+       * устсан: батлагдсан desktop хувилбарт тэр элемент байхгүй. Буцааж
+       * авах бол git түүхээс (2026-09-14-өөс өмнөх `header.tsx`) сэргээнэ.
        */}
-      {variant === 2 ? <TopClassifierHeader /> : <LogoLeftHeader mobileVariant={variant} />}
+      <LogoLeftHeader mobileVariant={variant} />
     </>
   );
 }
@@ -643,7 +647,7 @@ function MegaLayer({
 }
 
 // =====================================================================
-// ХУВИЛБАР 1 — ЛОГО ЗҮҮН ТАЛД (DESKTOP)
+// DESKTOP HEADER — ЛОГО ЗҮҮН ТАЛД (БАТЛАГДСАН, ХОЁР ХУВИЛБАРТ ИЖИЛ)
 //   Layer 1: ангилагч БАРУУН талд (header-ийн баруун ирмэгт шахсан)
 //   Layer 2: [ЛОГО] → араас нь ангиллын mega menu … баруунд хэрэгслүүд
 //
@@ -657,8 +661,9 @@ function MegaLayer({
 // ХӨНДӨГДӨӨГҮЙ. Тэр загварын хэрэгжилтийг `mobile-header.tsx > BrandTabsHeader`
 // дотроос үз (ангиллын мөр + капсул).
 //
-// ⚠️ ХУВИЛБАР 3 ч ЭНЭ DESKTOP БҮТЦИЙГ ХЭРЭГЛЭНЭ — `mobileVariant` prop-оор
-// зөвхөн мобайлын давхарга л сална (1 = ангиллын мөр, 3 = burger drawer).
+// ⚠️ ХОЁУЛАА ХУВИЛБАР ЭНЭ DESKTOP БҮТЦИЙГ ХЭРЭГЛЭНЭ (2026-09-14, захиалагч:
+// "desktop дээр батлагдсан хувилбар") — `mobileVariant` prop-оор зөвхөн
+// мобайлын давхарга л сална (1 = доод dock, 2 = burger drawer).
 // =====================================================================
 function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }) {
   const { openMenu, panelBrand, shown, direction, openBrandMenu, closeBrandMenu, closeNow } =
@@ -842,206 +847,6 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
 
         {/* Mobile — Хувилбар 1: ангиллын мөр + капсул (2 давхарга) */}
         <MobileBrandHeader variant={mobileVariant} />
-
-        <MegaLayer
-          panelBrand={panelBrand}
-          shown={shown}
-          direction={direction}
-          onOpen={openBrandMenu}
-          onClose={closeBrandMenu}
-          onCloseNow={closeNow}
-        />
-      </header>
-    </>
-  );
-}
-
-// =====================================================================
-// ХУВИЛБАР 2 — ЛОГО ТӨВД
-//   Layer 1: ангилагч ЗҮҮН талд (header-ийн зүүн ирмэгт шахсан)
-//   Layer 2: зүүн ангиллын mega menu · төв лого · баруун хэрэгслүүд
-//
-//   ┌────────────────────────────────────────────────────────────┐
-//   │ Хувь хэрэглэгч ▾  Байгууллага ↗                            │ L1
-//   ├────────────────────────────────────────────────────────────┤
-//   │ Unitel Univision Дэлгүүр …   [ЛОГО]        👤  🌐  ☀       │ L2
-//   └────────────────────────────────────────────────────────────┘
-// =====================================================================
-/**
- * HEADER-ИЙН AI ОРОЛТ — төлөв ба зан төлөв.
- *
- * Товч, оролтын зурвас, дэвсгэрийн бүдгэрүүлэлт гурав нь DOM-ийн ӨӨР ӨӨР
- * байрлалд рендерлэгддэг (баруун талын хэрэгсэл · header-ийн доод ирмэг ·
- * header-ийн ГАДНА) тул төлвийг нь ЭНД цуглуулж, гурав руу тараана. Portal
- * ашиглавал header-ийн `relative` контекстээс салж, `top-full` тооцоологдохгү.
- */
-function useHeaderAsk() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
-
-  /**
-   * ⚠️ НҮҮР ДЭЭР ГАРАХГҮЙ. Тэнд `ChatHero` бүтэн хэмжээгээрээ, өөрийн
-   * оролттойгоо байдаг — header дээр давхардуулбал хоёр оролт зэрэг харагдаж,
-   * аль нь идэвхтэйг нь хэрэглэгч мэдэхгүй болно.
-   */
-  const available = pathname !== "/";
-
-  // Зам солигдоход хаана — шинэ хуудас нээлттэй оролттой гарах нь эвгүй.
-  // ⚠️ setState нь effect-ийн БИЕД биш ЦЭВЭРЛЭГЭЭНД: `pathname` солигдох
-  // мөчид л ажиллана, cascading render үүсгэхгүй.
-  useEffect(() => () => setOpen(false), [pathname]);
-
-  // Нээгдмэгц фокус, Esc-ээр хаагдана.
-  useEffect(() => {
-    if (!open) return;
-    // ⚠️ Ref БИШ, id-гаар фокуслана. Оролт нь энэ hook-оос ГАДНА, header-ийн
-    // дотор рендерлэгддэг тул ref-ийг буцаах шаардлагатай болдог — тэгвэл
-    // `react-hooks/refs` дүрэм зөрчигдөнө (буцаасан ref нь render-ийн үед
-    // уншигдаж магадгүй гэж compiler үзнэ). Id нь тэр хамаарлыг ТАСАЛНА.
-    document.getElementById("header-ask-input")?.focus();
-
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-
-  /** Илгээхэд `/assistant?q=…` руу — нүүрний туслахтай ЯГ ИЖИЛ урсгал. */
-  const submit = (event: React.FormEvent) => {
-    event.preventDefault();
-    const asked = value.trim();
-    if (!asked) return;
-    setOpen(false);
-    setValue("");
-    router.push(`${ASSISTANT_PATH}?q=${encodeURIComponent(asked)}`);
-  };
-
-  return { available, open, setOpen, value, setValue, submit };
-}
-
-function TopClassifierHeader() {
-  const { openMenu, panelBrand, shown, direction, openBrandMenu, closeBrandMenu, closeNow } =
-    useBrandMegaMenu(NAV_ORDER);
-  const ask = useHeaderAsk();
-
-  return (
-    <>
-      {/* ДЭВСГЭР БҮДГЭРҮҮЛЭЛТ — AI оролт нээлттэй үед. `<header>` нь `z-50` тул
-          scrim (`z-40`)-ийн ДЭЭР үлдэж, өөрөө бүдгэрэхгүй. Дарвал хаагдана. */}
-      {ask.available && (
-        <div
-          aria-hidden
-          onClick={() => ask.setOpen(false)}
-          className={cn(
-            "bg-foreground/10 fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 ease-out",
-            ask.open ? "opacity-100" : "pointer-events-none opacity-0",
-          )}
-        />
-      )}
-      {panelBrand && appleMegaMenus[panelBrand] && (
-        <div
-          aria-hidden
-          onClick={closeNow}
-          className={cn(
-            "bg-foreground/10 fixed inset-0 z-40 hidden backdrop-blur-sm transition-opacity duration-500 ease-out lg:block",
-            shown ? "opacity-100" : "pointer-events-none opacity-0",
-          )}
-        />
-      )}
-
-      {/* ⚠️ `relative` — ХУВИЛБАР 1-ТЭЙ ИЖИЛ. Sticky БОЛГОХГҮЙ (2026-09-10-ны
-          захиалагчийн шийдвэр); шалтгааныг `LogoLeftHeader`-ийн `<header>`-ээс
-          үз. Хоёр хувилбар зан төлвөөрөө зөрөх ёсгүй. */}
-      <header className="bg-background border-border relative top-0 z-50 border-b" role="banner">
-        {/* Layer 1 — ангилагч header-ийн ЗҮҮН ирмэгт шахсан (зөвхөн desktop).
-            `align="start"` — hover панел ч зүүн ирмэгээр зэрэгцэнэ. */}
-        <div className="bg-muted/40 border-border hidden border-b lg:block">
-          <div className="mx-auto flex h-8 max-w-300 items-center justify-start px-4">
-            <AudienceSwitchTabs
-              segments={classifierSegments}
-              activeId="personal"
-              align="start"
-              hover={false}
-              triggerClassName={CLASSIFIER_TRIGGER}
-            />
-          </div>
-        </div>
-
-        {/* Үндсэн мөр — зүүн ангилал · төв лого · баруун icons */}
-        <div className="mx-auto hidden h-11 max-w-300 grid-cols-[1fr_auto_1fr] items-center px-4 lg:grid">
-          <CategoryNav openMenu={openMenu} onOpen={openBrandMenu} onClose={closeBrandMenu} />
-
-          <div className="flex justify-center">
-            {/* ⚠️ Хувилбар 1-тэй ИЖИЛ үгэн лого (2026-09-10). `grid`-ийн дунд
-                багана нь `auto` тул үгэн логоны илүү өргөн нь хажуугийн хоёр
-                `1fr`-ээс өөрөө хасагдана — тор эвдрэхгүй. */}
-            <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
-              <BrandLogo height={24} />
-            </LogoHomeLink>
-          </div>
-
-          <div className="flex items-center justify-end">
-            {/* AI товч — ЗӨВХӨН Хувилбар 2, ЗӨВХӨН нүүрнээс ГАДНА. Хэрэгслүүдийн
-                ЗҮҮН талд: профайл, хэл, theme нь ТОХИРГОО, энэ нь ҮЙЛДЭЛ. */}
-            {ask.available && (
-              <IconButton
-                label="Ухаалаг туслахаас асуух"
-                onClick={() => ask.setOpen(!ask.open)}
-                active={ask.open}
-              >
-                <Sparkles className="text-primary size-5" />
-              </IconButton>
-            )}
-            <HeaderTools />
-          </div>
-        </div>
-
-        {/* Mobile — Хувилбар 2: header дээр таб байхгүй, бүх цэс burger дотор */}
-        <MobileBrandHeader variant={2} />
-
-        {/* AI ОРОЛТ — header-ийн ДООД ирмэгээс гулсаж гарна.
-            ⚠️ `absolute top-full` — `<header>`-ийн ДОТОР рендерлэгдэж байгаа тул
-            header өөрөө хэзээ ч scrim-ийн доор орохгүй (`mobile-header.tsx`-ийн
-            scrim-тэй ижил зарчим). Өндрийг px-ээр hardcode хийхгүй. */}
-        {ask.available && (
-          <div
-            className={cn(
-              "border-border bg-background absolute inset-x-0 top-full border-b transition-all duration-300 ease-out",
-              ask.open
-                ? "visible translate-y-0 opacity-100"
-                : "pointer-events-none invisible -translate-y-2 opacity-0",
-            )}
-          >
-            <form
-              onSubmit={ask.submit}
-              className="mx-auto flex max-w-300 items-center gap-3 px-4 py-3"
-            >
-              <Sparkles className="text-primary size-5 shrink-0" aria-hidden="true" />
-              <label htmlFor="header-ask-input" className="sr-only">
-                Ухаалаг туслахаас асуух
-              </label>
-              <input
-                id="header-ask-input"
-                type="text"
-                value={ask.value}
-                onChange={(event) => ask.setValue(event.target.value)}
-                placeholder="Асуултаа бичнэ үү"
-                className="text-foreground placeholder:text-muted-foreground h-8 min-w-0 flex-1 bg-transparent text-sm outline-none"
-              />
-              <button
-                type="submit"
-                aria-label="Илгээх"
-                disabled={!ask.value.trim()}
-                className="bg-primary text-primary-foreground inline-flex size-8 shrink-0 items-center justify-center rounded-xl transition-opacity duration-300 hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <ArrowUp className="size-4" aria-hidden="true" />
-              </button>
-            </form>
-          </div>
-        )}
 
         <MegaLayer
           panelBrand={panelBrand}

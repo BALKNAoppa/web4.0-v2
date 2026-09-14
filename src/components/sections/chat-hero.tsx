@@ -746,18 +746,32 @@ function PersonaShortcuts({ onFill }: { onFill: (text: string) => void }) {
      * тэмдэгт) болсон тул хуучин "дугуй чип, мөрөнд 3" загвар ажиллахаа
      * больсон: nowrap-тай бол чип нь дэлгэцээс ХАЛЬЖ хэвтээ scroll үүсгэнэ.
      *
-     * Тиймээс мобайлд НЭГ БАГАНА (`flex-col`) — товч бүр бүтэн өргөн, бичвэр
-     * дотроо зөөлөн мөр шилжинэ. `sm:`-ээс хойш хоёр багана (`sm:grid-cols-2`)
-     * — тэнд өргөн хүрэлцэх ба 4 товч 2×2 болж хоосон зай үүсгэхгүй.
+     * ⚠️⚠️ GRID → FLEX-WRAP (2026-09-14, захиалагч: "suggestion өгүүлбэрийг
+     * цэгцтэй багтахаар болго").
      *
-     * ⚠️ 6 → 4 болсон нь ЭНЭ шийдлийг боломжтой болгосон: 6 урт товч нь
-     * нүүрний эхний дэлгэцээс халих байсан. Persona дахин нэмэгдвэл өндрийг
-     * ДАХИН шалгах хэрэгтэй.
+     * ЯАГААД GRID УНАСАН БЭ — ХЭМЖСЭН: `sm:max-w-lg` (512px) дээр
+     * `grid-cols-2` нь БАГАНА БҮРИЙГ 252px болгодог. Харин хоёр асуулт
+     * ОГТ ӨӨР УРТТАЙ:
+     *     "Гар утас лизингээр авах"                    ~120px → хагас хоосон
+     *     "Шинээр дугаар авья, надад ямар багц …"      ~274px → 252-т БАГТААГҮЙ
+     * ⇒ нэг товч хоёр мөр болж, нөгөө нь хоосон зайтай үлдэж, хоёулаа өөр
+     * өндөртэй харагдана. Бичвэр нь ДАТА-гаас ирдэг (persona бүрийн бүтэн
+     * асуулт) тул уртыг нь тэгшлэх боломжгүй — БАЙРЛУУЛАЛТ нь дасах ёстой.
      *
-     * ⚠️ `items-stretch` — `items-center` бол багана дахь товчнууд бичвэрийн
-     * уртаараа ӨӨР ӨРГӨНТЭЙ болно.
+     * FLEX-WRAP нь товч бүрийг БИЧВЭРИЙНХЭЭ хэрээр өргөн болгоно:
+     *     120 + 8 + 274 = 402px < 512  ⇒ sm+ дээр НЭГ мөрөнд, төвдөө
+     *     мобайл (~343px)              ⇒ хоёр мөр, тус бүр өөрийн өргөнтэй
+     * Хоёр тохиолдолд ч хоосон зай, тайрдас үлдэхгүй.
+     *
+     * ⚠️ 6 → 4 → (брэндийн шүүлтээр) 2 болсон нь ЭНЭ шийдлийг боломжтой
+     * болгосон. Persona дахин нэмэгдвэл мөр нэмэгдэх тул нүүрний эхний
+     * дэлгэцийн өндрийг ДАХИН шалгана.
+     *
+     * ⚠️ `items-stretch` — нэг мөрөнд хоёр товч байхад нэг нь хоёр мөр
+     * болвол нөгөө нь түүнтэй ижил ӨНДӨРТЭЙ болно. `items-center` бол
+     * богино товч нь дунд нь хөвж, доод ирмэгүүд нь зөрнө.
      */
-    <div className="mt-2.5 grid w-full items-stretch gap-2 sm:mt-3 sm:max-w-lg sm:grid-cols-2 [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
+    <div className="mt-2.5 flex w-full flex-wrap items-stretch justify-center gap-2 sm:mt-3 sm:max-w-lg [@media_(min-width:768px)_and_(max-height:1024px)]:mt-1.5">
       {personaShortcuts.map((item) => (
         <button
           // `key` нь id — асуулт нь засагдах бичвэр тул түүнийг key болгохгүй.
@@ -772,8 +786,20 @@ function PersonaShortcuts({ onFill }: { onFill: (text: string) => void }) {
            *
            * `rounded-full` → `rounded-2xl`: хоёр мөр болох бичвэрт бүтэн дугуй
            * ирмэг нь хажуу талд хэт их хоосон зай үүсгэдэг.
+           *
+           * ⚠️ `text-left` → `text-center` (2026-09-14): товч нь одоо
+           * бичвэрийнхээ хэрээр өргөн бөгөөд эгнээ нь төвд байрладаг тул
+           * зүүн зэрэгцүүлэлт нь хоёр мөр болох үед л мэдэгдэж, эгнээг
+           * хазайсан харагдуулна.
+           *
+           * `text-balance` — хоёр мөр болоход мөрүүд ойролцоо урттай
+           * хуваагдана ("… надад ямар багц" / "тохирох вэ?" гэсэн 90/10
+           * таслалтаас сэргийлнэ).
+           *
+           * `max-w-full` — дэлгэц хэт нарийн үед (эсвэл асуулт урсгах үед)
+           * товч эцгийн өргөнөөс халихгүй.
            */
-          className="border-border bg-card/70 text-muted-foreground hover:border-primary hover:text-foreground rounded-2xl border px-3 py-2 text-left text-xs leading-snug backdrop-blur transition-colors"
+          className="border-border bg-card/70 text-muted-foreground hover:border-primary hover:text-foreground max-w-full rounded-2xl border px-3 py-2 text-center text-xs leading-snug text-balance backdrop-blur transition-colors"
         >
           {item.question}
         </button>
