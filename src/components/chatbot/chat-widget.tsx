@@ -212,7 +212,8 @@ export function ChatWidget() {
   }, []);
 
   // /web4 — immersive концепцийн хуудас: chatbot харуулахгүй
-  if (pathname?.startsWith("/web4")) return null;
+  // /admin — танилцуулгын удирдлага: чатын ирмэг хэрэггүй (header-тэй ижил)
+  if (pathname?.startsWith("/web4") || pathname?.startsWith("/admin")) return null;
 
   return (
     <>

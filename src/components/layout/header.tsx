@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Layers, X } from "lucide-react";
 
 import { AudienceSwitchTabs } from "@/components/layout/audience-switch";
 import { BrandLogo } from "@/components/layout/brand-logo";
@@ -21,29 +19,23 @@ import {
   useCurrentNavName,
 } from "@/components/layout/header-shared";
 import { appleMegaMenus, appleNavCategories, type EcosystemLink } from "@/data/navigation";
-import { useHeaderVariant, setHeaderVariant, type HeaderVariant } from "@/lib/header-variant";
+import { useHeaderVariant } from "@/lib/header-variant";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 import { sectionBg } from "@/lib/section-bg";
 import { SparklesText } from "@/components/ui/sparkles-text";
 
-type Variant = HeaderVariant;
-
 /**
- * ⚠️⚠️ ХОЁР ХУВИЛБАР ҮЛДСЭН. ДУГААРЛАЛТ 2026-09-14-нд ХОЁР УДАА өөрчлөгдсөн
- * (бүтэн хөрвүүлэгчийг `lib/header-variant.ts`-ээс үз). ЭЦСИЙН БАЙДАЛ:
- *     1 = ШИЛЭН КАПСУЛ (хуучин загвар, хөндөхгүй жишиг)
- *     2 = ХАВТГАЙ 2 давхарга (лого·профайл·burger + брэндийн дэд цэс) + dock
- * Хуучин "ангиллын мөр + таб dropdown" хувилбар нь БҮРМӨСӨН ХАСАГДСАН.
+ * ⚠️ ХУВИЛБАР СОНГОХ TOGGLE ЭНДЭЭС ХАСАГДСАН (2026-09-15).
+ * Өмнө нь баруун дээд буланд нуугдмал товч + `VariantToggle` мөр байв.
+ * Хоёр асуудалтай байсан: танилцуулга дээр stakeholder өөрөө санамсаргүй
+ * дарах эрсдэлтэй, бас ЗӨВХӨН өөрийнх нь браузерт нөлөөлдөг тул зайнаас
+ * солих боломжгүй байв.
  *
- * Шошго нь MOBILE-ын навигаци ХААНА байгааг хэлнэ — DESKTOP нь хоёр
- * хувилбарт ЯГ ИЖИЛ (доорх `Header`-ийн тайлбарыг үз) тул ялгаа нь
- * зөвхөн мобайлд л харагдана.
+ * Одоо солих ЦОРЫН ГАНЦ газар нь `/admin`, төлөв нь сервер дээр —
+ * `lib/header-variant.ts` ба `app/api/header-variant/route.ts`-ийг үз.
+ * Хувилбарын дугаарлалт ба шошго нь `app/admin/variant-switch.tsx`-д.
  */
-const VARIANTS: { id: Variant; label: string }[] = [
-  { id: 1, label: "Хувилбар 1 " },
-  { id: 2, label: "Хувилбар 2 " },
-];
 
 /** Хоёр хувилбарын ХУВААЛЦАХ зүүн талын ангилал (Layer 2) */
 const NAV_ITEMS: EcosystemLink[] = appleNavCategories;
@@ -154,12 +146,12 @@ export function Header() {
   const pathname = usePathname();
   const variant = useHeaderVariant();
 
-  // /web4 — immersive presentation хуудас: header харуулахгүй
-  if (pathname?.startsWith("/web4")) return null;
+  // /web4 — immersive presentation хуудас, /admin — танилцуулгын удирдлага:
+  // хоёулаа header-гүй
+  if (pathname?.startsWith("/web4") || pathname?.startsWith("/admin")) return null;
 
   return (
     <>
-      <VariantToggle variant={variant} onChange={setHeaderVariant} />
       {/**
        * ⚠️⚠️ DESKTOP НЬ ХОЁР ХУВИЛБАРТ ЯГ ИЖИЛ — `LogoLeftHeader` (2026-09-14,
        * захиалагч: "desktop дээр бүх header-г хувилбар 3 шиг болго, тэр нь
@@ -174,120 +166,6 @@ export function Header() {
        */}
       <LogoLeftHeader mobileVariant={variant} />
     </>
-  );
-}
-
-/**
- * Хувилбар сонгох toggle — дэлгэцийн дээд талд. Зөв хувилбараа шийдсэний дараа
- * энэ toggle-ийг устгана.
- *
- * Энэ layer-ийг БҮХЭЛД НЬ хааж болно (X товч) — stakeholder-т үзүүлэхэд дэлгэц
- * цэвэрхэн харагдана. Хаагдсан үед зөвхөн баруун дээд булангийн үл мэдэгдэх
- * button үлдэнэ: hover хийхэд л гарч ирнэ, дарахад bar буцаж задарна.
- */
-function VariantToggle({
-  variant,
-  onChange,
-}: {
-  variant: Variant;
-  onChange: (v: Variant) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  // Анхнаасаа ХААЛТТАЙ — танилцуулгад дэлгэц цэвэрхэн байна. Нээх бол баруун
-  // дээд булан руу hover хийж бариулыг гаргана.
-  const [barOpen, setBarOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  // Архивласан хувилбар localStorage-д үлдсэн байвал Хувилбар 1 гэж үзнэ
-  const current = VARIANTS.find((v) => v.id === variant) ?? VARIANTS[0];
-
-  // хүрээнээс гадна дарахад хаагдана
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    window.addEventListener("mousedown", onDown);
-    return () => window.removeEventListener("mousedown", onDown);
-  }, [open]);
-
-  if (!barOpen) {
-    return (
-      <button
-        type="button"
-        onClick={() => setBarOpen(true)}
-        aria-label="Хувилбар сонгох мөрийг нээх"
-        className="bg-foreground text-background focus-visible:ring-foreground/40 fixed top-0 right-0 z-80 inline-flex size-6 items-center justify-center rounded-bl-lg opacity-0 transition-opacity duration-200 hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none"
-      >
-        <ChevronDown className="size-3.5" aria-hidden="true" />
-      </button>
-    );
-  }
-
-  return (
-    <div
-      role="group"
-      aria-label="Header хувилбар сонгох"
-      className="bg-foreground text-background flex items-center justify-end gap-1 px-4 py-1.5 text-xs"
-    >
-      {/* Баруун талын жижиг товч — дарахад dropdown нээгдэж/хаагдана */}
-      <div ref={ref} className="relative">
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-expanded={open}
-          aria-haspopup="menu"
-          aria-label="Header хувилбар сонгох"
-          className="bg-background/15 hover:bg-background/25 inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 font-semibold transition-colors"
-        >
-          <Layers className="size-3.5" aria-hidden="true" />
-          {current.label}
-          <ChevronDown
-            className={cn("size-3.5 transition-transform duration-200", open && "rotate-180")}
-            aria-hidden="true"
-          />
-        </button>
-
-        {open && (
-          <div
-            role="menu"
-            className="border-background/15 bg-foreground animate-in fade-in slide-in-from-top-1 absolute top-full right-0 z-70 mt-1.5 flex min-w-52 flex-col gap-0.5 rounded-xl border p-1.5 shadow-2xl duration-150"
-          >
-            {VARIANTS.map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                role="menuitemradio"
-                aria-checked={variant === v.id}
-                onClick={() => {
-                  onChange(v.id);
-                  setOpen(false);
-                }}
-                className={cn(
-                  "rounded-lg px-3 py-1.5 text-left whitespace-nowrap transition-colors",
-                  variant === v.id
-                    ? "bg-background text-foreground font-semibold"
-                    : "text-background/80 hover:bg-background/15",
-                )}
-              >
-                {v.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <button
-        type="button"
-        onClick={() => {
-          setOpen(false);
-          setBarOpen(false);
-        }}
-        aria-label="Хувилбар сонгох мөрийг хаах"
-        className="hover:bg-background/20 focus-visible:ring-background/40 inline-flex size-5 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none"
-      >
-        <X className="size-3.5" aria-hidden="true" />
-      </button>
-    </div>
   );
 }
 
@@ -754,9 +632,26 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
          *   Padding   12 / 24 / 12 / 24     → `px-6` (+ өндөр нь тогтмол тул
          *                                     босоо 12px нь `items-center`-ээр
          *                                     автоматаар тэнцэнэ)
-         *   Fill · Shadow · Effects         → `.glass-capsule` (globals.css)
+         *   Fill · Shadow · Effects         → `.glass-lens` (globals.css)
          *
-         * ⚠️⚠️ FILL/SHADOW-ЫГ `.glass-capsule` АВСАН (2026-09-10). Өмнө нь энд
+         * ⚠️⚠️ `.glass-capsule` → `.glass-lens` (2026-09-15, захиалагчийн
+         * Figma "Glass" панелийн screenshot: Light −45°·80% · Refraction 80 ·
+         * Depth 20 · Dispersion 50 · Frost 4 · Splay 0).
+         *
+         * ⚠️ МОБАЙЛЫН ХУВИЛБАР 1-ИЙН КАПСУЛ ч мөн ЭНЭ КЛАССЫГ хэрэглэнэ
+         * (`mobile-header.tsx > CapsuleRow`) — тэр өдөр захиалагч хоёуланг
+         * нь нэгтгэсэн. Хуучин `.glass-capsule` нь хэрэглэгчгүй үлдэж
+         * УСТСАН. ⇒ Энд өнгө/сүүдэр сольвол МОБАЙЛ Ч ДАГАНА.
+         *
+         * ⚠️ ӨНГӨТЭЙ ИРМЭГ (Dispersion) ХАСАГДСАН — градиент хүрээ мэт
+         * харагдаж, AI туслахын ногоон-ягаан хүрээтэй андуурагдаж байв.
+         * Бүтэн тайлбар globals.css-д.
+         *
+         * ⚠️ `backdrop-blur-xl` ХАСАГДСАН — blur нь одоо `.glass-lens` дотор
+         * (Frost 4 = 4px). Класс нь бие даасан болсон тул өөр газар тавихад
+         * нэмэлт Tailwind класс шаардахгүй.
+         *
+         * ⚠️⚠️ FILL/SHADOW-ЫГ КЛАСС АВСАН (2026-09-10). Өмнө нь энд
          * `bg-black/[0.001]` + `shadow-[0_4px_12px_8px_…]` гэж Figma-гийн
          * тоонууд ШУУД бичигдсэн байв. Гэвч тэр гурав (0.1% fill, 5% хар
          * сүүдэр, background blur) нь ХОЁУЛАНГ НЬ БИШ, зөвхөн ЦАЙВАР темийг
@@ -805,7 +700,7 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
              * нь 3-рынхаа ТӨГСГӨЛД байх ёстой тул тэдгээр нь өөрсдийн
              * `justify-self`-ээ доор авна.
              */}
-            <div className="glass-capsule grid h-24 grid-cols-[1fr_auto_1fr] items-center gap-6 rounded-[100px] px-6 backdrop-blur-xl">
+            <div className="glass-lens grid h-24 grid-cols-[1fr_auto_1fr] items-center gap-6 rounded-[100px] px-6">
               {/**
                * ⚠️⚠️ `BrandLogoLink` (ЭКО ТЭМДЭГ) → `BrandLogo` (ҮГЭН ЛОГО)
                * (2026-09-10, захиалагч: "desktop хувилбар дээр Unitel

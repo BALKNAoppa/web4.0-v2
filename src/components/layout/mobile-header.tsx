@@ -105,7 +105,7 @@ import { SparklesText } from "@/components/ui/sparkles-text";
  * ХУВИЛБАР 1 (хуучин 2) — ХУУЧНААРАА: ШИЛЭН КАПСУЛ, навигаци нь drawer дотор
  *   ┌────────────────────────────────────────────────────┐
  *   │  ╭──────────────────────────────────────────────╮  │
- *   │  │ UNITEL                                ( ☰ )  │  │ `.glass-capsule`
+ *   │  │ UNITEL                                ( ☰ )  │  │ `.glass-lens`
  *   │  ╰──────────────────────────────────────────────╯  │ профайлгүй
  *   └────────────────────────────────────────────────────┘
  *   Layer 2-гүй, dock-гүй (`CapsuleRow` + `BurgerDrawerHeader`).
@@ -746,10 +746,12 @@ export function MobileBrandHeader({ variant }: { variant: MobileVariant }) {
  * орно"). Хувилбар 2-ын `HeaderRow` дээр профайл БИЙ — тэр нь шинэ
  * загварынх; энд нэмбэл хувилбар 1 ч өөрчлөгдөнө.
  *
- * ⚠️ `bg-card` + `shadow-sm` → `.glass-capsule` (2026-09-10). Desktop-ийн
- * капсултай ЯГ НЭГ эх сурвалж (globals.css) — тусгалын альфа, градиент,
- * сүүдрийн тоо хоёр давхаргад хэзээ ч зөрөхгүй. Хэлбэрийг (өндөр, радиус,
- * padding) нь энд, ХАРАГДАЦЫГ нь тэнд гэж хуваасан.
+ * ⚠️ ШИЛНИЙ ХАРАГДАЦ: `bg-card`+`shadow-sm` (09-07) → `.glass-capsule`
+ * (09-10) → **`.glass-lens`** (2026-09-15, захиалагч: "mobile хувилбар 1
+ * дээр header container дээр энэ style-г ашигла"). Desktop-ийн капсултай
+ * ЯГ НЭГ эх сурвалж (globals.css) — Figma-гийн "Glass" пресет. Хэлбэрийг
+ * (өндөр, радиус, padding) нь энд, ХАРАГДАЦЫГ нь тэнд гэж хуваасан.
+ * ⇒ `.glass-capsule` нь ОДОО ХААНА Ч ХЭРЭГЛЭГДЭХГҮЙ болж устсан.
  *
  * ⚠️ Логонь ҮГЭН лого (`BrandLogo`), эко тэмдэг (`BrandLogoLink`) БИШ.
  * Footer-ийнхтэй ижил хослол тул nested anchor үүсэхгүй.
@@ -757,7 +759,7 @@ export function MobileBrandHeader({ variant }: { variant: MobileVariant }) {
 function CapsuleRow({ burger }: { burger: React.ReactNode }) {
   return (
     <div className="px-4 py-3">
-      <div className="glass-capsule flex h-16 items-center rounded-full px-5">
+      <div className="glass-lens flex h-16 items-center rounded-full px-5">
         <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
           <BrandLogo height={24} preload />
         </LogoHomeLink>
