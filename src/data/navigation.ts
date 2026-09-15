@@ -5,7 +5,7 @@
  * - Top bar линкүүд (гадаад domain)
  * - Main navigation (Мобайл, Интернэт, Телевиз, Life-style, Урамшуулал)
  */
-import { type Owner } from "@/lib/brand";
+import { brandSiteUrl, type Owner } from "@/lib/brand";
 
 export type NavItem = {
   label: string;
@@ -118,30 +118,43 @@ export const ecosystemBrands: EcosystemLink[] = [
 // Дэлгүүр, LookTV-гийн ӨМНӨХ дэд цэс нь `archivedMegaMenus`-д 1:1 хадгалагдсан
 // (устгаагүй) — тэдгээрийг буцаахад л панел дахин задарна.
 //
-// ⚠️⚠️ ХҮЛЭЭГДЭЖ БУЙ ШИЙДВЭР — Unitel · Univision · LookTV нь `#`.
-// `/unitel`, `/univision`, `/looktv` ГУРВАН ХУУДАС УСТСАН (тэдгээрийн ribbon
-// нь `data/brand-ribbon.ts` + `components/sections/brand-ribbon.tsx` болж
-// авч үлдсэн, бусад хэсэг нь устсан). Тиймээс эдгээр цэс одоогоор ХААШАА Ч
-// ЗААХГҮЙ.
-//   Unitel · Univision — hover дээр панел задардаг тул үйлдэлгүй биш
-//   LookTV             — панелгүй ⇒ дархад ЮУ Ч БОЛОХГҮЙ
-// Аль ангилалд ТУСДАА хуудас хэрэгтэй, алийг нь нэг template + параметрээр
-// динамикаар шийдэхийг тухайн ажлыг хийхдээ ярина. Хуурмаг зам ЗОХИОХГҮЙ.
+// ⚠️⚠️ 2026-09-15: ЭДГЭЭР НЬ ОДОО БҮТЭН ХАЯГ (зам БИШ).
+// Захиалагчийн заавар: "header-ийн ангилал бүр дээр, Unitel бол Unitel-ийн
+// Vercel хаяг, Univision бол Univision-ыхыг тавь — Урамшуулал ч гэсэн".
+//   Unitel · Univision            → ТУС БҮРИЙН sample-ийн НҮҮР
+//   Дэлгүүр · Урамшуулал · LookTV → ЭНЭ build-ийн sample-ийн НҮҮР
+// Хаягийг `brandSiteUrl()` (lib/brand.ts) өгнө — `NEXT_PUBLIC_*_URL` env-ээс.
+// ⚠️ Тиймээс Vercel дээр ТЭР ХОЁР ENV ЗААВАЛ тавигдсан байх ёстой; эс бөгөөс
+//   энэ цэс localhost руу заана.
+// ⚠️ ШИНЭ TAB НЭЭХГҮЙ — `resolveHref` нь манай хоёр sample-ийг "гадаад сайт"
+//   -аас ялгаж, тухайн таб дотор шилжүүлнэ.
 //
-// `#` нь энэ codebase-ийн стандарт placeholder (`resolveHref` тусад нь
-// боловсруулдаг). `useCurrentNavName` нь `#`-ийг чимээгүй алгасдаг тул active
-// тодотгол нь `/devices`, `/campaigns` дээр ажиллаж, бусад үед build-ийн
-// домэйн рүү унана — алдаа гаргахгүй.
+// ⚠️ ХУУЧИН БАЙДАЛ (буцаах бол): бүгд `"#"` / `"/#"` байсан — `/unitel`,
+// `/univision`, `/looktv` гурван хуудас устсан тул цэс ХААШАА Ч ЗААХГҮЙ
+// байв (ribbon нь `data/brand-ribbon.ts`-д хадгалагдсан). Аль ангилалд
+// ТУСДАА хуудас хэрэгтэйг шийдвэл эдгээрийг дотоод зам руу буцаана.
 //
-// `owner` — Unitel/Univision нь ТУС БҮРИЙН домэйны эзэн. ⚠️ `resolveHref` нь
-// `#`-ийг owner шалгахаас ӨМНӨ таслан буцаадаг тул ХӨНДЛӨН ДОМЭЙН РҮҮ ҮСРЭХ
-// нь ОДООГООР АЖИЛЛАХГҮЙ. Бодит зам сэргэмэгц дахин ажиллана.
+// ⚠️ DESKTOP ДЭЭР Unitel · Univision нь ЛИНК БИШ, панел задраах ТОВЧ
+// (header.tsx > CategoryNav — `appleMegaMenus`-д бичлэгтэй тул). Тэнд энэ
+// хаяг ХЭРЭГЛЭГДЭХГҮЙ. Мобайлын dock нь 5 ангилал бүгдийг ЛИНК болгодог тул
+// тэнд бүрэн ажиллана.
+//
+// `useCurrentNavName` нь `"/"`-ээр эхлээгүй бүх href-ийг алгасдаг тул бүтэн
+// хаяг нь active тодотголыг эвдэхгүй — домэйны нэр рүү унана.
+//
+// `owner` — Unitel/Univision нь ТУС БҮРИЙН домэйны эзэн.
+// ⚠️ 2026-09-15-ААС ЭХЭЛЖ ЭДГЭЭР АЖИЛЛАНА. `resolveHref` нь эзнийг `#`-ЭЭС
+// ӨМНӨ шалгадаг болсон тул нөгөө брэндийн мөр (dock, burger) нь ЗАМААСАА
+// ҮЛ ХАМААРАН тэр сайтын НҮҮР рүү, ЭНЭ ТАБ ДОТРОО шилжинэ. Өөрөөр хэлбэл
+// доорх `href: "#"` нь ЗӨВХӨН ӨӨРИЙН брэндийн мөрийг л идэвхгүй болгоно.
 export const appleNavCategories: EcosystemLink[] = [
-  { name: "Unitel", href: "#", owner: "unitel" },
-  { name: "Univision", href: "#", owner: "univision" },
-  { name: "Дэлгүүр", href: "/#" },
-  { name: "Урамшуулал", href: "/#" },
-  { name: "LookTV", href: "#" },
+  { name: "Unitel", href: brandSiteUrl("unitel"), owner: "unitel" },
+  { name: "Univision", href: brandSiteUrl("univision"), owner: "univision" },
+  // Брэндгүй ангиллууд → ЭНЭ build-ийн sample (Unitel дээр Unitel, Univision
+  // дээр Univision). ⚠️ Захиалагчийн заавар: "Урамшуулал ч гэсэн".
+  { name: "Дэлгүүр", href: brandSiteUrl() },
+  { name: "Урамшуулал", href: brandSiteUrl() },
+  { name: "LookTV", href: brandSiteUrl() },
 ];
 
 // =====================================================================

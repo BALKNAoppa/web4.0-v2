@@ -292,6 +292,17 @@
     overflow-x: clip;
   }
 
+  /* ⚠️ ХЯТАД · ЯПОН хэлэнд ҮГИЙН ЗАЙ БАЙХГҮЙ тул хөтөч мөрийг ХААНА Ч
+     таслаж болно. Цэг таслал мөрийн эхэнд ганцаараа үлдэхээс сэргийлж
+     `line-break: strict` хэрэглэнэ (солонгос нь зайтай тул хамаарахгүй).
+     ⚠️ Фонтын дүрэм ЭНД БИШ — файлын ТӨГСГӨЛД, давхаргын гадна (шалтгааныг
+     тэнд бичсэн). */
+  html[lang^="zh"] body,
+  html[lang^="ja"] body {
+    line-break: strict;
+    overflow-wrap: normal;
+  }
+
   html {
     @apply font-sans;
     scroll-behavior: smooth;
@@ -1197,6 +1208,40 @@ html[style*="--a11y-content"] span {
    Blur/saturate нь Tailwind талд (`backdrop-blur-xl backdrop-saturate-150`)
    — `.glass-capsule` ч яг ийм хуваалттай (`header.tsx` дээр
    `backdrop-blur-xl`). Класс нь ТИНТ ба ЗУЗААНЫГ л эзэмшинэ. */
+/* DOCK-ИЙН ТИНТ — `.glass-lens` дээр нэмсэн ГАНЦ давхарга (2026-09-15).
+
+   ЯАГААД ХЭРЭГТЭЙ: `.glass-lens` нь DESKTOP-ИЙН КАПСУЛД зориулагдсан —
+   тэр нь хуудасны ТОГТМОЛ дэвсгэр дээр суудаг тул тинтгүй, зөвхөн цагаан
+   налуу + ирмэгээр шил мэт харагдана. Dock нь харин ГҮЙЖ БУЙ агуулгын ДЭЭР
+   хөвдөг: тинтгүй үед доорх зураг/бичвэр шошгон дундуур цухуйж, уншигдац
+   унана (WCAG 1.4.3 — дэвсгэр нь урьдчилан мэдэгдэхгүй).
+
+   ⚠️ `.glass-lens` ӨӨРИЙГ НЬ БҮҮ ӨӨРЧИЛ. Тэр класс нь desktop-ийн капсул ба
+   хувилбар 1-ийн капсулд ч хэрэглэгддэг — тэнд тинт нэмбэл хоёр газар
+   шалтгаангүй бүдгэрнэ. Тиймээс сонгогч нь dock-ийн атрибуттай ХОСОЛСОН.
+
+   ⚠️ ЗӨВХӨН `background-color`. `.glass-lens`-ийн `background-image` (налуу),
+   `box-shadow` (ирмэг · гүн · сүүдэр), `backdrop-filter` (frost) ГУРВУУЛАА
+   хэвээр ажиллана — тинт нь тэдний АРД суух суурь өнгө.
+
+   ⚠️⚠️ УТГА: 80%. Эхлээд 55% тавьсныг захиалагч ТЭР ДОРОО буцаалгав
+   ("хэтэрхий glass буюу ард тал нь харагдаж байна", 2026-09-15). 80% нь
+   ХУУЧИН `.glass-dock`-ийн утга буюу захиалагчийн Figma спекийн тоо
+   (#FFFFFF · 80%, Tokens: Auto/Light) — 09-14-нд аль хэдийн БАТЛАГДСАН.
+   ⇒ Доошлуулах бол 55% руу БҮҮ буц; тэр нь нэг удаа татгалзагдсан.
+   Тохируулах бол ЭНЭ ХОЁР тоог л сольно (light/dark тусдаа). */
+[data-bottom-tab-bar].glass-lens {
+  background-color: color-mix(in oklab, white 80%, transparent);
+}
+.dark [data-bottom-tab-bar].glass-lens {
+  background-color: color-mix(in oklab, black 80%, transparent);
+}
+
+/* ⚠️⚠️ ОДООГООР ХЭРЭГЛЭГДЭХГҮЙ (2026-09-15). Dock нь `.glass-lens` рүү
+   шилжсэн (захиалагч: "bottom nav буюу dock дээр glass effect-г оруул").
+   Блокийг УСТГААГҮЙ — 09-11-нд бодит утсан дээр тохируулсан утгууд энд
+   хадгалагдана; буцаах бол `mobile-header.tsx > BottomTabBar`-ийн классыг
+   сэргээхэд л хангалттай. */
 .glass-dock {
   /* ⚠️⚠️ ТЕМЭЭС ХАМААРНА (2026-09-14, захиалагч: "dock-г dark болон light
      theme-тэй болгоод"). ӨМНӨ НЬ ХОЁР ТЕМД ИЖИЛ 72% ХАР байсан бөгөөд тэр нь
@@ -1312,29 +1357,32 @@ html[style*="--a11y-content"] span {
    ① `backdrop-filter` дэмжигдэхгүй хөтөч — тунгалаг тинт нь blur-гүйгээр
       зүгээр л "бүдгэрсэн цонх" болж, доорх бичвэр шууд цухуйна. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass-dock {
-    /* ⚠️ `--dock-solid` — light-д #fff, dark-д #000 (`.dark .glass-dock`).
-       Өмнө нь ХАТУУ #000 байсан нь dock тем дагадаггүй үеийнх; light темд
-       тэр нь цагаан хуудсан дээр хар хавтан болж үлдэх байв. */
-    background-color: var(--dock-solid);
+  /* ⚠️ СОНГОГЧ `.glass-dock` → `[data-bottom-tab-bar]` (2026-09-15). Dock нь
+     `.glass-lens` рүү шилжсэн тул класс дээр тулгуурласан буцалт ЧИМЭЭГҮЙ
+     унтарч байв. Атрибут нь хэрэглэж буй шилний классаас ҮЛ ХАМААРНА.
+     `--dock-solid` хувьсагч нь `.glass-dock`-той хамт хүрэхээ больсон тул
+     утгыг нь ил бичив (light #fff · dark #000 — ижил утга). */
+  [data-bottom-tab-bar] {
+    background-color: #fff;
     background-image: none;
   }
-  .glass-dock::after {
-    display: none;
+  .dark [data-bottom-tab-bar] {
+    background-color: #000;
   }
 }
 
 /* ② Хэрэглэгч OS-доо тунгалаг байдлыг бууруулахыг сонгосон (iOS "Reduce
       Transparency", Windows "Transparency effects off"). */
 @media (prefers-reduced-transparency: reduce) {
-  .glass-dock {
-    background-color: var(--dock-solid);
+  /* ⚠️ Сонгогч дээрхтэй ижил шалтгаанаар атрибут болов (2026-09-15). */
+  [data-bottom-tab-bar] {
+    background-color: #fff;
     background-image: none;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  .glass-dock::after {
-    display: none;
+  .dark [data-bottom-tab-bar] {
+    background-color: #000;
   }
 }
 
@@ -1382,4 +1430,45 @@ input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {
   font-size: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ЖИШЭЭ ОРЧУУЛГЫН ФОНТ — CJK хэл рүү сольсон үед (2026-09-15)
+   ═══════════════════════════════════════════════════════════════════════
+
+   Manrope-д хятад · япон · солонгос үсэг БАЙХГҮЙ. Тэдгээр хэл рүү сольсон
+   үед хөтөч системийн дурын фонтоор орлуулж, үсгийн өндөр, жин, зай бүгд
+   зөрнө. Тиймээс `lang`-аар нь фонтын гинжийг сольж өгнө
+   (`lang` нь `lib/locale.ts > syncHtmlLang`-аас тавигдана; хятад нь
+   `zh-Hans` тул `^=` сонгогч).
+
+   ⚠️⚠️ ХОЁР ЗҮЙЛ ЭНД БҮДРҮҮЛСЭН — ДАХИН БҮҮ ОРОЛД:
+
+   ① `--font-sans`-ЫГ ДАРЖ БОЛОХГҮЙ. Файлын эхэнд `@theme inline` дотор
+      `--font-sans: var(--font-manrope)` гэж бичигдсэн ч `inline` горим нь
+      утгыг utility РУУ ШУУД суулгадаг — өөрөөр хэлбэл `.font-sans` нь
+      `font-family: var(--font-manrope)` болж хөрвөх ба `--font-sans` гэсэн
+      хувьсагч runtime-д ОГТ ОРШИХГҮЙ. Түүнийг дарах гэсэн оролдлого
+      чимээгүй унтарна (getComputedStyle дээр хоосон мөр буцаана).
+
+   ② ДАВХАРГЫН ГАДНА байх ЁСТОЙ. `@layer base` дотор бичвэл Tailwind-ийн
+      `utilities` давхарга (тэнд `.font-sans` байрлана) ҮРГЭЛЖ дийлнэ —
+      specificity хэр өндөр байх нь хамаагүй. Давхаргад хамаарахгүй дүрэм
+      нь бүх давхаргаас дээгүүр тул энд л ажиллана.
+
+   ⚠️ `body` дээр тавьсан нь хангалттай: `font-family` удамшдаг ба төсөлд
+   `font-sans` класс ЗӨВХӨН `body` дээр л хэрэглэгддэг (өөр 0 газар).
+
+   ⚠️ ГИНЖНИЙ ДАРААЛАЛ: CJK эхэнд, Manrope ард. Латин үсэг (Unitel, GB)
+   CJK фонтод ч байдаг боловч тэдний латин нь Manrope-ээс өөр өргөнтэй —
+   брэндийн нэр өөр харагдана. Эсрэгээр тавибал монгол кирилл нь CJK
+   фонтын кириллээр гарах эрсдэлтэй тул одоогийн дараалал сонгогдов. */
+html[lang^="ko"] body {
+  font-family: var(--font-noto-kr), var(--font-manrope), sans-serif;
+}
+html[lang^="zh"] body {
+  font-family: var(--font-noto-sc), var(--font-manrope), sans-serif;
+}
+html[lang^="ja"] body {
+  font-family: var(--font-noto-jp), var(--font-manrope), sans-serif;
 }

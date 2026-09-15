@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
+import { Manrope, Noto_Sans_JP, Noto_Sans_KR, Noto_Sans_SC } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AxeProvider } from "@/components/axe-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -8,6 +8,7 @@ import { ChatWidget } from "@/components/chatbot/chat-widget";
 import { AccessibilityProvider } from "@/components/accessibility/accessibility-provider";
 import { AccessibilityPanel } from "@/components/accessibility/accessibility-panel";
 import { AccessibilitySkipLinks } from "@/components/accessibility/accessibility-skip-links";
+import { SampleTranslator } from "@/components/i18n/sample-translator";
 import { BRAND, BRAND_LABEL, BRAND_LOGO } from "@/lib/brand";
 import "./globals.css";
 
@@ -16,6 +17,43 @@ const manrope = Manrope({
   subsets: ["latin"],
   display: "swap",
   weight: ["200", "300", "400", "500", "600", "700", "800"],
+});
+
+/**
+ * CJK ФОНТУУД — ЖИШЭЭ ОРЧУУЛГЫН хэлүүдэд (2026-09-15).
+ *
+ * ⚠️ ЯАГААД ЗААВАЛ ХЭРЭГТЭЙ: Manrope-д хятад · япон · солонгос үсэг
+ * БАЙХГҮЙ. Тэдгээр хэл рүү сольсон үед хөтөч системийн дурын фонтоор
+ * орлуулж, үсгийн өндөр, жин, зай бүгд зөрж загвар алдагдана.
+ *
+ * ⚠️ `subsets` ЗОРИУД ӨГӨӨГҮЙ + `preload: false`. CJK фонт нь латинаас
+ * ЗУУ ДАХИН том (мянга мянган тэмдэгт) — preload хийвэл МОНГОЛ хэл дээр
+ * орж ирсэн хүн ч гурван асар том файл татаж, нүүр хуудас удаашрана.
+ * Ингэснээр хэрэглэгч тухайн хэлийг СОНГОСОН үед л татагдана.
+ *
+ * ⚠️ Жин нь 400/500/700 гурав. Manrope 7 жинтэй ч CJK-д тэр бүгдийг татвал
+ * жин нь дахин гурав дахин нэмэгдэнэ; загварт ашиглагдаж буй гол гурав
+ * хангалттай.
+ */
+const notoKR = Noto_Sans_KR({
+  variable: "--font-noto-kr",
+  display: "swap",
+  preload: false,
+  weight: ["400", "500", "700"],
+});
+
+const notoSC = Noto_Sans_SC({
+  variable: "--font-noto-sc",
+  display: "swap",
+  preload: false,
+  weight: ["400", "500", "700"],
+});
+
+const notoJP = Noto_Sans_JP({
+  variable: "--font-noto-jp",
+  display: "swap",
+  preload: false,
+  weight: ["400", "500", "700"],
 });
 
 /**
@@ -66,7 +104,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="mn" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className={`${manrope.variable} font-sans antialiased`}>
+      <body
+        className={`${manrope.variable} ${notoKR.variable} ${notoSC.variable} ${notoJP.variable} font-sans antialiased`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -76,6 +116,11 @@ export default function RootLayout({
           <AccessibilityProvider>
             <AxeProvider>
               <AuthProvider>
+                {/* ЖИШЭЭ ОРЧУУЛГА — DOM дээрх монгол бичвэрийг сонгосон хэл рүү
+                    сольдог. Юу ч рендерлэхгүй. Яагаад ингэж хийсэн, ямар
+                    хязгаартайг `components/i18n/sample-translator.tsx`-д
+                    бүтнээр нь бичсэн. */}
+                <SampleTranslator />
                 <AccessibilitySkipLinks />
                 <Header />
                 {children}

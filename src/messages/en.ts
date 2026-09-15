@@ -1,0 +1,172 @@
+/**
+ * ЖИШЭЭ ОРЧУУЛГА — АНГЛИ. Түлхүүр нь дэлгэц дээрх МОНГОЛ эх бичвэр
+ * (`messages/index.ts`-ийн тайлбарыг үз).
+ *
+ * ⚠️ Брэндийн нэр (Unitel · Univision · LookTV · Toki · U-Point) ба техникийн
+ * нэгж (GB, 24/7, QR) ОРЧУУЛАГДАХГҮЙ — бүх хэлэнд ижил.
+ */
+export const en: Record<string, string> = {
+  // ── Навигаци · header · footer ─────────────────────────────────
+  "Хувь хэрэглэгч": "Personal",
+  Байгууллага: "Business",
+  Дэлгүүр: "Shop",
+  Урамшуулал: "Offers",
+  Тусламж: "Support",
+  Нүүр: "Home",
+  "Үндсэн цэс": "Main menu",
+  "Үзэгчийн сегмент": "Audience segment",
+  Ангилал: "Categories",
+  "Доод цэс": "Bottom navigation",
+  "Unitel дэд цэс": "Unitel submenu",
+  "— дэд цэс нээх": "— open submenu",
+  "Цэс нээх": "Open menu",
+  "Цэс хаах": "Close menu",
+  Хаах: "Close",
+  Нэвтрэх: "Sign in",
+  "Миний бүртгэл": "My account",
+  Хэл: "Language",
+  "Theme солих — одоо": "Switch theme — currently",
+  "(одоо байгаа домэйн)": "(current site)",
+  Дэлгэрэнгүй: "Learn more",
+
+  // ── AI туслах ─────────────────────────────────────────────────
+  Ухаалаг: "Smart",
+  туслах: "assistant",
+  "Unitel Group-ийн хэмжээнд бүтээгдэхүүн, үйлчилгээний талаар лавлаад":
+    "Ask about products and services across Unitel Group and decide",
+  ХАМТДАА: "TOGETHER",
+  "шийдвэрээ гаргаарай.": "with us.",
+  "Асуултаа бичнэ үү": "Type your question",
+  "Гар утас лизингээр авах": "Buy a phone in instalments",
+  "Шинээр дугаар авъя, надад ямар багц тохирох вэ?": "I want a new number — which plan suits me?",
+  Илгээх: "Send",
+  "Ухаалаг сонголт": "Smart choice",
+
+  // ── Санал болгох багц ─────────────────────────────────────────
+  "Санал болгох багц": "Recommended plans",
+  "Хэрэглээнд тань тохирох дата болон ярианы багцууд.":
+    "Data and voice plans that match how you use your phone.",
+  "Танд санал болгох багц": "Recommended for you",
+  "Бусад багцууд": "Other plans",
+  "Сар бүр": "per month",
+  "Суурь хураамж:": "Monthly fee:",
+  "Санал болгох": "Recommended",
+  "Premium багц": "Premium plan",
+  "Priority багц": "Priority plan",
+  "Plus багц": "Plus plan",
+  "1-р багц": "Plan 1",
+  "2-р багц": "Plan 2",
+  "3-р багц": "Plan 3",
+  "Хэрэглээндээ тохируулан багцаа бүтээх боломж": "Build a plan around your own usage",
+  "Сүлжээндээ хязгааргүй ярих эрх": "Unlimited on-net calls",
+  "8GB-32GB дата эрх": "8GB–32GB of data",
+  "16GB-88GB дата эрх": "16GB–88GB of data",
+  "88GB-200GB дата эрх": "88GB–200GB of data",
+  "Сүлжээний ачаалалтай цагуудад x3 өндөр хурд": "3× faster speeds at peak hours",
+  "Лавлах төвийн хүлээлэггүй үйлчилгээ": "No-wait access to the call centre",
+  "24/7 Юнител, Юнивишн хувийн туслах үйлчилгээ":
+    "24/7 personal assistant for Unitel and Univision",
+
+  // ── Эрэлттэй үйлчилгээ ────────────────────────────────────────
+  "Эрэлттэй байгаа үйлчилгээ": "Popular services",
+  "Дуудлага хадгалах": "Call recording",
+  Идэвхжүүлэх: "Activate",
+  "Аялалаар явах үедээ дуудлага хадгалах үйлчилгээгээ идэвхжүүлэн чухал дуудлага бүрийн мэдээллийг алдалгүй аваарай.":
+    "Turn on call recording before you travel so you never lose the details of an important call.",
+  "Family үйлчилгээ": "Family service",
+  "Гэр бүлийн үйлчилгээ шинэчлэгдэж илүү цогц боллоо Гэр бүлээрээ Family-д нэгдээд олон давуу талыг нэг дороос авах боломжтой.":
+    "Our family service is now more complete. Join Family together and get all the benefits in one place.",
+  "Дуудлага хадгалах — Идэвхжүүлэх": "Call recording — Activate",
+  "Family үйлчилгээ — Идэвхжүүлэх": "Family service — Activate",
+
+  // ── Онцлох урамшуулал ─────────────────────────────────────────
+  "Онцлох урамшуулал": "Featured offers",
+  "Танд зориулсан шинэ урамшуулал, онцлох саналууд.":
+    "New promotions and highlights picked for you.",
+  "Багцаа бүтээ": "Build your plan",
+  "Та хэрэглээндээ тохируулан өөрөө багцаа бүтээх боломжтой боллоо.":
+    "You can now build your own plan around the way you use it.",
+  "Дараа төлбөрт хэрэглэгч болоод суурь хураамжийн хөнгөлөлт, нэмэлт дата аваарай.":
+    "Switch to postpaid and get a discount on your monthly fee plus extra data.",
+  "Санта бол": "Be Santa",
+  "12'900₮-р дансаа цэнэглээд хүрд эргүүлээд олон олон super бэлгийн эзэн болоорой":
+    "Top up with ₮12,900, spin the wheel and win one of many super prizes",
+  "2026.10.01 хүртэл": "Until 01.10.2026",
+  "2026.11.01 хүртэл": "Until 01.11.2026",
+  "2026.12.31 хүртэл": "Until 31.12.2026",
+  "Бүх урамшуулал үзэх": "See all offers",
+  "Багцаа бүтээ — Дэлгэрэнгүй": "Build your plan — Learn more",
+  "Plus багц — Дэлгэрэнгүй": "Plus plan — Learn more",
+  "Санта бол — Дэлгэрэнгүй": "Be Santa — Learn more",
+  "Онцлох санал": "Featured offer",
+  "1-р санал": "Offer 1",
+  "2-р санал": "Offer 2",
+  "3-р санал": "Offer 3",
+  "Өмнөх урамшуулал": "Previous offer",
+  "Дараагийн урамшуулал": "Next offer",
+
+  // ── Бусад үйлчилгээ ───────────────────────────────────────────
+  "Бусад үйлчилгээ": "Other services",
+  "Дата багц": "Data plans",
+  "Гэр интернэт": "Home internet",
+  "Гэр интернет": "Home internet",
+  "Гар утас": "Phones",
+  "Цэнэглэгч карт": "Top-up cards",
+  "Олон улсын үйлчилгээ": "International services",
+  "Нэмэлт дата багц": "Extra data plans",
+  "Нэмэлт үйлчилгээ": "Add-on services",
+
+  // ── Апп татах ─────────────────────────────────────────────────
+  "Бүх үйлчилгээг": "Every service in the",
+  аппаас: "app",
+  "Юнител, Юнивишний төлбөр төлөх, нэгж болон дата авах, бусад үйлчилгээг гар утаснаасаа нэг дороос.":
+    "Pay your Unitel and Univision bills, buy units and data, and manage everything else from your phone.",
+  "QR кодыг уншуулаад апп-аа татаж ашиглаарай": "Scan the QR code to download the app",
+  "App Store-оос татах": "Download on the App Store",
+  "Google Play-оос татах": "Get it on Google Play",
+
+  // ── Footer ────────────────────────────────────────────────────
+  "Монгол орныг дэлхийтэй холбосон үндэсний харилцаа холбооны групп.":
+    "The national telecommunications group connecting Mongolia to the world.",
+  "Харилцаа холбоо": "Connectivity",
+  Платформ: "Platforms",
+  "Дижитал үйлчилгээ": "Digital services",
+  "Тогтвортой хөгжил": "Sustainability",
+  "Хэвлэлийн мэдээ": "Press",
+  "Холбоо барих": "Contact",
+  "Бүх эрх хуулиар хамгаалагдсан.": "All rights reserved.",
+  "Компанийн холбоос": "Company links",
+  "LookTV (шинэ tab-д нээгдэнэ)": "LookTV (opens in a new tab)",
+  "Toki App (шинэ tab-д нээгдэнэ)": "Toki App (opens in a new tab)",
+  "U-Point (шинэ tab-д нээгдэнэ)": "U-Point (opens in a new tab)",
+  "Facebook (шинэ tab-д нээгдэнэ)": "Facebook (opens in a new tab)",
+  "X (шинэ tab-д нээгдэнэ)": "X (opens in a new tab)",
+  "Instagram (шинэ tab-д нээгдэнэ)": "Instagram (opens in a new tab)",
+  "YouTube (шинэ tab-д нээгдэнэ)": "YouTube (opens in a new tab)",
+
+  // ── Хүртээмжийн панел ─────────────────────────────────────────
+  "Хүртээмжийн тохиргоо": "Accessibility settings",
+  "Сонголтыг хийхэд шууд харагдана": "Changes apply immediately",
+  Өнгө: "Colour",
+  "Хар цагаан": "Greyscale",
+  "Өнгөний ялгарал": "High contrast",
+  "Өнгө багасгах": "Low saturation",
+  "Вэбийн өнгө солих": "Change site colours",
+  Сэргээх: "Reset",
+  "Арын дэвсгэр": "Background",
+  Гарчиг: "Headings",
+  Агуулга: "Body text",
+  "Контентийн тохиргоо": "Content settings",
+  Фонт: "Font",
+  Хэмжээ: "Size",
+  "Үгийн зай": "Word spacing",
+  "Үсгийн зай": "Letter spacing",
+  "Холбоос тодруулах": "Highlight links",
+  "Курсор томруулах": "Larger cursor",
+  "Курсорын өнгө": "Cursor colour",
+  "Дэлгэц томруулах": "Screen magnifier",
+  "Текст томруулах": "Larger text",
+  "Зураг нуух": "Hide images",
+  "Keyboard заавар": "Keyboard guide",
+  "Бүх тохиргоог сэргээх": "Reset all settings",
+};

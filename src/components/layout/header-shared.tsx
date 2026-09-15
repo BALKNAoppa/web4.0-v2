@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +42,8 @@ import {
 } from "@/data/navigation";
 import { promotionCards } from "@/data/promotions";
 import { BRAND, BRAND_LABEL, type BrandId } from "@/lib/brand";
+import { LOCALES, LOCALE_LABEL, setLocale, useLocale } from "@/lib/locale";
+import { useT } from "@/lib/t";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
@@ -231,20 +234,115 @@ export function useThemeSwitch() {
 const TOOL_PILL_ICON = "text-muted-foreground size-5 shrink-0";
 
 /**
- * ХЭЛ — дүрс + одоогийн хэлний код.
+ * ХЭЛ — дүрс + одоогийн хэлний код. Дарахад ЯГ ӨӨРИЙНХӨӨ ӨРГӨНТЭЙ багана
+ * доошоо задарна.
  *
- * ОДООГООР ХАРАГДАХ ТАЛ ЛЭ: проектод i18n давхарга байхгүй (`layout.tsx`-д
- * `lang="mn"` тогтмол, бүх data монгол) тул дарахад сольж болох зүйл байхгүй.
- * `<div aria-disabled>` — товч болгож дүр эсгэвэл дарж үзсэн хэрэглэгч
- * "эвдэрсэн" гэж дүгнэнэ. `hover` мөн байхгүй — дарагдахгүй гэдгийг хэлбэр
- * нь өгнө. i18n нэмэгдмэгц энэ pill-ийг MN/EN сонголттой болгоно.
+ * ⚠️⚠️ 2026-09-15-НД АЖИЛЛАГААТАЙ БОЛСОН. Өмнө нь `<div aria-disabled>`
+ * placeholder байв ("i18n давхарга байхгүй тул дарахад сольж болох зүйл
+ * алга"). Одоо ЖИШЭЭ ОРЧУУЛГА нэмэгдсэн — `lib/locale.ts`-ийг үз.
+ *
+ * ⚠️ Энэ нь ЖИНХЭНЭ i18n БИШ: URL хэлээр ялгарахгүй, орчуулга нь DOM дээр
+ * солигддог, толинд байхгүй мөр монголоороо үлдэнэ.
+ *
+ * ⚠️⚠️ ХЭЛБЭРИЙН ТҮҮХ (2026-09-15, бүгд нэг өдөр). Дахин эргэхээс сэргийлж
+ * ЮУ ЯАГААД болсныг бүтнээр нь бичив:
+ *     ① Dropdown, нэр + код ХОЁР БАГАНА       → "тохиромжгүй харагдаж байна"
+ *     ② Хэвтээ сегмент, хөвөгч цэс              → "хэвтээгээр нь"
+ *     ③ Хэвтээ, pill өөрөө хажуу тийш сунана    → "extend хийдэг байдлаар"
+ *     ④ Босоо, pill доошоо сунана (absolute)    → "багана хэлбэрээр"
+ *     ⑤ Босоо, IN-FLOW (доошоо түлхэнэ)         → "дарахгүй, доош түлхэж"
+ *     ⑥ ЭЦСИЙН: Popover (portal) — доошоо задарна, юуг ч ДАРАХГҮЙ, юуг ч
+ *        СУНГАХГҮЙ (захиалагч: "ингэж бүтэн бүү сунга, зөвхөн хэл солидгийг
+ *        л сунга")
+ *
+ * ⚠️ ЯАГААД POPOVER (portal) ЗААВАЛ ХЭРЭГТЭЙ ВЭ: ⑤-д багана нь drawer-ийн
+ * урсгал дотор байсан тул `mobile-header.tsx`-ийн гулсагч (`style={{height:
+ * paneH}}` + `ResizeObserver`) агуулгын өндрийг ДАГАЖ, drawer БҮХЭЛДЭЭ
+ * өндөрсдөг байв. Тэр гулсагч нь мөн `overflow-hidden` тул дотроос нь
+ * `absolute`-аар гаргах ч боломжгүй. Portal нь `document.body` дээр гардаг
+ * учир хоёулангийнх нь гадна үлдэнэ.
+ *
+ * ⚠️ БҮРХҮҮЛ БАЙХГҮЙ. ④-⑤-д нэмсэн `relative` бүрхүүл нь `flex-1`-ийн гинжийг
+ * тасалж, drawer-ийн гурван хэрэгслийн тэнцвэрийг эвдэж байсан (pill 98px →
+ * 48px). Popover-ийн trigger нь `asChild` тул НЭМЭЛТ ЗАНГИЛАА ҮҮСГЭХГҮЙ —
+ * товч нь эцгийнхээ шууд хүүхэд хэвээр үлдэж, дуудагчийн `flex-1` ажиллана.
+ *
+ * ⚠️ `w-[var(--radix-popover-trigger-width)]` — Radix нь trigger-ийн өргөнийг
+ * CSS хувьсагчаар өгдөг. Тиймээс багана нь pill-тэй ЯГ ижил өргөнтэй:
+ * desktop-д ≈70px, drawer-т ≈98px. Тогтмол `w-[…]` бичвэл аль нэгэнд нь
+ * таарахгүй.
  */
 export function LanguagePill({ className }: { className?: string }) {
+  const locale = useLocale();
+  // ⚠️ Динамикаар угсарсан мөр — толь нь бүтэн өгүүлбэрээр түлхүүрлэгддэг тул
+  // DOM орчуулагч үүнийг олохгүй. Тайлбарыг `lib/t.ts`-д үз.
+  const t = useT();
+  // Сонгосны дараа ӨӨРӨӨ хаагдахын тулд удирдлагатай (controlled).
+  const [open, setOpen] = useState(false);
+
   return (
-    <div aria-disabled="true" aria-label="Хэл — одоо MN" className={className}>
-      <Globe className={TOOL_PILL_ICON} aria-hidden="true" />
-      <span className="text-[13px]">MN</span>
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={`${t("Хэл")} — ${LOCALE_LABEL[locale].short}`}
+          className={className}
+        >
+          <Globe className={TOOL_PILL_ICON} aria-hidden="true" />
+          <span className="text-[13px]">{LOCALE_LABEL[locale].short}</span>
+        </button>
+      </PopoverTrigger>
+
+      {/**
+       * ⚠️ `align="start"` + `sideOffset={4}` — pill-ийн ЗҮҮН ирмэгээс эхэлж,
+       * 4px доор. Ингэснээр "энэ товчноос ургалаа" гэдэг нь харагдана.
+       * ⚠️ `collisionPadding` — дэлгэцийн ирмэгт ойртвол Radix өөрөө зөөнө.
+       * ⚠️ Суурь класс дахь `p-4`, `rounded-lg`-ийг ДАРНА: жагсаалтын мөр нь
+       * өөрөө padding-тай тул давхар зай хэрэггүй, радиус нь header-ийн
+       * бусад гадаргуутай (16-28px) эгнэх ёстой.
+       */}
+      <PopoverContent
+        role="radiogroup"
+        aria-label={t("Хэл")}
+        align="start"
+        side="bottom"
+        sideOffset={4}
+        collisionPadding={12}
+        className="flex w-[var(--radix-popover-trigger-width)] flex-col gap-0.5 rounded-2xl p-1 shadow-lg"
+      >
+        {LOCALES.map((id) => {
+          const active = locale === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              // ⚠️ `radio` — нэгийг нь сонгодог БҮЛЭГ гэдгийг дэлгэц уншигчид
+              // хэлнэ. Энгийн товч бол аль нь идэвхтэйг мэдэхгүй.
+              role="radio"
+              aria-checked={active}
+              onClick={() => {
+                setLocale(id);
+                setOpen(false);
+              }}
+              className={cn(
+                "focus-visible:ring-ring min-h-9 shrink-0 rounded-xl px-1.5 text-[13px] whitespace-nowrap",
+                "transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                // ⚠️ Идэвхтэй нь ЭСРЭГ ӨНГӨӨР — `bg-muted` нь панелийн
+                // дэвсгэр дээр бараг үл ялгарна.
+                active
+                  ? "bg-foreground text-background font-semibold"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {/* Нэрийг ТУХАЙН ХЭЛЭЭР нь — япон хэрэглэгч "日本語" гэдгийг
+                  шууд таних тул орчуулга хүлээх шаардлагагүй. Энэ нь Apple,
+                  Google-ийн хэл сонгогчийн стандарт зан. */}
+              {LOCALE_LABEL[id].name}
+            </button>
+          );
+        })}
+      </PopoverContent>
+    </Popover>
   );
 }
 

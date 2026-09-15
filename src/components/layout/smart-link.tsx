@@ -15,7 +15,8 @@ type SmartLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
 
 /**
  * Эко-системийн линк. Эзэн нь энэ сайт бол Next-ийн дотоод шилжилт, өөр брэнд
- * бол нөгөө домэйны бүтэн URL руу шинэ tab-аар.
+ * бол нөгөө сайтын НҮҮР рүү — ЭНЭ ТАБ ДОТРОО (2026-09-15). Зөвхөн жинхэнэ
+ * гадаад URL (http…) л шинэ tab нээнэ — `resolveHref`-ийн `newTab`-ийг үз.
  *
  * ЧУХАЛ: дотоод/гадаад хоёр нь ХАРАГДАЦААРАА ЯЛГАРАХГҮЙ — сум ч, брэндийн нэр
  * ч байхгүй. Хэрэглэгчид ганц нэгдсэн цэс мэт мэдрэгдэх нь концепцийн гол цөм.
@@ -29,8 +30,16 @@ export const SmartLink = forwardRef<HTMLAnchorElement, SmartLinkProps>(function 
   const resolved = resolveHref(href, owner);
 
   if (resolved.external) {
+    // ⚠️ `target` нь ЗӨВХӨН `newTab` үед. Хөндлөн брэнд нь бүтэн хуудас
+    // ачаалалтайгаар ЭНЭ ТАБ ДОТРОО шилжинэ — өөр deployment тул Next-ийн
+    // router-аар явах боломжгүй, `<a>` хэвээр.
     return (
-      <a ref={ref} href={resolved.href} target="_blank" rel="noopener noreferrer" {...rest}>
+      <a
+        ref={ref}
+        href={resolved.href}
+        {...(resolved.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        {...rest}
+      >
         {children}
       </a>
     );

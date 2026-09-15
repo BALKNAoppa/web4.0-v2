@@ -25,8 +25,8 @@ export default function AdminPage() {
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold">Header-ийн хувилбар</h1>
         <p className="text-muted-foreground text-sm">
-          Сонгосон хувилбар нь Unitel болон Univision хоёуланд, нээлттэй байгаа бүх утсан дээр 1-3
-          секундын дотор мөрдөгдөнө.
+          Сонгосон хувилбар нь Unitel болон Univision хоёуланд, нээлттэй байгаа бүх device дээр 1-3
+          секундын дараа шинэчлэгддэг байна.
         </p>
       </div>
 

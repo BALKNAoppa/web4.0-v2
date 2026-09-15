@@ -76,35 +76,81 @@ export const BRAND_LOGO: Record<
  * линк үүсгэж чадахгүй.
  */
 const SITE_URL: Record<BrandId, string> = {
-  unitel: process.env.NEXT_PUBLIC_UNITEL_URL ?? "http://localhost:3000",
-  univision: process.env.NEXT_PUBLIC_UNIVISION_URL ?? "http://localhost:3001",
+  unitel: normalizeSiteUrl(process.env.NEXT_PUBLIC_UNITEL_URL, "http://localhost:3000"),
+  univision: normalizeSiteUrl(process.env.NEXT_PUBLIC_UNIVISION_URL, "http://localhost:3001"),
 };
+
+/**
+ * Хаягийн төгсгөлийн ташуу зураасыг жигдрүүлнэ. Vercel-ийн env-д
+ * `https://univision-web4.vercel.app/` гэж зураастай хуулах нь элбэг —
+ * түүнийг хасахгүй бол `…app//` гэсэн хоёр зураас үүснэ.
+ */
+function normalizeSiteUrl(value: string | undefined, fallback: string): string {
+  return (value?.trim() || fallback).replace(/[/]+$/, "");
+}
+
+/**
+ * Брэндийн sample сайтын үндсэн хаяг (төгсгөлийн "/"-гүй).
+ * Аргументгүй бол ЭНЭ build-ийн брэнд.
+ *
+ * ⚠️ `data/navigation.ts` нь header-ийн ангиллыг ЭНДЭЭС барина — цэсний
+ * мөрүүд нь зам биш, БҮТЭН ХАЯГ агуулна (2026-09-15). Тиймээс Unitel-ийн
+ * sample дээрх "Univision" нь Univision-ы sample руу шууд очно.
+ */
+export function brandSiteUrl(brand: BrandId = BRAND): string {
+  return SITE_URL[brand];
+}
+
+/**
+ * Манай ХОЁР sample-ийн хаяг. `resolveHref` эдгээрийг "гадаад сайт"-аас
+ * ялгаж, ШИНЭ TAB НЭЭХГҮЙ — хоёр sample нь нэг танилцуулгын хоёр тал тул
+ * таб үржүүлэх нь танилцуулгыг эмх замбараагүй болгоно.
+ */
+const OWN_SAMPLE_URLS: ReadonlySet<string> = new Set(Object.values(SITE_URL));
 
 export type ResolvedHref = {
   href: string;
-  /** true бол өөр домэйн — шинэ tab-аар нээнэ */
+  /** true бол Next-ийн router биш, энгийн `<a>` (өөр домэйн) */
   external: boolean;
+  /**
+   * ШИНЭ tab-аар нээх үү.
+   * ⚠️ ХӨНДЛӨН БРЭНД нь FALSE — ЭНЭ ТАБ ДОТРОО шилжинэ (2026-09-15,
+   * захиалагч: "шинэ tab-аар шилжүүлэхгүйгээр тухайн таб дотроо").
+   * ЖИНХЭНЭ гадаад сайт (http…, ж. unitelgroup.mn) л шинэ tab-аар нээгдэнэ.
+   */
+  newTab: boolean;
 };
 
 /**
  * Зам + эзэн → бодит href.
  *   эзэн нь энэ сайт (эсвэл "self") → дотоод зам хэвээр
- *   эзэн нь нөгөө сайт            → бүтэн URL, шинэ tab
- * Гадаад URL (http…) болон "#" placeholder-ыг хөндөхгүй дамжуулна.
+ *   эзэн нь НӨГӨӨ сайт            → тэр сайтын НҮҮР, ЭНЭ ТАБ ДОТРОО
+ *   http… гадаад URL              → хэвээр, ШИНЭ tab
+ *
+ * ⚠️⚠️ ХӨНДЛӨН БРЭНД ҮРГЭЛЖ НҮҮР РҮҮ (2026-09-15, захиалагч: "янз бүрийн
+ * хуудас руу биш, яг Univision-ы sample руу шилжүүлээрэй"). Өмнө нь зам нь
+ * хадгалагдаж `univision-web4.vercel.app/main-packages?plan=triple` гэх мэт
+ * ГҮН хуудас руу үсэрдэг байв. Танилцуулгад нөгөө сайтыг ЭХЛЭЛЭЭС нь үзүүлэх
+ * ёстой тул зам нь ЗОРИУД хаягдана.
+ *
+ * ⚠️⚠️ ДАРААЛАЛ СОЛИГДСОН: хөндлөн брэндийн шалгалт нь `"#"`-ЭЭС ӨМНӨ.
+ * Өмнө нь `"#"` эхэлж таслан буцаадаг байсан тул `{ name: "Univision",
+ * href: "#", owner: "univision" }` гэх мэт цэс (dock, burger) ХААШАА Ч
+ * заадаггүй байв. Одоо ЗАМ БИШ, ЭЗЭН нь шийднэ — тиймээс `href` нь `"#"`
+ * хэвээр байсан ч нөгөө брэнд рүү зөв шилжинэ.
+ * ⇒ Дотоод замуудыг идэвхгүй болгосон `"/#"` дүрэм нь ЭНЭ САЙТЫН
+ *   (`self`/өөрийн брэнд) линкүүдэд хэвээр үйлчилнэ.
  */
 export function resolveHref(path: string, owner: Owner = "self"): ResolvedHref {
-  if (path.startsWith("http")) return { href: path, external: true };
-  /**
-   * ⚠️ `"/#"` НЭМЭГДСЭН (2026-09-09). Нүүрнээс бусад бүх зам ажиллахгүй
-   * болгохын тулд дотоод замуудыг `/#` болгосон. Түүнийг ЭНД таслаагүй бол
-   * `owner`-той мөрүүд (ж. `promo-banner.ts`-ийн Univision-ы CTA) нөгөө
-   * брэндийн build дээр `https://univision.mn/#` болж, ШИНЭ TAB-аар
-   * ХӨНДЛӨН ДОМЭЙН руу үсэрнэ — "юу ч ажиллахгүй" гэсэн зорилгын ЭСРЭГ.
-   *
-   * `"#"` (хуучин placeholder) ба `"/#"` (одоогийн идэвхгүй зам) ХОЁУЛАА
-   * хөндөгдөхгүй дамжина.
-   */
-  if (path === "#" || path === "/#") return { href: path, external: false };
-  if (owner === "self" || owner === BRAND) return { href: path, external: false };
-  return { href: `${SITE_URL[owner]}${path}`, external: true };
+  if (path.startsWith("http")) {
+    // Манай нөгөө sample мөн ЭНЭ ТАБ ДОТРОО; жинхэнэ гадаад сайт (unitel.mn,
+    // unitelgroup.mn …) л шинэ tab нээнэ.
+    const own = OWN_SAMPLE_URLS.has(path.replace(/[/]+$/, ""));
+    return { href: path, external: true, newTab: !own };
+  }
+  if (owner !== "self" && owner !== BRAND) {
+    return { href: SITE_URL[owner], external: true, newTab: false };
+  }
+  if (path === "#" || path === "/#") return { href: path, external: false, newTab: false };
+  return { href: path, external: false, newTab: false };
 }

@@ -407,8 +407,8 @@ function BottomTabBar() {
    * ХАМГИЙН ИХДЭЭ НЭГ таб тодорно. Замтай таарсан таб байвал тэр, эс бөгөөс
    * (жишээ нь нүүр хуудсанд) build-ийн домэйны таб тодорно.
    *
-   * `isCurrentPage` (`aria-current`) нь ХАТУУ: нөгөө домэйны таб шинэ tab-аар
-   * нээгддэг тул "одоогийн хуудас" болж чадахгүй.
+   * `isCurrentPage` (`aria-current`) нь ХАТУУ: нөгөө брэндийн таб нь ӨӨР
+   * сайт руу гардаг тул энэ сайтын "одоогийн хуудас" болж чадахгүй.
    */
   const isInternal = (t: (typeof TABS)[number]) =>
     !t.owner || t.owner === "self" || t.owner === BRAND;
@@ -525,7 +525,30 @@ function BottomTabBar() {
        * a11y-high-contrast-д харин ШАР дээд зураас `globals.css`-ээс орно
        * (тэнд хуудас ч #000 болдог тул зааг үгүй болно).
        */
-      className="glass-dock fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] backdrop-blur-2xl backdrop-brightness-110 backdrop-saturate-200 transition-[opacity,translate] duration-300 ease-out data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
+      /**
+       * ⚠️⚠️ `.glass-dock` → `.glass-lens` (2026-09-15, захиалагч: "bottom
+       * nav буюу dock дээр glass effect-г оруул гэж хэлсэн шүү"). Одоо dock нь
+       * DESKTOP-ИЙН КАПСУЛ ба хувилбар 1-ийн капсултай ЯГ НЭГ эх сурвалжтай —
+       * Figma-гийн "Glass" пресет (`globals.css > .glass-lens`).
+       *
+       * ⚠️⚠️ FROST НЬ TAILWIND-ЭЭС ИРНЭ, `.glass-lens`-ЭЭС БИШ. Эхлээд
+       * `backdrop-*` utility-уудыг "класс дотроо frost-той" гэж хасаж үзсэн
+       * боловч dock тунгалаг хэвээр үлдэв. Шалтгаан нь build-д: Lightning CSS
+       * нь `.glass-lens`-ийн `backdrop-filter`-ийг ЗӨВХӨН `-webkit-`
+       * угтвартайгаар гаргаж, СТАНДАРТ property-г нь орхидог —
+       * `getComputedStyle().backdropFilter` нь `none` болж, blur ОГТ ажиллахгүй.
+       * (Ижил зүйл `.glass-surface` дээр ч тохиолдсон.) Tailwind-ийн
+       * utility нь ӨӨРИЙН var-гинжээр бичдэг тул build-д амьд үлдэнэ.
+       * ⇒ ЭДГЭЭР UTILITY-Г БҮҮ ХАС. Хасвал dock нь зүгээр л тунгалаг тинт
+       *   болж, доогуур гүйх агуулга уншигдахуйц цухуйна.
+       * ⚠️ `backdrop-brightness-110` нь буцаагүй — тэр нь хуучин `.glass-dock`
+       *   -ийн бараан тинтийг цайруулах зориулалттай байсан; `.glass-lens`-д
+       *   гэрлийг налуу нь өөрөө өгнө.
+       *
+       * ⚠️ `.glass-dock` нь CSS-д ХЭВЭЭР үлдсэн (хэрэглэгчгүй) — буцаах бол
+       * энэ мөрний класс ба дээрх гурван utility-г сэргээнэ.
+       */
+      className="glass-lens fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] backdrop-blur-2xl backdrop-saturate-150 transition-[opacity,translate] duration-300 ease-out data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
     >
       {/**
        * ӨНДӨР НЬ FIGMA-ААС ТОГТМОЛ 73px — ӨРГӨН нь одоо дэлгэцийнх.
@@ -591,8 +614,8 @@ function BottomTabBar() {
  * шилжинэ. Дэд цэсэнд burger-ээс хүрнэ.
  *
  * `SmartLink` — AI туслахын CTA-тай ЯГ ИЖИЛ логик (`resolveHref`): нөгөө
- * домэйн бол шинэ tab-аар нээгдэнэ. Дотоод/гадаадыг ХАРАГДАЦААР ялгахгүй —
- * нэгдсэн эко-системийн зарчим.
+ * брэндийн таб бол тэр сайтын НҮҮР рүү, ЭНЭ ТАБ ДОТРОО шилжинэ (2026-09-15).
+ * Дотоод/гадаадыг ХАРАГДАЦААР ялгахгүй — нэгдсэн эко-системийн зарчим.
  *
  * ⚠️ ТОДОТГОЛ НЬ ЭНД БРЭНД НОГООН — бусад бүх давхаргаас ЯЛГААТАЙ.
  * Файлын толгойд "ногоон нь зөвхөн CTA/promo/Chat-д" гэсэн дүрэм бий бөгөөд
@@ -889,6 +912,12 @@ function BrandSubmenuRow() {
      * ⇒ ДООШОО ҮРГЭЛЖИЛНЭ: хуудасны биет (PromoHero → ChatHero) ч мөн
      * `page` тул дэд цэсний зурвас нь агуулгатайгаа ТАСАЛДАЛГҮЙ нийлнэ —
      * загварт ч тэгж харагдана.
+     */
+    /**
+     * ⚠️⚠️ ДЭВСГЭРИЙГ БҮҮ ХАС. 2026-09-15-нд шилний төлөө нэг удаа хассаныг
+     * захиалагч ТЭР ДОРОО буцаалгав: "өчигдөр улаанаар тэмдэглэсэн layer-ийн
+     * background-г цагаан буюу design дээрх шигээр хийе гэсэн нь байхгүй
+     * болсон байна". Энэ мөрний дэвсгэр нь 09-14-нд БАТЛАГДСАН шийдвэр.
      */
     <nav aria-label={`${activeName} дэд цэс`} className={sectionBg.band}>
       {/* MASK нь ГҮЙЛГЭХ БОЛОМЖИЙН ТЭМДЭГ: `no-scrollbar` нь scrollbar-ыг
@@ -1191,11 +1220,13 @@ function BurgerDrawerHeader({
           }
         />
 
-        {/* LAYER 2 — ХУВИЛБАР 1-д л дамжуулагдана (`MobileBrandHeader`).
-            ⚠️ Drawer-ийн ДЭЭР, `<header>`-ийн ДОТОР байрлана. Drawer нь
-            `absolute top-full` тул энэ мөр орсноор панел ӨӨРӨӨ доошоо
-            зөөгдөж, Layer 2-ыг дарахгүй — өндрийг px-ээр хаана ч бичээгүй
-            учраас нэмэлт тохируулга шаардахгүй. */}
+        {/* LAYER 2 — ХУВИЛБАР 2-т л дамжуулагдана (`MobileBrandHeader`).
+            Drawer-ийн ДЭЭР, `<header>`-ийн ДОТОР байрлана. Drawer нь
+            `absolute top-full` тул энэ мөр орсноор панел ӨӨРӨӨ доошоо зөөгдөж,
+            Layer 2-ыг дарахгүй.
+
+            ⚠️ ДЭВСГЭР нь `sectionBg.band` (цагаан) — 09-14-нд БАТЛАГДСАН.
+            `BrandSubmenuRow`-ийн тайлбарыг үз. */}
         {subRow}
 
         {/* DRAWER — `absolute top-full` тул header-ийн доор, хуудсыг ЗӨӨХГҮЙ.
