@@ -5,15 +5,10 @@ import { LogIn, User, X } from "lucide-react";
 
 import { DEMO_ACCOUNTS, type AuthUser } from "@/components/auth/accounts";
 
-/**
- * Нэвтрэх dialog (mock). Аль ч талбарыг бөглөөд "Нэвтрэх" дарвал нэвтэрсэнд
- * тооцно. Жинхэнэ backend холбогдоход `onLogin`-ийг API хариугаар солино.
- */
 export function AuthDialog({
   onClose,
   onLogin,
 }: {
-  /** Яагаад нэвтрэх шаардлагатайг тайлбарлах мессеж (одоогоор UI-д харуулахгүй) */
   reason?: string;
   onClose: () => void;
   onLogin: (user: AuthUser) => void;
@@ -26,8 +21,6 @@ export function AuthDialog({
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const headingId = useId();
 
-  // Escape, focus trap, scroll lock, focus restore (dialog нь нээгдэх үедээ
-  // шинээр mount хийгддэг тул state автоматаар цэвэрхэн эхэлнэ)
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
@@ -81,7 +74,7 @@ export function AuthDialog({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      {/* Backdrop */}
+      {}
       <button
         type="button"
         aria-label="Хаах"
@@ -89,7 +82,7 @@ export function AuthDialog({
         className="animate-in fade-in-0 absolute inset-0 cursor-default bg-black/60 backdrop-blur-sm duration-300 ease-out"
       />
 
-      {/* Контент */}
+      {}
       <div
         ref={dialogRef}
         role="dialog"
@@ -97,7 +90,7 @@ export function AuthDialog({
         aria-labelledby={headingId}
         className="bg-card text-card-foreground animate-in fade-in-0 zoom-in-95 relative z-10 w-full max-w-md rounded-2xl border p-6 shadow-2xl duration-300 ease-out sm:p-8"
       >
-        {/* Хаах товч */}
+        {}
         <button
           type="button"
           onClick={onClose}
@@ -107,7 +100,7 @@ export function AuthDialog({
           <X className="size-5" aria-hidden="true" />
         </button>
 
-        {/* Толгой */}
+        {}
         <div className="flex flex-col items-center text-center">
           <span className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-full">
             <User className="size-6" aria-hidden="true" />
@@ -115,12 +108,11 @@ export function AuthDialog({
           <h2 id={headingId} className="text-foreground mt-4 text-3xl font-bold tracking-tight">
             Нэвтрэх
           </h2>
-          {/* <p className="text-muted-foreground mt-1.5 text-sm">
-            {reason ?? "Univision бүртгэлээрээ нэвтэрнэ үү."}
-          </p> */}
+          {
+}
         </div>
 
-        {/* Форм */}
+        {}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label htmlFor="auth-identifier" className="text-foreground text-sm font-medium">
@@ -174,7 +166,7 @@ export function AuthDialog({
           </button>
         </form>
 
-        {/* Demo хэрэглэгчээр түргэн нэвтрэх — 2 төрлийн account */}
+        {}
         <div className="mt-6">
           <div className="flex items-center gap-3">
             <span className="bg-border h-px flex-1" aria-hidden="true" />

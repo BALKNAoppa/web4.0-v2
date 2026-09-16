@@ -14,26 +14,6 @@ import { audienceSegments, type AudienceSegment, type BrandCard } from "@/data/n
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
-/**
- * Audience switcher — Хувь хэрэглэгч / Байгууллага / Бидний тухай
- *
- * Hover хийхэд тухайн сегментийн брэндүүд тус бүр өөрийн card-аар задарна:
- *   - Хувь хэрэглэгч → Unitel / Univision / LookTV
- *   - Байгууллага    → Unitel Corp / Univision Corp / U-point / Nexmind
- * "Бидний тухай" нь card-гүй, группын сайт руу шууд линк.
- *
- * Хоёр гадаад экспорт:
- *   - AudienceSwitchTabs   → header-ийн Layer 1-д таб маягаар (desktop)
- *   - AudienceSwitchMobile → Sheet дотор accordion маягаар
- *
- * ⚠️ `AudienceSwitchPills` (лого хажууд segmented pill) нь 2026-09-08-нд
- * ХАСАГДСАН. Тэр нь УСТСАН хуучин "Хувилбар 3"-д зориулагдсан байсан бөгөөд
- * түүнээс хойш ХААНААС Ч дуудагдаагүй. Экспортлогдсон байсан тул TypeScript,
- * ESLint хоёулаа "хэрэглэгдээгүй" гэж хэлдэггүй байв — гэхдээ `AudienceSwitch`
- * -ийг уншиж байгаа хүн БАЙХГҮЙ хоёр layout-ыг тооцоолох шаардлагатай болдог.
- * Сэргээх бол git-ээс: `pillClass` + `layout: "tabs" | "pills"` салаа.
- */
-
 function SegmentIcon({ icon, className }: { icon: AudienceSegment["icon"]; className?: string }) {
   const Icon =
     icon === "building"
@@ -48,9 +28,6 @@ function SegmentIcon({ icon, className }: { icon: AudienceSegment["icon"]; class
   return <Icon className={className} aria-hidden="true" />;
 }
 
-// =====================================================================
-// Брэнд cards panel — hover дээр гарах контент
-// =====================================================================
 function BrandCardItem({ brand }: { brand: BrandCard }) {
   return (
     <a
@@ -87,7 +64,7 @@ function BrandCardsPanel({ seg }: { seg: AudienceSegment }) {
         <SegmentIcon icon={seg.icon} className="text-primary size-4" />
         <p className={navType.secondaryLink}>{seg.label}</p>
       </div>
-      {/* Багана = брэндийн тоо → бүх карт нэг эгнээнд жигд (3 эсвэл 4) */}
+      {}
       <div
         className={cn(
           "grid gap-3",
@@ -102,25 +79,6 @@ function BrandCardsPanel({ seg }: { seg: AudienceSegment }) {
   );
 }
 
-/**
- * ДҮРСНИЙ ХЭМЖЭЭ нь `px` БИШ, `em` (2026-09-08).
- *
- * ⚠️ Өмнө нь `size-4` (16px) ба `size-3.5` (14px) гэж ТОГТМОЛ байв. Тиймээс
- * `triggerClassName`-аар текстийн хэмжээг жижигрүүлэхэд ДҮРС нь хэвээр том
- * үлдэж, шошгоо дийлж байв (13px үсэг + 16px дүрс = дүрс нь үсгээсээ 23%
- * том). `em` нь ЭЦГИЙН `font-size`-аас тооцогддог тул одоо ГАНЦ КНОП —
- * текстийн хэмжээ — бүх элементийг зэрэг дагуулна.
- *
- *   0.9em → 15px үсэгт 13.5px (өмнөх 14px), 13px үсэгт 11.7px
- *
- * ⚠️ `SEG_ICON` (1.05em) УСТСАН (2026-09-10, захиалагч: "Desktop дээр header-ийн
- * layer 1-г ийм болгоё" + screenshot). Тэр нь сегмент бүрийн ӨМНӨХ дүрс
- * (👤 Хувь хэрэглэгч · 🏢 Байгууллага · ⓘ Unitel Group) байсныг загвараас
- * ХАСАВ — зурвас нь одоо ЗӨВХӨН бичвэр + гадаад линкийн ↗.
- *
- * `SegmentIcon` компонент ба `icon` дата талбар нь ХЭВЭЭР: мобайлын
- * `AudienceSwitchMobile` тэднийг ашигласаар байна.
- */
 const SEG_AFFIX = "size-[0.9em] shrink-0 opacity-60";
 
 const tabClass = cn(
@@ -128,14 +86,6 @@ const tabClass = cn(
   "text-muted-foreground hover:text-foreground data-[state=open]:text-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-colors",
 );
 
-/**
- * Audience switcher — нэг Popover, hover хийхэд доторх контент л солигдоно.
- * navigation mega-menu-ийн зарчмаар: панелийн өргөн бүх сегментэд ижил, тогтмол
- * (max-w-[1000px], 1200 grid-д багтсан), зөвхөн брэнд cards солигдоно.
- * `align="end"` → панел баруун ирмэгээр, `"start"` → зүүн ирмэгээр grid-д
- * зэрэгцэнэ (хувилбар 1 нь L1-ээ баруунд, хувилбар 2 нь зүүнд байрлуулдаг).
- * "Бидний тухай" нь card-гүй — hover хийхэд нээлттэй panel хаагдаж, шууд линк.
- */
 function AudienceSwitch({
   align,
   hover = true,
@@ -144,17 +94,12 @@ function AudienceSwitch({
   triggerClassName,
 }: {
   align: "start" | "end";
-  /** hover дээр popover нээх эсэх (false бол зөвхөн click) */
   hover?: boolean;
-  /** идэвхтэй (одоо байгаа) сегмент — арын өнгөөр тодотгоно */
   activeId?: AudienceSegment["id"];
-  /** Харуулах сегментүүд (default: audienceSegments) */
   segments?: AudienceSegment[];
-  /** Trigger товч бүрд нэмэх нэмэлт класс (жишээ: текстийн хэмжээ тааруулах) */
   triggerClassName?: string;
 }) {
   const [openId, setOpenId] = useState<AudienceSegment["id"] | null>(null);
-  // Сегмент хооронд шилжих чиглэл — swipe анимэйшнд: "r" = баруунаас, "l" = зүүнээс
   const [dir, setDir] = useState<"l" | "r">("r");
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -170,7 +115,6 @@ function AudienceSwitch({
   };
   const openSeg = (id: AudienceSegment["id"]) => {
     clearTimer();
-    // Шинэ сегмент жагсаалтад баруун талд байвал баруунаас, эс бөгөөс зүүнээс гулсана
     const prevIdx = segments.findIndex((s) => s.id === openId);
     const nextIdx = segments.findIndex((s) => s.id === id);
     if (prevIdx !== -1 && nextIdx !== -1) setDir(nextIdx >= prevIdx ? "r" : "l");
@@ -187,16 +131,7 @@ function AudienceSwitch({
 
   const activeSeg = segments.find((s) => s.id === openId && s.brands?.length) ?? null;
 
-  /**
-   * Идэвхтэй сегментийн ("Хувь хэрэглэгч") тодотгол.
-   *
-   * ⚠️⚠️ САААРАЛ ДЭВСГЭР (`bg-foreground/10`) ХАСАГДАЖ, ЖИН нэмэгдсэн
-   * (2026-09-10, захиалагчийн загварын screenshot). Загварт идэвхтэй мөр нь
-   * ямар ч pill/дэвсгэргүй, зүгээр л ХАР бөгөөд ТОД бичвэр — зурвас
-   * бүхэлдээ хөнгөн болж, доорх шилэн капсултай өрсөлдөхөө болино.
-   */
   const activeCls = "text-foreground! font-semibold";
-  // hover=false үед hover-оор нээх/хаах бүх үйлдэл no-op болно (зөвхөн click)
   const hoverOpen = (id: AudienceSegment["id"]) => {
     if (hover) openSeg(id);
   };
@@ -212,7 +147,7 @@ function AudienceSwitch({
 
   return (
     <Popover open={!!activeSeg} onOpenChange={(o) => !o && closeNow()}>
-      {/* Anchor нь бүтэн nav — align-аар панел grid-ийн ирмэгт зэрэгцэнэ */}
+      {}
       <PopoverAnchor asChild>
         <nav
           aria-label="Үзэгчийн сегмент"
@@ -220,7 +155,6 @@ function AudienceSwitch({
           className="flex items-center gap-1"
         >
           {segments.map((seg) => {
-            // Бидний тухай — card-гүй, группын сайт руу шууд линк
             if (!seg.brands?.length) {
               return (
                 <a
@@ -233,15 +167,11 @@ function AudienceSwitch({
                     tabClass,
                     "group",
                     triggerClassName,
-                    // ⚠️ ИДЭВХТЭЙ КЛАСС нь triggerClassName-ий ДАРАА байх ЁСТОЙ:
-                    // тэр нь `navType.body` (=`font-normal`)-ыг агуулдаг тул
-                    // өмнө нь бичвэл tailwind-merge-ээр `font-semibold` дарагдана.
                     seg.id === activeId && activeCls,
                   )}
                 >
-                  {/* ⚠️ Өмнөх дүрс ХАСАГДСАН (2026-09-10) — `SEG_ICON`-ий
-                      тайлбарыг үз. ↗ нь ХЭВЭЭР: тэр нь чимэглэл БИШ,
-                      "сайтаас гарна" гэсэн мэдээлэл. */}
+                  {
+}
                   <span>{seg.label}</span>
                   <ArrowUpRight className={SEG_AFFIX} aria-hidden="true" />
                 </a>
@@ -261,24 +191,11 @@ function AudienceSwitch({
                   tabClass,
                   "group",
                   triggerClassName,
-                  // ⚠️ Дарааллын тайлбарыг дээрх салаанаас үз.
                   seg.id === activeId && activeCls,
                 )}
               >
-                {/**
-                 * ⚠️⚠️ ӨМНӨХ ДҮРС ба CHEVRON ХОЁУЛАА ХАСАГДСАН (2026-09-10,
-                 * захиалагчийн загварын screenshot: "Хувь хэрэглэгч" нь
-                 * дүрсгүй, сумгүй, зөвхөн ТОД бичвэр).
-                 *
-                 * ⚠️ ЭНЭ МӨР НЬ DROPDOWN-ТОЙ ХЭВЭЭР — `brands` (Unitel ·
-                 * Univision · LookTV …) бүхий Popover нь ажиллаж байгаа,
-                 * зөвхөн ТЭМДЭГ нь алга болсон. Тиймээс хэрэглэгч дарж
-                 * болохыг НҮДЭЭР мэдэхгүй. `hover={false}` тул зөвхөн
-                 * дарлагаар нээгдэнэ ⇒ практикт олдохгүй байх магадлалтай.
-                 * ⇒ Хоёр гарц: (1) chevron-ыг буцаах, (2) энэ мөрийг
-                 *   dropdown-гүй, зүгээр л ИДЭВХТЭЙ ШОШГО болгох.
-                 *   Захиалагчаас лавлана — өөрөө шийдээгүй.
-                 */}
+                {
+}
                 <span>{seg.label}</span>
               </button>
             );
@@ -295,7 +212,7 @@ function AudienceSwitch({
         onMouseLeave={closeSoon}
         className="w-[min(92vw,540px)] overflow-hidden p-5"
       >
-        {/* key — сегмент солигдоход контент дахин mount хийгдэж swipe анимэйшн тоглоно */}
+        {}
         {activeSeg && (
           <div
             key={activeSeg.id}
@@ -312,9 +229,6 @@ function AudienceSwitch({
   );
 }
 
-// Группын сегментүүд — top bar-ын зүүн талд таб маягаар.
-// hover дээр гишүүн брэндийн картууд гарна. segments/activeId-аар өөр
-// жагсаалт (жишээ нь Хувилбар 6-ийн Хувь хэрэглэгч/Байгууллага) дамжуулж болно.
 export function AudienceSwitchTabs({
   segments,
   activeId,
@@ -324,11 +238,8 @@ export function AudienceSwitchTabs({
 }: {
   segments?: AudienceSegment[];
   activeId?: AudienceSegment["id"];
-  /** Hover панелын зэрэгцэл — табууд top bar-ын баруун талд бол "end" */
   align?: "start" | "end";
-  /** false бол hover дээр биш зөвхөн click дээр нээгдэнэ */
   hover?: boolean;
-  /** Trigger товчны нэмэлт класс (текстийн хэмжээ г.м.) */
   triggerClassName?: string;
 } = {}) {
   return (
@@ -342,10 +253,6 @@ export function AudienceSwitchTabs({
   );
 }
 
-// =====================================================================
-// MOBILE — Sheet дотор: сегмент бүр dropdown (accordion) болж задарна.
-// Үндсэн "Бүтээгдэхүүн" nav-аас тусдаа, өөрийн dropdown-тойгоор.
-// =====================================================================
 export function AudienceSwitchMobile({
   onItemClick,
   segments = audienceSegments,
@@ -388,7 +295,6 @@ export function AudienceSwitchMobile({
             </AccordionContent>
           </AccordionItem>
         ) : (
-          // Бидний тухай — brands байхгүй → шууд линк (dropdown-гүй)
           <a
             key={seg.id}
             href={seg.href}

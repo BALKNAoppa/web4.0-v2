@@ -17,7 +17,6 @@ import { type EntryTile, type EntryTileIcon } from "@/data/home";
 import { Reveal } from "@/components/web4/reveal";
 import { cn } from "@/lib/utils";
 
-/** Tile тус бүрийн product дүрс */
 const ICONS: Record<EntryTileIcon, LucideIcon> = {
   wifi: Wifi,
   "monitor-play": MonitorPlay,
@@ -30,7 +29,6 @@ const ICONS: Record<EntryTileIcon, LucideIcon> = {
   router: Router,
 };
 
-/** Дүрсний өнгөт дэвсгэр visual-ийн gradient — tint-ийн өнгөний гэр бүлтэй нийцүүлэв */
 const VISUAL_GRADIENT: Record<EntryTileIcon, string> = {
   wifi: "from-sky-400 via-sky-500 to-blue-600",
   "monitor-play": "from-indigo-400 via-violet-500 to-purple-600",
@@ -43,14 +41,6 @@ const VISUAL_GRADIENT: Record<EntryTileIcon, string> = {
   router: "from-emerald-400 via-emerald-500 to-teal-600",
 };
 
-/**
- * Брэндийн үндсэн үйлчилгээнүүдийн entry point-ууд — Apple-ийн нүүрний шиг том
- * tile: төвд гарчиг + тайлбар + CTA, доор нь брэнд өнгөт дизайн visual
- * (gradient + product дүрс). Бүх карт ИЖИЛ цайвар дэвсгэртэй — өмнөх
- * харанхуй/цайвар ээлжлэлийг болиулсан.
- *
- * `tiles` нь брэндээс хамаарна: `unitelEntryTiles` / `univisionEntryTiles`.
- */
 export function ProductEntryGrid({ tiles }: { tiles: EntryTile[] }) {
   return (
     <section aria-label="Үндсэн үйлчилгээнүүд" className="bg-background py-16 md:py-18">
@@ -74,14 +64,14 @@ export function ProductEntryGrid({ tiles }: { tiles: EntryTile[] }) {
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </span>
 
-                  {/* Брэнд өнгөт дизайн visual — gradient панель + product дүрс */}
+                  {}
                   <div
                     className={cn(
                       "relative mt-8 flex w-full flex-1 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br",
                       VISUAL_GRADIENT[tile.icon],
                     )}
                   >
-                    {/* Гэрлийн зөөлөн толбо */}
+                    {}
                     <div
                       aria-hidden
                       className="absolute -top-8 -left-8 size-32 rounded-full bg-white/25 blur-2xl"
@@ -90,14 +80,14 @@ export function ProductEntryGrid({ tiles }: { tiles: EntryTile[] }) {
                       aria-hidden
                       className="absolute -right-6 -bottom-10 size-36 rounded-full bg-black/15 blur-2xl"
                     />
-                    {/* Төвлөрсөн цагиргууд */}
+                    {}
                     <div aria-hidden className="absolute inset-0 flex items-center justify-center">
                       <div className="size-52 rounded-full border border-white/15" />
                     </div>
                     <div aria-hidden className="absolute inset-0 flex items-center justify-center">
                       <div className="size-36 rounded-full border border-white/20" />
                     </div>
-                    {/* Glass icon disc — hover үед зөөлөн томроно */}
+                    {}
                     <div className="relative flex size-20 items-center justify-center rounded-3xl bg-white/15 ring-1 ring-white/30 backdrop-blur-md transition-transform duration-700 ease-out group-hover:scale-[1.06]">
                       <Icon className="size-10 text-white" strokeWidth={1.6} aria-hidden="true" />
                     </div>

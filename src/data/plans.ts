@@ -1,13 +1,3 @@
-/**
- * Univision Web 4.0 — Багцууд
- *
- * Гурван үндсэн багц: M+, L+, XL+
- * L+ нь "САНАЛ БОЛГОХ" — recommended багц
- *
- * Group бүрд icon-той (lucide-react-аас), доор нь sub-item-уудтай.
- * M+ нь Энтертайнмент group байхгүй (HBO Max байхгүй).
- */
-
 import type { PlanId } from "./main-packages-quiz";
 
 export type PlanFeature = {
@@ -16,7 +6,6 @@ export type PlanFeature = {
 };
 
 export type PlanGroup = {
-  /** lucide-react-ийн icon нэр (string-ээр) */
   icon: "wifi" | "tv" | "play" | "phone";
   title: string;
   features: PlanFeature[];
@@ -25,17 +14,13 @@ export type PlanGroup = {
 export type Plan = {
   id: PlanId;
   name: string;
-  /** Recommended багц мөн эсэх — true бол "САНАЛ БОЛГОХ" badge болон ялгаатай styling */
   recommended?: boolean;
-  /** Сарын суурь хураамж (НӨАТ-тай) */
   price: string;
   groups: PlanGroup[];
-  /** Дэлгэрэнгүй хуудас руу очих URL */
   detailHref: string;
 };
 
 export const plans: Plan[] = [
-  // M+ — Хамгийн жижиг багц
   {
     id: "m-plus",
     name: "M+",
@@ -54,10 +39,6 @@ export const plans: Plan[] = [
         icon: "tv",
         title: "IPTV",
         features: [
-          // ⚠️ "ТВ суваг" МӨР НЭМЭГДСЭН (2026-09-09, захиалагчийн ирүүлсэн
-          // бодит тоо: M+ 80+ · L+ 120+ · XL+ 160+). Өмнө нь сувгийн тоо
-          // ХААНА Ч байхгүй байсан — нүүрний "Танд санал болгох багц"
-          // карт болон `/main-packages` хоёулаа эндээс уншина.
           { label: "ТВ суваг", value: "80+" },
           { label: "Кино эрх", value: "8 BOX-гүй" },
           { label: "Кино багц", value: "Холливуд" },
@@ -71,7 +52,6 @@ export const plans: Plan[] = [
     ],
   },
 
-  // L+ — RECOMMENDED — Хамгийн алдартай
   {
     id: "l-plus",
     name: "L+",
@@ -109,7 +89,6 @@ export const plans: Plan[] = [
     ],
   },
 
-  // XL+ — Премиум багц
   {
     id: "xl-plus",
     name: "XL+",

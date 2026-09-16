@@ -5,12 +5,9 @@ export type CampaignCategory = {
 
 export type CampaignHighlight = {
   id: string;
-  category: string; // CampaignCategory.id
-  /** Top-right badge — brand ногоон өнгөөр харагдана */
+  category: string;
   badge?: string;
-  /** Жинхэнэ зураг бэлэн болтол харагдах placeholder текст */
   placeholderText: string;
-  /** Урамшууллын хүчинтэй хугацаа */
   duration: string;
   title: string;
   ctaText: string;

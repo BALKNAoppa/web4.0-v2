@@ -4,23 +4,6 @@ import * as React from "react"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
-/**
- * ⚠️⚠️ АНИМАЦИЙН VARIANT — `data-[state=open]` / `data-[state=closed]` гэж
- * БҮТЭН бичигдсэн байх ЁСТОЙ (2026-09-08-нд зассан).
- *
- * shadcn-ийн үүсгэсэн эх хувилбарт `data-open:` / `data-closed:` гэсэн
- * ХЯСААСАН хэлбэр байсан. Тэр нь Base UI-ийн атрибутын нэр бөгөөд Tailwind-д
- * ТОДОРХОЙЛОГДООГҮЙ variant — `globals.css`-д `@custom-variant` зөвхөн `dark`
- * л бий. Tailwind танихгүй variant-аас ЯМАР Ч дүрэм үүсгэдэггүй тул
- * `animation-name: none` болж, компонент нь анимацгүй ШУУД ҮСЭРЧ нээгддэг байв.
- *
- * Энэ файл нь radix-ui-д тулгуурладаг (дээрх import) ба radix нь
- * `data-state="open"|"closed"` гаргадаг — тиймээс бүтэн хэлбэр нь зөв.
- *
- * ⚠️ `shadcn add` дахин ажиллуулбал энэ файл ДАРАГДАЖ, хясаасан хэлбэр
- * БУЦАЖ ИРНЭ. Тэр үед `grep -rE "data-(open|closed):" src/components/ui`
- * -ээр шалгаж дахин засна. `src/components/ui` нь `.prettierignore`-д.
- */
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 

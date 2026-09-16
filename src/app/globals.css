@@ -80,20 +80,6 @@
   }
 }
 
-/* ============================================
-   LIGHT MODE — White primary, Black text, Green CTA
-   WCAG 2.2 AA contrast tested
-   ============================================ */
-/* ============================================
-   --header-h — header-ийн өндөр. Нүүрний hero нь "дэлгэц ХАСАХ header" гэсэн
-   зайг яг эзлэхэд хэрэглэнэ (`h-[calc(100svh-var(--header-h))]`).
-
-   ЭДГЭЭР НЬ ЗӨВХӨН FALLBACK — SSR болон hydration хүртэлх агшинд зориулсан.
-   Client дээр `HeaderHeightVar` (ResizeObserver) бодит утгаар дарж бичнэ.
-   Хэмжсэн утга: мобайл 49px (48px мөр + 1px border), desktop 78px.
-   Header-ийн бүтэц өөрчлөгдвөл ЭНД засах шаардлагагүй — зөвхөн эхний
-   frame-ийн нарийвчлалд нөлөөлнө.
-   ============================================ */
 :root {
   --header-h: 49px;
 }
@@ -103,34 +89,17 @@
   }
 }
 
-/* --dock-h — ХУВИЛБАР 2-ын доод dock-ийн ӨНДӨР, НЭГ ЭХ СУРВАЛЖ.
-
-   Хоёр газар хэрэглэгдэнэ: `mobile-header.tsx`-ийн `<ul className="h-[var(--dock-h)]">`
-   ба доорх `body:has(…)`-ийн доод зай. Өмнө нь хоёулаа 73px-ийг ТУСДАА бичдэг
-   байсан тул нэгийг нь сольвол нөгөө нь чимээгүй зөрөх эрсдэлтэй байв.
-
-   ⚠️ `--header-h`-ЭЭС ЯЛГААТАЙ нь: энэ нь ХЭМЖИГДДЭГГҮЙ, ResizeObserver
-   БАЙХГҮЙ. Dock-ийн өндөр нь Figma-гаас тогтмол бөгөөд агуулгаасаа
-   хамаардаггүй (табууд `h-full`) тул хэмжих зүйл байхгүй.
-
-   ⚠️ 73px → 68px (2026-09-14, Figma: H Hug 68px). Задаргаа нь
-   12px (дээд padding) + 44px (агуулга) + 12px (доод padding). Агуулга нь
-   дүрс 24 + зай 8 + шошго 12 = 44 — ЯГ таарна (`mobile-header.tsx`-ийг үз).
-
-   ⚠️ ДЭЭР НЬ `env(safe-area-inset-bottom)` НЭМЭХГҮЙ — доорх тайлбарыг үз. */
 :root {
   --dock-h: 68px;
 }
 
 :root {
-  /* Web 4.0 — Light Mode background & text tokens */
   --background-1: #e2e8ec;
   --background-2: #f3f5f7;
-  --background-3: #f9fafb; /* input background */
-  --text-1: #161616; /* primary text */
-  --text-2: #595959; /* secondary text — WCAG AA 5.5:1 on bg-1 */
+  --background-3: #f9fafb;
+  --text-1: #161616;
+  --text-2: #595959;
 
-  /* shadcn token-уудыг шинэ палет руу холбов */
   --background: var(--background-1);
   --foreground: var(--text-1);
   --card: var(--background-2);
@@ -138,7 +107,6 @@
   --popover: var(--background-2);
   --popover-foreground: var(--text-1);
 
-  /* Primary CTA — ногоон, харин contrast-ын төлөө бараан текст */
   --primary: oklch(0.65 0.21 145);
   --primary-foreground: #161616;
 
@@ -172,9 +140,6 @@
   --color-4: oklch(80.2% 0.134 225);
   --color-5: oklch(90.7% 0.231 133);
 
-  /* chat-hero — минимал theme-aware гэрэлт цагираг (GlowRing).
-     Light theme: брэнд ногоон → cyan → violet, бага alpha (цайвар дэвсгэр дээр
-     харагдахуйц ч гентле). */
   --hero-ring-base: conic-gradient(
     from 0deg,
     rgba(69, 199, 10, 0.12),
@@ -191,26 +156,13 @@
   );
 }
 
-/* ============================================
-   DARK MODE — Black background, White text, Green CTA
-   Slide-тэй яг адил
-   WCAG 2.2 AA contrast tested
-   ============================================ */
 .dark {
-  /* Web 4.0 — Dark Mode background & text tokens */
   --background-1: #10131b;
   --background-2: #1c202d;
   --background-3: #27203e;
   --text-1: #ffffff;
-  /* secondary text — WCAG AA 5.0:1 (bg-3) … 5.8:1 (bg-1).
-     Өмнө нь alpha .6 байсан нь 3.73:1 (bg-3) … 4.11:1 (bg-1) — гурван
-     дэвсгэрийн АЛЬ Ч дээр AA (4.5:1) унадаг байв. Light theme-ийн хос нь
-     (#595959) 5.5:1 гэж бичигдсэн тул харанхуйг ижил босго руу татав.
-     ⚠️ Энэ токеныг `text-muted-foreground` (кодод 150+ газар) уншина —
-     alpha-г бууруулбал тэр бүх газар дахин AA-аас унана. */
   --text-2: rgba(184, 184, 184, 0.75);
 
-  /* shadcn token-уудыг шинэ палет руу холбов */
   --background: var(--background-1);
   --foreground: var(--text-1);
   --card: var(--background-2);
@@ -218,7 +170,6 @@
   --popover: var(--background-2);
   --popover-foreground: var(--text-1);
 
-  /* Primary CTA — тод ногоон хэвээр */
   --primary: oklch(0.78 0.22 145);
   --primary-foreground: #000000;
 
@@ -251,8 +202,6 @@
   --color-4: oklch(80.2% 0.134 225);
   --color-5: oklch(90.7% 0.231 133);
 
-  /* chat-hero — GlowRing (dark theme): хүйтэн цагаан/цэнхэр туяа, бараан
-     дэвсгэр дээр хамгийн гоё (өмнөх дизайны өнгө). */
   --hero-ring-base: conic-gradient(
     from 0deg,
     rgba(150, 190, 255, 0.14),
@@ -286,17 +235,9 @@
 
   body {
     @apply bg-background text-foreground;
-    /* Хажуу тийш гэнэт гарч ирэх (sub-pixel/100vw) horizontal scroll-оос сэргийлнэ.
-       `clip` нь scroll container үүсгэхгүй тул sticky header / fixed panel-уудыг
-       эвдэхгүй (`hidden`-ээс ялгаатай). */
     overflow-x: clip;
   }
 
-  /* ⚠️ ХЯТАД · ЯПОН хэлэнд ҮГИЙН ЗАЙ БАЙХГҮЙ тул хөтөч мөрийг ХААНА Ч
-     таслаж болно. Цэг таслал мөрийн эхэнд ганцаараа үлдэхээс сэргийлж
-     `line-break: strict` хэрэглэнэ (солонгос нь зайтай тул хамаарахгүй).
-     ⚠️ Фонтын дүрэм ЭНД БИШ — файлын ТӨГСГӨЛД, давхаргын гадна (шалтгааныг
-     тэнд бичсэн). */
   html[lang^="zh"] body,
   html[lang^="ja"] body {
     line-break: strict;
@@ -306,20 +247,8 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
-    /* ⚠️ ДЭВСГЭР НЬ `body`-с ГАДНА ЭНД БАС ТАВИГДСАН (2026-09-07).
-       Өмнө нь зөвхөн `body` өнгөтэй байсан. CSS-ийн дүрмээр body-гийн
-       дэвсгэр canvas руу дамждаг ч тэр дамжуулалт нь overscroll (iOS-ийн
-       rubber-band) ба safe-area зэрэг зах хэсгүүдэд НАЙДВАРГҮЙ: root нь
-       тунгалаг байхад хөтөч тэр талбайг `color-scheme`-ийн анхдагчаар
-       (dark үед бараг ХАР) буудаг. Root-д шууд тавихад тэр эрсдэл арилна.
-       `theme-color` meta-тай ХАМТ ажиллана — layout.tsx-ийн тайлбарыг үз. */
     background-color: var(--background);
   }
-
-  /* Section snap-ыг CSS-ээр бус section-snap-scroller.tsx (JS) удирдана:
-     CSS proximity нь босгоо браузераас авдаг тул тогтворгүй, mandatory нь
-     хэт түрэмгий байсан. JS хувилбар нь зөвхөн scroll зогссон үед,
-     тохируулсан радиус дотор л зөөлөн тааруулна. */
 
   *:focus-visible {
     outline: 2px solid var(--ring);
@@ -348,7 +277,6 @@
   }
 }
 
-/* TrustOrbit — icon-уудыг төв rond эргүүлэх анимаци */
 @keyframes orbit-spin {
   from {
     transform: rotate(0deg);
@@ -358,7 +286,6 @@
   }
 }
 
-/* TrustOrbit hub-аас цацрах radio дольгионы эффект — full screen хүрнэ */
 @keyframes hub-pulse {
   0% {
     transform: scale(1);
@@ -370,7 +297,6 @@
   }
 }
 
-/* Chat — bubble нэмэгдэх үед доороос дээш гулсаж гарах */
 @keyframes chat-msg-in {
   from {
     opacity: 0;
@@ -385,7 +311,6 @@
   animation: chat-msg-in 220ms ease-out both;
 }
 
-/* Chat — typing indicator-ийн цэгүүд */
 @keyframes chat-typing-dot {
   0%,
   60%,
@@ -402,7 +327,6 @@
   animation: chat-typing-dot 1.2s ease-in-out infinite;
 }
 
-/* Univision GO app — phone card-ын зөөлөн дээш доош float анимаци */
 @keyframes float-card {
   0%,
   100% {
@@ -417,25 +341,6 @@
   will-change: transform;
 }
 
-/* ============================================
-   NEON — оролтыг ТОЙРЧ эргэлдэх өнгөт хүрээ / гэрэл
-   ============================================
-   ⚠️ ӨМНӨ НЬ ХӨНДЛӨН ГҮЙДЭГ БАЙВ: `linear-gradient(90deg,…)`-ийн
-   `background-position`-ыг 0→200% болгодог байсан тул өнгө нь зүүнээс
-   баруун тийш ГУЛСДАГ — хүрээг тойрч эргэлдэх БИШ.
-
-   Одоо `conic-gradient` бөгөөд түүний ЭХЛЭХ ӨНЦГИЙГ 0→360° эргүүлнэ.
-   Ингэснээр өнгө нь дөрвөн ирмэгийг дараалан тойрно.
-
-   ⚠️ `@property` ЗААВАЛ. Ердийн custom property нь `<angle>` төрлөө
-   мэдэхгүй тул хөдөлгөөнт утга болж чаддаггүй — тэр үед анимаци
-   0deg дээр гацна. `@property` нь төрлийг зарласнаар браузер утгыг
-   интерполяци хийх боломжтой болгоно.
-   Дэмжлэг: Chromium 85+, Safari 16.4+, Firefox 128+. Дэмжихгүй хуучин
-   хөтөч дээр градиент нь ХӨДӨЛГӨӨНГҮЙ харагдана (эвдрэхгүй).
-
-   ⚠️ `background-size` ХЭРЭГГҮЙ болсон — conic нь хайрцгийн төвөөс
-   тархдаг тул давтагдах хэрэгцээгүй. */
 @property --neon-angle {
   syntax: "<angle>";
   initial-value: 0deg;
@@ -450,24 +355,6 @@
   animation: neon-spin 5s linear infinite;
 }
 
-/* =====================================================================
-   SPARKLES TEXT — оч (MagicUI, 2026-09-10)
-   =====================================================================
-   Захиалагч: "morph нь хэтэрхий common effect байна … MagicUI-ийн энэ
-   component-оор хийе" (sparkles-text).
-
-   ⚠️⚠️ ЯАГААД CSS, `motion` САН БИШ ВЭ: MagicUI-ийн эх файл нь
-   `motion/react`-ийн `<motion.svg animate={{opacity:[0,1,0], scale:[0,s,0],
-   rotate:[75,120,150]}} transition={{duration:0.8, repeat:Infinity, delay}}/>`
-   -г хэрэглэдэг. Тэр нь ~60KB (gz) шинэ хамаарал — НЭГ цэсний шошгоны
-   чимэглэлд хэт өндөр үнэ. Массив бүхий `animate` нь 0%/50%/100% гэсэн
-   keyframe-тэй ЯГ ижил утгатай тул доорх дүрэм нь ижил хөдөлгөөнийг
-   хамааралгүйгээр өгнө. Проектын бусад бүх анимаци ч ингэж хийгдсэн.
-
-   ⚠️ ХУГАЦАА, ӨНЦӨГ, ДАРААЛАЛ нь эх хувилбараас ЗӨРӨӨГҮЙ:
-   0.8s · linear · infinite · opacity 0→1→0 · scale 0→N→0 · rotate 75→120→150.
-   Оч тус бүрийн ХЭМЖЭЭ (`--sparkle-scale`) ба ХОЦРОЛТ нь санамсаргүй тул
-   inline `style`-аар ирнэ (`sparkles-text.tsx`). */
 @keyframes sparkle-pop {
   0% {
     opacity: 0;
@@ -483,9 +370,6 @@
   }
 }
 
-/* ⚠️ Хөдөлгөөн багасгах сонголтыг ЭНД ч хамгаалав. `sparkles-text.tsx` нь
-   JS талаас оч ОГТ үүсгэхгүй болгодог — энэ нь хоёр дахь хаалт: хэрэглэгч
-   тохиргоогоо ЯВЦ ДУНД сольвол аль хэдийн зурагдсан оч зогсоно. */
 @media (prefers-reduced-motion: reduce) {
   [data-sparkle] {
     animation: none !important;
@@ -493,17 +377,6 @@
   }
 }
 
-/* ⚠️ GLITCH БЛОК УСТСАН (2026-09-09, захиалагч: "LookTV-ийн glitch effect-г
-   хасаад MagicUI-ийн morphing-text component-г ашиглаад уурчилдуг болго").
-   Устсан нь: `@keyframes glitch-rgb`, `@keyframes glitch-swap`,
-   `.glitch-text`, `.glitch-text::before` ба тэдний reduced-motion хамгаалалт
-   — БҮГД ~100 мөр. Хоёр бичвэр ("LookTV" / "Илүүг Үз") нь одоо
-   `header-shared.tsx > LOOKTV_MORPH_TEXTS`-д, хөдөлгөөн нь
-   `components/ui/morphing-text.tsx`-д. Reduced-motion хамгаалалт ч тэнд
-   (JS-ээр: мөчлөг огт асахгүй). */
-
-/* Aurora — хязгааргүй хөвөгч өнгөт манан (chat-hero background). Толбо бүр өөр
-   замаар удаан хөвж, уусна. */
 @keyframes aurora-a {
   0%,
   100% {
@@ -544,7 +417,6 @@
   will-change: transform;
 }
 
-/* Glow ring — input-ийн ард эргэлддэг гэрэлт цагираг (eclipse маягийн, chat-hero) */
 @keyframes ring-spin {
   to {
     transform: rotate(360deg);
@@ -559,7 +431,6 @@
   will-change: transform;
 }
 
-/* Iridescent bubble (chat-hero) — зөөлөн хөвөх + дотоод солонгон эргэлт */
 @keyframes bubble-float {
   0%,
   100% {
@@ -587,9 +458,6 @@
   will-change: transform;
 }
 
-/* ============================================
-   Web 4.0 концепцийн bubble deck (/web4)
-   ============================================ */
 @keyframes web4-drift {
   0% {
     transform: translate(0, 0) rotate(0deg);
@@ -627,9 +495,6 @@
   }
 }
 
-/* ============================================
-   Web4 SCROLL presentation — reveal-on-scroll
-   ============================================ */
 .w4-reveal {
   opacity: 0;
   transform: translateY(34px);
@@ -671,67 +536,12 @@
   }
 }
 
-/* ============================================
-   ХУВИЛБАР 2 — доод sticky navigation-ы зай
-
-   Bar нь `fixed` тул хуудасны доод хэсгийг (footer, copyright) ДАРНА.
-   `body:has(…)` — bar рендерлэгдсэн үед л зай гаргана, өөрөөр хэлбэл
-   хувилбар 1 дээр илүү зай гарахгүй.
-
-   ХЭМЖЭЭ: `var(--dock-h)` (73px) + 8px нөөц. Өндөр нь `mobile-header.tsx`-тэй
-   НЭГ хувьсагчаас гардаг тул хоёр тал зөрөх боломжгүй.
-
-   ⚠️⚠️ `env(safe-area-inset-bottom)` ХАСАГДСАН (2026-09-11, захиалагч: "доороос
-   нь safe zone зай авч байна, түүнийг алич"). ХОЁР шалтгаан:
-
-   1. ЭНЭ ТӨСӨЛД ТЭР УТГА ҮРГЭЛЖ 0. `env(safe-area-inset-*)` нь ЗӨВХӨН
-      `viewport-fit=cover` үед 0-ээс өөр утга буцаадаг бөгөөд `app/layout.tsx`
-      -ийн `export const viewport` нь түүнийг ТАВЬДАГГҮЙ. Өөрөөр хэлбэл тэр
-      нэмэлт нь "аюулгүй бүс"-ийг нөхөж БАЙГААГҮЙ, зөвхөн уншигчийг төөрөгдүүлж
-      байсан (хөвөгч капсулын үеэс өвлөгдсөн үлдэгдэл).
-
-   2. Хөтөч өөрөө layout viewport-оос home indicator болон доод хэрэгслийн
-      мөрийг АЛЬ ХЭДИЙН хассан байдаг тул `fixed bottom-0` нь тэдгээрийн ДЭЭР
-      суудаг. Дээр нь env() нэмэх нь тэр зайг ХОЁР ДАХИН тоолно.
-
-   ⚠️ 4rem → 4.75rem → 81px+32px → 81px+env(…) → `calc(var(--dock-h) + 8px)`
-   гэж ДӨРВӨН УДАА ӨӨРЧЛӨГДСӨН. Зайг буруу тоолбол footer-ийн сүүлийн мөр
-   dock-ийн ДООР орно (бага) эсвэл хоосон зурвас үлдэнэ (их).
-
-   Медиа query нь Tailwind-ийн `lg` (1024px)-тай тааруулсан: bar нь
-   `lg:hidden` тул desktop дээр зай гаргах шаардлагагүй.
-
-   ⚠️ 2026-08-24-нд устсан хувилбар 3-ын дүрмээс СЭРГЭСЭН. Тэр үеийн
-   `[data-chat-fab]` / `[data-chat-teaser]`-ыг нуудаг хэсэг нь БУЦААГҮЙ:
-   chat нь одоо доод bar-ын таб БИШ, зүүн ирмэгийн босоо таб
-   (`chat-widget.tsx` → `fixed left-0`) тул bar-тай давхцахгүй.
-   ============================================ */
 @media (max-width: 1023px) {
   body:has([data-bottom-tab-bar]) {
     padding-bottom: calc(var(--dock-h) + 8px);
   }
 }
 
-/* Доод dock нь бараан — theme токен биш, загварын дагуу ХҮРЭЭГҮЙ.
-   High-contrast режимд хуудас ч #000 болдог тул dock суурьтайгаа БҮРЭН нийлж,
-   `shadow`-оос өөр зааг үлдэхгүй. Тиймээс энд шар зураасаар харагдахуйц
-   салгана (`--primary`-аар дүрс/шошго нь өөрөө шар болсон байдаг).
-
-   ⚠️ ЭНЭ НЬ `.glass-dock`-ИЙН ГУРАВ ДАХЬ БУЦАЛТ ч мөн юм (нөгөө хоёрыг
-   файлын төгсгөлд `@supports` ба `prefers-reduced-transparency`-д бичсэн).
-   High-contrast нь ялгааг ДЭЭД ЗЭРЭГТ шаарддаг горим — тунгалаг гадаргуугаар
-   доорх агуулга цухуйх нь түүний эсрэг. Тиймээс шилийг БҮРЭН унтрааж хатуу
-   хар руу буцаана.
-
-   ⚠️ СОНГОГЧ `> ul` → ПАНЕЛ ӨӨРӨӨ (2026-09-11). Dock бүтэн өргөн болоход
-   дэвсгэр ба сүүдэр нь `<ul>`-ээс `<nav>` рүү зөөгдсөн тул хуучин сонгогч
-   `box-shadow`-ыг дарахаа больсон байв.
-
-   ⚠️ `outline` → `border-top`. Бүтэн өргөн dock-ийн зүүн/баруун/доод ирмэг нь
-   дэлгэцийн ирмэгтэй давхцдаг тул тойрсон outline-ы гурван тал нь ХАРАГДАХГҮЙ
-   (эсвэл хагас таслагдана) — зөвхөн ДЭЭД зураас л мэдээлэл өгнө.
-   `border` хэрэглэсэн нь `ring` БИШ: ring нь Tailwind-ийн box-shadow дээр
-   тулгуурладаг тул доорх `box-shadow: none`-той зөрчилдөнө. */
 html.a11y-high-contrast [data-bottom-tab-bar] {
   background-color: #000 !important;
   background-image: none !important;
@@ -744,7 +554,6 @@ html.a11y-high-contrast [data-bottom-tab-bar]::after {
   display: none;
 }
 
-/* Web4 deck — scrollbar-г нуух (scroll ажиллах хэвээр, зөвхөн зураас нь харагдахгүй) */
 .no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -755,17 +564,11 @@ html.a11y-high-contrast [data-bottom-tab-bar]::after {
   display: none;
 }
 
-/* ============================================
-   Custom scrollbar — Univision brand gradient
-   Chromium, Firefox-д ажиллана (Firefox solid fallback)
-   ============================================ */
-/* Firefox — gradient дэмжихгүй тул solid brand green */
 * {
   scrollbar-width: thin;
   scrollbar-color: #0faa0a transparent;
 }
 
-/* Chromium / Safari */
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -776,7 +579,6 @@ html.a11y-high-contrast [data-bottom-tab-bar]::after {
 }
 
 *::-webkit-scrollbar-thumb {
-  /* Тод олон өнгийн gradient — цайвар lime → brand ногоон → teal → цэнхэр */
   background: linear-gradient(180deg, #a3e635 0%, #0faa0a 40%, #0d9488 75%, #2563eb 100%);
   border-radius: 9999px;
   border: 2px solid var(--background);
@@ -793,14 +595,12 @@ html.a11y-high-contrast [data-bottom-tab-bar]::after {
   background: transparent;
 }
 
-/* Scrollbar-ын дээд/доод сум товчнуудыг бүх scroll container дээр нуух */
 *::-webkit-scrollbar-button {
   display: none;
   height: 0;
   width: 0;
 }
 
-/* Chat messages-ийн scrollbar — нимгэн, төв ойртсон, smooth transition */
 .chat-scroll {
   scroll-behavior: smooth;
   scrollbar-width: thin;
@@ -828,15 +628,10 @@ html.a11y-high-contrast [data-bottom-tab-bar]::after {
   width: 0;
 }
 
-/* Skip link зориулагдсан style */
 .skip-link {
   @apply bg-primary text-primary-foreground absolute top-4 left-4 z-50 -translate-y-20 rounded-md px-4 py-2 transition-transform focus:translate-y-0;
 }
 
-/* ============================================
-   Accessibility (Хүртээмж) — runtime classes/vars
-   applied to <html> by AccessibilityProvider
-   ============================================ */
 :root {
   --a11y-font-scale: 1;
   --a11y-word-spacing: 0px;
@@ -959,27 +754,6 @@ html[style*="--a11y-content"] span {
   color: var(--a11y-content) !important;
 }
 
-/* =====================================================================
-   LIQUID GLASS — ТУРШИЛТ (2026-09-03), ЗӨВХӨН `/assistant`
-   =====================================================================
-   `ChatHero` нь `mode="page"` үед л section-д `data-glass` тавьдаг тул доорх
-   дүрмүүд нүүр хуудсанд ХЭРЭГЛЭГДЭХГҮЙ.
-
-   ⚠️ Энэ нь dashersw/liquid-glass-js-ийн WebGL хувилбар БИШ. Тэр сан нь
-   (1) npm дээр БАЙХГҮЙ — файлыг repo-д хуулж тавих шаардлагатай,
-   (2) html2canvas-аар дэвсгэрийн ЗУРАГ авч WebGL2-оор гажуудуулдаг тул
-       бичих анимаци, картын хэвтээ гүйлт үед snapshot нь хоцордог,
-   (3) `new Container()`-аар ӨӨРИЙН DOM үүсгэдэг, React wrapper нь алга.
-   Тиймээс ижил харагдацыг CSS-ээр гаргав: SSR-т ажиллана, картын тоо
-   хамаагүй, snapshot алга.
-
-   ГУРВАН ДАВХАРГА:
-     ① `.glass-glow`     — дэвсгэрийн зөөлөн ногоон гэрэлтүүлэг. Шил нь
-        ЯМАР Ч БАЙСАН доорхыгоо шүүж харуулдаг тул хавтгай бараан дэвсгэр
-        дээр эффект нь ҮЛ МЭДЭГДЭНЭ. Хүчийг нь `26%`/`18%` тоогоор тохируулна.
-     ② `backdrop-filter` — blur + saturate (шил), Chromium дээр нэмээд
-        `url(#glass-warp)` гажуудал.
-     ③ ирмэгийн гэрэл/сүүдэр ба налуу тусгал — шилний ЗУЗААН. */
 .glass-glow {
   position: absolute;
   inset: 0;
@@ -1000,8 +774,6 @@ html[style*="--a11y-content"] span {
 }
 
 [data-glass] .glass-surface {
-  /* 42% — доорх гэрэлтүүлэг, тор ХАРАГДАХ ёстой. 60%-аас дээш бол шил биш
-     хатуу карт болно, 30%-аас доош бол бичвэр уншихад хүндэрнэ. */
   background-color: color-mix(in oklab, var(--card) 42%, transparent);
   backdrop-filter: blur(12px) saturate(200%);
   -webkit-backdrop-filter: blur(12px) saturate(200%);
@@ -1013,8 +785,6 @@ html[style*="--a11y-content"] span {
     0 14px 36px -20px rgb(0 0 0 / 0.6);
 }
 
-/* ТУСГАЛ — налуу гэрэл. `::after` нь агуулгын ДЭЭР суудаг тул альфа нь МАШ
-   бага: бичвэрийг угаахгүй, зөвхөн ирмэг дээр мэдэгдэнэ. */
 [data-glass] .glass-surface::after {
   content: "";
   position: absolute;
@@ -1030,98 +800,22 @@ html[style*="--a11y-content"] span {
   );
 }
 
-/* ГАЖУУДАЛ — liquid-glass-js-ийн refraction-той хамгийн ойр хэсэг.
-   `feDisplacementMap` нь ДЭВСГЭРИЙГ долгиолуулна (филтерийг `chat-hero.tsx`
-   рендерлэдэг). Chromium дэмждэг; Safari/Firefox дээр энэ блок биелэхгүй тул
-   ② давхарга нь blur-аараа хэвээр ажиллана. */
 @supports (backdrop-filter: url(#glass-warp)) {
   [data-glass] .glass-surface {
     backdrop-filter: url(#glass-warp) blur(12px) saturate(200%);
   }
 }
 
-/* ⚠️ `.glass-capsule` УСТСАН (2026-09-15). 09-10-нд хийгдсэн, ДЭЭРЭЭС нь
-   гэрэлтдэг (180deg) шилэн капсул байв; desktop-ийн header ба мобайлын
-   капсул ХОЁУЛАА хэрэглэдэг байсан. Захиалагч хоёуланг нь доорх
-   `.glass-lens` (Figma-гийн "Glass" пресет) руу шилжүүлснээр ХААНА Ч
-   хэрэглэгдэхээ больсон тул хассан. Сэргээх бол git түүхээс. */
-
-/* =====================================================================
-   .glass-lens — FIGMA-ИЙН "Glass" ПРЕСЕТ (2026-09-15)
-   =====================================================================
-   Захиалагчийн Figma панелийн ЯГ ТЭР зургаан утга:
-
-     Light        −45° · 80%
-     Refraction   80
-     Depth        20
-     Dispersion   50
-     Frost        4
-     Splay        0
-
-   ХЭРЭГЛЭГЧ (2026-09-15-ны байдлаар ХОЁУЛАА):
-     · desktop-ийн header капсул        (`header.tsx > LogoLeftHeader`)
-     · мобайлын ХУВИЛБАР 1-ийн капсул   (`mobile-header.tsx > CapsuleRow`)
-   Эхлээд зөвхөн desktop дээр тавьж, хувилбар 1-ийг "хөндөхгүй жишиг" гэж
-   үлдээсэн боловч захиалагч тэр өдрөө "mobile хувилбар 1 дээр header
-   container дээр энэ style-г ашигла" гэсэн тул хоёулаа руу нэгдэв.
-   ⇒ Хуучин `.glass-capsule` нь хэрэглэгчгүй үлдэж УСТСАН (дээрх мөрийг үз).
-
-   ⚠️ КЛАСС нь БИЕ ДААСАН: blur-аа өөртөө агуулсан тул хаана ч
-   `class="glass-lens"` гэж тавихад бүтэн эффект очно, нэмэлт Tailwind
-   класс шаардахгүй ("тэр style-г хадгалаад үлдээ, өөр газар ашиглаж
-   магадгүй" — захиалагч).
-
-   ⚠️ ЗУРГААН УТГА нь ХУВЬСАГЧААР дээд талд бичигдсэн. Figma дээр слайдер
-   хөдөлбөл ЗӨВХӨН тэр тоог сольно — доорх `background`/`box-shadow` мөрүүд
-   өөрсдөө дагана. `.dark` нь ЗӨВХӨН УТГЫГ дарж бичнэ, БҮТЦИЙГ биш.
-
-   CSS-ИЙН ХЯЗГААР — аль нь ЯГ, аль нь ОЙРОЛЦОО вэ:
-     Frost      → `backdrop-filter: blur()`  ЯГ ✓
-     Splay      → сүүдрийн spread            ЯГ ✓
-     Light      → градиентийн өнцөг + альфа  ЯГ ✓
-     Depth      → дотоод сүүдрийн гүн        ойролцоо
-     Refraction → ирний ГЭРЭЛ/СҮҮДЭР. Жинхэнэ хугарал (ард байгаа зургийг
-       гажуудуулах) нь зөвхөн SVG `feDisplacementMap`-ээр боломжтой бөгөөд
-       тэр нь Chromium дээр л ажилладаг (энэ файлын `#glass-warp` блокийг
-       үз). Энд ирний тусгалын ХҮЧЭЭР дүрслэв.
-     Dispersion → ирмэг дэх ӨНГӨНИЙ ХУГАРАЛ: гэрлийн талд ХҮЙТЭН (cyan),
-       эсрэг талд нь ДУЛААН (magenta) 1px зурвас. Бодит призм биш ч нүдэнд
-       ижил дохио өгнө.
-
-   ⚠️⚠️ FROST НЬ DESKTOP HEADER ДЭЭР ОДООГООР ҮЗЭГДЭХГҮЙ. `<header>` нь
-   `relative` (2026-09-10-ны захиалагчийн шийдвэр) тул капсулын АРД юу ч
-   гүйдэггүй — `backdrop-filter` нь бүдгэрүүлэх зүйлгүй. Энэ нь АЛДАА БИШ:
-   шилийг харагдуулж байгаа зүйл нь градиент ба ирмэгүүд. Blur-ыг
-   ажиллуулах дөрвөн нөхцөлийг `header.tsx > LogoLeftHeader`-ийн
-   `<header>`-ийн тайлбараас үз. Гүйдэг агуулгын ДЭЭР (ж: `fixed` панел)
-   энэ классыг тавибал Frost тэр дороо ажиллана. */
 .glass-lens {
-  /* ── FIGMA-ИЙН ЗУРГААН УТГА ──────────────────────────────────────── */
-  /* Light −45° ⇒ гэрэл ЗҮҮН ДЭЭД булангаас (CSS-ийн 135deg нь зүүн дээрээс
-     баруун доош чиглэнэ). */
   --glass-angle: 135deg;
   --glass-light: 80%;
-  /* Refraction 80 — гэрлийн талын ир ТОД, эсрэг тал нь сулхан. */
   --glass-rim: 95%;
   --glass-rim-far: 45%;
-  /* Depth 20 — материалын зузаан (дотоод сүүдрийн хар альфа). */
   --glass-depth: 0.1;
-  /* ⚠️⚠️ DISPERSION 50 — CSS-ЭЭР ХЭРЭГЖҮҮЛЭХЭЭ БОЛЬСОН (2026-09-15).
-     Эхлээд ирмэг дээр хүйтэн (cyan) / дулаан (magenta) 1px зурвасаар
-     дүрсэлж үзсэн боловч захиалагч: "дээд хэсгээрээ ногоон цэнхэр, доод
-     хэсгээрээ улаан ягаан юм шиг AI assistant-ын border шиг border
-     харагдаад байна, тэрийг хас". Жинхэнэ дисперс нь ШИЛЭН ДУНДУУР өнгө
-     задлах ёстой; box-shadow нь зөвхөн ИРМЭГТ л зурдаг тул үр дүн нь
-     градиент ХҮРЭЭ мэт уншигдана — өөр бүрэлдэхүүнтэй (AI туслахын
-     ногоон-ягаан хүрээ) андуурагдана. ⇒ Хэрэгжүүлэх ганц зөв зам нь SVG
-     филтер (`feDisplacementMap` сувгуудыг тус тусад нь шилжүүлэх), тэр нь
-     Chromium-д л ажилладаг. Хүсвэл тусад нь нэмнэ. */
-  /* Frost 4 — маш бага blur. Splay 0 — сүүдэр ТАРАХГҮЙ. */
   --glass-frost: 4px;
   --glass-splay: 0px;
   --glass-shadow: rgb(0 0 0 / 0.05);
 
-  /* ── LIGHT: гол налуу, гэрлийн өнцгөөр ───────────────────────────── */
   background-image: linear-gradient(
     var(--glass-angle),
     color-mix(in oklab, white var(--glass-light), transparent) 0%,
@@ -1129,30 +823,19 @@ html[style*="--a11y-content"] span {
     color-mix(in oklab, white 34%, transparent) 100%
   );
 
-  /* ── FROST ───────────────────────────────────────────────────────── */
   backdrop-filter: blur(var(--glass-frost)) saturate(180%);
   -webkit-backdrop-filter: blur(var(--glass-frost)) saturate(180%);
 
-  /* ── REFRACTION · DEPTH · SPLAY ───────────────────────────────────
-     ⚠️ ӨНГӨТЭЙ ДАВХАРГА ЭНД БАЙХГҮЙ, БҮГД ЦАГААН. Өнгөний зурвас нэмбэл
-     градиент ХҮРЭЭ мэт харагдаж, AI туслахын ногоон-ягаан хүрээтэй
-     андуурагдана (2026-09-15-ны захиалагчийн заавар — дээрх Dispersion-ы
-     тэмдэглэлийг үз). */
   box-shadow:
-    /* ① REFRACTION — гэрлийн тал (дээд + зүүн ирмэг) */
     inset 1px 1px 0 color-mix(in oklab, white var(--glass-rim), transparent),
-    /* ② REFRACTION — эсрэг тал (доод + баруун) */ inset -1px -1px 0
+     inset -1px -1px 0
       color-mix(in oklab, white var(--glass-rim-far), transparent),
-    /* ③ периметрийг холбох нимгэн ring */ inset 0 0 0 1px
+     inset 0 0 0 1px
       color-mix(in oklab, white 30%, transparent),
-    /* ④ DEPTH — доод талын гүн */ inset 0 -10px 20px -14px rgb(0 0 0 / var(--glass-depth)),
-    /* ⑤ SPLAY 0 — гадна сүүдэр, ТАРААЛТГҮЙ */ 0 4px 12px var(--glass-splay) var(--glass-shadow);
+     inset 0 -10px 20px -14px rgb(0 0 0 / var(--glass-depth)),
+     0 4px 12px var(--glass-splay) var(--glass-shadow);
 }
 
-/* DARK — ЗӨВХӨН УТГА. Бүтэц нь дээр, энд давхардуулж бичихгүй.
-   Бараан дэвсгэр дээр цайвар ир нь БҮХ ажлыг хийдэг тул альфа нь хамаагүй
-   бага; харин гадна сүүдэр нь харанхуйд ажиллахын тулд ГҮН байх ёстой
-   (`.glass-capsule`-ийн хоёр темийн тайлбартай ижил зарчим). */
 .dark .glass-lens {
   --glass-light: 14%;
   --glass-rim: 38%;
@@ -1168,68 +851,6 @@ html[style*="--a11y-content"] span {
   );
 }
 
-/* =====================================================================
-   ХУВИЛБАР 2-ЫН DOCK — LIQUID GLASS (2026-09-11), ТЕМТЭЙ (09-14)
-   =====================================================================
-   Захиалагч: "dock буюу bottom nav-г liquid glass effect-тэй болго" (09-11),
-   дараа нь "dark болон light theme-тэй болгоод" (09-14).
-
-   ⚠️⚠️ ЯАГААД `.glass-capsule`-ЫГ ДАХИН АШИГЛААГҮЙ ВЭ.
-   Хоёулаа одоо темтэй боловч ГЕОМЕТР нь өөр: капсул нь БҮХ ирмэгээрээ
-   харагддаг хөвөгч биет, dock нь харин доод ирмэгт наалдсан ба ЗӨВХӨН ДЭЭД
-   ирмэг нь харагдана. Тиймээс гэрэл/сүүдрийн хуваарилалт (ирний 14px гэрэл,
-   доош гүнзгийрэх налуу, ДЭЭШЭЭ унасан сүүдэр) нь dock-д тусгайлан
-   тохируулагдсан — нэг класс болговол хоёулангийнх нь тохиргоо эвдэрнэ.
-
-   ⚠️⚠️ ЭНД BLUR НЬ ҮНЭХЭЭР АЖИЛЛАНА — header-ийн капсулаас ЯЛГААТАЙ.
-   Капсулын тайлбарт "header нь `relative` тул ард нь юу ч гүйдэггүй ⇒
-   background blur ҮР ДҮНГҮЙ" гэж бичсэн бий. Dock нь харин `fixed` бөгөөд
-   хуудасны агуулга ЯГ доогуур нь гүйдэг — `backdrop-filter` нь гүйж буй
-   зураг, картуудыг шингээж, "шил дээгүүр агуулга урсах" мэдрэмжийг өгнө.
-   Энэ нь liquid glass-ийн ГОЛ шинж бөгөөд зөвхөн энд л биелнэ.
-
-   ХАРААНЫ ХЯЗГААР — ТИНТ 80% (Figma-гийн утга, хоёр темд ижил тоо).
-   ⚠️ ХУУЧИН 72%-ИЙН ТООЦОО ХҮЧИНГҮЙ БОЛСОН: тэр нь `text-white/65` гэсэн
-   ТОГТМОЛ цагаан шошгыг цайвар хуудсан дээр уншуулах хамгийн тунгалаг утга
-   байв. Шошго одоо ТОКЕН дагадаг (`text-muted-foreground`) тул тем бүрд
-   өөрөө тохирно. Шинэ хэмжилт (шошго 12px ⇒ 4.5:1 шаардана):
-     light: суурь ≈#f7f8f9 (цагаан 80% + хуудас #e2e8ec), шошго #595959 → ≈7.0:1 ✓
-     dark : суурь ≈#0d0f14 (хар 80% + хуудас #10131b),   шошго ≈#8b8c8f → ≈6.5:1 ✓
-   Хоёулаа AA-аас ДЭЭГҮҮР тул тинтийг 85–90% хүртэл нягтруулах нөөцтэй;
-   ХАРИН 70%-ЭЭС ДООШ буулгавал light дээр шошго хуудасны агуулгатай холилдоно.
-
-   ⚠️ `url(#glass-warp)` ГАЖУУДАЛ ЭНД ОРООГҮЙ. Тэр SVG филтерийг
-   `chat-hero.tsx` рендерлэдэг тул ЗӨВХӨН `/assistant` дээр DOM-д байдаг.
-   Байхгүй id-г `backdrop-filter`-т заавал тэр property БҮХЭЛДЭЭ хүчингүй
-   болж, blur нь ч УСТАНА — өөрөөр хэлбэл бусад бүх хуудсан дээр шил
-   чимээгүй унтарна. Гажуудал хэрэгтэй бол филтерийг dock-той хамт
-   рендерлэх ёстой.
-
-   Blur/saturate нь Tailwind талд (`backdrop-blur-xl backdrop-saturate-150`)
-   — `.glass-capsule` ч яг ийм хуваалттай (`header.tsx` дээр
-   `backdrop-blur-xl`). Класс нь ТИНТ ба ЗУЗААНЫГ л эзэмшинэ. */
-/* DOCK-ИЙН ТИНТ — `.glass-lens` дээр нэмсэн ГАНЦ давхарга (2026-09-15).
-
-   ЯАГААД ХЭРЭГТЭЙ: `.glass-lens` нь DESKTOP-ИЙН КАПСУЛД зориулагдсан —
-   тэр нь хуудасны ТОГТМОЛ дэвсгэр дээр суудаг тул тинтгүй, зөвхөн цагаан
-   налуу + ирмэгээр шил мэт харагдана. Dock нь харин ГҮЙЖ БУЙ агуулгын ДЭЭР
-   хөвдөг: тинтгүй үед доорх зураг/бичвэр шошгон дундуур цухуйж, уншигдац
-   унана (WCAG 1.4.3 — дэвсгэр нь урьдчилан мэдэгдэхгүй).
-
-   ⚠️ `.glass-lens` ӨӨРИЙГ НЬ БҮҮ ӨӨРЧИЛ. Тэр класс нь desktop-ийн капсул ба
-   хувилбар 1-ийн капсулд ч хэрэглэгддэг — тэнд тинт нэмбэл хоёр газар
-   шалтгаангүй бүдгэрнэ. Тиймээс сонгогч нь dock-ийн атрибуттай ХОСОЛСОН.
-
-   ⚠️ ЗӨВХӨН `background-color`. `.glass-lens`-ийн `background-image` (налуу),
-   `box-shadow` (ирмэг · гүн · сүүдэр), `backdrop-filter` (frost) ГУРВУУЛАА
-   хэвээр ажиллана — тинт нь тэдний АРД суух суурь өнгө.
-
-   ⚠️⚠️ УТГА: 80%. Эхлээд 55% тавьсныг захиалагч ТЭР ДОРОО буцаалгав
-   ("хэтэрхий glass буюу ард тал нь харагдаж байна", 2026-09-15). 80% нь
-   ХУУЧИН `.glass-dock`-ийн утга буюу захиалагчийн Figma спекийн тоо
-   (#FFFFFF · 80%, Tokens: Auto/Light) — 09-14-нд аль хэдийн БАТЛАГДСАН.
-   ⇒ Доошлуулах бол 55% руу БҮҮ буц; тэр нь нэг удаа татгалзагдсан.
-   Тохируулах бол ЭНЭ ХОЁР тоог л сольно (light/dark тусдаа). */
 [data-bottom-tab-bar].glass-lens {
   background-color: color-mix(in oklab, white 80%, transparent);
 }
@@ -1237,92 +858,34 @@ html[style*="--a11y-content"] span {
   background-color: color-mix(in oklab, black 80%, transparent);
 }
 
-/* ⚠️⚠️ ОДООГООР ХЭРЭГЛЭГДЭХГҮЙ (2026-09-15). Dock нь `.glass-lens` рүү
-   шилжсэн (захиалагч: "bottom nav буюу dock дээр glass effect-г оруул").
-   Блокийг УСТГААГҮЙ — 09-11-нд бодит утсан дээр тохируулсан утгууд энд
-   хадгалагдана; буцаах бол `mobile-header.tsx > BottomTabBar`-ийн классыг
-   сэргээхэд л хангалттай. */
 .glass-dock {
-  /* ⚠️⚠️ ТЕМЭЭС ХАМААРНА (2026-09-14, захиалагч: "dock-г dark болон light
-     theme-тэй болгоод"). ӨМНӨ НЬ ХОЁР ТЕМД ИЖИЛ 72% ХАР байсан бөгөөд тэр нь
-     "бараан суурь нь загварын шийдэл" гэсэн үндэслэлтэй байв — захиалагчийн
-     Figma спек (`#FFFFFF · 80%`, Tokens: Auto/Light) түүнийг ХҮЧИНГҮЙ болгов.
 
-     ХОЁР ТЕМИЙН УТГА:
-       light → цагаан 80%  (Figma-гийн бодит утга)
-       dark  → ХАР 80%     (толин тусгал — захиалагчийн сонголт, 2026-09-14).
-                Хуучин 72% биш: хоёр тем ижил тоотой байх нь дараа тохируулахад
-                НЭГ л газар солигдоно.
-
-     ⚠️ БҮХ ДАВХАРГА ХУВЬСАГЧААР. Ирний гэрэл, гүн, булангийн тусгал, сүүдэр
-     гурвуулаа доорх `--dock-*` -аас уншина; `.dark` блок нь ЗӨВХӨН утгыг
-     солино, БҮТЦИЙГ давхардуулж бичихгүй. Нэг темд давхарга нэмээд нөгөөд
-     мартах алдаа ингэснээр гарахгүй.
-
-     ⚠️ LIGHT ТЕМД ГЭРЭЛ БАРАГ ҮЛ МЭДЭГДЭНЭ — тэр нь ЗӨВ. Цагаан тинт дээр
-     цагаан тусгал нэмэх зүйлгүй; light шилний ялгарлыг ХҮРЭЭ (`--dock-ring`,
-     бараан 6%) ба ГАДНА СҮҮДЭР хоёр үүрнэ. iOS-ийн light glass ч яг ингэдэг.
-
-     ⚠️ БИЧВЭРИЙН ӨНГӨ ЭНД БИШ. Dock тем дагадаг болсон тул шошго нь одоо
-     `text-muted-foreground` / `text-primary` токенээр (`mobile-header.tsx >
-     BottomTab`) — өмнөх `text-white/65` нь light дээр цагаан тинт дээр алга
-     болно. */
   --dock-tint: color-mix(in oklab, white 80%, transparent);
-  /* Гурван буцалтын ХАТУУ өнгө (доор) — тем тус бүрд өөр. */
   --dock-solid: #fff;
-  /* ① ирний гэрэл (background-image), ② дээд ирмэгийн шугам, ③ түүний уусалт */
   --dock-edge: color-mix(in oklab, white 70%, transparent);
   --dock-edge-line: color-mix(in oklab, white 85%, transparent);
   --dock-edge-glow: color-mix(in oklab, white 60%, transparent);
-  /* периметрийн ring — light-д ЭНЭ нь гол зааг */
   --dock-ring: color-mix(in oklab, black 7%, transparent);
-  /* гүн — материалын зузаан */
   --dock-depth: color-mix(in oklab, black 6%, transparent);
   --dock-depth-inner: color-mix(in oklab, black 14%, transparent);
   --dock-shadow: rgb(0 0 0 / 0.16);
-  /* булангийн тусгал (`::after`) */
   --dock-corner-a: color-mix(in oklab, white 55%, transparent);
   --dock-corner-b: color-mix(in oklab, white 35%, transparent);
 
   background-color: var(--dock-tint);
-  /* ⚠️⚠️ ХАВТГАЙ НАЛУУ → ГУРВАН ХЭСЭГТ ХУВААСАН ГЭРЭЛ (2026-09-11, захиалагч
-     бодит утасны screenshot-той хамт: "glass effect-г бага зэрэг бодит ч юм
-     шиг болгомоор байна, хэтэрхий хуучны харагдаж байна").
 
-     Өмнөх хувилбар нь бүх өндрийн турш жигд сулрах налуу байв. Тэр нь 2013 оны
-     "frosted bar" — ГЭРЭЛ нь ХААНААС ч ирдэггүй, зүгээр л дээрээсээ цайвар.
-     Бодит шил ингэж ажилладаггүй: гэрэл нь ИРМЭГЭЭР нь хугарч цуглардаг,
-     ГАДАРГУУ дээр нь биш. Тиймээс:
-       ① гэрэл нь ЗӨВХӨН дээд 14px-д — шилний ИР. Доош нь тархахгүй.
-       ② дунд хэсэг нь ЦЭВЭР тинт — доорх агуулга хамгийн тод цухуйх зурвас.
-       ③ доод 45% нь гүнзгийрч, шил "зузаан" мэт харагдана. */
   background-image:
-    /* ① ИРНИЙ ГЭРЭЛ — px-ээр зогсоосон нь САНААТАЙ. %-аар бичвэл dock-ийн
-       өндөр өөрчлөгдөхөд гэрэл тархаж, дахин хавтгай болно. */
     linear-gradient(180deg, var(--dock-edge) 0px, transparent 14px),
-    /* ③ ГҮН */ linear-gradient(180deg, transparent 55%, var(--dock-depth) 100%);
+     linear-gradient(180deg, transparent 55%, var(--dock-depth) 100%);
   box-shadow:
-    /* ① ДЭЭД ИРМЭГИЙН ГЭРЭЛ — dock-ийн ГАНЦ харагдах ирмэг нь энэ (бусад
-       гурав нь дэлгэцийн ирмэгээс гадна) тул шилний зузааныг бүхэлд нь ЭНЭ
-       мөр үүрнэ. */
     inset 0 1px 0 var(--dock-edge-line),
-    /* ② ИРНИЙ ЗӨӨЛӨН ТУСГАЛ — 1px зураасыг дотогшоо 10px уусгана. ЭНЭ НЬ
-       "хурц зураас" ба "шил" хоёрын ялгаа: жинхэнэ ир нь гэрлийг тархаадаг. */
     inset 0 3px 10px -6px var(--dock-edge-glow),
-    /* ③ периметрийн нимгэн ring — хажуугийн ирмэг зөвхөн дугуйруулсан дээд
-       буланд л харагдана, тэндээ тасалдалгүй үргэлжлүүлнэ. */
     inset 0 0 0 1px var(--dock-ring),
-    /* ④ ДООД ГҮН — материалд зузаан өгнө. Шошго яг энэ бүсэд суудаг. */ inset 0 -16px 26px -22px
+     inset 0 -16px 26px -22px
       var(--dock-depth-inner),
-    /* ⑤ ГАДНА СҮҮДЭР, ДЭЭШЭЭ — dock-ийг доогуураа гүйж буй агуулгаас салгана.
-       Y нь СӨРӨГ: dock доод ирмэгт наалдсан тул доош унасан сүүдэр дэлгэцээс
-       гарч харагдахгүй. Харагдах ганц тал нь ДЭЭД тал. */
     0 -10px 30px -14px var(--dock-shadow);
 }
 
-/* DARK — ЗӨВХӨН УТГА. Бүтэц нь дээр, энд давхардуулж бичихгүй.
-   Утгууд нь 2026-09-11-нд бодит утсан дээр тохируулсан хуучин бараан шилийнх
-   (тинт нь 72% → 80% болсноос бусад нь хэвээр). */
 .dark .glass-dock {
   --dock-tint: color-mix(in oklab, black 80%, transparent);
   --dock-solid: #000;
@@ -1337,8 +900,6 @@ html[style*="--a11y-content"] span {
   --dock-corner-b: color-mix(in oklab, white 15%, transparent);
 }
 
-/* БУЛАНГИЙН ТУСГАЛ — хамгийн их "liquid" мэдрэмж өгдөг хэсэг.
-   Хоёр дугуйруулсан дээд булангаас гэрэл цуглаж, төв рүү сулрана. */
 .glass-dock::after {
   content: "";
   position: absolute;
@@ -1350,18 +911,7 @@ html[style*="--a11y-content"] span {
     radial-gradient(120px 52px at calc(100% - 18px) 0px, var(--dock-corner-b) 0%, transparent 72%);
 }
 
-/* ⚠️ ГУРВАН БУЦАЛТ — бүгд ХАТУУ ХАР руу. Шил нь ГОО САЙХАН, уншигдац нь
-   ЗАЙЛШГҮЙ: аль нэг нь биелвэл тунгалаг байдал бүрэн алга болж, dock нь
-   2026-09-11-ний өмнөх хатуу хар панел руу буцна (бичвэрийн харьцаа 8.6:1).
-
-   ① `backdrop-filter` дэмжигдэхгүй хөтөч — тунгалаг тинт нь blur-гүйгээр
-      зүгээр л "бүдгэрсэн цонх" болж, доорх бичвэр шууд цухуйна. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  /* ⚠️ СОНГОГЧ `.glass-dock` → `[data-bottom-tab-bar]` (2026-09-15). Dock нь
-     `.glass-lens` рүү шилжсэн тул класс дээр тулгуурласан буцалт ЧИМЭЭГҮЙ
-     унтарч байв. Атрибут нь хэрэглэж буй шилний классаас ҮЛ ХАМААРНА.
-     `--dock-solid` хувьсагч нь `.glass-dock`-той хамт хүрэхээ больсон тул
-     утгыг нь ил бичив (light #fff · dark #000 — ижил утга). */
   [data-bottom-tab-bar] {
     background-color: #fff;
     background-image: none;
@@ -1371,10 +921,7 @@ html[style*="--a11y-content"] span {
   }
 }
 
-/* ② Хэрэглэгч OS-доо тунгалаг байдлыг бууруулахыг сонгосон (iOS "Reduce
-      Transparency", Windows "Transparency effects off"). */
 @media (prefers-reduced-transparency: reduce) {
-  /* ⚠️ Сонгогч дээрхтэй ижил шалтгаанаар атрибут болов (2026-09-15). */
   [data-bottom-tab-bar] {
     background-color: #fff;
     background-image: none;
@@ -1386,83 +933,12 @@ html[style*="--a11y-content"] span {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   iOS-ИЙН АВТОМАТ ЗООМЫГ ЗОГСООХ (focus хийхэд дэлгэц томордог)
-   ═══════════════════════════════════════════════════════════════════════
-
-   ШАЛТГААН: iOS Safari (iPhone дээрх БҮХ хөтөч — WebKit) нь focus авсан
-   талбарын computed `font-size` 16px-ЭЭС БАГА бол "уншигдахгүй" гэж үзээд
-   хуудсыг өөрөө томруулдаг. Tailwind-ийн `text-sm` = 14px тул төслийн БҮХ
-   оролт (`chat-hero`, `header`-ийн хайлт, `auth-dialog`, `support-center`,
-   `chat-widget`, `tvod-catalog`, `main-packages`) энэ хавханд унасан байв.
-   Хамгийн эвгүй нь: зоом хийсний дараа Safari БУЦААЖ жижигрүүлдэггүй —
-   хэрэглэгч хуруугаараа pinch хийж гаргах хэрэгтэй болдог.
-
-   ⚠️ `maximum-scale=1` / `user-scalable=no`-Г ШИЙДЭЛ БОЛГОЖ ХЭРЭГЛЭХГҮЙ:
-   тэр нь хэрэглэгчийн pinch-zoom-ийг БҮХЭЛД НЬ хориглож WCAG 2.1 1.4.4-ийг
-   зөрчинө, мөн iOS 10-аас хойш Safari `user-scalable=no`-г үл тоодог тул
-   найдваргүй ч юм (`layout.tsx > viewport`-ийн тайлбарыг үз).
-
-   ⚠️ LAYER-ГҮЙ БИЧСЭН нь ЗОРИУД. Tailwind-ийн `.text-sm` нь
-   `@layer utilities` дотор сууна; layer-гүй дүрэм нь layer-тэйгээ
-   ЯМАР Ч specificity-гүйгээр хожино. Үүнийг `@layer base/components`
-   дотор оруулбал `.text-sm` (0,1,0) нь элементийн сонгогчийг (0,0,1)
-   дарж, дүрэм ЧИМЭЭГҮЙ унтарна.
-
-   ⚠️ БҮХ ХӨТӨЧ, БҮХ ӨРГӨНД — media query-гүй (2026-09-14, захиалагч: "энэ
-   хэрвээ зөвхөн iOS дээр л юм бол бүх browser дээр ижил байхаар хий").
-   Эхэндээ `@media (max-width: 767px)`-ээр хаасан байв; тэр нь desktop
-   дээр 14px, мобайлд 16px гэсэн ХОЁР ӨӨР харагдац үүсгэдэг. Алдаа нь
-   iOS-д гардаг ч ЗАСВАР нь платформоос хамаарахгүй — оролтын хэмжээ
-   хаана ч ИЖИЛ байх нь загварын шийдвэр.
-   ⇒ Desktop дээрх оролтууд 14px → 16px болж БАГА ЗЭРЭГ ТОМОРНО. Энэ нь
-   мэдсэн өөрчлөлт, алдаа биш.
-
-   ⚠️ БРЭНД ХОЁУЛАНД. Unitel ба Univision нь НЭГ `src/app` + НЭГ
-   `globals.css`-ээс гардаг (зөвхөн `next.config.ts > distDir` л
-   ялгаатай) тул энэ дүрэм хоёуланд нь автоматаар үйлчилнэ — брэнд тус
-   бүрд давхардуулж бичих ЗҮЙЛГҮЙ.
-
-   range/checkbox/radio ХАСАГДСАН: тэдгээр нь бичвэр агуулдаггүй тул зоом
-   үүсгэхгүй, харин `accessibility-panel`-ийн slider-ийн хэмжээг дэмий
-   хөндөнө. */
 input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {
   font-size: 16px;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   ЖИШЭЭ ОРЧУУЛГЫН ФОНТ — CJK хэл рүү сольсон үед (2026-09-15)
-   ═══════════════════════════════════════════════════════════════════════
-
-   Manrope-д хятад · япон · солонгос үсэг БАЙХГҮЙ. Тэдгээр хэл рүү сольсон
-   үед хөтөч системийн дурын фонтоор орлуулж, үсгийн өндөр, жин, зай бүгд
-   зөрнө. Тиймээс `lang`-аар нь фонтын гинжийг сольж өгнө
-   (`lang` нь `lib/locale.ts > syncHtmlLang`-аас тавигдана; хятад нь
-   `zh-Hans` тул `^=` сонгогч).
-
-   ⚠️⚠️ ХОЁР ЗҮЙЛ ЭНД БҮДРҮҮЛСЭН — ДАХИН БҮҮ ОРОЛД:
-
-   ① `--font-sans`-ЫГ ДАРЖ БОЛОХГҮЙ. Файлын эхэнд `@theme inline` дотор
-      `--font-sans: var(--font-manrope)` гэж бичигдсэн ч `inline` горим нь
-      утгыг utility РУУ ШУУД суулгадаг — өөрөөр хэлбэл `.font-sans` нь
-      `font-family: var(--font-manrope)` болж хөрвөх ба `--font-sans` гэсэн
-      хувьсагч runtime-д ОГТ ОРШИХГҮЙ. Түүнийг дарах гэсэн оролдлого
-      чимээгүй унтарна (getComputedStyle дээр хоосон мөр буцаана).
-
-   ② ДАВХАРГЫН ГАДНА байх ЁСТОЙ. `@layer base` дотор бичвэл Tailwind-ийн
-      `utilities` давхарга (тэнд `.font-sans` байрлана) ҮРГЭЛЖ дийлнэ —
-      specificity хэр өндөр байх нь хамаагүй. Давхаргад хамаарахгүй дүрэм
-      нь бүх давхаргаас дээгүүр тул энд л ажиллана.
-
-   ⚠️ `body` дээр тавьсан нь хангалттай: `font-family` удамшдаг ба төсөлд
-   `font-sans` класс ЗӨВХӨН `body` дээр л хэрэглэгддэг (өөр 0 газар).
-
-   ⚠️ ГИНЖНИЙ ДАРААЛАЛ: CJK эхэнд, Manrope ард. Латин үсэг (Unitel, GB)
-   CJK фонтод ч байдаг боловч тэдний латин нь Manrope-ээс өөр өргөнтэй —
-   брэндийн нэр өөр харагдана. Эсрэгээр тавибал монгол кирилл нь CJK
-   фонтын кириллээр гарах эрсдэлтэй тул одоогийн дараалал сонгогдов. */
 html[lang^="ko"] body {
   font-family: var(--font-noto-kr), var(--font-manrope), sans-serif;
 }

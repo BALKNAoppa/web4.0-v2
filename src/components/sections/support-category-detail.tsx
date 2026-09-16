@@ -19,7 +19,6 @@ import {
   type SupportTopic,
 } from "@/data/faq";
 
-// Quick link иконы нэрийг lucide компонентэд буулгах map
 const quickLinkIconMap: Record<SupportQuickLinkIcon, LucideIcon> = {
   usage: Gauge,
   account: UserRound,
@@ -32,16 +31,11 @@ type Props = {
   detail: CategoryDetail;
 };
 
-/**
- * /support?category={id} URL дээр харагдах категори тус бүрийн дэлгэрэнгүй:
- *  - Төв тэгшилсэн том гарчиг + тайлбар
- *  - 2 card: "Түгээмэл асуудлууд" + "Бусад асуудлууд"
- */
 export function SupportCategoryDetail({ title, detail }: Props) {
   return (
     <section aria-labelledby="support-category-title" className="bg-muted/30 py-12 lg:py-16">
       <div className="container mx-auto max-w-6xl px-4">
-        {/* Hero */}
+        {}
         <div className="mb-10 text-center md:mb-14">
           <h1
             id="support-category-title"
@@ -53,13 +47,13 @@ export function SupportCategoryDetail({ title, detail }: Props) {
             {detail.description}
           </p>
 
-          {/* Ask AI — асуултыг глобал chatbot руу дамжуулна */}
+          {}
           <SupportAskBar quickQuestions={detail.quickQuestions} />
         </div>
 
-        {/* Two cards */}
+        {}
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Frequent topics */}
+          {}
           <TopicCard
             icon={<Star className="size-5" aria-hidden="true" />}
             title="Хайлт өндөртэй асуултууд"
@@ -67,7 +61,7 @@ export function SupportCategoryDetail({ title, detail }: Props) {
             columns={1}
           />
 
-          {/* Other topics — 2 columns inside */}
+          {}
           <TopicCard
             icon={<List className="size-5" aria-hidden="true" />}
             title="Бусад асуулт"
@@ -76,7 +70,7 @@ export function SupportCategoryDetail({ title, detail }: Props) {
           />
         </div>
 
-        {/* Quick links — Singtel-style card-ууд */}
+        {}
         <ul
           aria-label="Шуурхай холбоосууд"
           className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
@@ -90,9 +84,6 @@ export function SupportCategoryDetail({ title, detail }: Props) {
   );
 }
 
-// =====================================================================
-// QUICK LINK CARD — дугуй икон + гарчиг + тайлбар + линк
-// =====================================================================
 function QuickLinkCard({ link }: { link: SupportQuickLink }) {
   const Icon = quickLinkIconMap[link.icon];
 
@@ -120,9 +111,6 @@ function QuickLinkCard({ link }: { link: SupportQuickLink }) {
   );
 }
 
-// =====================================================================
-// TOPIC CARD
-// =====================================================================
 function TopicCard({
   icon,
   title,
@@ -161,7 +149,6 @@ function TopicCard({
           return (
             <li key={topic.id}>
               {isExternal ? (
-                // Гадаад мэдээллийн сан (ckb.unitel.mn) — шинэ tab-д нээнэ
                 <a
                   href={topic.href}
                   target="_blank"

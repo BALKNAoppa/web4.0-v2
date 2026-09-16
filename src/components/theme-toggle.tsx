@@ -5,12 +5,6 @@ import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
 
-/**
- * Theme toggle — Light / Dark хооронд click-аар шилжүүлэх.
- * Анхны утга нь system preference дагаж тогтоогдоно (layout.tsx-д
- * defaultTheme="system" + enableSystem), хэрэглэгчийн дарсны дараа explicit
- * light/dark болж тогтоогдоно.
- */
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";

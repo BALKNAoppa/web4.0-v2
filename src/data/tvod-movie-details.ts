@@ -1,25 +1,10 @@
-/**
- * Univision Web 4.0 — TVOD movie detail metadata
- *
- * `tvod-movies.ts`-ийн үндсэн catalog дээр нэмэлт "detail page"-ийн мэдээллийг
- * (нээлтийн огноо, үргэлжлэх хугацаа, багийн бүрэлдэхүүн, trailer, backdrop)
- * энд кино тус бүрийн id-гаар хадгална. Зөвхөн бэлтгэгдсэн кинонууд энд орно;
- * бусад кино detail хуудсандаа graceful fallback-аар харагдана.
- *
- * Backdrop зургууд: public/tvod/backdrops/{id}.(jpg|jpeg)
- */
 import { tvodMovies, type TvodMovie } from "@/data/tvod-movies";
 
 export type TvodMovieDetail = {
-  /** ISO огноо — "2024-03-01" */
   releaseDate: string;
-  /** Үргэлжлэх хугацаа минутаар */
   runtimeMinutes: number;
-  /** Үнэлгээ өгсөн хүний тоо (rating-ийн доор) */
   voteCount: number;
-  /** Landscape backdrop — public folder path */
   backdrop: string;
-  /** Trailer-ийн холбоос (YouTube гэх мэт). Байхгүй бол товч харагдахгүй. */
   trailerUrl?: string;
   director: string;
   writers: string[];
@@ -59,17 +44,14 @@ export const tvodMovieDetails: Record<string, TvodMovieDetail> = {
   },
 };
 
-/** Catalog-аас кино id-гаар хайх */
 export function getMovieById(id: string): TvodMovie | undefined {
   return tvodMovies.find((m) => m.id === id);
 }
 
-/** Detail metadata буцаах (байхгүй бол undefined) */
 export function getMovieDetail(id: string): TvodMovieDetail | undefined {
   return tvodMovieDetails[id];
 }
 
-/** "More like this" — ижил genre хуваалцсан кинонууд (өөрийгөө хасч, rating-аар эрэмбэлнэ) */
 export function getSimilarMovies(id: string, limit = 10): TvodMovie[] {
   const movie = getMovieById(id);
   if (!movie) return [];
@@ -79,7 +61,6 @@ export function getSimilarMovies(id: string, limit = 10): TvodMovie[] {
     .slice(0, limit);
 }
 
-/** Минутыг "2h 46m" / "3h" хэлбэрт хөрвүүлэх */
 export function formatRuntime(minutes: number): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;

@@ -1,22 +1,9 @@
-/**
- * Нүүр хуудасны data — Apple-ийн нүүрээс санаа авсан шинэ бүтэц.
- *
- *  - hero  — цаг үеийн урамшууллыг харуулах том banner (агуулга нь
- *            campaigns/nav promos дээрх одоо байгаа урамшууллаас)
- *  - entryTiles — бүх бүтээгдэхүүн, үйлчилгээний entry point картууд
- *            (Apple-ийн нүүрний tile grid маяг)
- *
- * Зураг одоогоор ашиглахгүй — карт бүр "Photo N" placeholder талбайтай
- * Бодит зураг гарахаар холбоно.
- */
-
 export type HomeHeroCta = {
   label: string;
   href: string;
 };
 
 export type HomeHero = {
-  /** Жижиг eyebrow текст — банерын төрлийг заана */
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -24,11 +11,6 @@ export type HomeHero = {
   secondaryCta?: HomeHeroCta;
 };
 
-// Hero section — одоогоор элемент бүрийг үүргээр нь нэрлэсэн wireframe.
-// Бодит контент ороход доорх утгуудыг л солино. Жишээ (өмнөх хувилбар):
-//   eyebrow: "Цаг үеийн урамшуулал", title: "Шинэ хэрэглэгчийн захиалга",
-//   subtitle: "Төхөөрөмж 50% хямдралтай — эхний захиалгын хамт.",
-//   primaryCta: "Захиалах", secondaryCta: "Дэлгэрэнгүй"
 export const homeHero: HomeHero = {
   eyebrow: "Цаг үеийн урамшуулал",
   title: "Интернэт + ТВ — сард 39,900₮",
@@ -54,17 +36,9 @@ export type EntryTile = {
   href: string;
   ctaLabel: string;
   icon: EntryTileIcon;
-  /** Дүрсний өнгөт дэвсгэр (Tailwind классууд) */
   tint: string;
 };
 
-// ====================================================
-// ENTRY TILES — брэнд бүрт өөрийн бүтээгдэхүүн
-// Нүүрний үндсэн banner-т аль хэдийн гарсан зүйлийг энд ДАВХАРДУУЛАХГҮЙ
-// (Unitel: дараа төлбөрт, Univision: үндсэн багц).
-// ====================================================
-
-/** Unitel — гэр интернэт энд харьяалагдана */
 export const unitelEntryTiles: EntryTile[] = [
   {
     title: "Гэр интернэт",
@@ -100,7 +74,6 @@ export const unitelEntryTiles: EntryTile[] = [
   },
 ];
 
-/** Univision — контент болон гэрийн шийдэл */
 export const univisionEntryTiles: EntryTile[] = [
   {
     title: "Single internet",

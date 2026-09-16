@@ -79,7 +79,6 @@ const SLIDES: Slide[] = [
 
 const LAST = SLIDES.length - 1;
 
-/** Web 4.0 — keyboard-driven horizontal swipe deck. */
 export function Web4Scroll() {
   const [pos, setPos] = useState({ i: 0, s: 0 });
   const index = pos.i;
@@ -109,7 +108,6 @@ export function Web4Scroll() {
     [],
   );
 
-  // Keyboard navigation (arrows / space / page)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (["ArrowRight", "ArrowDown", "PageDown", " "].includes(e.key)) {
@@ -130,7 +128,6 @@ export function Web4Scroll() {
     return () => window.removeEventListener("keydown", onKey);
   }, [next, prev, goto]);
 
-  // Lock page scroll while the deck is mounted (only on /web4)
   useEffect(() => {
     const html = document.documentElement;
     const prevHtml = html.style.overflow;
@@ -143,7 +140,6 @@ export function Web4Scroll() {
     };
   }, []);
 
-  // Click delegation: data-deck-next / data-deck-prev / data-deck-goto
   const onClick = useCallback(
     (e: React.MouseEvent) => {
       const el = (e.target as HTMLElement).closest<HTMLElement>(
@@ -159,7 +155,7 @@ export function Web4Scroll() {
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-[#05080f] text-white" onClick={onClick}>
-      {/* Fixed cosmic background */}
+      {}
       <div
         aria-hidden
         className="absolute inset-0 -z-20 bg-[radial-gradient(1200px_800px_at_70%_-10%,#10233f_0%,transparent_55%),radial-gradient(1000px_700px_at_15%_110%,#0c2a24_0%,transparent_55%),linear-gradient(160deg,#0a1424,#05080f)]"
@@ -173,7 +169,7 @@ export function Web4Scroll() {
         }}
       />
 
-      {/* Bubble background track — clipped only at the screen edges (swipe-continuous) */}
+      {}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <div
           className="flex h-full transition-transform duration-700"
@@ -193,7 +189,7 @@ export function Web4Scroll() {
         </div>
       </div>
 
-      {/* Horizontal content track */}
+      {}
       <div
         className="relative z-10 flex h-full transition-transform duration-700"
         style={{
@@ -208,7 +204,7 @@ export function Web4Scroll() {
             className="relative h-full w-screen shrink-0 overflow-hidden"
             aria-hidden={i !== index}
           >
-            {/* content — scrolls vertically if taller than the screen */}
+            {}
             <div className="no-scrollbar relative z-10 h-full overflow-y-auto">
               <div className="min-h-full">
                 <s.Comp active={i === index} step={i === index ? step : 0} />
@@ -218,7 +214,7 @@ export function Web4Scroll() {
         ))}
       </div>
 
-      {/* Top progress bar */}
+      {}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-50 h-[3px]">
         <div
           className="h-full origin-left transition-transform duration-700"
@@ -229,7 +225,7 @@ export function Web4Scroll() {
         />
       </div>
 
-      {/* Dot navigation */}
+      {}
       <nav
         aria-label="Слайд навигаци"
         className="absolute bottom-6 left-1/2 z-40 hidden -translate-x-1/2 flex-row items-center gap-3.5 md:flex"
@@ -261,7 +257,7 @@ export function Web4Scroll() {
         })}
       </nav>
 
-      {/* Controls — bottom-right (эхний загвар шиг) */}
+      {}
       <div className="absolute right-6 bottom-6 z-40 flex items-center gap-2">
         <span className="mr-1 hidden text-xs text-white/50 tabular-nums sm:inline">
           {index + 1} / {SLIDES.length}

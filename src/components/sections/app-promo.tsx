@@ -7,30 +7,6 @@ import { sectionType } from "@/lib/section-type";
 import { sectionBg } from "@/lib/section-bg";
 import { cn } from "@/lib/utils";
 
-/**
- * APP PROMO — "апп-аа тат" section. Unitel болон Univision ХОЁУЛАА үүнийг
- * ашиглана, зөвхөн `content` нь өөр (`@/data/app-promo`).
- *
- * Бүтэц: зүүн талд гарчиг · тайлбар · store badge (lg+ дээр QR),
- * баруун талд текстгүй утасны mockup зураг.
- *
- * ЧУХАЛ: зурган дотор ТЕКСТ байж БОЛОХГҮЙ. Бүх текст HTML-ээр гарна —
- * screen reader уншина, орчуулагдана, дэлгэцийн өргөнөөр зөв тохирно.
- *
- * Брэндийн ногоон нь `--app-accent` custom property-гээр section дээрээс
- * доошоо дамжина — Tailwind анги нэрийг ажил үед үүсгэж чаддаггүй тул
- * динамик өнгийг ингэж өгнө.
- *
- * ⚠️ БАРААН ДЭВСГЭР ХАСАГДСАН (2026-09-07, захиалагчийн явуулсан загвар).
- * Өмнө нь section нь `content.background` (`#0a1a14`) гэсэн ХАТУУ hex-ээр
- * буудаг, дээр нь цагаан цэгэн бүтэц (Singtel-маягийн texture) орж, бүх
- * бичвэр цагаан байв. Одоо хуудасны theme token-ийг хэрэглэнэ:
- *   `bg-background` · `text-foreground` · `text-muted-foreground`
- * Ингэснээр light/dark хоёуланд зөв буух ба хөрш section-уудтай
- * (`Promotions`, `OtherServices`) нэг гадаргатай болно.
- * → ЦЭГЭН БҮТЭЦ ХАМТ ХАСАГДСАН: түүний цэгүүд `rgba(255,255,255,.6)` тул
- *   цайвар дэвсгэр дээр ЮУ Ч ХАРАГДАХГҮЙ, зөвхөн DOM-д үлдэх байсан.
- */
 export function AppPromo({ content }: { content: AppPromoContent }) {
   const titleId = `${content.id}-title`;
 
@@ -42,38 +18,13 @@ export function AppPromo({ content }: { content: AppPromoContent }) {
     <section
       id={content.id}
       aria-labelledby={titleId}
-      /**
-       * ⚠️⚠️ `sectionBg.band` → `sectionBg.page` (2026-09-10, захиалагчийн
-       * загварын screenshot: "footer хэсгийн bg өөрчлөгдсөн байна … загварын
-       * дагуу байх ёстой").
-       *
-       * ЯАГААД ЭНЭ НЬ ЗҮГЭЭР НЭГ ӨНГӨ СОЛИХ БИШ: `band` (=`bg-card`,
-       * #f3f5f7) нь доорх утасны зургийн картын дэвсгэртэй ЯГ ИЖИЛ токен
-       * байсан ⇒ карт нь section дээр огт ялгарахгүй, зөвхөн ring/shadow-оороо
-       * л мэдэгддэг байв. `page` (=`bg-background`, #e2e8ec) болгосноор карт
-       * нэг шат ЦАЙВАР болж, загварынх шиг тодорхой хайрцаг болно.
-       *
-       * ⚠️ ЭНЭ НЬ 2026-09-09-НЫ ХЭМНЭЛЭЭС ЗӨРЛӨӨ. `lib/section-bg.ts`-ийн
-       * диаграмд "Апп татах = band" гэж бичигдсэн байсныг захиалагч
-       * 2026-09-10-нд ЗӨВШӨӨРӨН өөрчилсөн. Үр дагавар: "Бусад үйлчилгээ" →
-       * "Апп татах" → footer ГУРВУУЛАА саарал болж, хооронд нь зааг
-       * үлдэхгүй — энэ нь ЗОРИУД (загварт тэгж харагдана).
-       */
       className={cn(sectionBg.page, "relative w-full overflow-hidden")}
       style={sectionStyle}
     >
-      {/* Бусад section-уудтай ижил 1200px контентын хүрээнд тэгшилнэ */}
+      {}
       <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-10 px-4 py-10 lg:grid-cols-2 lg:gap-16 lg:py-14">
-        {/* ============ LEFT — text + store badges ============
-            ⚠️ EYEBROW ("● UNITEL АПП") ХАСАГДСАН. Хоёр шалтгаан:
-              1. Захиалагчийн явуулсан загварт БАЙХГҮЙ — утасны зургийн
-                 дараа шууд гарчиг ирдэг.
-              2. Тэр нь `text-xs font-bold` ногоон бичвэр байсан. Бараан
-                 дэвсгэр дээр контраст сайн байв; ЦАЙВАР дэвсгэр дээр
-                 #45c700 нь ердөө ~1.8:1 болж, 12px бичвэрт шаардагдах
-                 WCAG 1.4.3-ын 4.5:1-ээс ХОЛ дутна.
-            `content.eyebrow` дата талбар нь ҮЛДСЭН (доорх тайлбарыг үз) —
-            буцаах бол зөвхөн энэ блокийг сэргээнэ. */}
+        {
+}
         <div className="order-2 lg:order-1">
           <h2 id={titleId} className={sectionType.titleHero}>
             {content.titlePre}
@@ -85,17 +36,14 @@ export function AppPromo({ content }: { content: AppPromoContent }) {
             {content.description}
           </p>
 
-          {/* Mobile / tablet: store badges */}
+          {}
           <div className="mt-7 flex flex-wrap items-center gap-3 lg:hidden">
             <AppStoreBadge href={content.appStoreHref} />
             <GooglePlayBadge href={content.googlePlayHref} />
           </div>
 
-          {/* Desktop (lg+): QR code.
-              ⚠️ QR-ийн хайрцаг нь ЗОРИУД `bg-white` — сканнердах найдвартай
-              байдал өнгөний контрастаас хамаардаг тул theme-ээр хөвөрдөг
-              token хэрэглэхгүй. `fgColor` нь өмнө `content.background`
-              (#0a1a14) байсан; тэр талбар хасагдсан тул хатуу бараан. */}
+          {
+}
           <div className="mt-7 hidden items-center gap-5 lg:flex">
             <div className="border-border rounded-2xl border bg-white p-3 shadow-lg">
               <QRCodeSVG
@@ -113,12 +61,8 @@ export function AppPromo({ content }: { content: AppPromoContent }) {
           </div>
         </div>
 
-        {/* ============ RIGHT — phone card (float animation) ============
-            ⚠️ ХАЙРЦГИЙН ӨНГӨ. Өмнө нь `shadow-black/60` + `ring-white/5` —
-            бараан дэвсгэр дээр ажилладаг байв. Цайвар дэвсгэр дээр 60%
-            хар сүүдэр нь бохир толбо, цагаан ring нь үл харагдах болно.
-            Одоо `bg-card` + `ring-border` + зөөлөн сүүдэр — загварын дагуу
-            зураг нь цайвар хавтан дээр суудаг. */}
+        {
+}
         <div className="order-1 flex justify-center lg:order-2 lg:justify-end">
           <div className="animate-float-card bg-card ring-border relative aspect-[3/2] w-full max-w-lg overflow-hidden rounded-3xl shadow-lg ring-1 sm:max-w-xl lg:max-w-2xl xl:max-w-3xl">
             <Image
@@ -135,24 +79,6 @@ export function AppPromo({ content }: { content: AppPromoContent }) {
     </section>
   );
 }
-
-// =====================================================================
-// STORE BADGES — Apple App Store / Google Play
-//
-// ⚠️ ӨНГӨ нь `bg-foreground text-background`, ХАТУУ `bg-black` БИШ.
-// Загварт badge нь цайвар дэвсгэр дээрх БАРААН таблет — token хэрэглэснээр
-// light theme-д яг тийм болж, dark theme-д ЭСРЭГЭЭР (цайвар таблет)
-// хөрвөнө. `bg-black` үлдээвэл dark theme-д хар таблет хар дэвсгэр дээр
-// уусах байсан. Apple-ийн badge-ийн заавар хар ба цагаан хоёуланг
-// зөвшөөрдөг тул брэндийн шаардлага зөрчигдөхгүй.
-//
-// ⚠️ ХАСАГДСАН: `border-white/15` (цайвар дэвсгэр дээр үл харагдана) ба
-// `hover:bg-white/10` (badge-ийг бараг тунгалаг болгож, доорхыг гаргана).
-// Hover нь одоо `opacity-90` — хоёр theme-д ч ижил ажиллана.
-//
-// Focus ring нь section-ээс ирсэн `--app-accent`-ыг уншина; офсет нь
-// `ring-offset-background` буюу token (`--app-bg` хасагдсан).
-// =====================================================================
 
 const BADGE_CLASS =
   "bg-foreground text-background focus-visible:ring-offset-background inline-flex h-14 items-center gap-3 rounded-2xl px-5 transition-opacity duration-300 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--app-accent)] focus-visible:ring-offset-2 focus-visible:outline-none";

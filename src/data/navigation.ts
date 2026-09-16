@@ -1,21 +1,9 @@
-/**
- * Univision Web 4.0 — Navigation data
- *
- * Header цэсэн дэх data. Front-end дээр л ашиглагдах static data-уудыг энд төвлөрүүлсэн. Үүнд:,
- * - Top bar линкүүд (гадаад domain)
- * - Main navigation (Мобайл, Интернэт, Телевиз, Life-style, Урамшуулал)
- */
 import { brandSiteUrl, type Owner } from "@/lib/brand";
 
 export type NavItem = {
   label: string;
   href: string;
   badge?: string;
-  /**
-   * Энэ үйлчилгээг хэн эзэмших вэ. Өгөөгүй бол багана/категорийнхоо эзнийг
-   * өвлөнө. Unitel сайт дээр owner="univision" зүйл дархад univision.mn руу
-   * шинэ tab-аар үсэрнэ (мөн эсрэгээр).
-   */
   owner?: Owner;
 };
 
@@ -29,11 +17,8 @@ export type NavPromo = {
   description?: string;
   ctaLabel: string;
   href: string;
-  /** Background tint for the promo badge (Tailwind class, e.g. "bg-red-500") */
   badgeClass?: string;
-  /** Short label shown inside the badge circle */
   badgeText?: string;
-  /** Урамшууллын зураг (16:9). Байвал badge-ийн оронд зурган карт гарна. */
   image?: string;
   imageAlt?: string;
 };
@@ -41,19 +26,12 @@ export type NavPromo = {
 export type NavCategory = {
   label: string;
   href?: string;
-  /** Категорийн default эзэн — доторх item-ууд өвлөнө (item дээрээс дарж бичиж болно) */
   owner?: Owner;
-  // Multi-column mega-menu (Бүтээгдэхүүн, Энтертайнмент)
   columns?: NavColumn[];
-  // Энгийн dropdown list (Life-style, Урамшуулал)
   items?: NavItem[];
-  // Right-side promo cards (mega-menu only)
   promos?: NavPromo[];
-  // Direct link (no dropdown) — icon-той шууд линк болгох
   isDirectLink?: boolean;
-  // Trigger / линкийн өмнө харагдах lucide icon-ы нэр
   icon?: "gift" | "tag" | "percent";
-  // Тооны badge (жишээ 36) — байвал улбар шар дугуйтай гарна
   count?: number;
 };
 
@@ -63,7 +41,6 @@ export type TopBarLink = {
   external?: boolean;
 };
 
-// Top bar — Групп компанийн линк (2 хувилбар хоёуланд ил харагдана)
 export const topBar: TopBarLink[] = [
   { label: "Юнивишн", href: "https://univision.mn/", external: true },
   { label: "Юнител", href: "https://unitel.mn/unitel/", external: true },
@@ -71,257 +48,52 @@ export const topBar: TopBarLink[] = [
   { label: "Nexmind", href: "https://nexmind.mn/managednetwork", external: true },
 ];
 
-// =====================================================================
-// Эко-систем брэндүүд — Шинэ Хувилбар 1 (Apple маягийн нэгдсэн nav).
-// Ганц navigation дээр группын брэндүүдийг цэвэр нэрээр (домэйнгүй) харуулна.
-// =====================================================================
 export type EcosystemLink = {
   name: string;
   href: string;
   external?: boolean;
-  /**
-   * Хэн эзэмших вэ. Өгөөгүй бол "self" — хоёр build хоёуланд дотоод хуудас.
-   * Өгсөн бол `SmartLink`/`resolveHref` нь тухайн брэндийн БУСАД build дээр
-   * нөгөө домэйн руу (шинэ tab) шилжүүлнэ — AI туслахын CTA-тай ижил логик.
-   */
   owner?: Owner;
 };
 
 export const ecosystemBrands: EcosystemLink[] = [
-  // ⚠️ Unitel, Univision — өмнө нь дотоод `/unitel`, `/univision` хуудас руу
-  // заадаг байсан. Тэр ХОЁР ХУУДАС УСТСАН (LookTV-тэй хамт) тул одоо `#`.
-  // Хаашаа заахыг хойшлуулсан — доорх `appleNavCategories`-ийн тайлбарыг үз.
   { name: "Unitel", href: "#" },
   { name: "Univision", href: "#" },
   { name: "Toki", href: "https://toki.mn/", external: true },
   { name: "Look TV", href: "https://looktv.mn/", external: true },
-  { name: "DDish TV", href: "#" }, // TODO: домэйн (ddishtv.mn?)
+  { name: "DDish TV", href: "#" },
   { name: "Nexmind", href: "https://nexmind.mn/", external: true },
-  { name: "OSS", href: "#" }, // TODO: домэйн
+  { name: "OSS", href: "#" },
   { name: "U-point", href: "https://u-point.mn/", external: true },
-  { name: "PSN", href: "#" }, // TODO: домэйн
-  { name: "ESN", href: "#" }, // TODO: домэйн
+  { name: "PSN", href: "#" },
+  { name: "ESN", href: "#" },
 ];
 
-// Layer 2 — 5 ангилал: Unitel · Univision · Дэлгүүр · Урамшуулал · LookTV.
-//
-// Жагсаалтаас ХАСАГДСАН нь:
-//   "Тусламж"       — nav-д биш, footer болон нүүрийн FAQ блокоос хүрнэ.
-//   "Entertainment" — дэд цэсний агуулга нь `archivedMegaMenus`-д 1:1
-//                     хадгалагдсан; /entertainment/* хуудсууд хэвээр ажиллана.
-//
-// ДЭД ЦЭС ЗАДРАХ ЭСЭХ нь `appleMegaMenus`-д бичлэгтэй эсэхээр шийдэгдэнэ
-// (header.tsx > CategoryNav). Тиймээс:
-//   Unitel · Univision            → hover панел задарна
-//   Дэлгүүр · Урамшуулал · LookTV → бичлэггүй ⇒ ЭНГИЙН ЛИНК, панел задрахгүй
-//
-// Дэлгүүр, LookTV-гийн ӨМНӨХ дэд цэс нь `archivedMegaMenus`-д 1:1 хадгалагдсан
-// (устгаагүй) — тэдгээрийг буцаахад л панел дахин задарна.
-//
-// ⚠️⚠️ 2026-09-15: ЭДГЭЭР НЬ ОДОО БҮТЭН ХАЯГ (зам БИШ).
-// Захиалагчийн заавар: "header-ийн ангилал бүр дээр, Unitel бол Unitel-ийн
-// Vercel хаяг, Univision бол Univision-ыхыг тавь — Урамшуулал ч гэсэн".
-//   Unitel · Univision            → ТУС БҮРИЙН sample-ийн НҮҮР
-//   Дэлгүүр · Урамшуулал · LookTV → ЭНЭ build-ийн sample-ийн НҮҮР
-// Хаягийг `brandSiteUrl()` (lib/brand.ts) өгнө — `NEXT_PUBLIC_*_URL` env-ээс.
-// ⚠️ Тиймээс Vercel дээр ТЭР ХОЁР ENV ЗААВАЛ тавигдсан байх ёстой; эс бөгөөс
-//   энэ цэс localhost руу заана.
-// ⚠️ ШИНЭ TAB НЭЭХГҮЙ — `resolveHref` нь манай хоёр sample-ийг "гадаад сайт"
-//   -аас ялгаж, тухайн таб дотор шилжүүлнэ.
-//
-// ⚠️ ХУУЧИН БАЙДАЛ (буцаах бол): бүгд `"#"` / `"/#"` байсан — `/unitel`,
-// `/univision`, `/looktv` гурван хуудас устсан тул цэс ХААШАА Ч ЗААХГҮЙ
-// байв (ribbon нь `data/brand-ribbon.ts`-д хадгалагдсан). Аль ангилалд
-// ТУСДАА хуудас хэрэгтэйг шийдвэл эдгээрийг дотоод зам руу буцаана.
-//
-// ⚠️ DESKTOP ДЭЭР Unitel · Univision нь ЛИНК БИШ, панел задраах ТОВЧ
-// (header.tsx > CategoryNav — `appleMegaMenus`-д бичлэгтэй тул). Тэнд энэ
-// хаяг ХЭРЭГЛЭГДЭХГҮЙ. Мобайлын dock нь 5 ангилал бүгдийг ЛИНК болгодог тул
-// тэнд бүрэн ажиллана.
-//
-// `useCurrentNavName` нь `"/"`-ээр эхлээгүй бүх href-ийг алгасдаг тул бүтэн
-// хаяг нь active тодотголыг эвдэхгүй — домэйны нэр рүү унана.
-//
-// `owner` — Unitel/Univision нь ТУС БҮРИЙН домэйны эзэн.
-// ⚠️ 2026-09-15-ААС ЭХЭЛЖ ЭДГЭЭР АЖИЛЛАНА. `resolveHref` нь эзнийг `#`-ЭЭС
-// ӨМНӨ шалгадаг болсон тул нөгөө брэндийн мөр (dock, burger) нь ЗАМААСАА
-// ҮЛ ХАМААРАН тэр сайтын НҮҮР рүү, ЭНЭ ТАБ ДОТРОО шилжинэ. Өөрөөр хэлбэл
-// доорх `href: "#"` нь ЗӨВХӨН ӨӨРИЙН брэндийн мөрийг л идэвхгүй болгоно.
 export const appleNavCategories: EcosystemLink[] = [
   { name: "Unitel", href: brandSiteUrl("unitel"), owner: "unitel" },
   { name: "Univision", href: brandSiteUrl("univision"), owner: "univision" },
-  // Брэндгүй ангиллууд → ЭНЭ build-ийн sample (Unitel дээр Unitel, Univision
-  // дээр Univision). ⚠️ Захиалагчийн заавар: "Урамшуулал ч гэсэн".
   { name: "Дэлгүүр", href: brandSiteUrl() },
   { name: "Урамшуулал", href: brandSiteUrl() },
   { name: "LookTV", href: brandSiteUrl() },
 ];
 
-// =====================================================================
-// Хувилбар 1 (Apple) header-ийн mega menu. groupNavV2 ангилалд нийцүүлэв:
-//   Unitel    = Mobile + Family
-//   Univision = Internet + Entertainment (төхөөрөмжийг Дэлгүүр рүү зөөв)
-//   Дэлгүүр   = Unitel/Univision-ийн төхөөрөмжтэй холбоотой хэсгүүд
-//   LookTV    = стриминг ТВ (ТҮР ЗУУРЫН каркас — доорх тайлбарыг үз)
-// Section title = том тод линк (section.href рүү; http бол шинэ таб).
-//
-// "Урамшуулал" энд ЗӨРИУДААР байхгүй — бичлэггүй ангилал нь энгийн линк болж,
-// hover панел задардаггүй. Мөрдөх дүрэм: энд нэмбэл панел гарна.
-// =====================================================================
 export type MegaMenuSection = { id: string; title: string; href: string };
 
-/**
- * ХОЁР ДАХЬ ПАНЕЛИЙН БҮЛЭГ — гарчиг + линкүүд.
- * (ж: "Дараа төлбөрт" → Priority багц · Premium багц · Plus багц)
- *
- * `title` нь заавал биш: нэг л бүлэгтэй мөрөнд гарчиг нь ЗҮҮН талын
- * сонгосон мөртэйгээ давхардах тул хэрэггүй.
- */
 export type MegaMenuGroup = { id: string; title?: string; items: MegaMenuSection[] };
 
-/**
- * АНГИЛЛЫН ТӨЛӨВ — "дэд агуулга байхгүй мөрөнд баруун панел ЮУ харуулах вэ"
- * гэсэн НЭГ асуултын гурван бодит хариу.
- *
- * ⚠️ ӨМНӨ НЬ `maintenance?: boolean` байв (2026-09-09). Захиалагч Univision-ы
- * "Life-style" дээр maintain БИШ "Coming soon…" гэж хүссэнээр төлөв ХОЁР
- * болов — boolean-д хоёр дахь мэдэгдэл тэнцэхгүй. Мөн шинэ туг (ж.
- * `comingSoon?: boolean`) НЭМЭХГҮЙ: хоёр boolean нь хоорондоо зөрчилдөх
- * (хоёулаа `true`) боломж үүсгэдэг. Union нь тэр боломжийг типээр хаана.
- *
- *   "maintenance"  Wrench + "Maintain хийгдэж байгаа" — БАЙГАА үйлчилгээ
- *                  түр зуур ажиллахгүй (ж. Unitel > Олон улсын үйлчилгээ).
- *   "coming-soon"  Clock + "Coming soon…" — үйлчилгээ нь ХОЙШИД гарна,
- *                  одоо байхгүй (ж. Univision > Life-style).
- *   "link-only"    ЮУ Ч ХАРУУЛАХГҮЙ. Мөр нь ЗӨВХӨН линк — дэд цэс
- *                  байх ЁСГҮЙ, дарахад л хуудас руу явна.
- *
- * ⚠️ `undefined` (туг тавиагүй) нь "link-only"-ТОЙ АДИЛГҮЙ. Тэр нь
- * ХӨГЖҮҮЛЭГЧИЙН төлөв: агуулга нь шийдэгдээгүй тул баруун панел "дэд агуулга
- * тодорхойлогдоогүй" гэсэн дотоод сануулга харуулна. Дизайнаар хоосон
- * (`"link-only"`) ба мартагдсан (undefined) хоёрыг хутгавал дутуу зүйл
- * харагдахаа болино.
- *
- * `groups` БАЙГАА мөрөнд ч төлөв тавьж болно: дэд нэрс бэлэн боловч замууд
- * `#` бол жагсаалтын ДООР статус гарч, хэрэглэгч дарахаасаа өмнө хүлээлтээ
- * тааруулна.
- */
 export type MegaBranchStatus = "maintenance" | "coming-soon" | "link-only";
 
-/**
- * ЗҮҮН баганын НЭГ МӨР (ангилал).
- *
- * `groups` БАЙВАЛ тэр мөр нь "салаа" болно: hover/focus хийхэд ЗҮҮН багана
- * ХӨДЛӨХГҮЙ, зөвхөн БАРУУН панел нь тэр мөрийн `groups`-оор солигдоно
- * (захиалагчийн 2026-09-08-ны загвар). Дарахад `href` рүү шилжинэ.
- *
- * `groups` БАЙХГҮЙ бол баруун панел нь `status`-ийн дагуу (дээрхийг үз)
- * статус, хоосон, эсвэл дотоод сануулга харуулна — цэс эвдрэхгүй.
- */
 export type MegaMenuBranch = MegaMenuSection & {
   groups?: MegaMenuGroup[];
   status?: MegaBranchStatus;
 };
 export type MegaMenu = {
   name: string;
-  /*
-   * ⚠️ `quickActions` ТАЛБАР ХАСАГДСАН (2026-09-08, захиалагчийн заавар:
-   * "quick action-той хэсгийг Unitel, Univision аль алинаас нь хас").
-   *
-   * Тэр нь дэд цэсний ХАМГИЙН ДЭЭД, гарчиггүй мөрөнд суудаг 1-2 шууд
-   * үйлдлийн линк байсан ба агуулга нь бүхэлдээ PLACEHOLDER ("Quick action
-   * 1/2") — өөрөөр хэлбэл "энд slot бий" гэдгийг л үзүүлж байсан. Захиалагч
-   * тэр slot-ыг ХЭРЭГГҮЙ гэж шийдсэн тул дата, тип, гурван рендер хэсэг
-   * (desktop `BrandMegaPanel`, хувилбар 1 `SectionMenu`, хувилбар 3
-   * `DrawerSubmenu`) БҮГД хамт устав. `QuickActionChip` компонент ч мөн.
-   *
-   * Сэргээх бол git-ээс — нэг талбар биш ДӨРВӨН файлд тархсан.
-   */
-  /** 1-р баганын гарчиг. Өгөөгүй бол `name` (ж. "Unitel") харагдана. */
   sectionsLabel?: string;
-  /**
-   * ҮНДСЭН АНГИЛАЛ — дэд цэсний ЗҮҮН багана. Бүтээгдэхүүнийг ангилдаг.
-   * Hover/идэвхтэй үед ХАР pill + цагаан текстээр тодорно.
-   *
-   * Мөр бүр `groups`-тай байвал панел нь ХОЁР ПАНЕЛТ болно (зүүн тогтмол,
-   * баруун солигддог) — `MegaMenuBranch`-ийн тайлбарыг үз. `groups` нэг ч
-   * мөрөнд байхгүй бол хуучин ХОЁР БАГАНАТ хэлбэр (`sections` + `extras`)
-   * хэвээр рендерлэгдэнэ. ⚠️ 2026-09-09-ээс хойш БРЭНД ХОЁУЛАА хоёр панелт
-   * (Univision ч мөн) — хуучин хэлбэрийг ямар ч цэс хэрэглэхээ больсон
-   * боловч рендер нь кодод хэвээр (`BrandMegaPanel`-ийн fallback).
-   */
   sections: MegaMenuBranch[];
-  /** 2-р баганын гарчиг. Өгөөгүй бол "Нэмэлт". */
   extrasLabel?: string;
-  /**
-   * НЭМЭЛТ — дэд цэсний ХОЁР ДАХЬ багана (`sections`-ийн ард).
-   *
-   * `sections` нь зөвхөн бүтээгдэхүүнийг ангилдаг тул үйлчилгээ/туслах шинжтэй
-   * зүйлс (Нэмэлт үйлчилгээ · Хамрах хүрээ · Тусламж г.м) хаана ч суудаггүй —
-   * тэднийг энэ баганад цуглуулна.
-   *
-   * ⚠️ ЗӨВХӨН ХУУЧИН (хоёр баганат) ХЭЛБЭРТ хэрэглэгдэнэ. Хоёр панелт цэсэнд
-   * (`sections[].groups` бий) энэ багана РЕНДЕРЛЭГДЭХГҮЙ — тэнд "Нэмэлт
-   * үйлчилгээ" нь зүүн баганын өөрийн мөр болсон.
-   *
-   * Өгөөгүй бол `BrandMegaPanel` нь бүх брэндэд хуваалцах default жагсаалтыг
-   * (Багц сонгох · Төхөөрөмж · Тусламж · Бүх урамшуулал) харуулна.
-   */
   extras?: MegaMenuSection[];
 };
 
-/**
- * UNITEL-ИЙН ХОЁР ПАНЕЛТ ДЭД ЦЭС — desktop ба mobile ХУВААЛЦАНА.
- *
- * ⚠️⚠️ БҮХЭЛДЭЭ ДАХИН БҮТЭЦЛЭГДСЭН (2026-09-10, захиалагч: "Unitel-ийн
- * category-г Үндсэн багцууд болон Бусад үйлчилгээ гэж үндсэн 2 л mega
- * category болгоод … өөр нэмэлт ангилал битгий оруул, яг л миний хэлсэнээр").
- *
- * ӨМНӨ НЬ ЗҮҮН БАГАНАД 6 МӨР байсан: Үндсэн багцууд · Гэр интернет · Олон
- * улсын үйлчилгээ · For Foreigners · Нэмэлт дата багц · Нэмэлт үйлчилгээ.
- * Одоо ЗӨВХӨН ХОЁР:
- *
- *   ЗҮҮН (2 мөр)          БАРУУН (сонгосноор солигдоно)
- *   ──────────────────    ─────────────────────────────────────────────
- *   Үндсэн багцууд    →   Premium багц · Priority багц · Plus багц ·
- *                         Smart Data · Smart Talk · Family
- *   Бусад үйлчилгээ   →   Гэр интернет · Олон улсын үйлчилгээ ·
- *                         For Foreigners · Нэмэлт дата багц ·
- *                         Нэмэлт үйлчилгээ
- *
- * ⚠️ ГАРЧИГГҮЙ НЭГ БҮЛЭГ — захиалагчийн сонголт: "нэг жагсаалт, гарчгаар
- * хуваахгүй". Тиймээс "Дараа төлбөрт" / "Урьдчилсан төлбөрт" гэсэн бүлгийн
- * шошго ХОЁУЛАА алга. `MegaMenuGroup.title` нь optional тул энэ нь типээр
- * дэмжигдсэн хэлбэр, тойруу зам БИШ.
- *
- * ⚠️⚠️ `status: "maintenance"` ДӨРВӨН МӨРНӨӨС АЛДАГДСАН. Өмнө нь Олон улсын
- * үйлчилгээ · For Foreigners · Нэмэлт дата багц · Нэмэлт үйлчилгээ дөрөв нь
- * САЛАА байсан бөгөөд салаа л `status` авч чадна (`MegaMenuBranch`). Одоо
- * тэдгээр нь бүлгийн ЭНГИЙН ЗҮЙЛ (`MegaMenuSection = {id,title,href}`) болсон
- * тул "Maintain хийгдэж байгаа" тэмдэглэгээ ХАРАГДАХАА БОЛИВ.
- * ⇒ Тэр мэдэгдлийг буцаах шаардлагатай бол `MegaMenuSection`-д `status`
- *   нэмж, `BranchedMegaPanel`-д рендерлэнэ — ЗАХИАЛАГЧААС ЛАВЛАСНЫ ДАРАА.
- *
- * ⚠️ "ГЭР ИНТЕРНЕТ"-ИЙН 5G / 4.5G ТӨХӨӨРӨМЖ ХАСАГДСАН — захиалагчийн
- * сонголт ("ганц линк болгоно"). Хасагдсан хоёр мөр:
- *     { id: "home-5g",  title: "5G Гэр интернет төхөөрөмж",   href: "#" }
- *     { id: "home-45g", title: "4.5G Гэр интернет төхөөрөмж", href: "#" }
- *
- * ⚠️ ЗҮЙЛИЙН НЭРС ХӨНДӨГДӨӨГҮЙ. Захиалагч "Premium, Priority, Plus" гэж
- * товчлон бичсэн ч кодод батлагдсан "Premium багц" гэх хэлбэр ХЭВЭЭР —
- * шошго солих нь тусдаа шийдвэр. "Family" нь 09-08-нд хасагдаад одоо
- * буцаж орсон, `href` нь бусадтай ижил `/#` (захиалагчийн сонголт; хуучин
- * TOKI-гийн гадаад холбоос СЭРГЭЭГДЭЭГҮЙ).
- *
- * ⚠️ ДАРААЛАЛ = ЗАХИАЛАГЧИЙН БИЧСЭН ДАРААЛАЛ. Массивын дараалал нь зүүн
- * баганад ЯГ ТЭР дарааллаар харагдана (`BranchedMegaPanel` эрэмбэлдэггүй),
- * мөн мобайлын accordion-д ч ижил. Эрэмбэ солих = мөрүүдийг зөөх.
- *
- * ⚠️ DESKTOP-Д "ҮНДСЭН БАГЦУУД" АНХНААСАА НЭЭЛТТЭЙ — `BranchedMegaPanel` нь
- * `menu.sections[0]`-ыг идэвхтэйгээр эхлүүлдэг тул ЭНЭ МАССИВЫН ЭХНИЙ ЗҮЙЛ
- * нь анхны нээлттэй панел болно. Дараалал солих үед тэр зан ч дагаж
- * өөрчлөгдөнө гэдгийг санана.
- */
 const unitelBranches: MegaMenuBranch[] = [
   {
     id: "packages",
@@ -330,7 +102,6 @@ const unitelBranches: MegaMenuBranch[] = [
     groups: [
       {
         id: "packages-all",
-        // `title` ЗОРИУД БАЙХГҮЙ — дээрх "ГАРЧИГГҮЙ НЭГ БҮЛЭГ"-ийг үз.
         items: [
           { id: "premium", title: "Premium багц", href: "/#" },
           { id: "priority", title: "Priority багц", href: "/#" },
@@ -361,70 +132,7 @@ const unitelBranches: MegaMenuBranch[] = [
   },
 ];
 
-/*
- * ⚠️ `TOKI_FAMILY_HREF` ХАСАГДСАН (2026-09-08). "Family" мөр нь Unitel-ийн
- * шинэ хоёр панелт цэсээс гарч, оронд нь "Smart Days" орсноор энэ тогтмолыг
- * ХААНААС Ч дуудахаа больсон. Toki-гийн Family үйлчилгээний бүтэн (encode
- * хийсэн) URL хэрэгтэй бол git-ээс — өөр хаана ч бичигдээгүй байсан.
- */
-
-/**
- * UNIVISION-Ы ХОЁР ПАНЕЛТ ДЭД ЦЭС — desktop ба mobile ХУВААЛЦАНА
- * (2026-09-09, захиалагч: "Univision-ы header-г засая, хэв маягийг одоогийн
- * Unitel шигээр хийгээд цэсний category болон ангиллыг … гэж оруулаа").
- *
- * Хуучин ХОЁР БАГАНАТ хэлбэр (`sections` + `extras`) ГАРСАН. Unitel-тэй
- * ижил хэлбэрт орох нь `sections[]`-ийн мөрөнд `groups` бичихээр л
- * шийдэгддэг (`BrandMegaPanel` нь хэлбэрийг датагаас таамагладаг) —
- * компонентод шинэ туг НЭМЭХ шаардлагагүй.
- *
- *   ЗҮҮН (тогтмол 4 мөр)      БАРУУН (сонгосноор солигдоно)
- *   ────────────────────      ──────────────────────────────
- *   Үндсэн бүтээгдэхүүн   →   (хоосон — доорх тайлбарыг үз)
- *   Интернэтийн шийдэл    →   Нэмэлт үйлчилгээ · Хамрах хүрээг сайжруулах ·
- *                             Дэд бүтцийн шийдэл
- *   Энтертайнмэнт         →   Контент · ТВ суваг · ТВ апп · Нэмэлт үйлчилгээ
- *   Life-style            →   Coming soon…
- *
- * ⚠️ ДЭД НЭРСИЙГ ЗОХИООГҮЙ — захиалагчийн 2026-09-09-ны ХОЁР screenshot-оос
- * буулгасан (тэдгээр нь Univision-ы бодит хуудсан дээрх ангиллын pill-үүд):
- *   screenshot 1 → Интернэтийн шийдэл-ийн 3 pill
- *   screenshot 2 → Энтертайнмэнт-ийн 4 pill
- *
- * ⚠️ ГАРЧИГГҮЙ НЭГ БҮЛЭГ (`title` өгөөгүй). Screenshot дээр pill-үүд нь
- * ЗЭРЭГЦЭЭ, өөр өөр бүлэгт хамаарахгүй нэг эгнээ байсан тул тэднийг НЭГ
- * бүлгийн `items` болгов — Unitel-ийн "Дараа/Урьдчилсан төлбөрт" шиг ХОЁР
- * бүлэг БИШ. Хэрэв pill бүрийн ДООРХ жагсаалт (ж. "ТВ суваг" → сувгийн
- * төрлүүд) гарвал тэр үед pill нь `group.title` болж, доорх нэрс `items`
- * болно — бүтэц тэр чигээрээ дэмжинэ.
- *
- * ⚠️ "Нэмэлт үйлчилгээ" ХОЁР УДАА гарч байгаа нь ЗӨРҮҮ БИШ: screenshot
- * хоёуланд нь бий. Интернэтийн нэмэлт үйлчилгээ ба ТВ-ийн нэмэлт үйлчилгээ
- * нь ӨӨР бүтээгдэхүүн тул `id` нь ялгаатай (`internet-addons` /
- * `tv-addons`) — React-ийн key давхардахгүй.
- *
- * ⚠️ ХУУЧИН `extras` (Нэмэлт үйлчилгээ · Сүлжээний хамрах хүрээ · Төхөөрөмж ·
- * Тусламж · Бүх урамшуулал) БҮХЭЛДЭЭ ГАРСАН. Хоёр панелт хэлбэрт desktop нь
- * `extras`-ыг РЕНДЕРЛЭДЭГГҮЙ, харин мобайлын хоёр рендер нь ХЭВЭЭР
- * рендерлэдэг — үлдээвэл desktop/mobile хоёр ЗӨРНӨ (Unitel-д `extras`
- * байхгүй тул тэр зөрүү өмнө нь илрээгүй). Эхний хоёр нь баруун панелийн
- * дэд нэрст АЛЬ ХЭДИЙН орсон ("Нэмэлт үйлчилгээ", "Хамрах хүрээг
- * сайжруулах"); Төхөөрөмж нь Layer 2-ын "Дэлгүүр" ангилал; Тусламж ба Бүх
- * урамшуулал нь footer/нүүрнээс хүрнэ. Зүүн баганад тусдаа мөр болгож
- * оруулах бол захиалагчийн 4 ангиллын эрэмбийг өөрчлөх шаардлагатай.
- */
 const univisionBranches: MegaMenuBranch[] = [
-  /**
-   * ⚠️ ЗӨРИУД ХООСОН — `status: "link-only"` (2026-09-09, захиалагч:
-   * "Үндсэн бүтээгдэхүүний ард юу ч байхгүй, дарах үед багцын мэдээллийг
-   * харуулдаг хэсэг болон захиалга өгөх цонх руу үсэрнэ гэхдээ одоо бүх
-   * href-г # болгосон болохоор хоосноор нь үлдээ").
-   *
-   * Өөрөөр хэлбэл энэ мөр нь ДЭД ЦЭСТЭЙ БОЛОХ ЁСГҮЙ — хуудас руу шилжих
-   * ЦЭВЭР ЛИНК. Тиймээс баруун панел хоосон. `status` тавиагүй бол баруун
-   * панелд "дэд агуулга тодорхойлогдоогүй" гэсэн ХӨГЖҮҮЛЭГЧИЙН сануулга
-   * гарна — тэр нь энд БУРУУ (агуулга дутуу биш, дизайнаар хоосон).
-   */
   { id: "core", title: "Үндсэн бүтээгдэхүүн", href: "/#", status: "link-only" },
   {
     id: "internet",
@@ -457,103 +165,23 @@ const univisionBranches: MegaMenuBranch[] = [
       },
     ],
   },
-  /**
-   * ⚠️ MAINTAIN БИШ, "COMING SOON…" (2026-09-09, захиалагчийн заавар:
-   * "Life-Style дээр Maintain хийгдэж байна биш Coming soon… гэж оруул").
-   *
-   * Хоёрын ялгаа нь хэрэглэгчид ӨӨР зүйл хэлдэгт: maintain = байгаа зүйл
-   * түр зуур ажиллахгүй; coming soon = зүйл нь ОДОО БАЙХГҮЙ, хойшид гарна.
-   * Univision-ы Life-style (Smart Home · Security · Gaming) нь хоёр дахь нь.
-   */
   { id: "lifestyle", title: "Life-style", href: "#", status: "coming-soon" },
 ];
 
-/**
- * LookTV-ийн ГАДААД сайт. Кодод `looktv.mn` ба `look.tv` хоёр зэрэг байсныг
- * `looktv.mn` руу нэгтгэв. Nav-ийн "LookTV" өөрөө дотоод `/looktv` хуудас —
- * гадагш үсрэх нь зөвхөн эндээс.
- */
 export const LOOKTV_SITE = "https://looktv.mn/";
 export const LOOKTV_APP_HREF = "https://looktv.mn/#/setup";
 
 export const appleMegaMenus: Record<string, MegaMenu> = {
-  /**
-   * UNITEL — багцын нэрээр ангилсан (өмнө "Дараа/Урьдчилсан төлбөрт" гэсэн
-   * төлбөрийн хэлбэрээр байсан).
-   *
-   * `sectionsLabel: "Багц"` — 1-р баганын гарчиг брэндийн нэр БИШ. Багана нь
-   * тарифын нэрсийг агуулдаг тул "Unitel" гэсэн гарчиг агуулгыг тайлбарлахгүй.
-   */
   Unitel: { name: "Unitel", sections: unitelBranches },
-  /**
-   * UNIVISION — Unitel-тэй ИЖИЛ хоёр панелт хэлбэр (2026-09-09).
-   * Ангилал ба дэд агуулгыг `univisionBranches`-д тайлбартай нь үз.
-   *
-   * ⚠️ Хуучин "Энтертайнмэнт → `/entertainment/main`" ЗАМ ХАМТ ГАРСАН —
-   * бүх дотоод зам `/#` болсон (2026-09-09-ны "нүүрнээс бусад ажиллахгүй"
-   * шийдвэр) тул тэр линк ямар ч тохиолдолд идэвхгүй байсан. Хуудсууд
-   * (`/entertainment/*`) устаагүй, замууд сэргэхэд буцаана. Дэд агуулга нь
-   * `archivedMegaMenus.Entertainment`-д 1:1 хэвээр.
-   */
   Univision: { name: "Univision", sections: univisionBranches },
 };
 
-// =====================================================================
-// MOBILE-ЫН дэд цэс — ЗӨВХӨН mobile header (таб dropdown + burger).
-//
-// Desktop-ийн mega menu (`appleMegaMenus`) ЭНЭ ангиллаас ТУСДАА бөгөөд
-// хуучнаараа хэвээр. Mobile дээр дэлгэц нарийн тул ангиллыг цөөлж,
-// нэрийг нь нэгтгэж болно.
-//
-// ⚠️ Түлхүүрүүд нь `appleMegaMenus`-тай ТААРАХ ЁСТОЙ. Эс бөгөөс нэг ангилал
-// desktop дээр панелтай, mobile дээр энгийн линк (эсвэл эсрэгээр) болж
-// хоёр давхарга зөрнө. Одоо хоёулаа: Unitel · Univision.
-//
-// ⚠️ Хоёр цэсний АГУУЛГА ТУСДАА хөгжинө — mobile-д мөр нэмэхэд desktop
-// өөрчлөгдөхгүй.
-// =====================================================================
 export const mobileMegaMenus: Record<string, MegaMenu> = {
-  // Desktop-той ИЖИЛ агуулга — багцын нэрс + Бусад үйлчилгээ + хурдан үйлдэл.
   Unitel: { name: "Unitel", sections: unitelBranches },
-  /**
-   * Desktop-той ИЖИЛ дата (2026-09-09, захиалагч: "Mobile дээр мөн адил энэ
-   * мэдээллийг ашиглаад хий" — Unitel-д тавьсан зарчим Univision-д ч
-   * мөрдөнө). Мобайлын хоёр рендер нь хэвтээ хоёр панелыг БОСОО жагсаалт
-   * болгож дэлгэнэ (`DrawerSubmenu` / `SectionMenu`).
-   */
   Univision: { name: "Univision", sections: univisionBranches },
 };
 
-// =====================================================================
-// АРХИВ — ДЭД ЦЭСГҮЙ болсон ангиллын агуулга. УСТГАХГҮЙ.
-//
-// Энд байгаа нь nav-аас ГАРСАН гэсэн үг БИШ — "Дэлгүүр" ба "LookTV" нь
-// `appleNavCategories`-д хэвээр, зүгээр л ПАНЕЛГҮЙ энгийн линк болсон
-// ("Дэлгүүр" нь `/devices` рүү; "LookTV" нь хуудас нь устсан тул `#`).
-// "Entertainment" нь nav-аас ч гарсан.
-//
-// Сэргээх бол `desktop`-ыг `appleMegaMenus`, `mobile`-ыг `mobileMegaMenus`
-// рүү буцааж хуулна — панел тэр дороо задарна (`header.tsx > CategoryNav`).
-//
-// ⚠️ ЭНД БАЙГАА ЗАМУУД ХААГДААГҮЙ. Хүрэх бусад зам:
-//   Дэлгүүр       — `/devices` landing-ийн ангиллын шүүлтүүр (pill) дээрх
-//                   `?category=` линкүүд ЯГ ижил зорилготой
-//   LookTV        — ⚠️ ЗАМГҮЙ. `/looktv` хуудас УСТСАН, шинэ зам шийдэгдээгүй
-//   Entertainment — `/entertainment/main` · `/entertainment/category/[id]` ·
-//                   `/entertainment/movie/[id]` бүгд ажиллаж байна;
-//                   `appleMegaMenus.Univision > "Энтертайнмэнт"`-аас хүрнэ
-// =====================================================================
 export const archivedMegaMenus: Record<string, { desktop: MegaMenu; mobile: MegaMenu }> = {
-  /**
-   * ДЭЛГҮҮР — `/devices` landing-ийн ангилал бүрийг нээдэг байсан панел.
-   *
-   * `?category=<id>` дэх id нь `data/devices.ts > deviceCategories`-ийн
-   * id-тай ЯГ ТААРНА. Mobile нь ангиллыг НЭГТГЭСЭН тул нэг мөр хоёр ангилал
-   * нээдэг (`?category=` таслалаар олон утга авдаг).
-   *
-   * ⚠️ `?category=` ба `?type=` нь ӨӨР зүйл: `type` нь өмнөх хувилбарын
-   * SAMPLE дэлгэрэнгүй хуудсыг нээдэг (`service-index.ts`).
-   */
   Дэлгүүр: {
     desktop: {
       name: "Дэлгүүр",
@@ -581,9 +209,6 @@ export const archivedMegaMenus: Record<string, { desktop: MegaMenu; mobile: Mega
       ],
     },
   },
-  // LOOKTV — ТҮР ЗУУРЫН каркас байсан (гурав нь `#` placeholder, "Апп татах"
-  // нь бодит гадаад линк). Агуулгыг эцэслэхэд `Entertainment.desktop`-оос
-  // авах эсэхийг шийднэ.
   LookTV: {
     desktop: {
       name: "LookTV",
@@ -625,15 +250,12 @@ export const archivedMegaMenus: Record<string, { desktop: MegaMenu; mobile: Mega
   },
 };
 
-// Хувилбар 3 (Unitel) — Unitel.mn домэйны мобайл үйлчилгээтэй холбоотой брэндүүд
-// (дээд bar-т байрлана)
 export const unitelDomains: EcosystemLink[] = [
   { name: "Unitel", href: "https://unitel.mn/", external: true },
   { name: "Toki", href: "https://toki.mn/", external: true },
   { name: "Nexmind", href: "https://nexmind.mn/", external: true },
 ];
 
-// Хувилбар 3 (Unitel) — үндсэн navigation ангилал (зурган дээрх шиг)
 export const unitelNav: NavCategory[] = [
   { label: "Дараа төлбөрт", href: "#", isDirectLink: true },
   { label: "Урьдчилсан төлбөрт", href: "#", isDirectLink: true },
@@ -642,38 +264,26 @@ export const unitelNav: NavCategory[] = [
   { label: "Гар утас", href: "#", isDirectLink: true },
 ];
 
-// Хувилбар 4 (Univision) — Univision.mn домэйны холбоотой брэндүүд (дээд bar-т).
-// Үндсэн nav нь mainNavLegacy (Бүтээгдэхүүн / Энтертайнмент / Life-style / Урамшуулал).
 export const univisionDomains: EcosystemLink[] = [
   { name: "Univision", href: "https://univision.mn/", external: true },
   { name: "Гэр интернэт", href: "https://unitel.mn/unitel/product/ger", external: true },
-  { name: "DDish", href: "#" }, // TODO: домэйн (ddishtv.mn?)
+  { name: "DDish", href: "#" },
 ];
 
-// =====================================================================
-// Группын сегментүүд — Хувь хэрэглэгч / Өрх / Байгууллага (Хувилбар 2 top bar).
-// Группын компаниудыг хэрэглээгээр бүлэглэж, hover дээр гишүүн брэндийн
-// картуудыг (товч мэдээлэл + домэйн линк) харуулна.
-// =====================================================================
 export type BrandCard = {
   name: string;
-  /** Картан дахь товч тайлбар */
   description: string;
-  /** Тухайн брэндийн домэйн */
   href: string;
   external?: boolean;
-  /** Картын дугуй badge доторх товч нэр (UNT, UNV...) */
   badge: string;
 };
 
 export type AudienceSegment = {
   id: string;
   label: string;
-  /** Брэндгүй сегментийн шууд линк (одоогоор бүгд брэндтэй) */
   href: string;
   external?: boolean;
   icon: "user" | "building" | "info" | "smartphone" | "home";
-  /** Hover дээр гарах гишүүн брэндийн cards. Байхгүй бол шууд линк. */
   brands?: BrandCard[];
 };
 
@@ -746,10 +356,6 @@ export const audienceSegments: AudienceSegment[] = [
   },
 ];
 
-// =====================================================================
-// Хувилбар 6 — Хувь хэрэглэгч / Байгууллага / Бидний тухай сегментүүд.
-// "Бидний тухай" нь brands-гүй тул группын сайт руу шууд линк болно.
-// =====================================================================
 export const customerSegments: AudienceSegment[] = [
   {
     id: "personal",
@@ -818,7 +424,6 @@ export const customerSegments: AudienceSegment[] = [
   },
 ];
 
-// Main navigation — бүтээгдэхүүний төрлөөр ангилсан (Мобайл / Интернэт / Телевиз)
 export const mainNav: NavCategory[] = [
   {
     label: "Мобайл",
@@ -961,10 +566,6 @@ export const mainNav: NavCategory[] = [
   },
 ];
 
-// Mega menu-ийн баруун талд (хоосон талбарт) харуулах "цаг үеийн" урамшуулал
-// (1-2 ширхэг). Бүх header хувилбарт (1/2/3/4) ИЖИЛ энэ жагсаалт гарна —
-// PromoCard-аар: зүүн дугуй ("SAMPLE") + title + богино тайлбар + CTA.
-// Бодит баннер бэлэн болоход badgeText-ийн оронд image өгвөл дугуйд зураг орно.
 export const currentPromos: NavPromo[] = [
   {
     title: "Sample 1",
@@ -1096,7 +697,6 @@ export const groupNavV2: NavCategory[] = [
     promos: currentPromos,
   },
   {
-    // Холимог категори — item тус бүр өөрийн эзэнтэй
     label: "Төхөөрөмж",
     owner: "unitel",
     items: [
@@ -1112,14 +712,10 @@ export const groupNavV2: NavCategory[] = [
     href: "https://www.toki.mn/family-%D2%AF%D0%B9%D0%BB%D1%87%D0%B8%D0%BB%D0%B3%D1%8D%D1%8D-%D1%88%D0%B8%D0%BD%D1%8D%D1%87%D0%BB%D1%8D%D0%B3%D0%B4%D0%BB%D1%8D%D1%8D/",
     isDirectLink: true,
   },
-  // "self" — хоёр сайт тус бүр өөрийн Урамшуулал/Тусламж хуудастай, үсрэхгүй
   { label: "Урамшуулал", href: "/campaigns", isDirectLink: true, icon: "gift", owner: "self" },
   { label: "Тусламж", href: "/support", isDirectLink: true, owner: "self" },
 ];
 
-// Хувилбар 4 (Apple mega panel) — panel-ийн баруун талын "Бизнес эрхлэгч бол"
-// хэсгийн жижиг quick link-үүд (Хувь хэрэглэгчийн үндсэн жагсаалтын ард).
-// Агуулга нь placeholder — бодит бизнес линкээр солино.
 export const businessQuickLinks: NavItem[] = [
   { label: "Байгууллагын багц", href: "#" },
   { label: "Corporate үйлчилгээ", href: "#" },
@@ -1127,12 +723,6 @@ export const businessQuickLinks: NavItem[] = [
   { label: "Борлуулалттай холбогдох", href: "#" },
 ];
 
-// =====================================================================
-// Хувилбар 3 (Xfinity) — segment switcher-гүй, нэг мөрт nav.
-// Ангилал нь V1/V2-тэй ижил (хуучин) + "Байгууллага" (Xfinity дээрх
-// "Comcast Business" шиг nav дотроо). xfinityNav нь mainNavLegacy-ийн
-// дараа тодорхойлогдоно (доор).
-// =====================================================================
 const businessCategory: NavCategory = {
   label: "Байгууллага",
   columns: [
@@ -1162,11 +752,6 @@ const businessCategory: NavCategory = {
   ],
 };
 
-// =====================================================================
-// Хувилбар 1 (Хуучин) — өөрчлөлт хийхээс өмнөх анхны ангилал.
-// V1 нь бүх зүйлээрээ хуучнаараа үлдэх тул тусдаа хадгалав.
-// (Шинэ Мобайл/Интернэт/Телевиз ангилал зөвхөн V2/V3-д — mainNav.)
-// =====================================================================
 export const mainNavLegacy: NavCategory[] = [
   {
     label: "Бүтээгдэхүүн",
@@ -1279,10 +864,6 @@ export const mainNavLegacy: NavCategory[] = [
   },
 ];
 
-// =====================================================================
-// Хувилбар 3 (Xfinity) nav — V1/V2-тэй ижил хуучин ангилал + "Байгууллага"
-// ("Урамшуулал" шууд линкийн өмнө). mainNavLegacy-ийн дараа тодорхойлов.
-// =====================================================================
 export const xfinityNav: NavCategory[] = [
   ...mainNavLegacy.filter((c) => !c.isDirectLink),
   businessCategory,

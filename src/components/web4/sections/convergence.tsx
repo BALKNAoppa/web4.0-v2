@@ -8,23 +8,16 @@ import { cn } from "@/lib/utils";
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-// Илүү тод/солид bubble — SPHERE_BG highlight дээр нь тунгалаг бус ногоон бие.
 const BUBBLE_BG = `${SPHERE_BG}, radial-gradient(circle at 50% 46%, #1e6344 0%, #0f3327 70%, #0a241b 100%)`;
 
 function homePos(side: "company" | "customer", i: number) {
-  const y = 30 + i * 12; // 30 … 78 (дэлгэц дээр арай доош)
+  const y = 30 + i * 12;
   const x = side === "company" ? 21 + (i % 2) * 7 : 79 - (i % 2) * 7;
   return { x, y };
 }
 
-// Алхам бүрийн зорилтот progress: 0 = company, 1 = customers, 2 = merge.
 const STEP_TARGET = [0.22, 0.52, 1];
 
-/**
- * Web 4.0 нийлэл — presentation fragment логик:
- * сум дарах бүрд `step` нэмэгдэж, company → customers → merge гэж өрнөнө.
- * Bubble дээр дарахад тухайн зорилтын дэлгэрэнгүй жагсаалт гарч ирнэ.
- */
 export function Convergence({
   active = false,
   step = 0,
@@ -36,7 +29,6 @@ export function Convergence({
   const [openId, setOpenId] = useState<string | null>(null);
   const pRef = useRef(0);
 
-  // `p`-г алхам солигдох бүрд зорилтот утга руу зөөлөн tween хийнэ.
   useEffect(() => {
     if (!active) {
       setP(0);
@@ -59,7 +51,7 @@ export function Convergence({
     let raf = 0;
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / dur);
-      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      const eased = 1 - Math.pow(1 - t, 3);
       const v = from + (target - from) * eased;
       pRef.current = v;
       setP(v);
@@ -71,7 +63,6 @@ export function Convergence({
     };
   }, [active, step]);
 
-  // Алхам солигдоход нээлттэй дэлгэрэнгүйг хаана.
   useEffect(() => {
     setOpenId(null);
   }, [step]);
@@ -105,10 +96,10 @@ export function Convergence({
 
   return (
     <section id="intent" className="relative min-h-[100svh] w-full overflow-hidden">
-      {/* Opaque cosmic stage — hides the bubble background behind the merge */}
+      {}
       <div className="absolute inset-0 bg-[radial-gradient(1000px_700px_at_50%_32%,#10233f_0%,transparent_60%),linear-gradient(160deg,#0a1424,#05080f)]" />
 
-      {/* column labels */}
+      {}
       <span
         className="pointer-events-none absolute top-[8%] left-[21%] -translate-x-1/2 text-sm font-extrabold tracking-[0.28em] text-white uppercase transition-opacity duration-500 md:text-2xl"
         style={{ opacity: phase !== "C" ? 1 : 0 }}
@@ -122,7 +113,7 @@ export function Convergence({
         Customers
       </span>
 
-      {/* bubbles */}
+      {}
       {companyGoals.map((g, i) => (
         <Bubble
           key={g.id}
@@ -148,7 +139,7 @@ export function Convergence({
         />
       ))}
 
-      {/* Web 4.0 core — big & centered */}
+      {}
       <div
         className={cn(
           "absolute top-1/2 left-1/2 z-10 grid aspect-square w-[min(58vmin,480px)] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/20 text-center",
@@ -171,7 +162,7 @@ export function Convergence({
         </div>
       </div>
 
-      {/* eyebrow + title — дээд талд */}
+      {}
       <div className="pointer-events-none absolute inset-x-0 top-[7%] z-20 mx-auto w-[min(92vw,820px)] px-6 text-center">
         <p className="text-xs font-bold tracking-[0.32em] text-[#7dfa5a] uppercase md:text-sm">
           {caption.eyebrow}
@@ -181,7 +172,7 @@ export function Convergence({
         </h2>
       </div>
 
-      {/* Bubble дэлгэрэнгүй — төвд */}
+      {}
       {openGoal && (
         <div className="animate-in fade-in zoom-in-95 pointer-events-none absolute top-1/2 left-1/2 z-30 w-[min(92vw,620px)] -translate-x-1/2 -translate-y-1/2 px-6 text-center duration-300">
           <p className="bg-gradient-to-r from-[#7dfa5a] to-[#8becff] bg-clip-text text-xl font-extrabold text-transparent md:text-3xl">
@@ -201,7 +192,7 @@ export function Convergence({
         </div>
       )}
 
-      {/* sub — доод талд (дэлгэрэнгүй нээлттэй үед нуух) */}
+      {}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-[14%] z-20 mx-auto w-[min(92vw,600px)] px-6 text-center transition-opacity duration-300"
         style={{ opacity: openGoal ? 0 : 1 }}
@@ -238,8 +229,6 @@ function Bubble({
 
   const x = lerp(home.x, 50, convergeC);
   const y = lerp(home.y, 50, convergeC);
-  // Байрлал/scale-г `p`-tween (rAF) шууд удирдана — CSS transition нэмэхгүй
-  // (эс тэгвээс frame бүрийн шинэчлэлтэй зөрчилдөж smear болно).
   const scale = enter * lerp(1, 0.12, convergeC);
   const opacity = enter * (1 - convergeC);
   const interactive = enter > 0.6 && convergeC < 0.08;
@@ -264,7 +253,7 @@ function Bubble({
         willChange: "transform, opacity, left, top",
       }}
     >
-      {/* Дарахад цойлох pop зөвхөн энэ давхаргад (p-tween-д нөлөөлөхгүй) */}
+      {}
       <span
         className="grid h-full w-full place-items-center rounded-full border border-white/20 p-[13%] text-center"
         style={{

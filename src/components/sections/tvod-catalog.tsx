@@ -18,15 +18,8 @@ const RECENT_MAX = 8;
 const SUGGEST_LIMIT = 5;
 const DEBOUNCE_MS = 200;
 
-// =====================================================================
-// localStorage external-store API — useSyncExternalStore-д зориулсан
-// React 19-ийн strict mode-д setState in useEffect-г ашиглахгүйн тулд
-// localStorage-ийг external store-оор хандана.
-// =====================================================================
 function subscribeRecent(callback: () => void) {
-  // Бусад tab-аас өөрчлөгдөх үед "storage" event
   window.addEventListener("storage", callback);
-  // Энэ tab дотроос өөрчлөгдөх үед custom event
   window.addEventListener(RECENT_EVENT, callback);
   return () => {
     window.removeEventListener("storage", callback);
@@ -51,7 +44,6 @@ function writeRecent(value: string[]) {
     localStorage.setItem(RECENT_KEY, JSON.stringify(value));
     window.dispatchEvent(new Event(RECENT_EVENT));
   } catch {
-    /* алгасна */
   }
 }
 
@@ -60,37 +52,22 @@ function clearRecentStorage() {
     localStorage.removeItem(RECENT_KEY);
     window.dispatchEvent(new Event(RECENT_EVENT));
   } catch {
-    /* алгасна */
   }
 }
 
-/**
- * TVOD кино каталогын unified компонент:
- *   - Search input + live autocomplete dropdown
- *   - Recent searches (localStorage) — focus үед, query хоосон үед харагдана
- *   - Live filter grid — query байгаа үед үр дүн, үгүй бол "Санал болгох"
- *   - Empty result-д "Үр дүн алга" + recent search chips fallback
- */
 export function TvodCatalog() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  /**
-   * Баталгаажсан хайлт — зөвхөн submit / suggestion / recent сонголтоор
-   * шинэчлэгдэнэ. Доорх grid үүгээр шүүгдэх тул бичиж байх үед dropdown-той
-   * давхардахгүй.
-   */
   const [committedQuery, setCommittedQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("library");
   const [searchMode, setSearchMode] = useState<"keyword" | "ai">("keyword");
 
-  // AI semantic search state
   const [aiResults, setAiResults] = useState<Array<{ movie: TvodMovie; reason: string }>>([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [aiQuery, setAiQuery] = useState(""); // AI хайлт хийсэн query (display)
+  const [aiQuery, setAiQuery] = useState("");
 
-  // Recent searches — localStorage-аас useSyncExternalStore-аар уншина
   const recentJson = useSyncExternalStore(
     subscribeRecent,
     getRecentSnapshot,
@@ -108,13 +85,11 @@ export function TvodCatalog() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Debounce — typing-ийн дараа 200ms хүлээгээд filter ажиллана
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query.trim()), DEBOUNCE_MS);
     return () => clearTimeout(id);
   }, [query]);
 
-  // Click outside → dropdown хаах
   useEffect(() => {
     function onClick(e: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
@@ -125,13 +100,11 @@ export function TvodCatalog() {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  // Dropdown-д харагдах suggestion-ууд — бичиж байх үеийн live шүүлт
   const suggestions = useMemo(
     () => filterMovies(debouncedQuery, tvodMovies).slice(0, SUGGEST_LIMIT),
     [debouncedQuery],
   );
 
-  // Доорх grid — зөвхөн баталгаажсан хайлтаар шүүгдэнэ
   const results = useMemo(() => filterMovies(committedQuery, tvodMovies), [committedQuery]);
 
   const hasQuery = debouncedQuery.length > 0;
@@ -154,10 +127,7 @@ export function TvodCatalog() {
 
   function handleQueryChange(value: string) {
     setQuery(value);
-    // Шинээр бичиж эхэлмэгц өмнөх баталгаажсан үр дүнг арилгана —
-    // grid default categories руу буцаж, зөвхөн dropdown ажиллана
     if (committedQuery) setCommittedQuery("");
-    // Хайлт эхлэхэд автоматаар Кино сан tab-руу шилжинэ
     if (value.trim() && tab !== "library") setTab("library");
   }
 
@@ -185,10 +155,8 @@ export function TvodCatalog() {
     if (tab !== "library") setTab("library");
 
     if (searchMode === "ai") {
-      // AI хайлт: API дуудах
       runAiSearch();
     } else {
-      // Keyword хайлт: үр дүнг grid-д баталгаажуулж, history-д хадгална
       setCommittedQuery(q);
       commitRecent(q);
       setDropdownOpen(false);
@@ -197,15 +165,9 @@ export function TvodCatalog() {
 
   function handleModeChange(next: "keyword" | "ai") {
     setSearchMode(next);
-    // AI mode рүү шилжих үед өмнөх AI үр дүн арилгахгүй (хэрэглэгч харж байж магадгүй)
-    // Keyword mode рүү шилжих үед dropdown сэргээхгүй
     inputRef.current?.focus();
   }
 
-  /**
-   * AI semantic search — /api/semantic-search руу POST хийж үр дүн авна.
-   * Дуудагдахад автоматаар Кино сан tab руу шилжинэ.
-   */
   async function runAiSearch() {
     const q = query.trim();
     if (!q || aiLoading) return;
@@ -243,7 +205,6 @@ export function TvodCatalog() {
     setAiError(null);
   }
 
-  // Search үр дүнгийн title (зөвхөн query байгаа үед харагдана)
   const gridTitle = `Хайлтын үр дүн (${results.length})`;
 
   return (
@@ -252,7 +213,7 @@ export function TvodCatalog() {
         Кино хайх ба үзэх
       </h2>
 
-      {/* ===== Search band — hero-н дороос шууд залгаж байрлана ===== */}
+      {}
       <div className="bg-muted/60 border-border border-y py-8 lg:py-5">
         <div className="container mx-auto px-4">
           <div ref={wrapperRef} className="mx-auto max-w-2xl">
@@ -261,13 +222,13 @@ export function TvodCatalog() {
                 TVOD кино хайх
               </label>
               <div className="border-primary/30 bg-background hover:border-primary/50 focus-within:border-primary focus-within:ring-primary/25 flex h-16 items-center gap-2 rounded-full border-2 pr-2 pl-2 shadow-lg transition-all focus-within:ring-4">
-                {/* Mode toggle — зүүн талд segmented icon control + sliding indicator */}
+                {}
                 <div
                   role="group"
                   aria-label="Хайлтын төрөл"
                   className="bg-muted relative flex shrink-0 items-center rounded-full p-0.5"
                 >
-                  {/* Slide хийдэг background indicator — идэвхтэй товч руу гулсана */}
+                  {}
                   <div
                     className="bg-background absolute top-0.5 size-10 rounded-full shadow-sm transition-all duration-300 ease-out"
                     style={{
@@ -340,7 +301,7 @@ export function TvodCatalog() {
                   </button>
                 )}
 
-                {/* Submit товч — баруун талд бөмбөлгөн arrow */}
+                {}
                 <button
                   type="submit"
                   disabled={!query.trim() || aiLoading}
@@ -371,7 +332,7 @@ export function TvodCatalog() {
       </div>
 
       <div id="library" className="container mx-auto scroll-mt-24 px-4 py-12 lg:py-16">
-        {/* ===== Tabs (shadcn pill-style segmented, 1200 full-width) ===== */}
+        {}
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
           <TabsList className="h-12 w-full">
             <TabsTrigger value="library" className="flex-1 text-base font-semibold">
@@ -383,7 +344,7 @@ export function TvodCatalog() {
           </TabsList>
 
           <TabsContent value="library" className="pt-8">
-            {/* ===== AI semantic search үр дүн ===== */}
+            {}
             {aiError && (
               <div className="border-destructive/40 bg-destructive/10 text-destructive mb-6 rounded-xl border p-4 text-sm">
                 AI хайлт амжилтгүй: {aiError}
@@ -427,8 +388,8 @@ export function TvodCatalog() {
               </div>
             )}
 
-            {/* ===== Keyword search / default categories — AI үр дүнгүй үед л.
-                 Grid нь зөвхөн баталгаажсан хайлтад харагдана (dropdown-той давхардахгүй) ===== */}
+            {
+}
             {aiResults.length === 0 &&
               (hasCommitted ? (
                 <>
@@ -470,9 +431,6 @@ export function TvodCatalog() {
   );
 }
 
-// =====================================================================
-// SEARCH DROPDOWN — suggestions + recent searches
-// =====================================================================
 function SearchDropdown({
   hasQuery,
   suggestions,
@@ -581,9 +539,6 @@ function SearchDropdown({
   );
 }
 
-// =====================================================================
-// EMPTY RESULTS — query байгаа, үр дүн алга үед grid-н оронд харагдана
-// =====================================================================
 function EmptyResults({
   query,
   recent,
@@ -625,9 +580,6 @@ function EmptyResults({
   );
 }
 
-// =====================================================================
-// CATEGORY ROW — нэг category-н гарчиг + 5 movie card-уудын row
-// =====================================================================
 function CategoryRow({ category }: { category: TvodCategory }) {
   if (category.movies.length === 0) return null;
   return (
@@ -655,14 +607,10 @@ function CategoryRow({ category }: { category: TvodCategory }) {
   );
 }
 
-// =====================================================================
-// Search логик — substring match, case-insensitive, title + genre + year
-// =====================================================================
 function filterMovies(query: string, movies: TvodMovie[]): TvodMovie[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
 
-  // Тоон query — он-той тэнцүү байх match
   const isNumeric = /^\d{4}$/.test(q);
 
   return movies.filter((m) => {

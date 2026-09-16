@@ -13,10 +13,6 @@ import { sectionBg } from "@/lib/section-bg";
 const AUTOPLAY_INTERVAL = 5000;
 const REPEAT_COUNT = 3;
 
-/**
- * md breakpoint (768px) дээш эсэхийг хянана — carousel-ын картын өргөнийг
- * утас/desktop-д тус тусад нь тохируулахад ашиглана.
- */
 function useIsMdUp() {
   const [isMdUp, setIsMdUp] = useState(true);
 
@@ -31,21 +27,16 @@ function useIsMdUp() {
   return isMdUp;
 }
 
-// =====================================================================
-// MAIN SECTION
-// =====================================================================
 export function FeaturedMarquee() {
   const [appIndex, setAppIndex] = useState(apps.length);
   const [movieIndex, setMovieIndex] = useState(movies.length);
   const [isPlaying, setIsPlaying] = useState(true);
   const [progressKey, setProgressKey] = useState(0);
 
-  // Pause/Resume remaining-time logic-д ашиглах ref-үүд
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   const remainingRef = useRef<number>(AUTOPLAY_INTERVAL);
 
-  // 1 алхам урагшилуулах функц
   const advance = useCallback(() => {
     setAppIndex((prev) => prev + 1);
     setMovieIndex((prev) => prev + 1);
@@ -53,40 +44,32 @@ export function FeaturedMarquee() {
     remainingRef.current = AUTOPLAY_INTERVAL;
   }, []);
 
-  // scheduleNext recursive-аар өөрийгөө дуудах ёстой тул ref-ээр хадгална.
-  // `useCallback` deps-д өөрийгөө хийж болохгүй учир ref pattern ашиглав.
   const scheduleNextRef = useRef<(delay: number) => void>(() => {});
 
   const scheduleNext = useCallback(
     (delay: number) => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      startTimeRef.current = Date.now(); // ✅ render-ийн гадна (useCallback дотор)
+      startTimeRef.current = Date.now();
       timerRef.current = setTimeout(() => {
         advance();
-        // Дараагийн cycle-г өөрсдөө 5s бүтнээр нь scheduleл
         scheduleNextRef.current(AUTOPLAY_INTERVAL);
       }, delay);
     },
     [advance],
   );
 
-  // Ref-ийг хамгийн сүүлийн scheduleNext-ээр шинэчилнэ
   useEffect(() => {
     scheduleNextRef.current = scheduleNext;
   }, [scheduleNext]);
 
-  // Pause/Resume effect
   useEffect(() => {
     if (isPlaying) {
-      // Resume — үлдсэн хугацаагаар үргэлжлүүлэх
       scheduleNext(remainingRef.current);
     } else {
-      // Pause — timer цуцлах, үлдсэн хугацааг хадгалах
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
-      // startTimeRef === 0 байх юм бол elapsed тооцохгүй (анхны pause-аас өмнө)
       if (startTimeRef.current > 0) {
         const elapsed = Date.now() - startTimeRef.current;
         remainingRef.current = Math.max(0, remainingRef.current - elapsed);
@@ -106,10 +89,8 @@ export function FeaturedMarquee() {
       className={cn(sectionBg.page, "overflow-hidden py-6 lg:py-7")}
     >
       <div className="container mx-auto px-4">
-        {/* ⚠️ Өмнө нь `eyebrow` (дээр) ба `description` (доор) хоёр
-            comment-д орсон мөр байсныг ХАСАВ — тэдгээр талбарууд
-            `marquee-items.ts`-ээс гарсан тул зөвхөн эргэлзээ төрүүлнэ.
-            Хэрэгтэй бол git түүхээс. */}
+        {
+}
         <div className="mb-8 text-center">
           <h2 id="featured-title" className={sectionType.title}>
             {featuredSection.title}
@@ -161,9 +142,6 @@ export function FeaturedMarquee() {
   );
 }
 
-// =====================================================================
-// CAROUSEL — Infinity loop pattern (Apps large / Movies small)
-// =====================================================================
 function Carousel({
   items,
   activeIndex,
@@ -183,22 +161,17 @@ function Carousel({
 
   const repeatedItems = Array.from({ length: REPEAT_COUNT }, () => items).flat();
 
-  // Утсан дээр картууд илүү өргөн — нарийн өндөр харагдахаас сэргийлнэ
   const itemWidthVW = variant === "large" ? (isMdUp ? 60 : 85) : isMdUp ? 10 : 26;
   const gapVW = isMdUp ? 1.5 : 2.5;
 
   const translateX = `calc(50% - ${activeIndex * (itemWidthVW + gapVW)}vw - ${itemWidthVW / 2}vw)`;
 
-  // Эцсийн copy-ийн төгсгөлд хүрсэн үед — silent jump хийх
   useEffect(() => {
     if (activeIndex < items.length * 2) return;
 
     const handleTransitionEnd = () => {
-      // 1. Animation off
       setIsTransitioning(false);
-      // 2. Active index-ыг middle copy руу буцаах
       setActiveIndex((prev) => prev - items.length);
-      // 3. DOM update-ийг хүлээж байгаад animation дахин on болгох
       requestAnimationFrame(() => {
         requestAnimationFrame(() => setIsTransitioning(true));
       });
@@ -238,9 +211,6 @@ function Carousel({
   );
 }
 
-// =====================================================================
-// CAROUSEL CARD
-// =====================================================================
 function CarouselCard({
   item,
   isActive,
@@ -258,13 +228,11 @@ function CarouselCard({
     dark: "bg-gray-700 text-white",
   }[item.shade];
 
-  // Large (apps) + Small (movies) — хоёулаа нэг дэлгэцэнд багтах өндөртэй
   const shapeClass = variant === "large" ? "h-[38vh] min-h-[300px] md:h-[50vh]" : "aspect-[2/3]";
   const titleClass =
     variant === "large" ? "text-xl sm:text-2xl md:text-5xl" : "text-sm md:text-base";
 
   return (
-    // Card бүхэлдээ даргддаг link — доторх CTA нь зөвхөн харагдац (span)
     <Link
       href={item.href}
       aria-label={`${item.name} — дэлгэрэнгүй үзэх`}
@@ -275,33 +243,15 @@ function CarouselCard({
       style={{ width: `${widthVW}vw` }}
       aria-current={isActive ? "true" : undefined}
     >
-      {/* Бодит зураг — байгаа үед. Үгүй бол shade + нэрийн placeholder */}
+      {}
       {item.image ? (
         <Image
           src={item.image}
-          /**
-           * ⚠️ ХЯЗГААРЛАСАН КАРТАД `alt=""`. Зураг нь бүрхэгдсэн (blur)
-           * УТГА нь харагдахгүй болсон тул харааны хэрэглэгчид түүнээс юу ч
-           * авахгүй; screen reader-т агуулгыг нэрлэвэл ХАРАХГҮЙ хүнд
-           * ХАРАГДАХ хүнээс ИЛҮҮ мэдээлэл өгөх ба бүрхсэн шалтгаан нь
-           * үгүйсгэгдэнэ. Анхааруулгын бичвэр доор ил байгаа тул мэдээлэл
-           * алдагдахгүй (WCAG 1.1.1 — чимэглэлийн зураг).
-           */
           alt={item.restricted ? "" : item.name}
           fill
           sizes={
             variant === "large" ? "(min-width: 768px) 60vw, 85vw" : "(min-width: 768px) 10vw, 26vw"
           }
-          /**
-           * ⚠️ `blur-2xl` + `scale-110` (2026-09-09, захиалагчийн заавар:
-           * "4-ләнг нь харуулах гэхдээ blur хийгдсэн, насанд хүрэгчдийн
-           * контент гэсэн анхааруулгатайгаар л харуул").
-           *
-           * `scale-110` нь ЗАЙЛШГҮЙ: CSS `blur` нь элементийн ирмэгийн
-           * пикселийг гадагш "тарааж" уусгадаг тул ирмэг дагуу тунгалаг
-           * зурвас гарч, доорх `shade` дэвсгэр цухуйна. 10% томсгосноор
-           * бүрхэг ирмэг картын гадна гарч, `overflow-hidden` тайрна.
-           */
           className={cn("object-cover", item.restricted && "scale-110 blur-2xl")}
         />
       ) : (
@@ -316,7 +266,7 @@ function CarouselCard({
         </div>
       )}
 
-      {/* Доороос дээш бараан gradient — текст уншигдахуйц болгох */}
+      {}
       {item.image && (
         <div
           className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"
@@ -324,34 +274,12 @@ function CarouselCard({
         />
       )}
 
-      {/**
-       * НАСАНД ХҮРЭГЧДИЙН КОНТЕНТЫН АНХААРУУЛГА (2026-09-09, захиалагч).
-       *
-       * ⚠️ Blur ДЭЭР БИЧВЭР. Зөвхөн бүрхэх нь хангалтгүй: хэрэглэгч зургийг
-       * "ачаалагдаагүй" эсвэл "эвдэрсэн" гэж уншиж, дарж шалгах магадлалтай.
-       * Ил бичвэр нь ЯАГААД бүрхэгдснийг хэлж, дарахаасаа өмнө сонголт
-       * өгнө — контентын анхааруулгын үндсэн зарчим.
-       *
-       * ⚠️ `variant` ЯЛГААГҮЙ: жижиг картад ч ижил хамгаалалт хэрэгтэй
-       * (одоогоор `restricted` нь зөвхөн ТВ апп-д тавигдсан, гэхдээ кинонд
-       * гарвал автоматаар ажиллана).
-       *
-       * `pointer-events-none` — эцэг `Link`-ийн даралтыг хаахгүй.
-       * `aria-hidden` ТАВИАГҮЙ: screen reader-т хязгаарлалтыг хэлэх ёстой,
-       * зурганд `alt=""` тавьсны нөхөн мэдээлэл нь ЯГ энэ бичвэр.
-       */}
+      {
+}
       {item.restricted && (
         <div
           className={cn(
             "pointer-events-none absolute inset-0 flex flex-col items-center gap-2 px-4 text-center text-white",
-            /**
-             * ⚠️ ТОМ КАРТАД ДЭЭД тал, ЖИЖИГ картад ГОЛ. Том картын доод
-             * 1/3-д гарчиг + тайлбар + CTA аль хэдийн суудаг (`bottom-6`,
-             * ~150px). Хамгийн намхан үед (`min-h-[300px]`) голлуулсан
-             * анхааруулга тэр блоктой ДАВХЦАНА — тиймээс дээш зөөв.
-             * Жижиг картад доод бичвэр нь ердөө нэг мөр (`bottom-3`) тул
-             * гол нь чөлөөтэй.
-             */
             variant === "large" ? "justify-start pt-8 md:pt-12" : "justify-center",
           )}
         >
@@ -385,7 +313,7 @@ function CarouselCard({
           <p className="mt-1.5 max-w-2xl text-sm opacity-90 md:mt-2 md:text-lg">
             {item.description}
           </p>
-          {/* Товчны харагдацтай span — navigation-ыг гадна талын Link хариуцна */}
+          {}
           <span className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-black shadow-lg transition-transform hover:scale-105 md:text-base">
             {featuredSection.ctaLabel}
             <ArrowRight className="size-4" aria-hidden="true" />
@@ -393,7 +321,7 @@ function CarouselCard({
         </div>
       )}
 
-      {/* Кино нэр — утсан дээр poster жижиг тул нуугдана, md+-д харагдана */}
+      {}
       {variant === "small" && (
         <div
           className={`absolute right-4 bottom-3 left-4 hidden md:block ${item.image ? "text-white" : ""}`}
@@ -405,9 +333,6 @@ function CarouselCard({
   );
 }
 
-// =====================================================================
-// PROGRESS DOTS — Apple-style segmented indicator
-// =====================================================================
 function ProgressDots({
   count,
   activeIndex,

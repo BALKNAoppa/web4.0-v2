@@ -8,14 +8,6 @@ import {
 } from "@/components/ui/accordion";
 import { faqMeta, faqTopics } from "@/data/faq";
 
-/**
- * /support хуудсанд харагдах Singtel-style тусламжийн төв:
- *  - Дээд card: avatar + хайлтын input + "Асуух" товч
- *  - Доод card: "Түгээмэл асуултууд" гарчигтай Accordion
- *
- * `title` prop өгөгдсөн үед категори тус бүрийн тусгай гарчгийг харуулна
- * (жш: "Танд интернеттэй холбоотой тусламж хэрэгтэй юу?")
- */
 export function SupportCenter({ title }: { title?: string }) {
   const displayTitle = title ?? faqMeta.title;
   return (
@@ -25,10 +17,10 @@ export function SupportCenter({ title }: { title?: string }) {
       className="bg-muted/30 py-12 lg:py-16"
     >
       <div className="mx-auto max-w-4xl space-y-6 px-4">
-        {/* =============== TOP CARD — Avatar + Search =============== */}
+        {}
         <div className="bg-card border-border rounded-2xl border p-6 shadow-sm sm:p-8">
           <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-            {/* Avatar */}
+            {}
             <div
               className="bg-primary text-primary-foreground flex size-16 shrink-0 items-center justify-center rounded-full shadow-md sm:size-20"
               aria-hidden="true"
@@ -36,7 +28,7 @@ export function SupportCenter({ title }: { title?: string }) {
               <Headphones className="size-7 sm:size-8" strokeWidth={1.8} />
             </div>
 
-            {/* Title + Search form */}
+            {}
             <div className="w-full flex-1">
               <h1
                 id="support-title"
@@ -77,7 +69,7 @@ export function SupportCenter({ title }: { title?: string }) {
           </div>
         </div>
 
-        {/* =============== BOTTOM CARD — Trending topics =============== */}
+        {}
         <div className="bg-card border-border rounded-2xl border shadow-sm">
           <div className="border-border border-b px-6 py-5 sm:px-8">
             <h2 className="text-foreground text-lg font-semibold tracking-tight md:text-xl">

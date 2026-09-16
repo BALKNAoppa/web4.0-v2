@@ -4,10 +4,6 @@ import { Star } from "lucide-react";
 
 import { type TvodMovie } from "@/data/tvod-movies";
 
-/**
- * Нэг TVOD кинонын карт — Postercount: poster (есвэл placeholder) + rating + title.
- * tvod-catalog (search/grid) болон category detail page-д хоёуланд ашиглагдана.
- */
 export function MovieCard({ movie }: { movie: TvodMovie }) {
   return (
     <Link

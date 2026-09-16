@@ -30,62 +30,12 @@ const QUICK_REPLIES = [
   "Ажилтантай холбогдох",
 ];
 
-// =====================================================================
-// ИРМЭГИЙН ТАБ (edge tab) — Xfinity-н "Live chat"-ийн загвар
-// =====================================================================
-/**
- * ⚠️ ӨМНӨХ ХУВИЛБАР ЮУ БАЙСАН БЭ: баруун доод буланд ХӨВӨГЧ дугуй товч (FAB)
- * + "Танд тусламж хэрэгтэй юу? 😊" гэсэн bubble. Хоёулаа агуулгын ДЭЭГҮҮР
- * хөвдөг тул нүүрний AI туслахын input, гарчигтай давхцаж, ялангуяа мобайл
- * дээр зодолддог байв. Тэр үед товчийг ГАРААР ЧИРЖ ЗӨӨХ (drag) логик
- * нэмэгдсэн нь шинжийг нь дарсан болохоос шалтгааныг нь заасангүй.
- *
- * ОДОО: дэлгэцийн ЗҮҮН ирмэгт наалдсан НИМГЭН БОСОО ТАБ. Ирмэгээс ~34px л
- * эзэлдэг, голын агуулгыг хэзээ ч халхлахгүй тул:
- *   · AI туслахтай зодолдохоо болино
- *   · чирж зөөх шаардлагагүй болсон (drag логикийг УСТГАВ)
- *   · тусдаа "санал болгох" bubble ч хэрэггүй (УСТГАВ) — табын гарч ирэх
- *     хөдөлгөөн өөрөө анхаарал татах үүргийг гүйцэтгэнэ
- *
- * Буцаах шаардлага гарвал git түүхээс (энэ өөрчлөлтийн өмнөх
- * `chat-widget.tsx`) бүрэн эхээр нь авах боломжтой.
- */
-
-/**
- * ⚠️ ХУГАЦААТ ГАРЦ ХАСАГДСАН (2026-09-03). Өмнө нь таб нь хуудас нээгдээд
- * `TAB_REVEAL_MS`-ийн дараа ирмэгээс өөрөө гулсаж гардаг байв (6с → 20с →
- * 200с гэж сунгасаар ирсэн нь өөрөө шинж тэмдэг байсан: тэр нь ҮРГЭЛЖ
- * саад болж байсан гэсэн үг).
- *
- * ОДОО таб нь ЗӨВХӨН гомдлын дараа гарна — доорх `revealed`-ийн тайлбарыг үз.
- */
-
-/**
- * Табын босоо байрлал — дэлгэцийн дээд талаас хувиар.
- *
- * ⚠️ 38% → 48% → 58%. Өмнө нь голоос ДЭЭШ байсан нь хариултын текст, картын
- * гарчигтай давхцаж байв. Одоо голоос доош.
- *
- * Доод хязгаар нь ойролцоогоор 65-70%: түүнээс доош авбал мобайл хөтчийн
- * хөвөгч хаягийн мөр, AI туслахын оролт хоёртой давхцаж эхэлнэ. Табын өндөр
- * нь ~120px тул 58% дээр доод ирмэг нь дэлгэцийн ~65%-д тулна.
- */
 const TAB_TOP = "58%";
 
-/**
- * Хэрэглэгч хамгийн сүүлд харилцан яриа эхлүүлсэн (мессеж илгээсэн) огноог
- * хадгалах түлхүүр. Тухайн өдөр яриа эхлээгүй л бол chat нээх болгонд
- * мэндчилгээ typing анимациар бичигдэж "амьд" мэдрэмж өгнө.
- */
 const CONVERSATION_DATE_KEY = "univision-chat-conversation-date";
 
-/** Өнөөдрийн огноо — YYYY-MM-DD */
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
-// =====================================================================
-// PHASE 1 — Бүх асуултад нэг ижил туршилтын хариу өгнө.
-// Бодит AI / API холбогдох үед энэ функцийг сольж залгана.
-// =====================================================================
 function getBotReply(): string {
   return "Таны асуултыг хүлээн авлаа! 🤖 Одоогоор би туршилтын горимд ажиллаж байгаа тул энэ асуултад хариулж чадахгүй нь. AI холбогдсоны дараа танд зөв, дэлгэрэнгүй хариулт өгөх болно.";
 }
@@ -93,44 +43,24 @@ function getBotReply(): string {
 export function ChatWidget() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  /**
-   * Таб гарч ирсэн эсэх. `false` үед ирмэгт ЮУ Ч АЛГА — дэлгэц цэвэр.
-   *
-   * ⚠️ ЗӨВХӨН ХОЁР эвент үүнийг нээнэ (доорх `onAsk` · `onOpen`):
-   *   · `univision:chat-ask`  — гомдол ажилтан руу шилжих үед (persona 6-ийн
-   *     гомдлын салаа ба `complaint-billing`; `EscalateView` нь `handoffMs`
-   *     дуусмагц асуултыг агуулсан эвент илгээнэ), мөн support хуудасны
-   *     ask bar-аас
-   *   · `univision:chat-open` — "Ажилтантай холбогдох" гэх мэт товчнуудаас
-   *
-   * Өөрөөр хэлбэл чат нь ХЭРЭГЛЭГЧИЙН ХҮСЭЛТЭЭР л гарна. Танилцуулгын
-   * үндсэн урсгал (нүүр → AI туслах → /assistant) дээр ирмэг цэвэр байна.
-   */
   const [revealed, setRevealed] = useState(false);
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
-  // Анхны зочлолтод мэндчилгээг typing анимациар бичнэ
   const [typeGreeting, setTypeGreeting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  // Monotonic ID counter — render-ийн гадна өсдөг pure counter
   const nextIdRef = useRef(INITIAL_MESSAGES.length + 1);
 
-  // Шинэ мессеж нэмэгдэх бүрд хамгийн доош scroll хийнэ
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Chat нээгдсэн үед input-д focus
   useEffect(() => {
     if (isOpen) {
       inputRef.current?.focus();
     }
   }, [isOpen]);
 
-  // Тухайн өдөр харилцан яриа эхлээгүй л бол chat нээх болгонд
-  // мэндчилгээ typing анимациар бичигдэнэ. Хэрэглэгч мессеж илгээмэгц
-  // (= яриа эхэлмэгц) тэр өдрийн турш дахин бичигдэхгүй.
   useEffect(() => {
     if (!isOpen) return;
     try {
@@ -138,11 +68,9 @@ export function ChatWidget() {
         setTypeGreeting(true);
       }
     } catch {
-      // localStorage хориотой орчинд (private mode гэх мэт) шууд текст харуулна
     }
   }, [isOpen]);
 
-  // ESC товч дарвал хаах
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -156,11 +84,9 @@ export function ChatWidget() {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    // Яриа эхэллээ — өнөөдрийн турш мэндчилгээ дахин typing хийхгүй
     try {
       localStorage.setItem(CONVERSATION_DATE_KEY, todayStr());
     } catch {
-      // localStorage хориотой орчинд алгасна
     }
     setTypeGreeting(false);
 
@@ -173,7 +99,6 @@ export function ChatWidget() {
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
 
-    // Phase 1 — туршилтын нэг ижил хариу. Бодит AI / API-тай холбож сольно
     const reply = getBotReply();
     setTimeout(() => {
       const botMsg: Message = {
@@ -185,18 +110,14 @@ export function ChatWidget() {
     }, 700);
   };
 
-  // Support хуудасны Ask bar-аас ирэх асуултыг хүлээн авч chat нээгээд хариулна
   useEffect(() => {
     const onAsk = (e: Event) => {
       const question = (e as CustomEvent<{ question?: string }>).detail?.question;
       if (!question) return;
       setIsOpen(true);
-      // Гаднаас нээсэн бол хүлээх хугацааг алгасаж табыг "гарсан" болгоно —
-      // ингэснээр chat-ыг хаахад ирмэг хоосон үлдэхгүй.
       setRevealed(true);
       sendMessage(question);
     };
-    // "Ажилтантай холбогдох" гэх мэт газраас зүгээр л chat-ыг нээнэ (асуултгүй)
     const onOpen = () => {
       setIsOpen(true);
       setRevealed(true);
@@ -207,54 +128,42 @@ export function ChatWidget() {
       window.removeEventListener("univision:chat-ask", onAsk);
       window.removeEventListener("univision:chat-open", onOpen);
     };
-    // sendMessage нь state setter-үүд дээр суурилсан тогтвортой логик тул deps-гүй
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // /web4 — immersive концепцийн хуудас: chatbot харуулахгүй
-  // /admin — танилцуулгын удирдлага: чатын ирмэг хэрэггүй (header-тэй ижил)
   if (pathname?.startsWith("/web4") || pathname?.startsWith("/admin")) return null;
 
   return (
     <>
-      {/* ============ ИРМЭГИЙН ТАБ ============ */}
-      {/* ⚠️ Таб нь ЖИЖИГ ПАНЕЛЬ нээхээ БОЛЬЖ, `/assistant` яриаы хуудас руу
-          аваачдаг болов. Шалтгаан: нэг чатын газар байх — панель, hero,
-          хуудас гурав зэрэг оршвол хэрэглэгч аль нь "жинхэнэ" яриа болохыг
-          мэдэхгүй. Панель нь `univision:chat-ask` event-ээр (support-ийн ask
-          bar, escalate) нээгдсээр байна. */}
+      {}
+      {
+}
       {revealed && !isOpen && (
         <Link
           href={ASSISTANT_PATH}
           aria-label="AI туслах руу очих"
           style={{ top: TAB_TOP }}
-          // `left-0` + `rounded-r-xl` — ЗҮҮН ирмэгт бүрэн наалдаж, зөвхөн
-          // дотогш харсан (баруун) тал нь мурийна. `slide-in-from-left` нь
-          // ирмэгээс гулсаж гарах хөдөлгөөнийг өгнө.
           className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring animate-in slide-in-from-left-8 fade-in fixed left-0 z-50 flex flex-col items-center gap-2 rounded-r-xl px-2 py-4 shadow-lg transition-colors duration-500 ease-out focus-visible:ring-2 focus-visible:outline-none"
         >
           <BotMessageSquare className="size-5 shrink-0" aria-hidden="true" />
-          {/* Босоо бичиглэл — табыг нимгэн байлгах цорын ганц арга.
-              `vertical-rl` = дээрээс доош уншигдана. */}
+          {
+}
           <span className="text-xs font-semibold tracking-wide [writing-mode:vertical-rl]">
             Chat bot
           </span>
         </Link>
       )}
 
-      {/* ============ CHAT PANEL ============ */}
+      {}
       {isOpen && (
         <div
           id="chat-panel"
           role="dialog"
           aria-modal="false"
           aria-labelledby="chat-title"
-          // ЗҮҮН доод булан — таб зүүн ирмэгт байдаг тул панель ч мөн тэндээс
-          // нээгдэнэ (нээгдэх цэг нь дарсан цэгтэйгээ ойрхон байх нь зөв). (Өмнө нь хөвөгч товчийг
-          // дагаж `style`-аар тооцогддог байсныг хассан: товч байхаа больсон.)
           className="bg-card border-border animate-in fade-in slide-in-from-left-4 fixed bottom-4 left-4 z-50 flex h-[min(580px,calc(100svh-6rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border shadow-2xl duration-300 ease-out lg:bottom-6 lg:left-6"
         >
-          {/* Header */}
+          {}
           <div className="bg-primary text-primary-foreground flex items-center justify-between gap-3 px-4 py-3">
             <div className="flex items-center gap-2">
               <div className="bg-primary-foreground/15 flex size-9 items-center justify-center rounded-full">
@@ -277,7 +186,7 @@ export function ChatWidget() {
             </button>
           </div>
 
-          {/* Messages */}
+          {}
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.map((msg, index) => (
               <MessageBubble
@@ -290,7 +199,7 @@ export function ChatWidget() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick replies — анхны байдалд л харагдана */}
+          {}
           {messages.length <= 1 && (
             <div className="border-border flex flex-wrap gap-2 border-t px-4 py-3">
               {QUICK_REPLIES.map((reply) => (
@@ -306,7 +215,7 @@ export function ChatWidget() {
             </div>
           )}
 
-          {/* Input */}
+          {}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -341,10 +250,6 @@ export function ChatWidget() {
   );
 }
 
-// =====================================================================
-// MESSAGE BUBBLE
-// typing=true үед текст үсэг үсгээр бичигдэнэ (анхны мэндчилгээ)
-// =====================================================================
 function MessageBubble({
   message,
   typing = false,

@@ -18,21 +18,6 @@ import {
 } from "@/data/devices";
 import { cn } from "@/lib/utils";
 
-/**
- * ДЭЛГҮҮР — нэг зам дээр ХОЁР горим (/main-packages, /service-тэй ижил зарчим).
- * Аль параметр байгаагаар салаална:
- *
- *   /devices                  → каталогийн landing, бүх бараа
- *   /devices?category=phones  → landing, тухайн ангиллаар шүүсэн
- *   /devices?type=phone       → тухайн төхөөрөмжийн SAMPLE дэлгэрэнгүй
- *
- * ⚠️ `type` ба `category` нь ЗОРИУД өөр нэртэй, өөр үүрэгтэй:
- *   `type`     — `groupNavV2`-оос `findService`-ээр олдох ҮЙЛЧИЛГЭЭ (өмнөх
- *                хувилбарын дэлгэрэнгүй хуудас). Хөндөөгүй, хэвээр.
- *   `category` — ЭНЭ landing-ийн шүүлтүүр (`deviceCategories`).
- * Хоёуланг нэг параметрээр шийдвэл дэлгэрэнгүй нь шүүлтүүрийг дардаг (эсвэл
- * эсрэгээр) тул салгав.
- */
 export default function DevicesPage() {
   return (
     <Suspense fallback={null}>
@@ -50,21 +35,7 @@ function DevicesRouter() {
   return <DevicesLanding categoryParam={params.get("category")} />;
 }
 
-// =====================================================================
-// LANDING — hero · ангиллын шүүлтүүр · барааны grid
-// =====================================================================
 function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
-  /**
-   * `?category=` нь таслалаар тусгаарласан ОЛОН утга авч чадна.
-   *
-   * Шалтгаан: mobile-ын цэс ангиллуудыг НЭГТГЭДЭГ ("Гар утас & Дагалдах
-   * хэрэгсэл" гэсэн НЭГ мөр — `archivedMegaMenus.Дэлгүүр.mobile`). Тэр мөр хоёр
-   * ангиллыг зэрэг нээх ёстой тул `?category=phones,accessories` гэж явна.
-   * Desktop-ын мөрүүд ганц утгатай — ижил кодоор хоёулаа ажиллана.
-   *
-   * Танихгүй id-г ЧИМЭЭГҮЙ хаяна: буруу линкээс болж хуудас хоосон гарахаас
-   * бүх барааг харуулсан нь дээр.
-   */
   const requested = categoryParam?.split(",").filter(Boolean) ?? [];
   const active = requested.filter((id) => id in deviceCategoryLabel);
 
@@ -72,8 +43,6 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
     ? deviceProducts.filter((p) => active.includes(p.category))
     : deviceProducts;
 
-  // Breadcrumb нь ЗӨВХӨН нэг ангилал сонгосон үед гүнзгийрнэ — нэгтгэсэн
-  // (олон) сонголтод "Дэлгүүр" гэсэн нэг шат хэвээр.
   const breadcrumbItems: BreadcrumbItem[] =
     active.length === 1
       ? [{ label: "Дэлгүүр", href: "/devices" }, { label: deviceCategoryLabel[active[0]] }]
@@ -83,7 +52,7 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
     <main id="main-content" className="bg-background min-h-screen">
       <Breadcrumb items={breadcrumbItems} />
 
-      {/* ============ HERO — /campaigns-тай ижил хэмнэл ============ */}
+      {}
       <section className="container mx-auto px-4 pt-12 pb-8 text-center md:pt-20 md:pb-12">
         <h1 className="text-foreground text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl">
           {devicesHero.title}
@@ -93,10 +62,8 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
         </p>
       </section>
 
-      {/* ============ АНГИЛЛЫН ШҮҮЛТҮҮР ============
-          Товч БИШ, ЛИНК. Ингэснээр цэснээс шууд гүн холбоос болно, буцах товч
-          ажиллана, шүүсэн хуудсаа хуваалцаж болно. `scroll={false}` — pill
-          дархад хуудас дээшээ үсрэхгүй. */}
+      {
+}
       <nav aria-label="Төхөөрөмжийн ангилал" className="container mx-auto px-4 pb-12 md:pb-16">
         <ul className="flex flex-wrap items-center justify-center gap-3">
           {deviceCategories.map((cat) => {
@@ -122,7 +89,7 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
         </ul>
       </nav>
 
-      {/* ============ БАРААНЫ GRID ============ */}
+      {}
       <section
         aria-labelledby="devices-grid-title"
         className="container mx-auto px-4 pb-16 md:pb-24"
@@ -131,9 +98,8 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
           id="devices-grid-title"
           className="text-foreground mb-8 text-center text-3xl font-bold tracking-tight md:mb-12 md:text-4xl"
         >
-          {/* Нэгтгэсэн (олон) сонголтод ангиллын нэрсийг залгана — эс бөгөөс
-              зөвхөн 2 ангилал харагдаж байхад "Бүх төхөөрөмж" гэж худал
-              гарчиглана. Сонголтгүй үед л жинхэнэ "бүх". */}
+          {
+}
           {active.length
             ? active.map((id) => deviceCategoryLabel[id]).join(" · ")
             : "Бүх төхөөрөмж"}
@@ -157,18 +123,13 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
   );
 }
 
-// =====================================================================
-// БАРААНЫ КАРТ
-// =====================================================================
 function DeviceCard({ product }: { product: DeviceProduct }) {
   return (
     <article className="bg-card border-border flex flex-col overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-lg">
-      {/* Зургийн слот — жинхэнэ зураг гарахаар солино.
-          ⚠️ `bg-gray-100` гэх мэт тогтмол өнгө ХЭРЭГЛЭХГҮЙ (campaigns-д ийм
-          үлдэгдэл байгаа): `bg-muted` нь dark theme-д хамт эргэдэг. */}
-      {/* ⚠️ `aria-hidden` нь ЗӨВХӨН placeholder текст дээр — БҮХ блок дээр
-          тавибал дотор нь байгаа badge ("Онцлох" / "Шинэ") ч хамт нуугдана. Тэр нь
-          зургийн чимэг БИШ, утга агуулсан мэдээлэл. */}
+      {
+}
+      {
+}
       <div className="bg-muted relative flex aspect-[4/3] items-center justify-center">
         <span
           aria-hidden="true"
@@ -184,10 +145,8 @@ function DeviceCard({ product }: { product: DeviceProduct }) {
       </div>
 
       <div className="flex flex-1 flex-col p-6">
-        {/* Ангиллын шошго.
-            ⚠️ `navType` (nav-type.ts) ХЭРЭГЛЭХГҮЙ — тэр нь HEADER-ийн цэсний
-            үсгийн стандарт (bar · mega menu · mobile sheet), барааны карт нь
-            цэс БИШ. Тэндээс татвал тэр файлын хамрах хүрээ чимээгүй тэлнэ. */}
+        {
+}
         <p className="text-muted-foreground text-[13px] font-normal">
           {deviceCategoryLabel[product.category]}
         </p>
@@ -196,14 +155,13 @@ function DeviceCard({ product }: { product: DeviceProduct }) {
         </h3>
         <p className="text-muted-foreground mt-2 text-sm">{product.spec}</p>
 
-        {/* ҮНИЙН СЛОТ — `ServiceSample`-ийн `00,000₮`-тэй ижил хэв маяг. Бодит
-            үнэ шийдэгдээгүй тул тоо ЗОХИОХГҮЙ, зөвхөн байрыг нь эзэлнэ. */}
+        {
+}
         <div className="border-border mt-5 border-t pt-4">
           <p className="text-foreground text-2xl font-bold tracking-tight">
             000,000₮{" "}
-            {/* `ml-2` нь ЗӨВХӨН харагдах зай — текстийн зангилаанууд шууд
-                залгаа байвал screen reader "000,000₮эсвэл" гэж нийлүүлж
-                уншина. Тиймээс жинхэнэ хоосон зай хэрэгтэй. */}
+            {
+}
             <span className="text-muted-foreground ml-2 text-sm font-normal">
               эсвэл 00,000₮ / сар
             </span>

@@ -5,15 +5,8 @@ import { useState } from "react";
 import { setHeaderVariant, useHeaderVariant, type HeaderVariant } from "@/lib/header-variant";
 import { cn } from "@/lib/utils";
 
-/**
- * ⚠️⚠️ ХУВИЛБАРЫН ДУГААРЛАЛТ (бүтэн түүх нь `lib/header-variant.ts`-д):
- *     1 = ШИЛЭН КАПСУЛ (хуучин загвар, хөндөхгүй жишиг)
- *     2 = ХАВТГАЙ 2 давхарга (лого·профайл·burger + брэндийн дэд цэс) + dock
- * Шошго нь MOBILE-ын навигаци ХААНА байгааг хэлнэ — DESKTOP нь хоёр
- * хувилбарт ЯГ ИЖИЛ тул ялгаа нь зөвхөн гар утсан дээр л харагдана.
- */
 const VARIANTS: { id: HeaderVariant; label: string; note: string }[] = [
-  { id: 1, label: "Хувилбар 1", note: "Шилэн капсул — хуучин, батлагдсан загвар" },
+  { id: 1, label: "Хувилбар 1", note: "Шилэн капсул + Burger Menu" },
   { id: 2, label: "Хувилбар 2", note: "Хавтгай 2 давхарга + доод dock" },
 ];
 

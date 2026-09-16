@@ -60,12 +60,6 @@ function buildInitialMessages(counterStart: number): { messages: Message[]; coun
   return { messages: msgs, counter };
 }
 
-/**
- * Хоёр горим нэг зам дээр:
- *   /main-packages              → багц сонгох чат-туслах (default)
- *   /main-packages?plan=triple  → тухайн үйлчилгээний sample дэлгэрэнгүй
- * Цэснээс (мөн нөгөө брэндийн сайтаас) ирсэн deep link хоёр дахь горимд буна.
- */
 export default function MainPackagesPage() {
   return (
     <Suspense fallback={null}>
@@ -97,7 +91,6 @@ function PlanQuizPage() {
   const recommendation = isResult ? computeRecommendation(answers) : null;
   const otherPlansShown = messages.some((m) => m.role === "other-plans");
 
-  // Initial greeting + first question
   useEffect(() => {
     const initial = buildInitialMessages(msgCounter.current);
     msgCounter.current = initial.counter;
@@ -238,7 +231,7 @@ function PlanQuizPage() {
   }
 
   function handleRestart() {
-    runToken.current += 1; // cancel any in-flight sequence
+    runToken.current += 1;
     setAnswers([]);
     setInputValue("");
     msgCounter.current = 0;
@@ -275,7 +268,7 @@ function PlanQuizPage() {
               className="bg-card border-border flex flex-col overflow-hidden rounded-2xl border shadow-sm"
               style={{ height: "min(72vh, 680px)" }}
             >
-              {/* Chat header */}
+              {}
               <div className="border-border bg-muted/40 flex items-center gap-3 border-b px-5 py-3">
                 <div className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-full">
                   <Bot className="size-5" aria-hidden="true" />
@@ -302,7 +295,7 @@ function PlanQuizPage() {
                 )}
               </div>
 
-              {/* Messages */}
+              {}
               <div
                 ref={scrollRef}
                 className="chat-scroll flex-1 space-y-3 overflow-y-auto px-4 py-5 md:px-5"
@@ -329,7 +322,7 @@ function PlanQuizPage() {
                 })}
                 {typing && shouldShowStandaloneTyping(messages) && <TypingIndicator />}
 
-                {/* Quick-reply chips — баруун талд (thumb навигаци дүрэм) */}
+                {}
                 {!busy && currentQuestion && (
                   <div className="animate-chat-msg-in flex flex-wrap justify-end gap-2">
                     {currentQuestion.options.map((option, idx) => (
@@ -345,7 +338,7 @@ function PlanQuizPage() {
                   </div>
                 )}
 
-                {/* Үр дүн гарсны дараах follow-up chip */}
+                {}
                 {!busy && isResult && !otherPlansShown && (
                   <div className="animate-chat-msg-in flex flex-wrap justify-end gap-2">
                     <button
@@ -359,7 +352,7 @@ function PlanQuizPage() {
                 )}
               </div>
 
-              {/* Composer — зөвхөн input */}
+              {}
               <form
                 onSubmit={handleSubmit}
                 className="border-border bg-background flex items-center gap-2 border-t p-3 md:p-4"
@@ -395,8 +388,6 @@ function PlanQuizPage() {
   );
 }
 
-// Дараалсан ижил-role мессежүүдийг нэг bubble-д нэгтгэх.
-// Result мессеж нь үргэлж өөрөө group болно.
 type BotLine = Extract<Message, { role: "bot" }>;
 type UserLine = Extract<Message, { role: "user" }>;
 type ResultMsg = Extract<Message, { role: "result" }>;
@@ -436,8 +427,6 @@ function groupMessages(msgs: Message[]): MessageGroup[] {
   return groups;
 }
 
-// Хамгийн сүүлд илгээгдсэн мессеж нь bot бус (user/result) ҮЕД typing-ийг
-// тусдаа bubble болгож зурна — bot bubble дотор шигтгэх боломжгүй учраас.
 function shouldShowStandaloneTyping(msgs: Message[]): boolean {
   const last = msgs[msgs.length - 1];
   return !last || last.role !== "bot";

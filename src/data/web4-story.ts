@@ -1,12 +1,3 @@
-/**
- * Web 4.0 SCROLL танилцуулгын өгүүлэмжийн дата (/web4).
- *
- * Эх сурвалж: "Web 4.0 Jul22.pptx" (18 слайд) + хэрэглэгчийн өгсөн agenda.
- * Дараалал: Асуудал → Дэлхийн судалгаа → Benchmark (Google/Apple) →
- * Brand architecture → Company×Customer intent → Шийдэл (Option 1) → SWOT → Sample web.
- */
-
-/* ── 1. Шийдэх ёстой асуудлууд (Agenda / whiteboard) ── */
 export type Question = { n: string; title: string; detail: string };
 
 export const questions: Question[] = [
@@ -39,7 +30,6 @@ export const questions: Question[] = [
   },
 ];
 
-/* ── 2. Дэлхийн судалгаа (Gartner, McKinsey) ── */
 export type Stat = {
   value: number;
   suffix?: string;
@@ -74,7 +64,6 @@ export const researchStats: Stat[] = [
 export const researchImplication =
   "Website нь компанийн identity-г тодорхой харуулж, олон брэндийг нэгтгэн, B2B итгэлцэл үүсгэж, хэрэглэгчийг self-service channel руу чиглүүлэх идэвхтэй платформ байх ёстой.";
 
-/* ── 3. Benchmark байгууллагууд ── */
 export type Benchmark = {
   id: string;
   name: string;
@@ -136,7 +125,6 @@ export const benchmarks: Benchmark[] = [
   },
 ];
 
-/* ── 6. Шийдэл: Option 1 — нэгдсэн нэг вэбсайт ── */
 export const option1Header = [
   "Unitel.mn",
   "Univision.mn",
@@ -157,7 +145,6 @@ export const webAppSplit: WebAppRole[] = [
   { channel: "App", purpose: "E2E Self-Service", newPct: 20, existingPct: 80 },
 ];
 
-/* ── 7. Option 1 SWOT ── */
 export const option1Swot = {
   strengths: [
     "Өргөн бүтэцтэй, уян хатан",

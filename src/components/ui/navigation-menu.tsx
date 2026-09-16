@@ -3,23 +3,6 @@ import { cva } from "class-variance-authority"
 import { NavigationMenu as NavigationMenuPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
-/**
- * ⚠️⚠️ АНИМАЦИЙН VARIANT — `data-[state=open]` / `data-[state=closed]` гэж
- * БҮТЭН бичигдсэн байх ЁСТОЙ (2026-09-08-нд зассан).
- *
- * shadcn-ийн үүсгэсэн эх хувилбарт `data-open:` / `data-closed:` гэсэн
- * ХЯСААСАН хэлбэр байсан. Тэр нь Base UI-ийн атрибутын нэр бөгөөд Tailwind-д
- * ТОДОРХОЙЛОГДООГҮЙ variant — `globals.css`-д `@custom-variant` зөвхөн `dark`
- * л бий. Tailwind танихгүй variant-аас ЯМАР Ч дүрэм үүсгэдэггүй тул
- * `animation-name: none` болж, компонент нь анимацгүй ШУУД ҮСЭРЧ нээгддэг байв.
- *
- * Энэ файл нь radix-ui-д тулгуурладаг (дээрх import) ба radix нь
- * `data-state="open"|"closed"` гаргадаг — тиймээс бүтэн хэлбэр нь зөв.
- *
- * ⚠️ `shadcn add` дахин ажиллуулбал энэ файл ДАРАГДАЖ, хясаасан хэлбэр
- * БУЦАЖ ИРНЭ. Тэр үед `grep -rE "data-(open|closed):" src/components/ui`
- * -ээр шалгаж дахин засна. `src/components/ui` нь `.prettierignore`-д.
- */
 import { ChevronDownIcon } from "lucide-react"
 
 function NavigationMenu({
@@ -30,11 +13,6 @@ function NavigationMenu({
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Root> & {
   viewport?: boolean
-  /**
-   * Viewport-д дамжуулах класс. Viewport нь Root-ийн ДОТОР үүсдэг тул гаднаас
-   * шууд хүрэх боломжгүй байсан — mobile header-т full-width / хүрээгүй /
-   * header-тэй нийлсэн болгоход шаардлагатай.
-   */
   viewportClassName?: string
 }) {
   return (
@@ -93,15 +71,7 @@ function NavigationMenuTrigger({
   unstyled = false,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger> & {
-  /**
-   * ChevronDown-ыг харуулах эсэх. Mobile header-т 5 таб нэг мөрөнд багтах ёстой
-   * тул 5 chevron (~60px) өргөний нөөцийг бүрэн зарцуулна — тэнд `false`.
-   */
   chevron?: boolean
-  /**
-   * `navigationMenuTriggerStyle()`-ийг ХЭРЭГЛЭХГҮЙ. Тэр style нь `h-9 px-4
-   * text-sm` тул mobile-ын 12px / px-0.5 табтай зөрчилддөг.
-   */
   unstyled?: boolean
 }) {
   return (
@@ -133,15 +103,6 @@ function NavigationMenuContent({
       onPointerEnter={(e) => e.preventDefault()}
       onPointerLeave={(e) => e.preventDefault()}
       className={cn(
-        // ГУЛСАЛТЫН ЗАЙ: `…-52` (13rem = 208px) байсныг `…-8` (2rem = 32px)
-        // болгов. 208px нь агуулгыг дэлгэцийн гадна талаас "шидэж" оруулдаг
-        // тул зөөлөн шилжилт биш ҮСРЭЛТ мэт мэдрэгддэг байв. Жижиг зай +
-        // fade нь cross-fade шиг тайван харагдана.
-        //
-        // `duration-500` — `data-motion` анимацид ил тод хугацаа. Өмнө нь
-        // зөвхөн `viewport=false` тохиолдолд `duration-300` байсан ба
-        // viewport=true (mobile header) үед tw-animate-css-ийн үндсэн
-        // 150ms-аар тоглодог тул хэтэрхий шуурхай байв.
         "top-0 left-0 w-full p-2 pr-2.5 duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-data-[viewport=false]/navigation-menu:top-full group-data-[viewport=false]/navigation-menu:mt-1.5 group-data-[viewport=false]/navigation-menu:overflow-hidden group-data-[viewport=false]/navigation-menu:rounded-md group-data-[viewport=false]/navigation-menu:bg-popover group-data-[viewport=false]/navigation-menu:text-popover-foreground group-data-[viewport=false]/navigation-menu:shadow group-data-[viewport=false]/navigation-menu:ring-1 group-data-[viewport=false]/navigation-menu:ring-foreground/10 data-[motion=from-end]:slide-in-from-right-8 data-[motion=from-start]:slide-in-from-left-8 data-[motion=to-end]:slide-out-to-right-8 data-[motion=to-start]:slide-out-to-left-8 data-[motion^=from-]:animate-in data-[motion^=from-]:fade-in data-[motion^=to-]:animate-out data-[motion^=to-]:fade-out **:data-[slot=navigation-menu-link]:focus:ring-0 **:data-[slot=navigation-menu-link]:focus:outline-none md:absolute md:w-auto group-data-[viewport=false]/navigation-menu:data-[state=open]:animate-in group-data-[viewport=false]/navigation-menu:data-[state=open]:fade-in-0 group-data-[viewport=false]/navigation-menu:data-[state=open]:zoom-in-95 group-data-[viewport=false]/navigation-menu:data-[state=closed]:animate-out group-data-[viewport=false]/navigation-menu:data-[state=closed]:fade-out-0 group-data-[viewport=false]/navigation-menu:data-[state=closed]:zoom-out-95",
         className
       )}
@@ -160,16 +121,11 @@ function NavigationMenuViewport({
     "absolute top-full left-0 right-0 isolate z-50 flex justify-center"
   )}
 >
-      {/* `transition-[height]` — Radix нь `--radix-navigation-menu-viewport-height`
-          -ийг агуулгын дагуу шинэчилдэг ч transition байхгүй бол өндөр нь
-          ҮСРЭНЭ. Ингэснээр НЭГ суурь нь sub menu хооронд зөөлөн "тэнийж"
-          агуулга нь хажуугаас гулсаж орж ирнэ (`data-motion` → Content). */}
+      {
+}
       <NavigationMenuPrimitive.Viewport
         data-slot="navigation-menu-viewport"
         className={cn(
-          // `duration-500` (өмнө 300) — цэс хооронд шилжихэд өндөр нь агуулгын
-          // дагуу тэнийх нь агуулгын 500ms гулсалттай ИЖИЛ хугацаанд явна.
-          // Хоёр нь зөрвөл өндөр эрт "суугаад" агуулга нь хоцорч ирнэ.
           "origin-top relative h-(--radix-navigation-menu-viewport-height) w-full overflow-hidden bg-popover text-popover-foreground shadow ring-1 ring-foreground/10 transition-[height,width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
           className
         )}

@@ -8,12 +8,6 @@ import { Footer } from "@/components/layout/footer";
 import { ServiceSample } from "@/components/sections/service-sample";
 import { findService } from "@/data/service-index";
 
-/**
- * Ерөнхий үйлчилгээний sample зам — өөрийн гэсэн бүрэн хуудас хараахан
- * байхгүй зүйлст (HBO Max, M Karaoke, Smart Home г.м.) очих газар болно.
- *   /service?id=hbo-max
- * Контентоо цэсний датаас (service-index) уншина.
- */
 export default function ServicePage() {
   return (
     <Suspense fallback={null}>

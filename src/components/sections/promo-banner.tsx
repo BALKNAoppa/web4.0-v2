@@ -22,57 +22,20 @@ import {
 import { BRAND } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
-// =====================================================================
-// Гадны экспорт — нүүр хуудас `PromoBanner` гэж дууддаг.
-// Доорх return-н мөрүүдээс нэгийг идэвхтэй үлдээж нөгөөг `//`-аар сольно.
-// =====================================================================
-
-/**
- * `fill` — banner нь ЭЦГИЙНХЭЭ өндрийг бүтнээр эзэлнэ (`h-full`), өөрийн
- * `svh`-д суурилсан өндрөө хэрэглэхгүй.
- *
- * ЯАГААД: Unitel-ийн нүүрэнд banner нь hero-гийн ДЭЭД 60%-д суудаг
- * (`UnitelHero`) — тэр өндрийг эцэг нь аль хэдийн тооцсон байдаг. Өөрийн
- * `min-h-[52svh]`-ээ хэвээр барих юм бол хоёр тооцоо зөрж hero нь дэлгэцээс
- * халина. `fill` өгөөгүй үед (Univision нүүр) хуучин зан хэвээр.
- */
 export function PromoBanner({ fill = false }: { fill?: boolean }) {
-  return <PromoBannerPlaceholder fill={fill} />; // Танилцуулгын sample — энгийн саарал хоосон banner
-  // return <PromoBannerFull fill={fill} />; // Жинхэнэ хувилбар — видео/зураг + eyebrow, гарчиг, CTA
+  return <PromoBannerPlaceholder fill={fill} />;
 }
 
-/** `fill` үед эцгийн өндрийг дүүргэнэ, эс бөгөөс өөрийн svh өндөр. */
 const bannerBox = (fill: boolean) =>
   fill
     ? "h-full"
     : "min-h-[52svh] sm:min-h-[34svh] lg:min-h-[38svh] py-10 [@media(max-height:720px)]:py-4";
 
-// Идэвхгүй хувилбарыг TypeScript "unused" гэж бүү зэмлэ
 void PromoBannerFull;
 
-// =====================================================================
-// SAMPLE — 3 САНАЛТАЙ CAROUSEL, site-ийн ерөнхий өргөнд (1200px) багтсан.
-//
-// Танилцуулгад хуурамч маркетингийн текст анхаарал сарниулахгүйн тулд
-// зориуд шошготой хоосон талбай болгосон (`samplePromoCards`).
-//
-// ⚠️ 3 санал нь ЗЭРЭГЦЭЭ БИШ — нэг зэрэг НЭГ л харагдана, баруун доод
-// булангийн сум/тоолуураар солигдоно. Тиймээс panel нь эцгээсээ (hero-гийн
-// 60%) авсан БҮТЭН өндрийг эзэлнэ: слайд бүр тэр талбайг дүүргэнэ.
-//
-// ӨРГӨН нь full-bleed БИШ, `max-w-300` (1200px) — бусад section болон доорх
-// багцын мөртэй босоо тэнхлэгээр тэгширнэ.
-// =====================================================================
 function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
-  // ⚠️ БРЭНДЭЭР — `PromoHero`-г хоёр брэнд хуваалцдаг тул баннерын зураг
-  // тус бүрийнхээ хавтаснаас ирнэ (`promo-banner.ts > samplePromoCards`).
   const cards = samplePromoCards[BRAND];
   const [api, setApi] = useState<CarouselApi>();
-  /**
-   * Одоогийн слайд (1-ээс эхэлнэ). Effect дотор setState СИНХРОНООР
-   * дуудахгүй (`react-hooks/set-state-in-effect`) — carousel үргэлж 0-р
-   * слайдаас эхэлдэг тул анхны утга нь аль хэдийн зөв.
-   */
   const [current, setCurrent] = useState(1);
 
   useEffect(() => {
@@ -85,69 +48,34 @@ function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
   }, [api]);
 
   return (
-    // ⚠️ АЛДАА ЗАССАН: өмнө нь `fill ? "flex h-full items-stretch" : "py-8"`
-    // байсан. `fill` БАЙХГҮЙ үед (Univision нүүр) өндөр нь хаанаас ч
-    // ирэхгүй байв — доорх carousel-ийн бүх давхарга (`CarouselContent`,
-    // `CarouselItem`, `PromoSlide`) `h-full` хэрэглэдэг ба `h-full` нь
-    // эцгээсээ өндөр авдаг тул хэлхээний ТОЛГОЙД бодит өндөр байх ёстой.
-    // Тэр байхгүй тул слайд агуулгынхаа хэмжээнд (~110px) хумигдаж байлаа.
-    //
-    // `bannerBox(fill)` нь `fill` үед `h-full` (эцгээс), эс бөгөөс
-    // `min-h-[…svh]` (өөрөө) өгнө. Функц аль хэдийн байсан ч ЗӨВХӨН
-    // `PromoBannerFull`-д дуудагдаж, идэвхтэй placeholder түүнийг
-    // хэрэглээгүй байв.
     <section
       aria-label="Онцлох урамшуулал"
       className={cn("flex w-full items-stretch", bannerBox(fill))}
     >
-      {/* FULL WIDTH — `max-w-300` (1200px) хязгаарыг ЗОРИУДААР ЦУЦАЛСАН.
-          Promo нь дэлгэцийн бүтэн өргөнийг эзэлнэ; идэвхтэй panel нь
-          peek-ийн хэмжээгээр л дотогшоо суух тул хоёр ирмэг дээр өмнөх/
-          дараагийн banner харагдана.
-          ⚠️ Доорх багцын хэсэг (`RecommendedPlans`) нь 1200px-дээ ХЭВЭЭР —
-          зөвхөн promo нь full-bleed. */}
-      {/* ── МОБАЙЛ (< md) — FADE BANNER ──
-          Peek БАЙХГҮЙ: слайд бүр картын БҮТЭН талбайг эзэлж, солигдохдоо
-          хөндлөн гүйхийн оронд ууж солигдоно. Ингэснээр өмнөх/дараагийн
-          banner-ийн ирмэг хэзээ ч харагдахгүй.
-          ⚠️ CSS-ээр солив (JS media query БИШ): `matchMedia` нь зөвхөн
-          хөтөч дээр утга өгдөг тул server ба client өөр зүйл render хийж
-          hydration зөрөх эрсдэлтэй. */}
+      {
+}
+      {
+}
       <PromoFadeBanner cards={cards} />
 
-      {/* ── DESKTOP (md+) — ХУУЧИН PEEK CAROUSEL, ХӨНДӨӨГҮЙ ── */}
+      {}
       <div className="hidden w-full md:flex">
         <Carousel
           setApi={setApi}
           opts={{ loop: true, align: "center" }}
-          // `data-slot=carousel-content` нь `CarouselContent`-ийн ГАДНА
-          // (`ref`-тэй) div — тэр нь className хүлээж авдаггүй тул өндрийг
-          // эндээс дамжуулна. Үүнгүйгээр panel нь эцгийн 60%-ыг дүүргэхгүй.
           className="w-full [&_[data-slot=carousel-content]]:h-full"
         >
-          {/* PEEK — слайд бүр контейнерийн БҮТЭН өргөнийг эзлэхгүй
-              (`basis` < 100%) тул хажуугийн хоёр слайдын ирмэг харагдана.
-              `-ml-4`/`pl-4` (shadcn-ийн анхдагч завсар) нь харагдаж буй
-              ирмэгүүдийг идэвхтэй panel-аас зааглана.
+          {
 
-              DESKTOP (md+) — 62.5% нь Jio-гийн нүүрнээс ХЭМЖСЭН харьцаа:
-              1919px дэлгэцэнд идэвхтэй banner ~1183px (≈62%), хоёр талын
-              ирмэг тус бүр ~350px (≈18%). Ирмэг нь "бас banner байна" гэдгийг
-              хангалттай тод хэлнэ.
-
-              МОБАЙЛ — 82% хэвээр. Jio-гийн 62.5%-ийг 375px дэлгэцэнд тавибал
-              идэвхтэй banner 234px болж уншигдахгүй; тэнд ирмэг 26px нь
-              хангалттай дохио өгнө. Завсар ч 8px (md+ дээр 16px). */}
+}
           <CarouselContent className="-ml-2 h-full md:-ml-4">
             {cards.map((promo, i) => (
               <CarouselItem
                 key={promo.id}
                 className="h-full basis-[82%] pl-2 md:basis-[62.5%] md:pl-4"
               >
-                {/* ⚠️ `eager` нь ЗӨВХӨН ЭХНИЙХЭД. Гурван слайд бүгд DOM-д
-                    байдаг тул бүгдийг нь `priority` болговол LCP-ийн төлөө
-                    гурван том зураг зэрэг татагдаж, бие биетэйгээ өрсөлдөнө
-                    (Next мөн "too many priority images" гэж анхааруулна). */}
+                {
+}
                 <PromoSlide promo={promo} eager={i === 0} />
               </CarouselItem>
             ))}
@@ -165,44 +93,14 @@ function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
   );
 }
 
-/**
- * Нэг слайд (DESKTOP, md+) — panel-ийн бүтэн талбайг эзэлнэ.
- *
- * ӨНГӨ: `bg-card` (= `--background-2`) — `bg-muted` нь dark theme-д ягаан
- * (#27203e) болж үндсэн өнгөнөөс зөрдөг.
- *
- * ЗУРАГТАЙ үед бүтэц нь `PromoFadeSlide` (мобайл)-тай ИЖИЛ: зураг бүтэн
- * дэвсгэр, доогуур нь бага зэргийн scrim, CTA нь доод ЗҮҮН буланд.
- * Зураггүй үед хуучин голлуулсан placeholder хэвээр.
- *
- * ⚠️ МОБАЙЛААС ЯЛГААТАЙ нь ЗОРИУД. Захиалагчийн загварт CTA нь доод БАРУУН
- * буланд бөгөөд `PromoFadeSlide` (мобайл) тэгж байрлуулсан. Desktop дээр
- * ТЭР БУЛАНГ `CarouselCounter` (`← n/N →` pill) аль хэдийн эзэлсэн байдаг
- * тул хоёулаа давхцана. Тиймээс desktop-д CTA зүүн талдаа үлдэв.
- * Desktop-ыг ч баруун болгох бол ЭХЛЭЭД тоолуурыг өөр газар зөөнө.
- *
- * ⚠️⚠️ DESKTOP-Д ЗУРАГ ХҮЧТЭЙ ТАЙРАГДАНА. Энэ panel нь ӨРГӨН (1440px
- * дэлгэцэнд ≈900×493 = 1.83), харин `public/Unitel/Hero banner/`-ийн зурагнууд
- * нь 1:1 ба 4:5 БОСОО. `object-cover` тул 1:1 нь босоо тэнхлэгээрээ ~45%,
- * 4:5 нь ~56% хасагдаж, ЗӨВХӨН ДУНД ХЭСЭГ харагдана. Мобайл дээр карт нь
- * 3:4 тул асуудалгүй.
- * → Зөв шийдэл нь КОД БИШ, КОНТЕНТ: desktop-д зориулсан хэвтээ кроп
- *   (≈1920×1050 буюу 1.83) нэмж, `image`-ийг `<picture>`-маягаар салгах.
- *   Одоогийн зурагнуудын гол дүрс төвдөө байвал хүлээж болохоор харагдана.
- */
 function PromoSlide({ promo, eager }: { promo: PromoCard; eager: boolean }) {
-  /**
-   * DESKTOP-ЫН ТУСДАА ФАЙЛ (`imageDesktop`) байвал тэр, эс бөгөөс мобайлын
-   * зураг. Мобайлын карт нь 3:4 БОСОО, энэ панел нь ХЭВТЭЭ тул нэг файл
-   * хоёуланд тохирдоггүй (`promo-banner.ts > imageDesktop`-ийн тайлбар).
-   */
   const src = promo.imageDesktop ?? promo.image;
 
   if (!src) {
     return (
       <div className="bg-card flex h-full flex-col items-center justify-center gap-[clamp(0.75rem,2svh,1.5rem)] rounded-3xl">
-        {/* МОБАЙЛД ЖИЖИГ — 306px өргөнтэй картан дээр 3.4svh (≈28px) нь хэтэрхий
-            том байв. `sm:`-ээс дээш хуучин хэмжээ хэвээр. */}
+        {
+}
         <span className="text-muted-foreground text-[clamp(0.875rem,2.2svh,1.125rem)] font-semibold sm:text-[clamp(1.125rem,3.4svh,2.25rem)]">
           {promo.placeholderText}
         </span>
@@ -219,47 +117,24 @@ function PromoSlide({ promo, eager }: { promo: PromoCard; eager: boolean }) {
   }
 
   return (
-    // `isolate` — доорх `-z-10` зураг ЭНЭ картын дотоод stacking context-д
-    // хоригдоно. Үүнгүй бол зураг хамгийн ойрын context руу гарч, картын
-    // дэвсгэрийн АРД орох эрсдэлтэй (`PromoFadeSlide`-тай ижил шалтгаан).
     <div className="relative isolate flex h-full flex-col justify-end overflow-hidden rounded-3xl p-6">
       <Image
         src={src}
         alt={promo.imageAlt ?? ""}
         fill
-        /**
-         * ⚠️ `63vw` БАЙСНЫГ `1920px` БОЛГОВ (2026-09-08). Панелийн ӨРГӨН нь
-         * 63vw боловч `object-cover` нь зургийг ӨНДРӨӨР томсгодог: 888×466
-         * слот дотор 3.549 харьцаатай баннер нь өндрөө нийцүүлэхийн тулд
-         * 466 × 3.549 = 1654px өргөнтэй болж зурагдана. `63vw` (=907px)
-         * гэж хэлэхэд Next 907px хувилбар нийлүүлж, хөтөч түүнийг 1.8 ДАХИН
-         * ТОМСГОНО — баннер бүдгэрнэ (хэмжсэн: `naturalWidth` 907).
-         *
-         * 1920px нь ХАМГИЙН ТОМ ХЭРЭГТЭЙ хэмжээ бөгөөд эх файлын өргөн ч
-         * тэр (`Unitel Desktop.png` = 1920×541) — түүнээс дээш нь эх
-         * файлаа өөрөө томсгох болно. Next нь 2× DPR-т 3840-ийг ч гаргана
-         * (`Bagtsaa butee Desktop.png` нь 3840 өргөнтэй тул тэр ч хурц).
-         */
         sizes="(min-width: 768px) 1920px, 100vw"
-        // Эхний слайд нь нүүрний LCP байх магадлалтай тул түүнийг л урьдчилж
-        // татна; үлдсэн хоёр нь carousel-д хүрэх хүртэл хойшилно.
         priority={eager}
-        /**
-         * ТАЙРАЛТЫН БАЙРЛАЛ нь баннер тус бүрээр (`imageDesktopPosition`).
-         * Панел нь баннераас нарийн тул өргөний ~46% тайрагддаг ба аль хэсэг
-         * үлдэхийг зургийн бүтээц шийднэ — тайлбар нь data дээр.
-         */
         style={{ objectPosition: promo.imageDesktopPosition ?? "center" }}
         className="-z-10 object-cover"
       />
-      {/* CTA нь доод ЗҮҮН буланд суудаг тул тэнд бага зэрэг тогтвор хэрэгтэй.
-          Зургийн дээд 2/3 бүрэн тод үлдэнэ (мобайлтай ижил 20%). */}
+      {
+}
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-gradient-to-t from-black/20 to-transparent"
       />
 
-      {/* ЦАГААН товч — өнгөний үндэслэлийг `PromoFadeSlide` (мобайл) дээр үз. */}
+      {}
       <Link
         href={promo.href}
         className="focus-visible:ring-ring inline-flex h-[clamp(2.25rem,5svh,3rem)] w-fit items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-neutral-900 transition-colors duration-300 ease-out hover:bg-neutral-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -271,32 +146,7 @@ function PromoSlide({ promo, eager }: { promo: PromoCard; eager: boolean }) {
   );
 }
 
-// =====================================================================
-// МОБАЙЛ FADE BANNER — 3 санал, НЭГ картан дээр ууж солигдоно
-//
-// ЯАГААД ТУСДАА ХУВИЛБАР: desktop дээрх peek carousel (хажуугийн banner-ийн
-// ирмэг харагддаг) нь 375px дэлгэцэнд идэвхтэй картыг 26px-ээр хумьж,
-// "хагас зүсэгдсэн" мэдрэмж өгдөг. Мобайлд картыг бүтнээр нь харуулж,
-// байрлалыг доорх цэгээр л заана.
-//
-// ХӨДӨЛГӨӨН: cross-fade. Хөндлөн гүйлт (slide) нь мөн чанараараа хоёр
-// картыг ЗЭРЭГ харуулдаг тул "өмнөхийн сүүл, дараагийн эхлэл" харагдах
-// асуудлыг давтана. Fade-д тийм завсрын байдал БАЙХГҮЙ.
-// =====================================================================
-
-/** Слайд солигдох уусалтын хугацаа (ms) — `duration-500`-тай ижил байх ёстой */
 const FADE_MS = 500;
-/**
- * ⚠️ АВТОМАТ ЭЭЛЖЛЭЛТ ХАСАГДСАН (хэрэглэгчийн шийдвэр). Өмнө нь 6 сек
- * тутам өөрөө солигддог байсан бөгөөд WCAG 2.2.2 нь 5 сек-ээс урт
- * автомат хөдөлгөөнд зогсоох боломж ШААРДДАГ тул цэгүүдийн хажууд
- * pause/play товч байх шаардлагатай болдог байв. Тэр товч нь загварт
- * байхгүй тул хоёуланг нь ХАМТ хаслаа — банер зөвхөн свайп эсвэл цэг
- * дарахад солигдоно.
- *
- * Буцааж оруулах бол ХОЁУЛАНГ нь: timer БА зогсоох товч.
- */
-/** Свайпыг зориудын гэж үзэх хамгийн бага зай (px) */
 const SWIPE_MIN = 40;
 
 function PromoFadeBanner({ cards }: { cards: PromoCard[] }) {
@@ -308,14 +158,9 @@ function PromoFadeBanner({ cards }: { cards: PromoCard[] }) {
 
   return (
     <div className="flex w-full flex-col md:hidden">
-      {/* КАРТ — эцгийн үлдсэн бүх өндрийг эзэлнэ.
-          `min-h-0` — flex хүүхэд анхдагчаар агуулгаасаа доош хумигддаггүй тул
-          үүнгүй бол доорх цэгийн мөр section-ээс халина. */}
+      {
+}
       <div
-        // ЗАГВАР: X=24 · W=342 · H=456 · радиус 24 (390px frame).
-        //   `mx-6`        → хоёр талд 24px (390 − 24 − 24 = 342 ✓)
-        //   `aspect-[3/4]` → 342:456 нь яг 3:4, өндөр нь өргөнөөс гарна
-        //   `rounded-3xl`  → 24px
         className="relative mx-6 aspect-[3/4] overflow-hidden rounded-3xl"
         onTouchStart={(e) => {
           touchStartX.current = e.touches[0].clientX;
@@ -334,69 +179,46 @@ function PromoFadeBanner({ cards }: { cards: PromoCard[] }) {
         ))}
       </div>
 
-      {/* ⚠️ `mt-6` — заагч нь картын доод ирмэгт НААЛДАЖ байв. Мөрийн
-          өндөр 8px тул зайг ЭНД ил өгнө. */}
+      {
+}
       <CarouselDots total={total} index={index} onSelect={go} label="санал" className="mt-6" />
     </div>
   );
 }
 
-/**
- * Нэг слайд — БҮГД зэрэг DOM-д байж, зөвхөн `opacity`-гоор солигдоно.
- *
- * ⚠️ `inert` — идэвхгүй слайдын товч, линк нь TAB-ийн дараалалд ОРОХГҮЙ.
- * Зөвхөн `opacity-0` бол харагдахгүй товч дээр фокус үсэрч, хэрэглэгч
- * "хаана байгаагаа" алддаг. `aria-hidden` нь дэлгэц уншигчид зориулсан.
- *
- * ⚠️ ЗУРАГ ХАРААХАН АЛГА. Доорх бүх слот нь ШОШГОТОЙ PLACEHOLDER —
- * жинхэнэ зураг, гарчиг ирэхэд `promo-banner.ts`-ийн дата л солигдоно,
- * энэ бүтэц хэвээр үлдэнэ.
- */
 function PromoFadeSlide({ promo, active }: { promo: PromoCard; active: boolean }) {
   return (
     <div
       aria-hidden={!active}
       inert={!active}
       className={cn(
-        // ЗАГВАРЫН ЗАЙ: CTA нь картын ирмэгээс 16px дотогш, доод БАРУУН буланд.
-        // CTA-гийн доод ирмэг 634, картын доод ирмэг 666 → доод 32px.
         "absolute inset-0 isolate flex flex-col justify-end p-4 pb-8 transition-opacity ease-out",
         promo.image ? "bg-foreground/5" : "bg-card",
         active ? "opacity-100" : "pointer-events-none opacity-0",
       )}
       style={{ transitionDuration: `${FADE_MS}ms` }}
     >
-      {/* ── ДЭВСГЭР ЗУРАГ ──
-          Загварын Fill = Image 100% + Linear 20%. Гарчиг, лого, тайлбар нь
-          БҮГД зургийн дотор байдаг тул энд давхар элемент БАЙХГҮЙ —
-          зөвхөн CTA л амьд үлдэнэ.
+      {
 
-          `-z-10` + эцгийн `isolate` — зураг картын ДОТООД stacking
-          context-д хоригдоно. `isolate` байхгүй бол зураг хамгийн ойрын
-          context руу гарч, картын дэвсгэрийн АРД орох эрсдэлтэй. */}
+}
       {promo.image ? (
         <>
           <Image
             src={promo.image}
             alt={promo.imageAlt ?? ""}
             fill
-            // Нүүрний хамгийн дээд элемент тул идэвхтэй слайд нь LCP байх
-            // магадлалтай. Үлдсэнийг урьдчилж татвал LCP-тэй тэмцэлдэнэ.
             priority={active}
             sizes="100vw"
             className="-z-10 object-cover"
           />
-          {/* Linear 20% — загварын хоёр дахь fill. Доошоо л гүнзгийрнэ:
-              CTA нь доод БАРУУН буланд суудаг тул тэнд бага зэрэг тогтвор
-              хэрэгтэй, зургийн дээд 2/3 нь бүрэн тод үлдэнэ. */}
+          {
+}
           <div
             aria-hidden="true"
             className="absolute inset-0 -z-10 bg-gradient-to-t from-black/20 to-transparent"
           />
         </>
       ) : (
-        /* Зураг хараахан алга — картын ТӨВД ганц шошго. Зураг тавьмагц
-           энэ бүхэлдээ алга болно. */
         <span
           aria-hidden="true"
           className="text-foreground/75 absolute inset-0 flex items-center justify-center text-[11px] font-bold tracking-[0.18em] uppercase"
@@ -405,15 +227,8 @@ function PromoFadeSlide({ promo, active }: { promo: PromoCard; active: boolean }
         </span>
       )}
 
-      {/* CTA — картын ЦОРЫН ГАНЦ амьд элемент.
-          FIGMA: H 36 · радиус 28 · дотоод зай 12/8 · дүрс хоорондын зай 4 ·
-          өргөн нь агуулгаараа (Hug).
-          ⚠️ ЦАГААН дэвсгэр, БАРААН шошго — захиалагчийн загварын дагуу
-          (өмнө нь брэндийн ногоон `bg-primary` байв).
-          ⚠️ Өнгө нь theme-ийн token БИШ, ТОГТМОЛ `white`/`neutral-900`: товч нь
-          ЗУРГАН дээр суудаг ба зураг нь light/dark-аар өөрчлөгддөггүй тул
-          `bg-background` гэвэл dark theme-д бараан товч бараан зураг дээр
-          уусна. Контраст ≈16.9:1 (WCAG AAA). */}
+      {
+}
       <Link
         href={promo.href}
         tabIndex={active ? undefined : -1}
@@ -426,19 +241,6 @@ function PromoFadeSlide({ promo, active }: { promo: PromoCard; active: boolean }
   );
 }
 
-/**
- * Carousel-ийн удирдлага — БАРУУН ДООД буланд нэг pill дотор `←  n/N  →`.
- *
- * shadcn-ийн `CarouselPrevious`/`CarouselNext`-ийг ХЭРЭГЛЭХГҮЙ: тэдгээр нь
- * panel-ийн ГАДНА, хоёр хажуугаар нь хөвдөг дугуй товчнууд бөгөөд энд
- * 1200px-ийн хүрээнээс халина. Мөн тоолуур (`n/N`) байхгүй.
- *
- * `loop: true` тул хоёр товч ҮРГЭЛЖ идэвхтэй — `canScrollPrev/Next`
- * шалгах шаардлагагүй.
- *
- * ХҮРЭХ ТАЛБАЙ: мобайлд `size-11` (44px) — хуруунд зориулсан доод хэмжээ
- * (`sm:size-8` = 32px нь зөвхөн хулгана/trackpad-тай өргөн дэлгэцэнд).
- */
 function CarouselCounter({
   current,
   total,
@@ -451,8 +253,6 @@ function CarouselCounter({
   onNext: () => void;
 }) {
   return (
-    // `right` — контейнерийн ирмэг БИШ, идэвхтэй panel-ийн ирмэгээс тооцов:
-    // peek нь (100% − basis) / 2 тул мобайлд 9%, md+ дээр 18.75% дотогш.
     <div className="bg-background/90 border-border absolute right-[calc(9%+0.75rem)] bottom-4 inline-flex items-center gap-1 rounded-full border p-1 shadow-md backdrop-blur sm:bottom-6 md:right-[calc(18.75%+1.5rem)]">
       <button
         type="button"
@@ -463,8 +263,8 @@ function CarouselCounter({
         <ArrowLeft className="size-4" aria-hidden="true" />
       </button>
 
-      {/* `aria-live` — сумаар гүйлгэхэд дэлгэц уншигчид байрлал сонсогдоно.
-          `tabular-nums` — 1/3 → 2/3 солигдоход өргөн үсрэхгүй. */}
+      {
+}
       <span aria-live="polite" className="text-foreground px-1 text-xs font-semibold tabular-nums">
         {current}/{total}
       </span>
@@ -481,55 +281,22 @@ function CarouselCounter({
   );
 }
 
-/**
- * Нүүрний PROMO BANNER — chat-hero-гийн ДЭЭР суух зурвас.
- *
- * Медиа нь видео / зураг / gradient — `promo-banner.ts`-ээс сонгогдоно. Видео
- * бэлэн болоход зөвхөн тэр data-г солино, энэ компонент хөндөгдөхгүй.
- *
- * ─── WCAG 2.1 AA ──────────────────────────────────────────────────────
- * 2.2.2 Pause, Stop, Hide (A) — 5 сек-с урт автомат хөдөлгөөнд зогсоох
- *   боломж ЗААВАЛ байна. Тиймээс видео үед ХАРАГДАХ pause/play товч гарна
- *   (hover-д нуугдахгүй), keyboard-аар хүрнэ, focus ring-тэй (2.1.1, 2.4.7).
- * 1.4.2 Audio Control (A) — видеонд аудио track БАЙХГҮЙ (ffmpeg -an) тул
- *   автоматаар хангагдана.
- * 1.4.3 Contrast (AA) — цулгуй өнгөт дэвсгэр дээр өнгө өөрөө 9.7:1 өгдөг тул
- *   scrim БАЙХГҮЙ. Видео/зураг тавихад scrim автоматаар эргэж ирнэ
- *   (`needsScrim`). ЧУХАЛ: бодит видео тавихдаа харьцааг видеоны ХАМГИЙН
- *   ЦАЙВАР frame-тэй тулгаж хэмжинэ (дундажаар биш). Хүрэлцэхгүй бол
- *   scrim-ийн alpha-г нэмнэ.
- * 1.1.1 Non-text Content (A) — `decorative: true` үед `aria-hidden`, бүх
- *   мэдээлэл доорх текстэд байна.
- *
- * prefers-reduced-motion: globals.css-ийн дүрэм нь `animation`/`transition`-ыг
- *   л тэглэдэг, `<video>`-г ЗОГСООХГҮЙ. Тиймээс `autoPlay` атрибут ХЭРЭГЛЭХГҮЙ
- *   — JS-ээр matchMedia шалгаж, зөвшөөрөгдсөн үед л `play()` дуудна.
- * ──────────────────────────────────────────────────────────────────────
- */
 function PromoBannerFull({ fill }: { fill: boolean }) {
   const content = promoBanners[BRAND];
   const isVideo = content.media.kind === "video";
-  // Scrim нь зөвхөн ЖИНХЭНЭ медиа (видео/зураг) дээр хэрэгтэй — тэдгээрийн
-  // тод frame дээр цагаан текст уншигдахгүй болох эрсдэлтэй. Цулгуй өнгөт
-  // дэвсгэр өөрөө хангалттай contrast-тай тул scrim нэмбэл зүгээр л бохирдоно.
   const needsScrim = content.media.kind !== "gradient";
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  // Эхний төлөв нь ЗОГССОН — poster харагдана. Autoplay зөвшөөрөгдвөл л
-  // доорх effect үүнийг false болгоно.
   const [paused, setPaused] = useState(true);
 
-  // Autoplay-г ЗӨВХӨН reduced-motion унтраалттай үед эхлүүлнэ
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
 
-    // Хөдөлгөөн хүсээгүй — эхний `paused: true` төлөв хэвээр, poster үлдэнэ
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     el.play().then(
       () => setPaused(false),
-      // Browser autoplay-г блоклов — poster + play товч харагдана
       () => setPaused(true),
     );
   }, []);
@@ -553,10 +320,10 @@ function PromoBannerFull({ fill }: { fill: boolean }) {
       aria-labelledby="promo-banner-title"
       className={cn("relative isolate w-full overflow-hidden", fill && "h-full")}
     >
-      {/* ============ МЕДИА ============ */}
+      {}
       <PromoMediaLayer media={content.media} decorative={content.decorative} videoRef={videoRef} />
 
-      {/* Scrim — текстийг уншигдахуйц болгоно (1.4.3). Зүүн тал хамгийн бараан. */}
+      {}
       {needsScrim && (
         <div
           aria-hidden="true"
@@ -564,13 +331,8 @@ function PromoBannerFull({ fill }: { fill: boolean }) {
         />
       )}
 
-      {/* ============ КОНТЕНТ ============
-          ӨНДРИЙГ ХЭМНЭНЭ: promo banner + доорх AI туслах ХОЁУЛАА нүүрний
-          ПЕРВЫЙ дэлгэцэнд багтах ёстой. Тиймээс өндөр нь px биш `svh`-д
-          тулгуурлана (`svh` = URL bar хураагдахаас үл хамаарсан жижиг
-          viewport; `vh` бол мобайлд бодит харагдахаас өндөр гардаг).
-          Banner нь анхаарал татах хэмжээгээ хадгална — 34/38svh нь ~1/3
-          дэлгэц. Хэрэв текст түүнээс өндөр бол агуулга давамгайлна. */}
+      {
+}
       <div className={cn("relative mx-auto flex max-w-300 items-center px-4", bannerBox(fill))}>
         <div className="max-w-xl">
           <p className="text-xs font-bold tracking-[0.18em] text-white/80 uppercase">
@@ -611,7 +373,7 @@ function PromoBannerFull({ fill }: { fill: boolean }) {
         </div>
       </div>
 
-      {/* ============ PAUSE / PLAY — WCAG 2.2.2 (заавал) ============ */}
+      {}
       {isVideo && (
         <button
           type="button"
@@ -631,9 +393,6 @@ function PromoBannerFull({ fill }: { fill: boolean }) {
   );
 }
 
-// =====================================================================
-// МЕДИА ДАВХАРГА — төрөл нэмэх = нэг case нэмэх
-// =====================================================================
 function PromoMediaLayer({
   media,
   decorative,
@@ -650,9 +409,7 @@ function PromoMediaLayer({
         poster={media.poster}
         muted
         loop
-        // iOS-д autoplay ажиллуулахад muted + playsInline ЗААВАЛ
         playsInline
-        // "auto" тавьбал LCP-тэй тэмцэлдэнэ
         preload="metadata"
         aria-hidden={decorative ? "true" : undefined}
         tabIndex={-1}
@@ -671,7 +428,6 @@ function PromoMediaLayer({
         src={media.src}
         alt={decorative ? "" : media.alt}
         fill
-        // Хамгийн дээд section тул LCP элемент байх магадлалтай
         priority
         sizes="100vw"
         className="absolute inset-0 -z-10 object-cover"
@@ -679,13 +435,5 @@ function PromoMediaLayer({
     );
   }
 
-  // gradient — медиа файлгүй ажиллах суурь хувилбар.
-  // ЦУЛГУЙ НЭГ ӨНГӨ: өмнө нь ногоон→turquoise→цэнхэр gradient дээр хоёр blur
-  // толбо нэмээд, дээрээс нь бараан scrim тавьдаг байсан — гурван давхарга
-  // хоорондоо уусаж бохир харагддаг байсан тул бүгдийг хассан.
-  //
-  // #0d4f26 — брэндийн ногооны гүн сүүдэр. Цагаан текстэд 9.7:1 (WCAG AA
-  // 4.5:1, AAA 7:1 хоёуланг давна) тул тусдаа scrim шаардлагагүй. Хоёр theme
-  // дээр ижил — банер дээрх текст үргэлж цагаан тул өнгө нь солигдох ёсгүй.
   return <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[#0d4f26]" />;
 }

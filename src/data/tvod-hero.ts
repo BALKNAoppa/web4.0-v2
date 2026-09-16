@@ -1,19 +1,9 @@
-/**
- * Univision Web 4.0 — TVOD hero featured films
- *
- * /entertainment/main page-ийн дээд талын IMAX-маягийн hero banner-д
- * харагдах онцлох кинонуудын data. Carousel-аар автоматаар эргэлдэнэ.
- *
- * Landscape backdrop: public/tvod/backdrops/{id}.jpg-аас уншина.
- * Файл байхгүй үед dark cinema gradient placeholder харагдана.
- */
 export type TvodHeroFeature = {
   id: string;
   badge?: string;
   title: string;
   year: number;
   tagline?: string;
-  /** 16:9 landscape backdrop image */
   backdrop?: string;
   detailHref: string;
 };

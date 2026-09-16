@@ -1,16 +1,3 @@
-/**
- * Univision Web 4.0 — Тусламжийн (FAQ) section data
- *
- * Бүтэц:
- *  - faqCategories: Home page-н entry point (6 circular icon)
- *  - faqMeta:       Home + Support хуудасны гарчиг, хайлтын текстүүд
- *  - faqTopics:     /support хуудас дээрх Accordion-н түгээмэл асуултууд
- */
-
-// ====================================================
-// TYPES
-// ====================================================
-/** Lucide icon-ы нэр (faq.tsx-д map хийгдэнэ) */
 export type FaqIcon =
   | "internet"
   | "tv"
@@ -28,16 +15,13 @@ export type FaqCategory = {
   label: string;
   icon: FaqIcon;
   href: string;
-  /** /support хуудсанд категори сонгогдсон үед харагдах гарчиг */
   supportTitle: string;
-  /** true бол хуудас руу шилжихгүй, глобал chatbot-ыг нээнэ */
   opensChat?: boolean;
 };
 
 export type FaqTopic = {
   id: string;
   question: string;
-  /** Plain текст — олон параграфтай бол `\n\n`-ээр тусгаарлана */
   answer: string;
 };
 
@@ -48,23 +32,17 @@ export type SupportTopic = {
 };
 
 export type CategoryDetail = {
-  /** Title-ын доор харагдах товч тайлбар */
   description: string;
-  /** Ask bar-ийн доор харагдах жишээ асуултууд (chip) */
   quickQuestions: string[];
-  /** Зүүн card — "Түгээмэл асуудлууд" */
   frequentTopics: SupportTopic[];
-  /** Баруун card — "Бусад асуудлууд" (2-багана) */
   otherTopics: SupportTopic[];
 };
 
-/** Quick link иконы нэр (support-category-detail.tsx-д map хийгдэнэ) */
 export type SupportQuickLinkIcon = "usage" | "account" | "app" | "business";
 
 export type SupportQuickLink = {
   id: string;
   icon: SupportQuickLinkIcon;
-  /** Иконы дугуй дэвсгэр + икон өнгө (tailwind class) */
   iconBg: string;
   title: string;
   description: string;
@@ -72,9 +50,6 @@ export type SupportQuickLink = {
   href: string;
 };
 
-// ====================================================
-// META
-// ====================================================
 export const faqMeta = {
   title: "Танд туслaмж хэрэгтэй юу?",
   description: "Түгээмэл асуултыг ангилал тус бүрээр хялбархан хайж олоорой.",
@@ -83,16 +58,6 @@ export const faqMeta = {
   trendingTitle: "Түгээмэл асуултууд",
 };
 
-// ====================================================
-// CATEGORIES — Home entry point (circular icons)
-// Бүгд /support руу заана
-//
-// Брэнд бүр өөрийн 6 topic-той (unitelFaqCategories / univisionFaqCategories).
-// `faqCategories` нь ХОЁУЛАНГ нэгтгэсэн жагсаалт — /support?category={id}
-// хайлт аль ч брэндийн линкийг тайлж чаддаг байх ёстой тул нэгдсэн хэвээр.
-// ====================================================
-
-/** Хоёр брэнд хоёуланд нь байдаг topic-ууд */
 const billingCategory: FaqCategory = {
   id: "billing",
   label: "Төлбөр",
@@ -110,7 +75,6 @@ const agentCategory: FaqCategory = {
   opensChat: true,
 };
 
-/** Unitel — мобайл талын topic-ууд */
 export const unitelFaqCategories: FaqCategory[] = [
   {
     id: "mobile",
@@ -144,7 +108,6 @@ export const unitelFaqCategories: FaqCategory[] = [
   agentCategory,
 ];
 
-/** Univision — интернэт, ТВ, контентын topic-ууд */
 export const univisionFaqCategories: FaqCategory[] = [
   {
     id: "internet",
@@ -178,7 +141,6 @@ export const univisionFaqCategories: FaqCategory[] = [
   agentCategory,
 ];
 
-/** /support хуудасны хайлтад зориулсан нэгдсэн жагсаалт (давхардалгүй) */
 export const faqCategories: FaqCategory[] = [
   ...univisionFaqCategories,
   ...unitelFaqCategories.filter(
@@ -186,22 +148,12 @@ export const faqCategories: FaqCategory[] = [
   ),
 ];
 
-// ====================================================
-// TRENDING TOPICS — /support page accordion
-// ====================================================
-// ====================================================
-// CATEGORY DETAIL — /support?category={id} хуудсанд харагдах
-// ====================================================
 const t = (id: string, label: string, href: string = "#"): SupportTopic => ({
   id,
   label,
   href,
 });
 
-/**
- * Priority дарааллаар — бүх категори хуудасны "Түгээмэл асуудлууд" хэсэгт
- * ИЖИЛ 5 топик ижил дарааллаар харагдана.
- */
 const priorityFrequentTopics: SupportTopic[] = [
   t(
     "top-internet-setup",
@@ -214,10 +166,6 @@ const priorityFrequentTopics: SupportTopic[] = [
   t("top-wifi-password", "Wi-Fi нууц үг солих"),
 ];
 
-/**
- * Бүх категори хуудасны доод хэсэгт харагдах quick link card-ууд
- * (Singtel-ийн "Check Data Usage / My Account / ..." загвар)
- */
 export const supportQuickLinks: SupportQuickLink[] = [
   {
     id: "usage",

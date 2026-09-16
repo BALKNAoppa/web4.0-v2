@@ -17,11 +17,6 @@ import {
 import { cn } from "@/lib/utils";
 import { tvodHeroFeatures, type TvodHeroFeature } from "@/data/tvod-hero";
 
-/**
- * IMAX-маягийн full-width hero banner. Featured кинонууд carousel-аар
- * 6 секунд тутамд эргэлддэг. Доод-баруун буланд "feature picker" panel
- * нь идэвхтэй болон дараагийн кинонуудыг харуулна, click-хад шилжинэ.
- */
 export function TvodHero() {
   const autoplay = useMemo(() => Autoplay({ delay: 6000, stopOnInteraction: true }), []);
   const [api, setApi] = useState<CarouselApi | undefined>();
@@ -67,7 +62,7 @@ export function TvodHero() {
         />
       </Carousel>
 
-      {/* Feature picker — banner-ийн доод-баруун булан */}
+      {}
       <FeaturePicker
         features={tvodHeroFeatures}
         currentIndex={currentIndex}
@@ -77,9 +72,6 @@ export function TvodHero() {
   );
 }
 
-// =====================================================================
-// FEATURE PICKER — banner-ийн доод буланд харагдах highlight panel
-// =====================================================================
 function FeaturePicker({
   features,
   currentIndex,
@@ -116,7 +108,7 @@ function FeaturePicker({
                   : "border-white/15 opacity-60 hover:border-white/40 hover:opacity-100",
               )}
             >
-              {/* Top bar — active highlight */}
+              {}
               <span
                 className={cn(
                   "absolute top-0 right-2 left-2 h-0.5 transition-colors",
@@ -140,7 +132,7 @@ function FeaturePicker({
 function HeroCard({ feature, priority }: { feature: TvodHeroFeature; priority: boolean }) {
   return (
     <div className="relative h-[75vh] min-h-[500px] w-full overflow-hidden bg-slate-900 md:h-[82vh] md:min-h-[640px] lg:min-h-[760px]">
-      {/* Backdrop image эсвэл cinema gradient placeholder */}
+      {}
       {feature.backdrop ? (
         <Image
           src={feature.backdrop}
@@ -155,7 +147,7 @@ function HeroCard({ feature, priority }: { feature: TvodHeroFeature; priority: b
           className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-slate-900 to-black"
           aria-hidden="true"
         >
-          {/* Subtle texture — placeholder feel */}
+          {}
           <div className="absolute inset-0 flex items-center justify-center opacity-10">
             <span className="text-[14rem] font-black tracking-tight text-white md:text-[20rem] lg:text-[26rem]">
               {feature.title.split(" ")[0]}
@@ -164,13 +156,13 @@ function HeroCard({ feature, priority }: { feature: TvodHeroFeature; priority: b
         </div>
       )}
 
-      {/* Dark overlay: дооноос дээш текст уншигдахуйц */}
+      {}
       <div
         className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/10"
         aria-hidden="true"
       />
 
-      {/* Content — bottom-left, IMAX-маягийн том typography */}
+      {}
       <div className="container relative mx-auto flex h-full flex-col justify-end px-4 pb-20 md:pb-28 lg:pb-32">
         {feature.badge && (
           <span className="mb-4 inline-flex w-fit items-center rounded-md bg-white/15 px-3 py-1.5 text-xs font-semibold tracking-widest text-white uppercase backdrop-blur-sm md:text-sm">

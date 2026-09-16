@@ -3,22 +3,6 @@ import { ArrowRight, Cable, Router, Wifi } from "lucide-react";
 
 import { deviceProducts } from "@/data/devices";
 
-/**
- * MESH ХУУДАСНЫ ХОЁРДУГААР ХЭСЭГ — HGW · Mesh · FTTR гурван шийдэл.
- *
- * ⚠️ Контент нь ШИНЭ БИЧВЭР БИШ: `devices.ts`-ийн каталогийн ЯГ ТЭР
- * `name` · `spec` · `detailHref`-ийг уншина. Ингэснээр төхөөрөмжийн
- * тодорхойлолт хоёр газар зөрөх боломжгүй бөгөөд каталог шинэчлэгдэхэд
- * энэ хэсэг өөрөө дагаж шинэчлэгдэнэ.
- *
- * Яагаад хэрэгтэй: `/mesh` нь ЗӨВХӨН сонголтын хэсгээс тогтдог байв —
- * хэрэглэгч "хэдэн төхөөрөмж" гэдгээ хараад л дуусдаг, ЯМАР төхөөрөмж
- * болохыг нь мэдэхгүй үлддэг. Мөн хуудасны `metadata.description` нь
- * "HGW, Mesh, FTTR шийдлүүд" гэж тайлбарладаг ч FTTR хуудсанд ОГТ
- * дурдагддаггүй байсан — тэр зөрүү ч энд хаагдана.
- */
-
-/** Каталогоос ID-гаар авна. Байхгүй бол картыг ОГТ гаргахгүй (алдаа өгөхгүй). */
 const SOLUTIONS = [
   { id: "net-hgw", Icon: Router },
   { id: "extra-mesh", Icon: Wifi },
@@ -37,12 +21,12 @@ export function MeshSolutions() {
     <section aria-labelledby="mesh-solutions-title" className="bg-background pb-14 lg:pb-20">
       <div className="container mx-auto px-4">
         <div className="mb-8 text-center">
-          {/* ⚠️ `text-foreground/75` — 12px bold дээр `muted` нь WCAG-ийн
-              4.5:1-д хүрдэггүй (бараан дэвсгэр дээр 2.82:1). */}
+          {
+}
           <span className="text-foreground/75 text-xs font-bold tracking-wider uppercase">
             Төхөөрөмжийн сонголт
           </span>
-          {/* `h2` — хуудасны `h1` нь `WifiPromo`-д (гарчгийн дараалал зөв). */}
+          {}
           <h2
             id="mesh-solutions-title"
             className="mt-2 text-2xl font-bold tracking-tight md:text-3xl"
@@ -58,17 +42,15 @@ export function MeshSolutions() {
         <ul className="grid gap-4 sm:grid-cols-3">
           {SOLUTIONS.map(({ device, Icon }, index) => (
             <li key={device.id}>
-              {/* Бүтэн картыг дарж болно — гарчиг дээр л дарах нь заагдахад
-                  хэцүү. `h3` нь `h2`-ын доор тул дараалал хэвээр зөв. */}
+              {
+}
               <Link
                 href={device.detailHref}
                 className="border-border hover:border-primary/50 hover:bg-muted/30 focus-visible:ring-ring group flex h-full flex-col rounded-2xl border p-5 transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
                 <div className="flex items-center gap-3">
-                  {/* Дугаар — гурван шийдэл нь ХАМРАХ ХҮРЭЭГЭЭР эрэмбэлэгдсэн:
-                      үндсэн рутер → өрөө бүрд Mesh → өрөө бүрд шилэн кабель.
-                      ⚠️ ЧИМЭГЛЭЛ тул `aria-hidden`: дараалал нь картуудын
-                      байрлалаас уншигдана, screen reader "0 1" гэж уншихгүй. */}
+                  {
+}
                   <span
                     aria-hidden="true"
                     className="text-foreground/70 text-xs font-bold tabular-nums"
@@ -90,7 +72,7 @@ export function MeshSolutions() {
                   {device.spec}
                 </p>
 
-                {/* `mt-auto` — карт өндөр зөрсөн ч мөр нэг шугамд суумаар */}
+                {}
                 <span className="text-primary mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold">
                   Дэлгэрэнгүй
                   <ArrowRight

@@ -1,34 +1,13 @@
-/**
- * Univision Web 4.0 — TVOD movie catalog
- *
- * Search engine үүн дээр substring + genre + year-ээр шүүлт хийнэ.
- * Semantic search (LLM) нь description + themes + keywords-ийг ашиглана.
- * Описаны англиар бичсэн нь LLM-д илүү нарийн semantic understanding өгдөг.
- * Mongolian query-уудыг ч multilingual model автоматаар ойлгож тааруулна.
- * Постер зургийг public/tvod/{id}.jpg нэрээр тавьж болно. Хэрэв жинхэнэ
- * постер байхгүй бол picsum.photos-аас seeded placeholder татна.
- */
 export type TvodMovie = {
   id: string;
   title: string;
-  /** Зэрэг харагдах genre tag-ууд */
   genres: string[];
   year: number;
-  /** IMDb-маягийн 10-аас хувиарласан үнэлгээ */
   rating: number;
-  /** public folder absolute path эсвэл remote URL */
   poster?: string;
 
-  // ===================================================
-  // Semantic search-д ашиглах metadata.
-  // Хоосон үлдээж болно, гэхдээ semantic search-ийн
-  // чанарт нөлөөлнө.
-  // ===================================================
-  /** 2-3 sentence plot/description in English */
   description?: string;
-  /** Кинонын үндсэн сэдэв, мэдрэмж — 4-6 ширхэг */
   themes?: string[];
-  /** Илүү тодорхой keyword-уудаар query таарагдахад тус болно — 5-10 ширхэг */
   keywords?: string[];
 };
 
@@ -45,18 +24,11 @@ export const tvodGenres = [
   "Thriller",
 ] as const;
 
-/**
- * Кино постерийн path буцаах helper. public/tvod/{id}.jpg-аас уншина.
- * (Функцийн нэр legacy — өмнө picsum.photos placeholder татаж байсан.)
- */
 function picsumPoster(id: string): string {
   return `/tvod/${id}.jpg`;
 }
 
 export const tvodMovies: TvodMovie[] = [
-  // ===========================================================
-  // Бодит постертой 5 — public/tvod/ folder-т аль хэдийн байгаа
-  // ===========================================================
   {
     id: "obsession",
     title: "Obsession",
@@ -118,9 +90,6 @@ export const tvodMovies: TvodMovie[] = [
     keywords: ["suburban", "family secrets", "hidden lives", "crime drama", "deception", "slow-burn"],
   },
 
-  // ===========================================================
-  // Placeholder (picsum) — бодит постер хийгдэх хүртэл түр
-  // ===========================================================
   {
     id: "dune-part-two",
     title: "Dune: Part Two",
@@ -362,9 +331,6 @@ export const tvodMovies: TvodMovie[] = [
     keywords: ["scandal", "Natalie Portman", "Julianne Moore", "Todd Haynes", "actress", "drama"],
   },
 
-  // ===========================================================
-  // Нэмэлт 25 кино
-  // ===========================================================
   {
     id: "avatar-2",
     title: "Avatar: The Way of Water",
@@ -667,19 +633,12 @@ export const tvodMovies: TvodMovie[] = [
   },
 ];
 
-/**
- * TVOD library tab-д харагдах category-уудын төрөл.
- * Тус бүрд топ 5 highlight кино.
- */
 export type TvodCategory = {
   id: string;
   title: string;
   movies: TvodMovie[];
 };
 
-// =====================================================================
-// CATEGORY DEFINITIONS — filter + sort logic-уудыг нэг газар
-// =====================================================================
 const byRating = (a: TvodMovie, b: TvodMovie) => b.rating - a.rating;
 const byYear = (a: TvodMovie, b: TvodMovie) => b.year - a.year;
 const hasGenre = (g: string) => (m: TvodMovie) => m.genres.includes(g);
@@ -724,29 +683,20 @@ const categoryDefs: CategoryDef[] = [
   },
 ];
 
-/**
- * Тухайн category-н БҮХ кинонуудыг filter + sort-той буцаах (detail page-д).
- */
 export function getCategoryMovies(id: string): TvodMovie[] {
   const def = categoryDefs.find((c) => c.id === id);
   if (!def) return [];
   return tvodMovies.filter(def.filter).sort(def.sort);
 }
 
-/** Category-н title буцаах (detail page header-д) */
 export function getCategoryTitle(id: string): string | undefined {
   return categoryDefs.find((c) => c.id === id)?.title;
 }
 
-/** Бүх category id-уудыг буцаах (static params generation-д хэрэг болж магадгүй) */
 export function getCategoryIds(): string[] {
   return categoryDefs.map((c) => c.id);
 }
 
-/**
- * Landing page-д харагдах category-уудын top 5 (dedupped).
- * Кино бүр зөвхөн НЭГ category-д харагдана (дараалал priority).
- */
 export const tvodCategories: TvodCategory[] = (() => {
   const used = new Set<string>();
   return categoryDefs.map((def) => {

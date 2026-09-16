@@ -97,7 +97,6 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
         setSettings({ ...DEFAULT_SETTINGS, ...parsed });
       }
     } catch {
-      // ignore corrupt storage
     }
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydrated(true);
@@ -109,7 +108,6 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
     } catch {
-      // ignore quota errors
     }
   }, [settings, hydrated]);
 

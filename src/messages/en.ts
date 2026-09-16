@@ -1,12 +1,4 @@
-/**
- * ЖИШЭЭ ОРЧУУЛГА — АНГЛИ. Түлхүүр нь дэлгэц дээрх МОНГОЛ эх бичвэр
- * (`messages/index.ts`-ийн тайлбарыг үз).
- *
- * ⚠️ Брэндийн нэр (Unitel · Univision · LookTV · Toki · U-Point) ба техникийн
- * нэгж (GB, 24/7, QR) ОРЧУУЛАГДАХГҮЙ — бүх хэлэнд ижил.
- */
 export const en: Record<string, string> = {
-  // ── Навигаци · header · footer ─────────────────────────────────
   "Хувь хэрэглэгч": "Personal",
   Байгууллага: "Business",
   Дэлгүүр: "Shop",
@@ -29,7 +21,6 @@ export const en: Record<string, string> = {
   "(одоо байгаа домэйн)": "(current site)",
   Дэлгэрэнгүй: "Learn more",
 
-  // ── AI туслах ─────────────────────────────────────────────────
   Ухаалаг: "Smart",
   туслах: "assistant",
   "Unitel Group-ийн хэмжээнд бүтээгдэхүүн, үйлчилгээний талаар лавлаад":
@@ -42,7 +33,6 @@ export const en: Record<string, string> = {
   Илгээх: "Send",
   "Ухаалаг сонголт": "Smart choice",
 
-  // ── Санал болгох багц ─────────────────────────────────────────
   "Санал болгох багц": "Recommended plans",
   "Хэрэглээнд тань тохирох дата болон ярианы багцууд.":
     "Data and voice plans that match how you use your phone.",
@@ -67,7 +57,6 @@ export const en: Record<string, string> = {
   "24/7 Юнител, Юнивишн хувийн туслах үйлчилгээ":
     "24/7 personal assistant for Unitel and Univision",
 
-  // ── Эрэлттэй үйлчилгээ ────────────────────────────────────────
   "Эрэлттэй байгаа үйлчилгээ": "Popular services",
   "Дуудлага хадгалах": "Call recording",
   Идэвхжүүлэх: "Activate",
@@ -79,7 +68,6 @@ export const en: Record<string, string> = {
   "Дуудлага хадгалах — Идэвхжүүлэх": "Call recording — Activate",
   "Family үйлчилгээ — Идэвхжүүлэх": "Family service — Activate",
 
-  // ── Онцлох урамшуулал ─────────────────────────────────────────
   "Онцлох урамшуулал": "Featured offers",
   "Танд зориулсан шинэ урамшуулал, онцлох саналууд.":
     "New promotions and highlights picked for you.",
@@ -105,7 +93,6 @@ export const en: Record<string, string> = {
   "Өмнөх урамшуулал": "Previous offer",
   "Дараагийн урамшуулал": "Next offer",
 
-  // ── Бусад үйлчилгээ ───────────────────────────────────────────
   "Бусад үйлчилгээ": "Other services",
   "Дата багц": "Data plans",
   "Гэр интернэт": "Home internet",
@@ -116,7 +103,6 @@ export const en: Record<string, string> = {
   "Нэмэлт дата багц": "Extra data plans",
   "Нэмэлт үйлчилгээ": "Add-on services",
 
-  // ── Апп татах ─────────────────────────────────────────────────
   "Бүх үйлчилгээг": "Every service in the",
   аппаас: "app",
   "Юнител, Юнивишний төлбөр төлөх, нэгж болон дата авах, бусад үйлчилгээг гар утаснаасаа нэг дороос.":
@@ -125,7 +111,6 @@ export const en: Record<string, string> = {
   "App Store-оос татах": "Download on the App Store",
   "Google Play-оос татах": "Get it on Google Play",
 
-  // ── Footer ────────────────────────────────────────────────────
   "Монгол орныг дэлхийтэй холбосон үндэсний харилцаа холбооны групп.":
     "The national telecommunications group connecting Mongolia to the world.",
   "Харилцаа холбоо": "Connectivity",
@@ -144,7 +129,6 @@ export const en: Record<string, string> = {
   "Instagram (шинэ tab-д нээгдэнэ)": "Instagram (opens in a new tab)",
   "YouTube (шинэ tab-д нээгдэнэ)": "YouTube (opens in a new tab)",
 
-  // ── Хүртээмжийн панел ─────────────────────────────────────────
   "Хүртээмжийн тохиргоо": "Accessibility settings",
   "Сонголтыг хийхэд шууд харагдана": "Changes apply immediately",
   Өнгө: "Colour",

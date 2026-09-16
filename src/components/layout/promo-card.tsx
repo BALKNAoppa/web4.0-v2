@@ -9,16 +9,6 @@ import { type NavPromo } from "@/data/navigation";
 import { navType } from "@/lib/nav-type";
 import { cn } from "@/lib/utils";
 
-/**
- * Mega menu-ийн "цаг үеийн урамшуулал" мөр — БҮХ header хувилбарт (1/2/3/4)
- * ижил харагдана. Байрлал: зүүн дугуй (56px) · баруун гарчиг + богино тайлбар + CTA.
- *   · promo.image байвал → дугуй дотор зураг
- *   · байхгүй бол        → өнгөт badge текст (legacy promo-нууд)
- *
- * asMenuLink — NavigationMenu (Хувилбар 2/4) дотор ашиглах үед true: линк дарахад
- * mega menu автоматаар хаагдана. Хувилбар 1/3-ын custom панелд false (энгийн Link),
- * тэнд onNavigate-аар панелийг хаана.
- */
 export function PromoCard({
   promo,
   asMenuLink = false,
@@ -34,7 +24,7 @@ export function PromoCard({
       onClick={onNavigate}
       className="hover:bg-muted/50 group flex items-start gap-3 rounded-lg p-2 transition-colors"
     >
-      {/* Зүүн дугуй — зураг байвал зураг, эсвэл өнгөт badge (хуучин promo-нууд) */}
+      {}
       {promo.image ? (
         <div className="bg-muted relative size-14 shrink-0 overflow-hidden rounded-full">
           <Image

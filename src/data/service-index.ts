@@ -1,17 +1,11 @@
 import { groupNavV2, type NavCategory } from "@/data/navigation";
 import { type Owner } from "@/lib/brand";
 
-/**
- * Цэсний нэг зүйл = нэг үйлчилгээ. Sample хуудсууд ЭНЭ индексээс уншина —
- * тусад нь контент дата үүсгэхгүй, эс бөгөөс цэс болон хуудас хоёр зөрнө.
- */
 export type ServiceEntry = {
   label: string;
   href: string;
   owner: Owner;
-  /** Цэсний ангилал — "Internet" */
   category: string;
-  /** Багана — "Main packages" (баганагүй категорид байхгүй) */
   column?: string;
   badge?: string;
 };
@@ -48,12 +42,10 @@ function flatten(categories: NavCategory[]): ServiceEntry[] {
 const ALL = flatten(groupNavV2);
 const BY_HREF = new Map(ALL.map((s) => [s.href, s]));
 
-/** Бүтэн зам ("/main-packages?plan=triple") -аар үйлчилгээ олох */
 export function findService(href: string): ServiceEntry | null {
   return BY_HREF.get(href) ?? null;
 }
 
-/** Мөн баганад байгаа бусад үйлчилгээ — "Холбоотой" блокт харуулна */
 export function siblingServices(service: ServiceEntry): ServiceEntry[] {
   return ALL.filter(
     (s) =>

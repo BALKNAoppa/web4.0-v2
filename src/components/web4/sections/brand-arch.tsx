@@ -4,7 +4,6 @@ import { BrowserFrame } from "@/components/web4/browser-frame";
 import { DeckSection } from "@/components/web4/section-shell";
 import { brandHouses, brandTypes } from "@/data/brand-architecture";
 
-// Нэг гэр бүлийн ногоон → cyan shade — олон өнгө ашиглахгүй.
 const SCALE = ["#7dfa5a", "#45c700", "#2ea9a0", "#8becff"];
 
 export function BrandArchitecture() {
@@ -23,7 +22,7 @@ export function BrandArchitecture() {
         sub="Холбоосын хүчээр (No → Weak → Shared → Value) 4 төрөлд хуваагдана. Google-ийн жишээгээр."
       />
 
-      {/* Two philosophies */}
+      {}
       <div className="mx-auto mt-12 grid max-w-3xl gap-4 sm:grid-cols-2">
         {brandHouses.map((h, i) => (
           <Reveal key={h.id} delay={i * 120}>
@@ -35,7 +34,7 @@ export function BrandArchitecture() {
         ))}
       </div>
 
-      {/* 4 types */}
+      {}
       <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {brandTypes.map((t, i) => {
           const accent = SCALE[i % SCALE.length];

@@ -7,20 +7,11 @@ import { QRCodeSVG } from "qrcode.react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 
-/** Жишээ түрээсийн нөхцөл (backend холбогдоход эндээс солино) */
 const RENTAL_PRICE = "7,900₮";
 const RENTAL_PERIOD = "72 цаг";
 
 type RentStep = "confirm" | "qr" | "guide" | null;
 
-/**
- * "Кино түрээслэх" товч — brand ногоон. Урсгал:
- *  1) нэвтрээгүй бол login dialog,
- *  2) дараа нь түрээсийг баталгаажуулах dialog,
- *  3) баталгаажуулсны дараа:
- *     • Univision GO апп идэвхтэй хэрэглэгч → QR (аппаараа уншуулна),
- *     • идэвхгүй хэрэглэгч → аппаа идэвхжүүлэх заавар.
- */
 export function RentMovieButton({ title }: { title: string }) {
   const { user, requireAuth } = useAuth();
   const [step, setStep] = useState<RentStep>(null);
@@ -30,7 +21,6 @@ export function RentMovieButton({ title }: { title: string }) {
   const handleConfirm = () => {
     setRented(true);
     if (user?.goAppActivated) {
-      // Random QR утга (демо) — event handler дотор үүсгэнэ (render-ийн гадна)
       setQrValue(`https://go.univision.mn/watch?token=${Math.random().toString(36).slice(2, 12)}`);
       setStep("qr");
     } else {
@@ -81,10 +71,6 @@ export function RentMovieButton({ title }: { title: string }) {
   );
 }
 
-// =====================================================================
-// Modal a11y туслах hook — escape, focus trap, scroll lock, focus restore.
-// confirm/result dialog-ууд хуваалцана.
-// =====================================================================
 function useDialogA11y(onClose: () => void) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -131,9 +117,6 @@ function useDialogA11y(onClose: () => void) {
   return dialogRef;
 }
 
-// =====================================================================
-// RENT CONFIRM DIALOG — түрээсийг баталгаажуулах
-// =====================================================================
 function RentConfirmDialog({
   title,
   onClose,
@@ -195,9 +178,6 @@ function RentConfirmDialog({
   );
 }
 
-// =====================================================================
-// RENT RESULT DIALOG — QR (GO идэвхтэй) эсвэл заавар (GO идэвхгүй)
-// =====================================================================
 function RentResultDialog({
   variant,
   title,
@@ -247,7 +227,6 @@ function RentResultDialog({
     );
   }
 
-  // variant === "guide"
   return (
     <DialogChrome dialogRef={dialogRef} headingId={headingId} onClose={onClose}>
       <div className="flex items-start gap-3">
@@ -300,9 +279,6 @@ function RentResultDialog({
   );
 }
 
-// =====================================================================
-// DIALOG CHROME — backdrop + card + хаах товч (бүх rent dialog-ийн бүрхүүл)
-// =====================================================================
 function DialogChrome({
   dialogRef,
   headingId,

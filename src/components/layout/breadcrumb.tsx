@@ -3,21 +3,14 @@ import { ChevronRight, Home } from "lucide-react";
 
 export type BreadcrumbItem = {
   label: string;
-  /** Заагдсан бол линк, эс бөгөөс одоогийн (current) item */
   href?: string;
 };
 
 type BreadcrumbProps = {
-  /** Эхэнд тавих "нүүр" линк. Default: { href: "/" } */
   homeHref?: string;
-  /** Дунд болон сүүлийн item-ууд. Сүүлийнх href-гүй бол одоогийн хуудас гэж үзнэ. */
   items: BreadcrumbItem[];
 };
 
-/**
- * Дэлгэцийн дээд талд харагдах breadcrumb.
- * Эхэнд Home icon → ChevronRight → линк-үүд → одоогийн хуудас (foreground өнгөтэй).
- */
 export function Breadcrumb({ homeHref = "/", items }: BreadcrumbProps) {
   return (
     <nav aria-label="Хуудасны зам" className="bg-background">

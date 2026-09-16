@@ -1,27 +1,12 @@
-/**
- * Univision Web 4.0 — Wi-Fi сонголтын data
- *
- * 4 apartment категори, тус бүрд нь:
- *  - apartment-ийн нэр, тайлбар
- *  - шаардлагатай device тоо ба нэр
- *  - Building illustration variant key
- */
-
 export type WifiOption = {
   id: string;
-  /** Card дээр харагдах нэр */
   name: string;
-  /** Card-ын дотоод тайлбар (өрөө тоо, m²) */
   highlight?: string;
   description: string;
-  /** Preview хэсгийн "энэ apartment-д" зориулсан тайлбар */
   previewText: string;
   devices: string;
-  /** Mesh device тоо — баруун талын visualization-д ашиглана */
   meshCount: number;
-  /** Олон mesh байрлахыг "..." хэлбэрээр харуулах эсэх */
   hasOverflow?: boolean;
-  /** Building illustration variant — SVG-д хэрэглэгдэнэ */
   illustration: "studio" | "small" | "medium" | "house";
 };
 
@@ -33,7 +18,7 @@ export const wifiOptions: WifiOption[] = [
     previewText: "Жижиг хэмжээтэй орон сууцанд Univision Home Gateway дангаараа хангалттай.",
     devices: "1 × HGW",
     meshCount: 0,
-    illustration: "studio", // 1 device — нэг HGW
+    illustration: "studio",
   },
   {
     id: "medium-apt",
@@ -43,7 +28,7 @@ export const wifiOptions: WifiOption[] = [
       "Дунд зэргийн орон сууцанд нэг Mesh нэмэхэд гэрийн аль ч хэсэгт сүлжээ тогтвортой байна.",
     devices: "1 × HGW + 1 × Mesh",
     meshCount: 1,
-    illustration: "medium", // 2 device — HGW + 1 Mesh
+    illustration: "medium",
   },
   {
     id: "large-apt",
@@ -53,7 +38,7 @@ export const wifiOptions: WifiOption[] = [
       "Том хэмжээтэй орон сууцанд нэмэлтээр 2 Mesh нэмэх нь танд мэдрэгдэх интернет алдагдал багасна.",
     devices: "1 × HGW + 2 × Mesh",
     meshCount: 2,
-    illustration: "small", // 3 device — HGW + 2 Mesh (SmallBuilding 3 device харуулна)
+    illustration: "small",
   },
   {
     id: "house",
@@ -70,25 +55,12 @@ export const wifiOptions: WifiOption[] = [
 export const wifiSection = {
   eyebrow: "Гэрийн Wi-Fi",
   title: "Интернэт шийдэлүүд",
-  /** Description-аас "highlight" үгийг __HIGHLIGHT__ marker-аар тэмдэглэв */
   descriptionPrefix: "Орон сууцны хэмжээгээ сонгоод ",
   descriptionHighlight: "хамгийн тохиромжтой",
   descriptionSuffix: " Wi-Fi шийдэлийг сонгоорой.",
-  /** `WifiOption.devices` мөрийн дээрх шошго */
   devicesLabel: "Шаардлагатай төхөөрөмж",
-  /**
-   * ⚠️ Өмнө нь `#` байсан — хуудасны ЦОРЫН ГАНЦ үйлдэл хаана ч хүрэхгүй
-   * байв. Одоо `devices.ts`-ийн Mesh/FTTR картуудын `detailHref`-тэй ЯГ
-   * ижил зам (`groupNavV2`-д бүртгэлтэй `?type=` утга).
-   */
   ctaText: "Төхөөрөмж харах",
   ctaHref: "/devices?type=fttr",
-  /**
-   * Хоёрдогч үйлдэл — AI туслах руу. Асуулт нь `hero-assistant.ts`-ийн
-   * FEATURED `internet-slow` кейсийн `question`-тэй ЯГ ТААРНА (эс бөгөөс
-   * туслах "таньсангүй" гэж хариулна). Хуучин `mesh-count` кейс руу заавал
-   * БОЛОХГҮЙ: тэр нь цэвэрлэгээнд устах хүлээлттэй.
-   */
   secondaryCtaText: "AI туслахаас асуух",
   secondaryCtaHref:
     "/assistant?q=%D0%98%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D1%8D%D1%82%D0%B8%D0%B9%D0%BD%20%D1%85%D1%83%D1%80%D0%B4%20%D1%83%D0%B4%D0%B0%D0%B0%D0%BD%20%D0%B1%D0%B0%D0%B9%D0%BD%D0%B0",

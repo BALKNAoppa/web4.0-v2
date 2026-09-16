@@ -17,11 +17,6 @@ import {
   getSimilarMovies,
 } from "@/data/tvod-movie-details";
 
-/**
- * Бүх кинонд detail page-ийг build-time-д үүсгэнэ. Detail metadata байхгүй
- * кинонууд ч graceful fallback-аар (poster→backdrop, багийн мэдээлэл нуугдсан)
- * харагдана.
- */
 export function generateStaticParams() {
   return tvodMovies.map((m) => ({ id: m.id }));
 }
@@ -51,7 +46,6 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
   const detail = getMovieDetail(id);
   const similar = getSimilarMovies(id, 5);
 
-  // Detail metadata байхгүй үеийн fallback-ууд
   const dateLabel = detail?.releaseDate ?? String(movie.year);
   const runtimeLabel = detail ? formatRuntime(detail.runtimeMinutes) : null;
   const backdrop = detail?.backdrop ?? movie.poster;
@@ -68,7 +62,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
 
       <article className="bg-background py-8 lg:py-10">
         <div className="container mx-auto px-4">
-          {/* ============ HEADER — гарчиг + rating ============ */}
+          {}
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h1 className="text-foreground text-3xl font-bold tracking-tight md:text-4xl">
@@ -90,9 +84,9 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
             <RatingBlock rating={movie.rating} voteCount={detail?.voteCount} />
           </div>
 
-          {/* ============ MEDIA — poster + backdrop/trailer ============ */}
+          {}
           <div className="mt-6 grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)] md:grid-cols-[225px_minmax(0,1fr)]">
-            {/* Poster */}
+            {}
             <div className="bg-muted relative aspect-[2/3] overflow-hidden rounded-2xl shadow-sm">
               {movie.poster && (
                 <Image
@@ -106,7 +100,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
               )}
             </div>
 
-            {/* Backdrop + Watch Trailer — poster-тэй ижил өндөртэй (sm+) */}
+            {}
             <div className="bg-muted relative aspect-video overflow-hidden rounded-2xl shadow-sm sm:aspect-auto sm:h-full">
               {backdrop && (
                 <Image
@@ -119,7 +113,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
                 />
               )}
 
-              {/* Доод-зүүн булангийн үйлдлүүд: Трейллер + Кино түрээслэх */}
+              {}
               <div className="absolute bottom-4 left-4 flex flex-wrap items-center gap-2">
                 {detail?.trailerUrl && (
                   <TrailerDialog
@@ -133,7 +127,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
             </div>
           </div>
 
-          {/* ============ GENRES ============ */}
+          {}
           {movie.genres.length > 0 && (
             <ul className="mt-6 flex flex-wrap gap-2">
               {movie.genres.map((genre) => (
@@ -147,14 +141,14 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
             </ul>
           )}
 
-          {/* ============ OVERVIEW ============ */}
+          {}
           {movie.description && (
             <p className="text-foreground mt-4 max-w-3xl text-sm leading-relaxed md:text-base">
               {movie.description}
             </p>
           )}
 
-          {/* ============ CREW ============ */}
+          {}
           {detail && (
             <dl className="mt-8 max-w-4xl">
               <CrewRow label="Director" names={[detail.director]} />
@@ -163,7 +157,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
             </dl>
           )}
 
-          {/* ============ MORE LIKE THIS ============ */}
+          {}
           {similar.length > 0 && (
             <section aria-labelledby="more-like-this" className="mt-12">
               <div className="flex items-center justify-between gap-4">
@@ -199,9 +193,6 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
   );
 }
 
-// =====================================================================
-// RATING BLOCK — баруун дээд булан (Rating / ★ 7.0/10 / vote count)
-// =====================================================================
 function RatingBlock({ rating, voteCount }: { rating: number; voteCount?: number }) {
   return (
     <div className="shrink-0 text-right">
@@ -221,9 +212,6 @@ function RatingBlock({ rating, voteCount }: { rating: number; voteCount?: number
   );
 }
 
-// =====================================================================
-// CREW ROW — Director / Writer / Stars. Нэрсийг "·"-аар тусгаарлана.
-// =====================================================================
 function CrewRow({ label, names }: { label: string; names: string[] }) {
   if (names.length === 0) return null;
   return (

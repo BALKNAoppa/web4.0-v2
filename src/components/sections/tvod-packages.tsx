@@ -3,10 +3,6 @@ import Link from "next/link";
 
 import { tvodPackages, type TvodPackage } from "@/data/tvod-packages";
 
-/**
- * Энэ компонент outer section/container оруулдаггүй — tab панелийн дотор оруулахаар
- * бэлдсэн. Эцэг компонент (TvodCatalog) container/padding-ийг хариуцна.
- */
 export function TvodPackages() {
   return (
     <div aria-labelledby="tvod-packages-title">
@@ -66,10 +62,6 @@ function PackageRow({ pkg, reversed }: { pkg: TvodPackage; reversed: boolean }) 
   );
 }
 
-/**
- * Багцын cover image — зураг тавьсан үед Image, байхгүй үед placeholder.
- * Доод-зүүн буланд багцын нэр label-аар харагдана.
- */
 function PackageCover({ name, cover }: { name: string; cover?: string }) {
   return (
     <div className="bg-muted border-border relative h-70 overflow-hidden rounded-2xl border md:h-85">
@@ -86,7 +78,7 @@ function PackageCover({ name, cover }: { name: string; cover?: string }) {
           <span className="text-muted-foreground/40 text-3xl font-bold md:text-5xl">{name}</span>
         </div>
       )}
-      {/* Доороос дээш бараан gradient — текст уншигдахуйц */}
+      {}
       <div
         className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
         aria-hidden="true"

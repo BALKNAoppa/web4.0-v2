@@ -1,25 +1,8 @@
-/**
- * Univision Web 4.0 — TVOD онцлох багцууд
- *
- * Монгол, Хит цуврал, Ази — тус бүр нэг cover image-тэй hero card-ууд.
- * Cover нь багцын кинонуудын постеруудаас хийсэн КОЛЛАЖ, `public/`-д (405×446).
- * Өмнө нь picsum.photos-ийн САНАМСАРГҮЙ placeholder байсан — тэр нь багцтай
- * хамааралгүй зураг гаргадаг тул хаана ч ил тавигдаагүй.
- */
 export type TvodPackage = {
   id: string;
   name: string;
   description: string;
-  /**
-   * Багцын cover — постерын коллаж, харьцаа нь БОСОО (405×446).
-   *
-   * ⚠️ `PackageCover` (entertainment хуудас) нь ХЭВТЭЭ хайрцагтай
-   * (`h-70 md:h-85`) тул `object-cover` нь дээд, доод хэсгийг тайрна.
-   * AI туслах дээр харин картын ДЭВСГЭР болж бүтнээр ажиллана
-   * (`OfferCard.imageShape: "background"`).
-   */
   cover?: string;
-  /** Багцын дэлгэрэнгүй хуудас руу очих URL */
   detailHref: string;
 };
 

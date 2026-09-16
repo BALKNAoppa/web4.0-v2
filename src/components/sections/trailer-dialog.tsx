@@ -3,14 +3,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Play, X } from "lucide-react";
 
-/**
- * Трейллер харах товч + dialog. Дарвал YouTube руу шилжихгүй, харин дотроос нь
- * modal нээж трейллерийг үзүүлнэ.
- *
- * ⚠️ Эхний ээлжинд placeholder: жинхэнэ player-ийн оронд "энд тоглогдоно" гэсэн
- * хэсэг харагдана. Видео API холбогдсоны дараа `trailerUrl`-ийг ашиглан энд
- * <iframe>/<video> player суулгана (одоогоор data-attribute-д хадгалав).
- */
 export function TrailerDialog({
   title,
   trailerUrl,
@@ -18,7 +10,6 @@ export function TrailerDialog({
 }: {
   title: string;
   trailerUrl?: string;
-  /** Trigger товчийг байрлуулах/загварчлах class (page-ээс дамжина) */
   triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -29,7 +20,6 @@ export function TrailerDialog({
 
   const close = useCallback(() => setOpen(false), []);
 
-  // Escape, focus trap, body scroll lock, focus restore
   useEffect(() => {
     if (!open) return;
 
@@ -61,7 +51,6 @@ export function TrailerDialog({
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
 
-    // Cleanup-д focus буцаах товчийг одоо барьж авна (ref дараа нь өөрчлөгдөж болзошгүй)
     const trigger = triggerRef.current;
     return () => {
       document.removeEventListener("keydown", onKeyDown);
@@ -79,7 +68,7 @@ export function TrailerDialog({
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop — дарвал хаагдана */}
+          {}
           <button
             type="button"
             aria-label="Хаах"
@@ -87,7 +76,7 @@ export function TrailerDialog({
             className="animate-in fade-in-0 absolute inset-0 cursor-default bg-black/75 backdrop-blur-sm duration-300 ease-out"
           />
 
-          {/* Dialog контент */}
+          {}
           <div
             ref={dialogRef}
             role="dialog"
@@ -110,12 +99,12 @@ export function TrailerDialog({
               </button>
             </div>
 
-            {/* 16:9 placeholder — API холбогдсоны дараа жинхэнэ player орно */}
+            {}
             <div
               data-trailer-url={trailerUrl}
               className="relative flex aspect-video w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl bg-neutral-900 text-center ring-1 ring-white/10"
             >
-              {/* Бүдэг цэгэн тор */}
+              {}
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 opacity-[0.06]"

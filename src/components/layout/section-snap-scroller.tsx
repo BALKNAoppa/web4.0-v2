@@ -2,34 +2,15 @@
 
 import { useEffect } from "react";
 
-/** Sticky header (h-14 / lg:h-16) + амьсгалын зай */
 const HEADER_OFFSET = 72;
-/** Snap байрлалаас энэ радиус (px) дотор зогссон үед л татна */
 const SNAP_RADIUS = 200;
-/** Scroll зогссон гэж үзэх хүлээлт (ms) */
 const SETTLE_DELAY = 160;
-/** Анимаци дууссаны дараах хориг — trailing event-үүд дахин snap үүсгэхгүй */
 const COOLDOWN_MS = 250;
 
-/** easeOutQuart — эхэндээ шуурхай, төгсгөлдөө маш зөөлөн буудаг */
 const easeOutQuart = (t: number): number => 1 - Math.pow(1 - t, 4);
 
-/** Зайнаас хамаарсан хугацаа: ойр бол богино, хол бол удаан */
 const durationFor = (dist: number): number => Math.min(1300, Math.max(700, dist * 2.8));
 
-/**
- * Section snap — JS хувилбар (цоо шинэ animation engine).
- *
- * ЧУХАЛ: globals.css дээр `html { scroll-behavior: smooth }` байдаг тул
- * rAF доторх scrollTo() бүр өөрөө "smooth" болж давхар анимаци үүсгэдэг
- * байсан. Энэ нь том гацалт үүсгэдэг — тиймээс анимацийн үеэр
- * scroll-behavior-ийг түр "auto" болгож, フрэйм бүрд шууд байрлал онооно.
- *
- *  - Section бүрийн эхлэл header-ийн доор буудаг (өндрөөс үл хамаарна).
- *    Намхан section-ийг дэлгэцийн ТӨВД татдаг байсныг ХАССАН.
- *  - Радиусаас хол зогссон бол оролцохгүй
- *  - Хэрэглэгчийн wheel/touch/keyboard анимацийг шууд таслана
- */
 export function SectionSnapScroller() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -44,10 +25,9 @@ export function SectionSnapScroller() {
     const stopAnimation = () => {
       animating = false;
       cancelAnimationFrame(rafId);
-      root.style.scrollBehavior = ""; // CSS-ийн smooth-ийг сэргээнэ
+      root.style.scrollBehavior = "";
     };
 
-    /** Section бүрийн snap байрлал — өндрөөс үл хамааран эхлэл нь header-ийн доор */
     const targetFor = (section: HTMLElement, scrollY: number): number => {
       const sectionTop = section.getBoundingClientRect().top + scrollY;
       return Math.max(0, sectionTop - HEADER_OFFSET);
@@ -62,11 +42,10 @@ export function SectionSnapScroller() {
       const t0 = performance.now();
 
       animating = true;
-      // rAF доторх scrollTo() давхар smooth болохоос сэргийлнэ
       root.style.scrollBehavior = "auto";
 
       const frame = (now: number) => {
-        if (!animating) return; // хэрэглэгч таслав — stopAnimation аль хэдийн дуудагдсан
+        if (!animating) return;
 
         const progress = Math.min(1, (now - t0) / duration);
         window.scrollTo(0, startY + delta * easeOutQuart(progress));
@@ -83,8 +62,6 @@ export function SectionSnapScroller() {
 
     const onSettle = () => {
       if (animating || performance.now() < cooldownUntil) return;
-      // Hero доторх туслахын үр дүн нээлттэй бол hero өндөр өөрчлөгдөж байгаа тул
-      // snap байрлал шилжиж гацалт үүсгэнэ — тэр хугацаанд оролцохгүй.
       if (root.dataset.assistantOpen === "1") return;
 
       const sections = document.querySelectorAll<HTMLElement>("#main-content > section");
@@ -108,7 +85,7 @@ export function SectionSnapScroller() {
     };
 
     const onScroll = () => {
-      if (animating) return; // өөрийн анимацийн event-ийг тоохгүй
+      if (animating) return;
       if (settleTimer) window.clearTimeout(settleTimer);
       settleTimer = window.setTimeout(onSettle, SETTLE_DELAY);
     };

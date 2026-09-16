@@ -9,7 +9,6 @@ type CountUpProps = {
   className?: string;
 };
 
-/** Animates 0 → value with ease-out the first time it enters the viewport. */
 export function CountUp({
   value,
   suffix = "",

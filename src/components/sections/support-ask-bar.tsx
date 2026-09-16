@@ -3,24 +3,14 @@
 import { useEffect, useState } from "react";
 import { MessageCircleQuestion, Sparkles } from "lucide-react";
 
-/** Анимаци эхлэхээс өмнө болон асуултуудын хооронд харагдах үндсэн placeholder */
 const DEFAULT_PLACEHOLDER = "Асуултаа дараах байдлаар бичнэ үү...";
 
-/** Placeholder-ийн typing хурднууд (ms) — тайван, зөөлөн мэдрэмжээр */
 const TYPE_SPEED = 55;
 const ERASE_SPEED = 22;
 const HOLD_AFTER_TYPED = 2400;
 const GAP_BEFORE_NEXT = 450;
-/** Default placeholder-ийг хэрэглэгчид уншуулах хугацаа — дараа нь жишээнүүд эхэлнэ */
 const START_DELAY = 3000;
 
-/**
- * Жишээ асуултуудыг placeholder дээр үсэг үсгээр бичиж, түр барьж,
- * арилгаад дараагийнхыг бичдэг давталт. prefers-reduced-motion үед
- * эхний асуултыг хөдөлгөөнгүй харуулна.
- * `enabled=false` үед анимаци зогсож, default placeholder харагдана
- * (хэрэглэгч input дээр бичиж байх үед сатааруулахгүй).
- */
 function useTypingPlaceholder(texts: string[], enabled: boolean): string {
   const [text, setText] = useState("");
 
@@ -73,15 +63,8 @@ function useTypingPlaceholder(texts: string[], enabled: boolean): string {
   return text;
 }
 
-/**
- * Категори хуудасны title-н доор байрлах "AI-аас асуух" хэсэг.
- * Асуултыг өөрөө хариулахгүй — глобал ChatWidget рүү custom event-ээр
- * дамжуулж, chatbot нээгдэн хариулна (Phase 1).
- * Жишээ асуултууд placeholder дээр typing анимациар ээлжлэн харагдана.
- */
 export function SupportAskBar({ quickQuestions }: { quickQuestions: string[] }) {
   const [question, setQuestion] = useState("");
-  // Хэрэглэгч бичиж эхэлмэгц typing анимаци зогсоно — placeholder сатааруулахгүй
   const typedPlaceholder = useTypingPlaceholder(quickQuestions, question.length === 0);
 
   const askChatbot = (text: string) => {
@@ -93,7 +76,7 @@ export function SupportAskBar({ quickQuestions }: { quickQuestions: string[] }) 
 
   return (
     <div className="mx-auto mt-8 max-w-2xl">
-      {/* Ask input */}
+      {}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -122,7 +105,7 @@ export function SupportAskBar({ quickQuestions }: { quickQuestions: string[] }) 
         </button>
       </form>
 
-      {/* Жишээ асуултууд — жижиг хэмжээтэй, багтахгүй бол дараагийн мөрөнд эвхэгдэнэ */}
+      {}
       <ul className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 px-1">
         {quickQuestions.map((q) => (
           <li key={q}>

@@ -8,7 +8,6 @@ type RevealProps = React.HTMLAttributes<HTMLDivElement> & {
   variant?: "up" | "scale";
 };
 
-/** Scroll-reveal wrapper for the Web4 scroll deck (gentle 900ms ease-out). */
 export function Reveal({
   delay = 0,
   variant = "up",

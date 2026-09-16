@@ -1,17 +1,7 @@
-/**
- * Univision Web 4.0 — Trust-building orbit data
- *
- * Найдвартай байдал, аюулгүй ажиллагааг харуулах
- * 6 элемент. Орбит layout-д тэгш хуваарилагдсан 60° зайтай.
- */
-
 export type TrustItem = {
   id: string;
-  /** lucide-react-ийн icon нэр (string-ээр) */
   icon: "activity" | "headphones" | "lock" | "wrench" | "gauge" | "shield-check";
-  /** Item-ийн товч нэр (мөн screen reader-ийн label) */
   label: string;
-  /** Дэлгэрэнгүй тайлбар (hover/tap үед эсвэл grid-д харагдана) */
   description: string;
 };
 
@@ -58,6 +48,5 @@ export const trustSection = {
   eyebrow: "Тогтвортой байдал",
   title: "Brand name + найдвартай үйлчилгээний талаар байх",
   description: "Таний гэрт хамгаалагдсан, тогтвортой үйлчилгээ.",
-  /** Орбит дэх төв hub-н текст */
   hubLabel: "Танай гэр",
 };

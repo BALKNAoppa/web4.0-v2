@@ -3,16 +3,6 @@ import Image from "next/image";
 import { BRAND, BRAND_LABEL, BRAND_LOGO } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
-/**
- * Тухайн сайтын брэндийн үгэн лого — Unitel эсвэл Univision, light/dark хосоор.
- * Аль нь гарахыг NEXT_PUBLIC_BRAND шийднэ (build-ийн үед шигтгэгдэнэ).
- *
- * height нь ЗОРИЛТОТ өндөр (px); брэндийн scale-аар нэмэгдэж бодит өндөр гарна.
- * Ингэснээр дуудах тал нэг тоо өгөхөд хоёр брэндийн лого оптикоор жигд харагдана.
- *
- * Зөвхөн зургийг рендэрлэнэ (Link-гүй) — ингэснээр header өөрийн Link-д,
- * footer нь LogoHomeLink-д хийж, nested anchor үүсэхгүй.
- */
 export function BrandLogo({
   height = 24,
   className,

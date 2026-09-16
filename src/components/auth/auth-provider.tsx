@@ -15,26 +15,12 @@ import type { AuthUser } from "@/components/auth/accounts";
 
 export type { AuthUser };
 
-/**
- * Энгийн client-side (mock) authentication. Жинхэнэ backend байхгүй тул
- * хэрэглэгчийн төлвийг localStorage-д хадгална. Дараа нь жинхэнэ API
- * холбогдоход зөвхөн `login`/`logout` дотор сольж тавина.
- */
-
 type AuthContextValue = {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  /** Нэвтрэх (mock) — хэрэглэгчийн мэдээллээр */
   login: (user: AuthUser) => void;
-  /** Гарах */
   logout: () => void;
-  /** Login dialog-ийг шууд нээх (header дээрх account дарах гэх мэт) */
   openLogin: (reason?: string) => void;
-  /**
-   * Нэвтэрсэн тохиолдолд `action`-ийг шууд гүйцэтгэнэ. Эс бөгөөс login dialog
-   * нээж, амжилттай нэвтэрсний дараа `action`-ийг гүйцэтгэнэ (жишээ нь багц
-   * идэвхжүүлэх).
-   */
   requireAuth: (action: () => void, reason?: string) => void;
 };
 
@@ -48,15 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [reason, setReason] = useState<string | undefined>(undefined);
   const pendingAction = useRef<(() => void) | null>(null);
 
-  // localStorage-аас сэргээх (зөвхөн client дээр)
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      // SSR-safe hydration — эхэнд logged-out, mount-ийн дараа сэргээнэ
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (raw) setUser(JSON.parse(raw) as AuthUser);
     } catch {
-      // зөрчилтэй өгөгдөл — алгасна
     }
   }, []);
 
@@ -65,12 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
     } catch {
-      // localStorage боломжгүй — алгасна
     }
     setDialogOpen(false);
     setReason(undefined);
 
-    // Хүлээгдэж буй үйлдэл (жишээ нь багц идэвхжүүлэх) байвал гүйцэтгэнэ
     const action = pendingAction.current;
     pendingAction.current = null;
     action?.();
@@ -81,7 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
-      // алгасна
     }
   }, []);
 

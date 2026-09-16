@@ -1,36 +1,14 @@
-/**
- * POST /api/semantic-search
- *
- * Server-side semantic search using OpenAI Chat Completions.
- * Multilingual: Mongolian (Cyrillic), English, mixed queries supported.
- *
- * Request:  { query: string }
- * Response: { results: { movie: TvodMovie, reason: string }[] }
- *           { error: string }  (4xx/5xx-д)
- *
- * .env.local-д OPENAI_API_KEY шаардлагатай.
- */
 import { NextResponse, type NextRequest } from "next/server";
 import OpenAI from "openai";
 
 import { tvodMovies, type TvodMovie } from "@/data/tvod-movies";
 
-// =====================================================================
-// CONFIG
-// =====================================================================
-/** OpenAI model name — playground-д харагдсан model-уудтай тааруулан солих. */
 const MODEL = "gpt-4o-mini";
 
-/** Хайлтын дээд тоо */
 const MAX_RESULTS = 5;
 
-/** Query-ийн дээд урт (тэмдэгт) */
 const MAX_QUERY_LENGTH = 200;
 
-// =====================================================================
-// LLM CLIENT — lazy init. Module top level дээр шууд `new OpenAI(...)`
-// хийвэл key байхгүй үед SDK throw хийгээд build/route load амжилтгүй болно.
-// =====================================================================
 let openaiClient: OpenAI | null = null;
 function getOpenAI(): OpenAI | null {
   if (openaiClient) return openaiClient;
@@ -40,11 +18,7 @@ function getOpenAI(): OpenAI | null {
   return openaiClient;
 }
 
-// =====================================================================
-// CATALOG — Build-time-д тооцоход хадгална (request бүрт rebuild-дэхгүй)
-// =====================================================================
 function buildCatalogJson(): string {
-  // Зөвхөн search-д ашиглагдах field-уудыг сонгоно (token хямдрах)
   return JSON.stringify(
     tvodMovies.map((m) => ({
       id: m.id,
@@ -89,12 +63,8 @@ Rules:
 - If you cannot find any reasonable matches, return { "results": [] }
 - Do NOT include any text outside the JSON object`;
 
-// =====================================================================
-// HANDLER
-// =====================================================================
 export async function POST(req: NextRequest) {
   try {
-    // 1. Validate query
     const body = await req.json().catch(() => null);
     const query = typeof body?.query === "string" ? body.query.trim() : "";
 
@@ -105,7 +75,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "query хэт урт" }, { status: 400 });
     }
 
-    // 2. Check OPENAI_API_KEY configured + lazy-init client
     const openai = getOpenAI();
     if (!openai) {
       console.error("OPENAI_API_KEY is not set");
@@ -115,7 +84,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Call OpenAI
     const completion = await openai.chat.completions.create({
       model: MODEL,
       messages: [
@@ -129,7 +97,6 @@ export async function POST(req: NextRequest) {
 
     const content = completion.choices[0]?.message?.content ?? "{}";
 
-    // 4. Parse + validate LLM response
     let parsed: { results?: Array<{ id?: unknown; reason?: unknown }> };
     try {
       parsed = JSON.parse(content);
@@ -140,7 +107,6 @@ export async function POST(req: NextRequest) {
 
     const llmResults = Array.isArray(parsed.results) ? parsed.results : [];
 
-    // 5. Map LLM-ийн ID-уудыг бодит movie object руу
     const movieMap = new Map(tvodMovies.map((m) => [m.id, m]));
     const validResults: Array<{ movie: TvodMovie; reason: string }> = [];
 

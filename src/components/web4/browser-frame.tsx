@@ -12,7 +12,6 @@ type BrowserFrameProps = {
   imgClassName?: string;
 };
 
-/** Browser-chrome frame around a live-site screenshot (graceful placeholder). */
 export function BrowserFrame({
   src,
   label,

@@ -5,13 +5,8 @@ import { Reveal } from "@/components/web4/reveal";
 import { plans, type Plan } from "@/data/plans";
 import { cn } from "@/lib/utils";
 
-/** Univision брэнд ногоон (лого-гоос) */
 const UNIVISION_GREEN = "#0FAA0A";
 
-/**
- * Багцын гол үзүүлэлт — интернэтийн хурд ба дата эрх.
- * `plans.ts`-ээс уншина, энд давхардуулж бичихгүй.
- */
 function internetSpec(plan: Plan): string {
   const internet = plan.groups.find((group) => group.icon === "wifi");
   return internet?.features.map((feature) => feature.value).join(" · ") ?? "";
@@ -23,13 +18,13 @@ export function UnivisionPlansBanner() {
       aria-labelledby="univision-plans-title"
       className="bg-muted relative w-full overflow-hidden"
     >
-      {/* Бусад section-уудтай ижил 1200px контентын хүрээнд тэгшилнэ */}
+      {}
       <Reveal>
         <div className="relative mx-auto grid w-full max-w-300 items-center gap-10 px-4 py-10 lg:grid-cols-2 lg:gap-16 lg:py-14">
-          {/* ============ LEFT — Univision брэнд өнгөт дизайн visual ============ */}
+          {}
           <div className="flex justify-center lg:justify-start">
             <div className="ring-border/60 relative flex aspect-square w-full max-w-md flex-col justify-center gap-3 overflow-hidden rounded-3xl bg-linear-to-br from-[#0FAA0A] via-[#0d9488] to-[#2563eb] p-5 shadow-xl ring-1 sm:p-7 lg:max-w-lg">
-              {/* Гэрлийн зөөлөн толбо */}
+              {}
               <div
                 aria-hidden
                 className="absolute -top-12 -left-12 size-52 rounded-full bg-white/20 blur-3xl"
@@ -38,7 +33,7 @@ export function UnivisionPlansBanner() {
                 aria-hidden
                 className="absolute -right-10 -bottom-16 size-56 rounded-full bg-black/15 blur-3xl"
               />
-              {/* Төвлөрсөн цагиргууд */}
+              {}
               <div aria-hidden className="absolute inset-0 flex items-center justify-center">
                 <div className="size-88 rounded-full border border-white/12" />
               </div>
@@ -46,7 +41,7 @@ export function UnivisionPlansBanner() {
                 <div className="size-64 rounded-full border border-white/20" />
               </div>
 
-              {/* Багцын мэдээлэл — нэр, хурд, дата, үнэ. Утга нь plans.ts-ээс. */}
+              {}
               {plans.map((plan) => (
                 <div
                   key={plan.id}
@@ -82,7 +77,7 @@ export function UnivisionPlansBanner() {
             </div>
           </div>
 
-          {/* ============ RIGHT — text + CTA ============ */}
+          {}
           <div>
             <div
               className="flex items-center gap-2 text-xs font-bold tracking-[0.18em] uppercase"

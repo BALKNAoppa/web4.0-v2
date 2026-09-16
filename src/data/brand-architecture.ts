@@ -1,11 +1,3 @@
-/**
- * Brand architecture — /web4 танилцуулгын нээлтийн хэсэг.
- *
- * Хоёр үндсэн философи (House of brands / Branded house) ба доор нь 4 төрөл.
- * Төрөл бүрд эхлээд ГАДНЫ жишээ (Google), дараа нь ӨӨРСДИЙН группын жишээ.
- * Дата нь эх зургаас (strategy slide) авсан.
- */
-
 export type BrandHouse = {
   id: string;
   label: string;
@@ -14,24 +6,15 @@ export type BrandHouse = {
 
 export type BrandType = {
   id: string;
-  house: string; // аль философид хамаарах
-  name: string; // Product brand, Endorsing brand ...
-  link: string; // No link, Weak link, Shared link, Value link
-  /** Гадны жишээ — эцэг брэнд + бүтээгдэхүүн */
+  house: string;
+  name: string;
+  link: string;
   externalParent: string;
   externalProduct: string;
-  /** Тайлбар */
   note: string;
-  /** Өөрсдийн группын жишээ брэндүүд */
   ours: string[];
-  /** Accent hex */
   color: string;
-  /**
-   * Жишээ компанийн live web screenshot (public/-д тавина).
-   * Байхгүй бол "Live web" placeholder харагдана.
-   */
   image?: string;
-  /** Жинхэнэ сайтын URL — "Live site нээх" товч шинэ таб-д нээнэ */
   url?: string;
 };
 
@@ -58,7 +41,7 @@ export const brandTypes: BrandType[] = [
     externalProduct: "Waymo",
     note: "No link at all. Users may not immediately know it belongs to Google.",
     ours: ["Toki", "Nomadia", "ESN", "PSN", "Ddish"],
-    color: "#3b82f6", // blue
+    color: "#3b82f6",
     image: "/waymo.png",
     url: "https://waymo.com/",
   },
@@ -71,7 +54,7 @@ export const brandTypes: BrandType[] = [
     externalProduct: "YouTube",
     note: "The brand keeps its own identity, while the parent connection appears only in secondary areas (sign-in, account settings).",
     ours: ["U-point"],
-    color: "#a855f7", // purple
+    color: "#a855f7",
     image: "/youtube.png",
     url: "https://www.youtube.com/",
   },
@@ -84,7 +67,7 @@ export const brandTypes: BrandType[] = [
     externalProduct: "Google Workspace",
     note: "Gmail, Docs, Sheets — different products, one clear Google ecosystem.",
     ours: ["Unitel", "Univision", "Ger Internet", "Look TV", "Nexmind", "OSS"],
-    color: "#45c700", // green
+    color: "#45c700",
     image: "/google workspace.png",
     url: "https://workspace.google.com/",
   },
@@ -97,7 +80,7 @@ export const brandTypes: BrandType[] = [
     externalProduct: "Google Pixel",
     note: 'Parent-powered. "Made by Google" is a key selling point.',
     ours: [],
-    color: "#eab308", // amber
+    color: "#eab308",
     image: "/google pixel.png",
     url: "https://store.google.com/us/?hl=en-US&regionRedirect=true",
   },
