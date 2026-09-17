@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AxeProvider } from "@/components/axe-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { Header } from "@/components/layout/header";
+import { ThemeColorMeta } from "@/components/layout/theme-color-meta";
 import { ChatWidget } from "@/components/chatbot/chat-widget";
 import { AccessibilityProvider } from "@/components/accessibility/accessibility-provider";
 import { AccessibilityPanel } from "@/components/accessibility/accessibility-panel";
@@ -47,10 +48,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#e2e8ec" },
-    { media: "(prefers-color-scheme: dark)", color: "#10131b" },
-  ],
+  viewportFit: "cover",
+  themeColor: "#e2e8ec",
 };
 
 export default function RootLayout({
@@ -72,6 +71,7 @@ export default function RootLayout({
           <AccessibilityProvider>
             <AxeProvider>
               <AuthProvider>
+                <ThemeColorMeta />
                 <SampleTranslator />
                 <AccessibilitySkipLinks />
                 <Header />

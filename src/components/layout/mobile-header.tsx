@@ -159,7 +159,7 @@ function BottomTabBar() {
       ref={ref}
       data-bottom-tab-bar
       aria-label="Доод цэс"
-      className="glass-lens glass-tint fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] transition-[opacity,translate] duration-300 ease-out data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
+      className="glass-lens glass-tint fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] pb-[env(safe-area-inset-bottom)] transition-[opacity,translate] duration-300 ease-out data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
     >
 
       <ul className="flex h-[var(--dock-h)] w-full items-center justify-between px-4 py-3">
@@ -228,7 +228,7 @@ export function MobileBrandHeader({ variant }: { variant: MobileVariant }) {
 
 function CapsuleRow({ burger }: { burger: React.ReactNode }) {
   return (
-    <div className="h-22 px-4 pt-6 pb-0">
+    <div className="h-[calc(5.5rem+env(safe-area-inset-top))] px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-0">
       <div className="glass-lens glass-tint flex h-16 items-center rounded-full px-5">
         <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
           <BrandLogo height={24} preload />
@@ -242,7 +242,7 @@ function CapsuleRow({ burger }: { burger: React.ReactNode }) {
 
 function HeaderRow({ burger }: { burger: React.ReactNode }) {
   return (
-    <div className="flex items-center px-6 pt-6 pb-3">
+    <div className="flex items-center px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-3">
       <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
         <BrandLogo height={24} preload />
       </LogoHomeLink>

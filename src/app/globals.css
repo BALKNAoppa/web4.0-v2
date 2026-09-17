@@ -94,6 +94,8 @@
 }
 
 :root {
+  color-scheme: light;
+
   --background-1: #e2e8ec;
   --background-2: #f3f5f7;
   --background-3: #f9fafb;
@@ -157,6 +159,8 @@
 }
 
 .dark {
+  color-scheme: dark;
+
   --background-1: #10131b;
   --background-2: #1c202d;
   --background-3: #27203e;
@@ -538,7 +542,7 @@
 
 @media (max-width: 1023px) {
   body:has([data-bottom-tab-bar]) {
-    padding-bottom: calc(var(--dock-h) + 8px);
+    padding-bottom: calc(var(--dock-h) + 8px + env(safe-area-inset-bottom));
   }
 }
 
