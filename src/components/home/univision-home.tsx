@@ -14,28 +14,14 @@ void TrustBuild;
 export function UnivisionHome() {
   return (
     <>
-      {}
       <RecommendedPlans content={univisionRecommendedPlans} />
 
-      {
-}
       <FeaturedServices />
 
-      {}
       <Promotions />
 
-      {
-
-}
       <FeaturedMarquee />
 
-      {
-
-}
-      {}
-
-      {
-}
       <AppPromo content={unitelApp} />
     </>
   );

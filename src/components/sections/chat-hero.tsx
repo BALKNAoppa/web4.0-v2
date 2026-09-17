@@ -26,6 +26,8 @@ import {
   assistantQuestions,
   buildFollowUp,
   CLARIFY_OUTRO,
+  EXAMPLE_PREFIX,
+  examplePrompts,
   featuredQuestions,
   findTvodMovies,
   matchQuestion,
@@ -77,6 +79,24 @@ type Block = {
   answers: Record<string, string>;
   carried?: boolean;
 };
+
+const EXAMPLE_ROTATE_MS = 3600;
+
+function useRotatingIndex(count: number, enabled: boolean): number {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!enabled || count < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const timer = window.setInterval(() => {
+      setIndex((prev) => (prev + 1) % count);
+    }, EXAMPLE_ROTATE_MS);
+    return () => window.clearInterval(timer);
+  }, [count, enabled]);
+
+  return index;
+}
 export function ChatHero({
   heroRest = false,
   mode = "hero",
@@ -107,6 +127,8 @@ export function ChatHero({
   const nextKey = useRef(initialQuestions.length);
   const latestRef = useRef<HTMLElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const exampleIndex = useRotatingIndex(examplePrompts.length, input.length === 0);
 
   const setAnswers = useCallback((key: number, next: Record<string, string>) => {
     setBlocks((prev) => prev.map((b) => (b.key === key ? { ...b, answers: next } : b)));
@@ -195,23 +217,24 @@ export function ChatHero({
           Дараагийн асуултаа бичнэ үү
         </label>
 
-        {
-}
         <div className="flex items-start gap-2">
           <Sparkles className="text-primary mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <input
-            id="chat-hero-input"
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Дараагийн асуултаа бичнэ үү"
-            className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm outline-none"
-          />
+          <div className="relative min-w-0 flex-1">
+            <input
+              id="chat-hero-input"
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={blocks.length === 0 ? "" : "Дараагийн асуултаа бичнэ үү"}
+              className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
+            />
+            {blocks.length === 0 && input.length === 0 && (
+              <ExamplePlaceholder index={exampleIndex} className="text-xs" />
+            )}
+          </div>
         </div>
 
         <div className="mt-5 flex items-center gap-2 sm:mt-8">
-          {
-}
           <button
             type="button"
             onClick={startOver}
@@ -297,48 +320,8 @@ export function ChatHero({
         "animate-in fade-in relative w-full overflow-hidden duration-1000 ease-out",
       )}
     >
-      {
-}
-      {
-}
       {isPage && <div className="glass-glow" aria-hidden="true" />}
 
-      {isPage && (
-        <svg aria-hidden="true" focusable="false" className="pointer-events-none absolute size-0">
-          <defs>
-            <filter
-              id="glass-warp"
-              x="-20%"
-              y="-20%"
-              width="140%"
-              height="140%"
-              colorInterpolationFilters="sRGB"
-            >
-              {
-}
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="0.008 0.014"
-                numOctaves="2"
-                seed="7"
-                result="noise"
-              />
-              <feGaussianBlur in="noise" stdDeviation="2" result="soft" />
-              <feDisplacementMap
-                in="SourceGraphic"
-                in2="soft"
-                scale="14"
-                xChannelSelector="R"
-                yChannelSelector="G"
-              />
-            </filter>
-          </defs>
-        </svg>
-      )}
-
-      {
-
-}
       {isPage && (
         <InteractiveGridPattern
           width={40}
@@ -347,8 +330,6 @@ export function ChatHero({
           className="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)] opacity-50"
         />
       )}
-      {
-}
       <div
         className={cn(
           "relative z-10 mx-auto flex max-w-3xl flex-col items-center justify-center px-4 pt-10 pb-5 text-center transition-[max-width] duration-700 ease-out sm:py-8 md:py-10 [@media_(min-width:768px)_and_(max-height:1024px)]:py-1",
@@ -360,13 +341,8 @@ export function ChatHero({
               : "min-h-[34svh] sm:min-h-[44svh] md:min-h-[46svh]",
         )}
       >
-        {
-}
         {!isPage && (
           <>
-            {
-
-}
 
             <h1
               className={cn(
@@ -385,8 +361,6 @@ export function ChatHero({
             )}
           </>
         )}
-        {
-}
         {blocks.length > 0 && (
           <div className={cn("w-full", isPage ? "space-y-10 sm:space-y-12" : "space-y-3")}>
             {blocks.map((block, i) => (
@@ -404,8 +378,6 @@ export function ChatHero({
           </div>
         )}
 
-        {
-}
         {blocks.length === 0 &&
           (isPage ? (
             followUpForm(false)
@@ -426,15 +398,19 @@ export function ChatHero({
                 <label htmlFor="chat-hero-input" className="sr-only">
                   Асуултаа бичнэ үү
                 </label>
-                <input
-                  ref={inputRef}
-                  id="chat-hero-input"
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Асуултаа бичнэ үү"
-                  className="text-foreground placeholder:text-muted-foreground h-8 flex-1 bg-transparent text-sm outline-none md:text-base"
-                />
+                <div className="relative h-8 min-w-0 flex-1">
+                  <input
+                    ref={inputRef}
+                    id="chat-hero-input"
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    className="text-foreground h-full w-full bg-transparent text-sm outline-none md:text-base"
+                  />
+                  {input.length === 0 && (
+                    <ExamplePlaceholder index={exampleIndex} className="text-xs md:text-sm" />
+                  )}
+                </div>
                 <button
                   type="submit"
                   aria-label="Илгээх"
@@ -446,11 +422,31 @@ export function ChatHero({
             </NeonFrame>
           ))}
 
-        {
-}
         {!isPage && blocks.length === 0 && <PersonaShortcuts onFill={fillInput} />}
       </div>
     </section>
+  );
+}
+
+function ExamplePlaceholder({ index, className }: { index: number; className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "text-muted-foreground/60 pointer-events-none absolute inset-0 flex items-center",
+        className,
+      )}
+    >
+      <span className="min-w-0 truncate">
+        <span className="whitespace-pre">{EXAMPLE_PREFIX}</span>
+        <span
+          key={index}
+          className="animate-in fade-in-0 slide-in-from-bottom-2 inline-block duration-500 ease-out"
+        >
+          {examplePrompts[index]}
+        </span>
+      </span>
+    </span>
   );
 }
 
@@ -517,23 +513,17 @@ function ResultBlock({
   if (chat) {
     return (
       <article ref={ref} className="animate-in fade-in w-full text-left duration-700 ease-out">
-        {
-}
         <div className="flex justify-end">
           <div className="border-border bg-card text-foreground max-w-[88%] rounded-2xl rounded-br-md border px-4 py-2.5 text-sm font-semibold backdrop-blur sm:max-w-[75%]">
             {block.asked}
           </div>
         </div>
 
-        {
-}
         <div className="mt-4 flex gap-2.5 sm:mt-5 sm:gap-3">
           <Sparkles className="text-primary mt-0.5 size-4 shrink-0" aria-hidden="true" />
           <div className="min-w-0 flex-1">{body}</div>
         </div>
 
-        {
-}
         {footerReady && <div className="mt-6 sm:mt-8">{footer}</div>}
       </article>
     );
@@ -544,23 +534,17 @@ function ResultBlock({
       ref={ref}
       className="border-border bg-card/70 animate-in fade-in slide-in-from-top-2 w-full overflow-hidden rounded-3xl border text-left backdrop-blur duration-700 ease-out"
     >
-      {
 
-}
       <div className="flex items-start gap-3 px-5 pt-4 pb-1">
         <Sparkles className="text-primary mt-0.5 size-4 shrink-0" aria-hidden="true" />
         <p className="text-muted-foreground flex-1 text-sm">
           Таны хайсан сэдэв{" "}
-          {
-}
           <span className="text-foreground text-[1.2em] font-semibold">«{block.asked}»</span>
         </p>
       </div>
 
       <div className="px-5 pt-2 pb-5">{body}</div>
 
-      {
-}
       {footerReady && <div className="px-4 pb-4">{footer}</div>}
     </article>
   );
@@ -609,7 +593,6 @@ function AnswerSkeleton({ kind }: { kind?: AssistantResult["kind"] }) {
 
         {kind === "escalate" && <div className="bg-muted h-1.5 w-full rounded-full" />}
 
-        {}
         {kind === "clarify" && (
           <div>
             <div className="bg-muted h-4 w-1/2 rounded" />
@@ -648,9 +631,7 @@ function Answer({
         <p className="text-foreground text-sm leading-relaxed">
           Уучлаарай, энэ асуултыг таньсангүй. Доорхоос сонгоно уу.
         </p>
-        {
 
-}
         <div className="mt-3 flex flex-col gap-2">
           {featuredQuestions.map((q) => (
             <button
@@ -669,11 +650,7 @@ function Answer({
 
   return (
     <div className="animate-in fade-in duration-700 ease-out">
-      {
-}
       <p className="text-foreground text-sm leading-relaxed">
-        {
-}
         {block.carried ? (
           matched.summary
         ) : (
@@ -727,14 +704,10 @@ function Answer({
         )}
       </div>
 
-      {
-}
       {introDone && latest && <AnswerFeedback questionId={matched.id} />}
 
       {introDone && matched.cta && (
         <div className="mt-6 flex justify-center">
-          {
-}
           <SmartLink
             href={matched.cta.href}
             owner={matched.owner}
@@ -824,7 +797,6 @@ function TimelineView({ result }: { result: TimelineResult }) {
   return (
     <>
       <div className="relative">
-        {}
         <span
           aria-hidden="true"
           className="bg-border absolute top-4 hidden h-px sm:block"
@@ -920,7 +892,6 @@ function ClarifyView({
 
   return (
     <div className="animate-in fade-in duration-500 ease-out">
-      {}
       {result.steps.map((step, i) => {
         const picked = step.options.find((option) => option.id === answers[step.id]);
         if (!picked) return null;
@@ -940,15 +911,12 @@ function ClarifyView({
         );
       })}
 
-      {}
       {!done && (
         <div className="animate-in fade-in slide-in-from-bottom-1 mt-3 duration-500 ease-out">
           <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
             Тодруулах асуулт {currentIndex + 1}/{result.steps.length}
           </div>
 
-          {
-}
           {prevPick && (
             <p className="text-muted-foreground mt-1.5 text-xs">
               «{prevPick.label}» — тэмдэглэж авлаа.
@@ -972,8 +940,6 @@ function ClarifyView({
         </div>
       )}
 
-      {}
-      {}
       {resolving && (
         <div className="animate-in fade-in mt-4 duration-300">
           <ThinkingTrace steps={RESOLVING_STEPS} />
@@ -1032,8 +998,6 @@ function SolutionPanel({
 
   const body = (
     <>
-      {
-}
       {result.lead && <p className="text-foreground mt-4 text-sm leading-relaxed">{result.lead}</p>}
       <div className="text-foreground mt-4 text-base font-bold">{outcome.best.title}</div>
       <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
@@ -1045,8 +1009,6 @@ function SolutionPanel({
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 mt-4 duration-700 ease-out">
-      {
-}
       <div
         className={cn(!narrativeAtEnd && "border-primary/60 bg-primary/5 rounded-2xl border p-4")}
       >
@@ -1058,8 +1020,6 @@ function SolutionPanel({
           body
         ) : (
           <>
-            {
-}
             <p className="text-foreground mt-2 text-sm leading-relaxed">{narrative}</p>
 
             {narrativeDone && (
@@ -1072,11 +1032,8 @@ function SolutionPanel({
         )}
       </div>
 
-      {}
       {narrativeAtEnd && (
         <>
-          {
-}
           <p className="text-foreground mt-4 text-sm leading-relaxed">{narrative}</p>
           {narrativeDone && cta && (
             <div className="animate-in fade-in duration-500 ease-out">{cta}</div>
@@ -1084,13 +1041,8 @@ function SolutionPanel({
         </>
       )}
 
-      {
-
-}
       {!narrativeAtEnd && narrativeDone && (
         <div className="animate-in fade-in duration-500 ease-out">
-          {
-}
           {buildFollowUp(outcome) && (
             <p className="text-muted-foreground mt-3 text-xs leading-relaxed">
               <span aria-hidden="true">👉 </span>
@@ -1098,9 +1050,6 @@ function SolutionPanel({
             </p>
           )}
 
-          {
-
-}
           {outcome.alternatives.length > 0 && (
             <details className="border-border mt-2 rounded-xl border px-3 py-2">
               <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-xs font-semibold">
@@ -1270,8 +1219,6 @@ function OfferView({ result, owner }: { result: OfferResult; owner: Owner }) {
 
   return (
     <div>
-      {
-}
       <ul className="mb-4 space-y-1.5">
         {cards.map((card) => {
           const { headline, subline, price } = resolveOfferCard(card);
@@ -1299,7 +1246,6 @@ function OfferView({ result, owner }: { result: OfferResult; owner: Owner }) {
         <OfferCardGrid cards={result.cards} owner={owner} />
       </div>
 
-      {}
       {personalize && !isAuthenticated && (
         <div className="border-border mt-4 flex flex-col items-start gap-3 rounded-2xl border border-dashed p-4">
           <p className="text-muted-foreground text-sm leading-relaxed">{personalize.text}</p>
@@ -1351,8 +1297,6 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
 
         const details = (
           <>
-            {
-}
             <div
               className={cn(
                 "text-foreground font-extrabold",
@@ -1363,8 +1307,6 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
             </div>
             {subline && <div className="text-muted-foreground mt-1.5 text-xs">{subline}</div>}
 
-            {
-}
             {price && (
               <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                 {card.oldPrice && (
@@ -1373,13 +1315,10 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
                   </span>
                 )}
                 <span className="text-foreground text-lg leading-none font-extrabold">{price}</span>
-                {
-}
                 {priceNote && <span className="text-muted-foreground text-xs">({priceNote})</span>}
               </div>
             )}
 
-            {}
             {card.note && (
               <div className="text-primary mt-2 text-xs font-semibold">{card.note}</div>
             )}
@@ -1417,8 +1356,6 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
               </span>
             )}
 
-            {
-}
             {background && (
               <div
                 className="absolute inset-0 -z-10 overflow-hidden rounded-2xl"
@@ -1431,8 +1368,6 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
                   sizes="(min-width: 640px) 320px, 78vw"
                   className="object-cover"
                 />
-                {
-}
                 <div className="from-card via-card/95 to-card/20 absolute inset-0 bg-gradient-to-t" />
               </div>
             )}
@@ -1453,13 +1388,10 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
                     className="object-cover"
                   />
                 </div>
-                {}
                 <div className="min-w-0 flex-1">{details}</div>
               </div>
             ) : (
               <>
-                {
-}
                 {productImage && (
                   <div className="bg-muted relative mb-4 h-32 w-full overflow-hidden rounded-xl">
                     <Image
@@ -1475,8 +1407,6 @@ function OfferCardGrid({ cards, owner }: { cards: OfferCard[]; owner: Owner }) {
               </>
             )}
 
-            {
-}
             <div className="mt-auto h-4 shrink-0" aria-hidden="true" />
             <OfferCardCta cta={card.cta} owner={owner} />
           </div>
@@ -1502,8 +1432,6 @@ function NoticeView({ result, owner }: { result: NoticeResult; owner: Owner }) {
               key={item.name}
               className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3"
             >
-              {
-}
               {item.href ? (
                 <SmartLink
                   href={item.href}
@@ -1556,8 +1484,6 @@ function TroubleshootView({
 
   return (
     <div className="animate-in fade-in duration-500 ease-out">
-      {
-}
       <div className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
         {result.causesTitle}
       </div>
@@ -1596,8 +1522,6 @@ function TroubleshootView({
 
       {path && (
         <div className="mt-4">
-          {
-}
           <button
             type="button"
             onClick={() => onAnswers({})}
@@ -1654,8 +1578,6 @@ function ContentSearchView({
 
   return (
     <div className="animate-in fade-in duration-500 ease-out">
-      {
-}
       <ul className="space-y-1.5">
         {result.notes.map((note) => (
           <li key={note} className="text-foreground flex gap-2 text-sm leading-relaxed">
@@ -1667,8 +1589,6 @@ function ContentSearchView({
         ))}
       </ul>
 
-      {
-}
       {!query && (
         <p className="text-foreground animate-in fade-in mt-4 text-sm font-semibold duration-500">
           {result.prompt}
@@ -1677,8 +1597,6 @@ function ContentSearchView({
 
       {query && (
         <div className="mt-4">
-          {
-}
           <button
             type="button"
             onClick={() => onAnswers({})}
@@ -1724,14 +1642,8 @@ function ContentSearchView({
                 </ul>
               </ContentBlock>
 
-              {
-}
-              {
-}
               <div className="border-border grid gap-4 rounded-2xl border border-dashed p-4 sm:grid-cols-2 sm:items-center">
                 <div className="min-w-0">
-                  {
-}
                   <div className="text-foreground text-base font-bold sm:text-lg">
                     {result.app.title}
                   </div>
@@ -1748,8 +1660,6 @@ function ContentSearchView({
                   </SmartLink>
                 </div>
 
-                {
-}
                 {result.app.image && (
                   <div className="ring-border relative aspect-[5/3] w-full overflow-hidden rounded-xl ring-1">
                     <Image

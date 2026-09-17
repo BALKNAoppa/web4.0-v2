@@ -135,9 +135,6 @@ export function ChatWidget() {
 
   return (
     <>
-      {}
-      {
-}
       {revealed && !isOpen && (
         <Link
           href={ASSISTANT_PATH}
@@ -146,15 +143,12 @@ export function ChatWidget() {
           className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring animate-in slide-in-from-left-8 fade-in fixed left-0 z-50 flex flex-col items-center gap-2 rounded-r-xl px-2 py-4 shadow-lg transition-colors duration-500 ease-out focus-visible:ring-2 focus-visible:outline-none"
         >
           <BotMessageSquare className="size-5 shrink-0" aria-hidden="true" />
-          {
-}
           <span className="text-xs font-semibold tracking-wide [writing-mode:vertical-rl]">
             Chat bot
           </span>
         </Link>
       )}
 
-      {}
       {isOpen && (
         <div
           id="chat-panel"
@@ -163,7 +157,6 @@ export function ChatWidget() {
           aria-labelledby="chat-title"
           className="bg-card border-border animate-in fade-in slide-in-from-left-4 fixed bottom-4 left-4 z-50 flex h-[min(580px,calc(100svh-6rem))] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border shadow-2xl duration-300 ease-out lg:bottom-6 lg:left-6"
         >
-          {}
           <div className="bg-primary text-primary-foreground flex items-center justify-between gap-3 px-4 py-3">
             <div className="flex items-center gap-2">
               <div className="bg-primary-foreground/15 flex size-9 items-center justify-center rounded-full">
@@ -186,7 +179,6 @@ export function ChatWidget() {
             </button>
           </div>
 
-          {}
           <div className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.map((msg, index) => (
               <MessageBubble
@@ -199,7 +191,6 @@ export function ChatWidget() {
             <div ref={messagesEndRef} />
           </div>
 
-          {}
           {messages.length <= 1 && (
             <div className="border-border flex flex-wrap gap-2 border-t px-4 py-3">
               {QUICK_REPLIES.map((reply) => (
@@ -215,7 +206,6 @@ export function ChatWidget() {
             </div>
           )}
 
-          {}
           <form
             onSubmit={(e) => {
               e.preventDefault();

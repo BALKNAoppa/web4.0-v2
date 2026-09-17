@@ -20,7 +20,6 @@ export function Solution() {
         sub="Байгууллагын алсын хараа зорилготой уялдуулбал — brand-driven, нэг нэгдсэн вэбсайт хамгийн тохиромжтой."
       />
 
-      {}
       <Reveal delay={80} variant="scale">
         <div className="mx-auto mt-14 max-w-4xl overflow-hidden rounded-2xl border border-white/12 bg-white/[0.04] shadow-2xl shadow-black/40">
           <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/[0.03] px-4 py-2.5">
@@ -44,7 +43,6 @@ export function Solution() {
         </div>
       </Reveal>
 
-      {}
       <div className="mt-6 grid gap-5 md:grid-cols-2">
         {webAppSplit.map((r, i) => (
           <Reveal key={r.channel} delay={i * 140}>

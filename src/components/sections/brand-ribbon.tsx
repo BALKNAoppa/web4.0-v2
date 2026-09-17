@@ -31,8 +31,6 @@ export function BrandRibbon({ items, label }: { items: BrandRibbonItem[]; label:
           const Icon = RIBBON_ICONS[item.icon];
           return (
             <li key={item.label} className="shrink-0">
-              {
-}
               <Link
                 href={item.href}
                 className="group flex w-32 flex-col items-center gap-3 text-center"

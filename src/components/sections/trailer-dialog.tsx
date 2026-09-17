@@ -68,7 +68,6 @@ export function TrailerDialog({
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {}
           <button
             type="button"
             aria-label="Хаах"
@@ -76,7 +75,6 @@ export function TrailerDialog({
             className="animate-in fade-in-0 absolute inset-0 cursor-default bg-black/75 backdrop-blur-sm duration-300 ease-out"
           />
 
-          {}
           <div
             ref={dialogRef}
             role="dialog"
@@ -99,12 +97,10 @@ export function TrailerDialog({
               </button>
             </div>
 
-            {}
             <div
               data-trailer-url={trailerUrl}
               className="relative flex aspect-video w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl bg-neutral-900 text-center ring-1 ring-white/10"
             >
-              {}
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 opacity-[0.06]"

@@ -7,18 +7,12 @@ import { unitelApp } from "@/data/app-promo";
 export function UnitelHome() {
   return (
     <>
-      {}
       <MobilePlans />
 
-      {}
       <ProductEntryGrid tiles={unitelEntryTiles} />
 
-      {
-}
       <AppPromo content={unitelApp} />
 
-      {
-}
     </>
   );
 }

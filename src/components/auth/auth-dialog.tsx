@@ -74,7 +74,6 @@ export function AuthDialog({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      {}
       <button
         type="button"
         aria-label="Хаах"
@@ -82,7 +81,6 @@ export function AuthDialog({
         className="animate-in fade-in-0 absolute inset-0 cursor-default bg-black/60 backdrop-blur-sm duration-300 ease-out"
       />
 
-      {}
       <div
         ref={dialogRef}
         role="dialog"
@@ -90,7 +88,6 @@ export function AuthDialog({
         aria-labelledby={headingId}
         className="bg-card text-card-foreground animate-in fade-in-0 zoom-in-95 relative z-10 w-full max-w-md rounded-2xl border p-6 shadow-2xl duration-300 ease-out sm:p-8"
       >
-        {}
         <button
           type="button"
           onClick={onClose}
@@ -100,7 +97,6 @@ export function AuthDialog({
           <X className="size-5" aria-hidden="true" />
         </button>
 
-        {}
         <div className="flex flex-col items-center text-center">
           <span className="bg-primary/10 text-primary flex size-12 items-center justify-center rounded-full">
             <User className="size-6" aria-hidden="true" />
@@ -108,11 +104,8 @@ export function AuthDialog({
           <h2 id={headingId} className="text-foreground mt-4 text-3xl font-bold tracking-tight">
             Нэвтрэх
           </h2>
-          {
-}
         </div>
 
-        {}
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label htmlFor="auth-identifier" className="text-foreground text-sm font-medium">
@@ -166,7 +159,6 @@ export function AuthDialog({
           </button>
         </form>
 
-        {}
         <div className="mt-6">
           <div className="flex items-center gap-3">
             <span className="bg-border h-px flex-1" aria-hidden="true" />

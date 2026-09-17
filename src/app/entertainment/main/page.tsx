@@ -5,10 +5,8 @@ import { Footer } from "@/components/layout/footer";
 export default function EntertainmentMainPage() {
   return (
     <main id="main-content" className="min-h-screen">
-      {
-}
 
-      <section id="tvod" aria-labelledby="tvod-heading" className="scroll-mt-24">
+      <section id="tvod" aria-labelledby="tvod-heading" className="scroll-mt-24 lg:scroll-mt-40">
         <h2 id="tvod-heading" className="sr-only">
           TVOD — Түрээслэх кино
         </h2>

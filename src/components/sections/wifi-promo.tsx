@@ -13,8 +13,6 @@ export function WifiPromo() {
   return (
     <section aria-labelledby="wifi-title" className="bg-background py-6 lg:py-11">
       <div className="container mx-auto px-4">
-        {
-}
         <div className="mb-10 text-center">
           <span className="text-foreground text-sm font-semibold tracking-wider uppercase">
             {wifiSection.eyebrow}
@@ -31,7 +29,6 @@ export function WifiPromo() {
           </p>
         </div>
 
-        {}
         <div
           role="radiogroup"
           aria-label="Сууцны хэмжээгээ сонгоно уу"
@@ -47,43 +44,30 @@ export function WifiPromo() {
           ))}
         </div>
 
-        {}
         <div className="bg-card grid overflow-hidden rounded-2xl border shadow-sm lg:min-h-[460px] lg:grid-cols-3">
-          {}
           <div className="relative aspect-4/3 bg-[#0A1E5C] lg:col-span-2 lg:aspect-auto">
             <BuildingIllustration variant={selected.illustration} />
           </div>
 
-          {}
           <div className="flex flex-col items-center justify-between gap-6 p-8 text-center lg:p-10">
-            {
-}
             <h2 className="text-2xl font-bold tracking-tight">{selected.name}</h2>
 
-            {}
             <DeviceVisualization
               meshCount={selected.meshCount}
               hasOverflow={selected.hasOverflow}
             />
 
-            {
-}
             <div className="border-border w-full max-w-xs rounded-xl border border-dashed px-4 py-3">
-              {
-}
               <div className="text-foreground/75 text-[11px] font-bold tracking-wider uppercase">
                 {wifiSection.devicesLabel}
               </div>
               <div className="text-foreground mt-1 text-sm font-semibold">{selected.devices}</div>
             </div>
 
-            {}
             <p className="text-foreground max-w-xs text-sm leading-relaxed">
               {selected.previewText}
             </p>
 
-            {
-}
             <div className="flex w-full flex-col items-center gap-2">
               <Link
                 href={wifiSection.ctaHref}
@@ -126,27 +110,20 @@ function OptionCard({
         isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
       }`}
     >
-      {}
       <span className="relative mt-0.5 flex size-5 shrink-0 items-center justify-center">
-        {}
         <span
           className={`absolute inset-0 rounded-full border-2 transition-colors ${
             isSelected ? "border-primary" : "border-muted-foreground/40"
           }`}
         />
-        {}
         {isSelected && (
           <>
-            {}
             <span className="bg-primary absolute inline-flex size-3 animate-ping rounded-full opacity-60" />
-            {}
             <span className="bg-primary relative inline-flex size-2.5 rounded-full" />
           </>
         )}
       </span>
 
-      {
-}
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold">{option.name}</div>
         <p className="text-muted-foreground mt-0.5 text-xs">{option.description}</p>
@@ -164,7 +141,6 @@ function DeviceVisualization({
 }) {
   return (
     <div className="flex items-end justify-center gap-3">
-      {}
       <HgwDevice />
 
       {meshCount > 0 && (
@@ -209,9 +185,7 @@ function HgwDevice() {
         style={{ height: 88 }}
         aria-hidden="true"
       >
-        {}
         <span className="bg-primary absolute top-2 left-1/2 size-1.5 -translate-x-1/2 rounded-full" />
-        {}
         <span className="bg-foreground/15 absolute bottom-3 left-1/2 h-0.5 w-3 -translate-x-1/2 rounded-full" />
       </div>
       <span className="text-foreground text-[10px] font-semibold tracking-wide">Home Gateaway</span>
@@ -225,7 +199,6 @@ function MeshPuck() {
       className="relative h-7 w-10 rounded-2xl bg-white shadow-sm ring-1 ring-black/10"
       aria-hidden="true"
     >
-      {}
       <span className="absolute top-1.5 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-sky-400/70" />
       <span className="bg-foreground/15 absolute bottom-1.5 left-1/2 size-1 -translate-x-1/2 rounded-full" />
     </div>
@@ -240,7 +213,6 @@ function BuildingIllustration({ variant }: { variant: WifiOption["illustration"]
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
     >
-      {}
       <defs>
         <radialGradient id="wifi-glow" cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.55" />
@@ -277,12 +249,9 @@ function WifiDevice({
 
   return (
     <g>
-      {}
       <g clipPath={clipAttr}>
-        {}
         <circle cx={center.cx} cy={center.cy} r={glowRadius} fill="url(#wifi-glow)" />
 
-        {}
         {[0, 1.4, 2.8].map((delay, i) => (
           <circle
             key={i}
@@ -313,10 +282,8 @@ function WifiDevice({
         ))}
       </g>
 
-      {}
       {kind === "hgw" ? (
         <g>
-          {}
           <rect
             x={x - 4}
             y={y - 26}
@@ -328,16 +295,12 @@ function WifiDevice({
             stroke="#0A1E5C"
             strokeWidth="0.4"
           />
-          {}
           <circle cx={x} cy={y - 22} r="1.3" fill="#22C55E" />
-          {}
           <rect x={x - 2} y={y - 4.5} width="4" height="0.8" rx="0.3" fill="rgba(10,30,92,0.3)" />
-          {}
           <ellipse cx={x} cy={y + 1.5} rx="6" ry="1.5" fill="rgba(255,255,255,0.5)" />
         </g>
       ) : (
         <g>
-          {}
           <rect
             x={x - 6}
             y={y - 8}
@@ -349,11 +312,8 @@ function WifiDevice({
             stroke="#0A1E5C"
             strokeWidth="0.4"
           />
-          {}
           <rect x={x - 3} y={y - 6} width="6" height="0.9" rx="0.4" fill="#0EA5E9" opacity="0.75" />
-          {}
           <circle cx={x} cy={y - 2.5} r="0.7" fill="rgba(10,30,92,0.3)" />
-          {}
           <ellipse cx={x} cy={y + 1.5} rx="7" ry="1.3" fill="rgba(255,255,255,0.5)" />
         </g>
       )}
@@ -401,20 +361,16 @@ function ApartmentBuilding({
 
   return (
     <g>
-      {}
       <defs>
         <clipPath id={clipId}>
           <rect x={aX} y={aY} width={aW} height={aH} />
         </clipPath>
       </defs>
 
-      {}
       <line x1={BX - 12} y1={BY} x2={BX + BW + 12} y2={BY} stroke={stroke} strokeWidth="1.3" />
 
-      {}
       <rect x={BX} y={BY} width={BW} height={BH} fill="none" stroke={stroke} strokeWidth="1" />
 
-      {}
       {Array.from({ length: ROWS }).map((_, row) =>
         Array.from({ length: columns }).map((_, col) => {
           if (isInApt(row, col)) return null;
@@ -431,7 +387,6 @@ function ApartmentBuilding({
                 stroke={stroke}
                 strokeWidth="1"
               />
-              {}
               <rect
                 x={rx + roomW * 0.2}
                 y={ry + roomH * 0.2}
@@ -454,7 +409,6 @@ function ApartmentBuilding({
         }),
       )}
 
-      {}
       <line
         x1={BX - 10}
         y1={BY + BH}
@@ -464,14 +418,8 @@ function ApartmentBuilding({
         strokeWidth="1.3"
       />
 
-      {}
-      {}
-      {}
-
-      {}
       <rect x={aX} y={aY} width={aW} height={aH} fill="#1E40AF" fillOpacity="0.38" />
 
-      {}
       <rect
         x={aX}
         y={aY}
@@ -482,7 +430,6 @@ function ApartmentBuilding({
         strokeWidth="1.7"
       />
 
-      {}
       {apartment.cells.length > 1 &&
         Array.from({ length: maxCol - minCol }).map((_, i) => {
           const wx = aX + (i + 1) * roomW;
@@ -492,7 +439,6 @@ function ApartmentBuilding({
           const doorJamb = aY + aH - 8;
           return (
             <g key={`iw-${i}`}>
-              {}
               <line
                 x1={wx}
                 y1={wallTop}
@@ -502,7 +448,6 @@ function ApartmentBuilding({
                 strokeOpacity="0.85"
                 strokeWidth="1.1"
               />
-              {}
               <line
                 x1={wx}
                 y1={doorJamb}
@@ -512,7 +457,6 @@ function ApartmentBuilding({
                 strokeOpacity="0.85"
                 strokeWidth="1.1"
               />
-              {}
               <line
                 x1={wx - 8}
                 y1={doorTop}
@@ -535,7 +479,6 @@ function ApartmentBuilding({
           );
         })}
 
-      {}
       {apartment.cells.map(({ row, col }) => {
         const rx = BX + col * roomW;
         const ry = BY + row * roomH;
@@ -551,7 +494,6 @@ function ApartmentBuilding({
               strokeOpacity="0.95"
               strokeWidth="1.2"
             />
-            {}
             <line
               x1={rx + roomW * 0.5}
               y1={ry + roomH * 0.2}
@@ -565,7 +507,6 @@ function ApartmentBuilding({
         );
       })}
 
-      {}
       {devices.map((d, i) => {
         const dx = aX + d.ax * aW;
         const dy = aY + d.ay * aH;
@@ -641,56 +582,43 @@ function HouseBuilding() {
   const strokeBright = "rgba(255,255,255,0.95)";
   return (
     <g>
-      {}
       <defs>
         <clipPath id="house-clip">
-          {}
           <polygon points="90,200 300,80 510,200 510,360 90,360" />
         </clipPath>
       </defs>
 
       <g stroke={stroke} strokeWidth="1.1" fill="none" strokeLinejoin="round">
-        {}
         <polygon points="90,200 300,80 510,200 510,360 90,360" fill="#1E40AF" fillOpacity="0.28" />
 
-        {}
         <polyline points="90,200 300,80 510,200" stroke={strokeBright} strokeWidth="1.6" />
-        {}
         <line x1="90" y1="200" x2="75" y2="208" stroke={strokeBright} strokeWidth="1.4" />
         <line x1="510" y1="200" x2="525" y2="208" stroke={strokeBright} strokeWidth="1.4" />
 
-        {}
         <rect x="115" y="200" width="370" height="160" stroke={strokeBright} strokeWidth="1.6" />
 
-        {}
         <line x1="115" y1="280" x2="485" y2="280" stroke={strokeBright} strokeOpacity="0.6" />
 
-        {}
         <line x1="207" y1="200" x2="207" y2="360" stroke={strokeBright} strokeOpacity="0.55" />
         <line x1="300" y1="200" x2="300" y2="360" stroke={strokeBright} strokeOpacity="0.55" />
         <line x1="393" y1="200" x2="393" y2="360" stroke={strokeBright} strokeOpacity="0.55" />
 
-        {}
         <rect x="250" y="155" width="40" height="30" stroke={strokeBright} strokeOpacity="0.8" />
         <rect x="310" y="155" width="40" height="30" stroke={strokeBright} strokeOpacity="0.8" />
 
-        {}
         <rect x="135" y="220" width="55" height="45" stroke={strokeBright} strokeOpacity="0.8" />
         <rect x="225" y="220" width="60" height="45" stroke={strokeBright} strokeOpacity="0.8" />
         <rect x="318" y="220" width="60" height="45" stroke={strokeBright} strokeOpacity="0.8" />
         <rect x="411" y="220" width="55" height="45" stroke={strokeBright} strokeOpacity="0.8" />
 
-        {}
         <rect x="135" y="300" width="55" height="45" stroke={strokeBright} strokeOpacity="0.8" />
         <rect x="240" y="300" width="30" height="60" stroke={strokeBright} strokeOpacity="0.8" />
         <rect x="318" y="300" width="60" height="45" stroke={strokeBright} strokeOpacity="0.8" />
         <rect x="411" y="300" width="55" height="45" stroke={strokeBright} strokeOpacity="0.8" />
 
-        {}
         <line x1="105" y1="360" x2="495" y2="360" stroke={strokeBright} strokeWidth="1.4" />
       </g>
 
-      {}
       <WifiDevice x={300} y={345} glowRadius={75} clipId="house-clip" kind="hgw" />
       <WifiDevice x={163} y={265} glowRadius={70} clipId="house-clip" kind="mesh" />
       <WifiDevice x={438} y={265} glowRadius={70} clipId="house-clip" kind="mesh" />

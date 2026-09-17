@@ -35,7 +35,6 @@ export function SupportCategoryDetail({ title, detail }: Props) {
   return (
     <section aria-labelledby="support-category-title" className="bg-muted/30 py-12 lg:py-16">
       <div className="container mx-auto max-w-6xl px-4">
-        {}
         <div className="mb-10 text-center md:mb-14">
           <h1
             id="support-category-title"
@@ -47,13 +46,10 @@ export function SupportCategoryDetail({ title, detail }: Props) {
             {detail.description}
           </p>
 
-          {}
           <SupportAskBar quickQuestions={detail.quickQuestions} />
         </div>
 
-        {}
         <div className="grid gap-6 lg:grid-cols-2">
-          {}
           <TopicCard
             icon={<Star className="size-5" aria-hidden="true" />}
             title="Хайлт өндөртэй асуултууд"
@@ -61,7 +57,6 @@ export function SupportCategoryDetail({ title, detail }: Props) {
             columns={1}
           />
 
-          {}
           <TopicCard
             icon={<List className="size-5" aria-hidden="true" />}
             title="Бусад асуулт"
@@ -70,7 +65,6 @@ export function SupportCategoryDetail({ title, detail }: Props) {
           />
         </div>
 
-        {}
         <ul
           aria-label="Шуурхай холбоосууд"
           className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"

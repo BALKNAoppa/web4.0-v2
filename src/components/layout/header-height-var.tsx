@@ -6,9 +6,13 @@ export function HeaderHeightVar() {
   useEffect(() => {
     const root = document.documentElement;
 
+    let maxH = 0;
+
     const apply = (el: Element) => {
       const h = el.getBoundingClientRect().height;
-      if (h > 0) root.style.setProperty("--header-h", `${Math.round(h)}px`);
+      if (h <= maxH) return;
+      maxH = h;
+      root.style.setProperty("--header-h", `${Math.round(h)}px`);
     };
 
     let ro: ResizeObserver | null = null;
@@ -31,7 +35,9 @@ export function HeaderHeightVar() {
 
     const onResize = () => {
       const el = document.querySelector("header[role='banner']");
-      if (el) apply(el);
+      if (!el) return;
+      maxH = 0;
+      apply(el);
     };
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);

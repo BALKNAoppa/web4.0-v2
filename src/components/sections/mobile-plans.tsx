@@ -13,11 +13,8 @@ export function MobilePlans() {
       aria-labelledby="mobile-plans-title"
       className="bg-background relative w-full overflow-hidden"
     >
-      {
-}
       <Reveal>
         <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-6 px-4 py-8 sm:gap-10 sm:py-10 lg:grid-cols-2 lg:gap-16 lg:py-14">
-          {}
           <div className="order-2 lg:order-1">
             <div
               className="flex items-center gap-2 text-xs font-bold tracking-[0.18em] uppercase"
@@ -53,8 +50,6 @@ export function MobilePlans() {
             </div>
           </div>
 
-          {
-}
           <div className="order-1 flex justify-center lg:order-2 lg:justify-end">
             <div className="ring-border/60 relative aspect-square w-full max-w-[38svh] overflow-hidden rounded-3xl shadow-xl ring-1 sm:max-w-md lg:max-w-lg">
               <Image

@@ -145,16 +145,12 @@ export function MorphingText({
 
   return (
     <span className={cn("relative inline-grid place-items-center leading-none", className)}>
-      {}
       <span className="sr-only">{texts[0]}</span>
 
-      {
-}
       <span aria-hidden="true" className="invisible whitespace-nowrap">
         {longest}
       </span>
 
-      {}
       <span
         ref={text1Ref}
         aria-hidden="true"
@@ -166,8 +162,6 @@ export function MorphingText({
         className="absolute inset-0 grid place-items-center whitespace-nowrap"
       />
 
-      {
-}
     </span>
   );
 }

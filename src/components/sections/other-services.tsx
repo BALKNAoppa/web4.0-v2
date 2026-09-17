@@ -37,21 +37,15 @@ export function OtherServices() {
           {otherServicesTitle}
         </h2>
 
-        {
-}
         <ul className="mt-8 grid grid-cols-2 gap-3 md:mt-10 md:grid-cols-3 lg:grid-cols-4">
           {otherServices.map((item) => {
             const Icon = ICONS[item.icon];
             return (
               <li key={item.label}>
-                {
-}
                 <Link
                   href={item.href}
                   className="bg-card focus-visible:ring-ring focus-visible:ring-offset-background flex h-full items-center gap-3 rounded-2xl p-3 transition-shadow duration-300 hover:shadow-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
-                  {
-}
                   <span
                     aria-hidden="true"
                     className="flex size-11 shrink-0 items-center justify-center rounded-full border-2"

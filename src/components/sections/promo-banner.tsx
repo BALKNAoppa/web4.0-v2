@@ -52,30 +52,21 @@ function PromoBannerPlaceholder({ fill }: { fill: boolean }) {
       aria-label="Онцлох урамшуулал"
       className={cn("flex w-full items-stretch", bannerBox(fill))}
     >
-      {
-}
-      {
-}
       <PromoFadeBanner cards={cards} />
 
-      {}
       <div className="hidden w-full md:flex">
         <Carousel
           setApi={setApi}
           opts={{ loop: true, align: "center" }}
           className="w-full [&_[data-slot=carousel-content]]:h-full"
         >
-          {
 
-}
           <CarouselContent className="-ml-2 h-full md:-ml-4">
             {cards.map((promo, i) => (
               <CarouselItem
                 key={promo.id}
                 className="h-full basis-[82%] pl-2 md:basis-[62.5%] md:pl-4"
               >
-                {
-}
                 <PromoSlide promo={promo} eager={i === 0} />
               </CarouselItem>
             ))}
@@ -99,8 +90,6 @@ function PromoSlide({ promo, eager }: { promo: PromoCard; eager: boolean }) {
   if (!src) {
     return (
       <div className="bg-card flex h-full flex-col items-center justify-center gap-[clamp(0.75rem,2svh,1.5rem)] rounded-3xl">
-        {
-}
         <span className="text-muted-foreground text-[clamp(0.875rem,2.2svh,1.125rem)] font-semibold sm:text-[clamp(1.125rem,3.4svh,2.25rem)]">
           {promo.placeholderText}
         </span>
@@ -127,14 +116,11 @@ function PromoSlide({ promo, eager }: { promo: PromoCard; eager: boolean }) {
         style={{ objectPosition: promo.imageDesktopPosition ?? "center" }}
         className="-z-10 object-cover"
       />
-      {
-}
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-gradient-to-t from-black/20 to-transparent"
       />
 
-      {}
       <Link
         href={promo.href}
         className="focus-visible:ring-ring inline-flex h-[clamp(2.25rem,5svh,3rem)] w-fit items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-neutral-900 transition-colors duration-300 ease-out hover:bg-neutral-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -158,8 +144,6 @@ function PromoFadeBanner({ cards }: { cards: PromoCard[] }) {
 
   return (
     <div className="flex w-full flex-col md:hidden">
-      {
-}
       <div
         className="relative mx-6 aspect-[3/4] overflow-hidden rounded-3xl"
         onTouchStart={(e) => {
@@ -179,8 +163,6 @@ function PromoFadeBanner({ cards }: { cards: PromoCard[] }) {
         ))}
       </div>
 
-      {
-}
       <CarouselDots total={total} index={index} onSelect={go} label="санал" className="mt-6" />
     </div>
   );
@@ -198,9 +180,7 @@ function PromoFadeSlide({ promo, active }: { promo: PromoCard; active: boolean }
       )}
       style={{ transitionDuration: `${FADE_MS}ms` }}
     >
-      {
 
-}
       {promo.image ? (
         <>
           <Image
@@ -211,8 +191,6 @@ function PromoFadeSlide({ promo, active }: { promo: PromoCard; active: boolean }
             sizes="100vw"
             className="-z-10 object-cover"
           />
-          {
-}
           <div
             aria-hidden="true"
             className="absolute inset-0 -z-10 bg-gradient-to-t from-black/20 to-transparent"
@@ -227,8 +205,6 @@ function PromoFadeSlide({ promo, active }: { promo: PromoCard; active: boolean }
         </span>
       )}
 
-      {
-}
       <Link
         href={promo.href}
         tabIndex={active ? undefined : -1}
@@ -263,8 +239,6 @@ function CarouselCounter({
         <ArrowLeft className="size-4" aria-hidden="true" />
       </button>
 
-      {
-}
       <span aria-live="polite" className="text-foreground px-1 text-xs font-semibold tabular-nums">
         {current}/{total}
       </span>
@@ -320,10 +294,8 @@ function PromoBannerFull({ fill }: { fill: boolean }) {
       aria-labelledby="promo-banner-title"
       className={cn("relative isolate w-full overflow-hidden", fill && "h-full")}
     >
-      {}
       <PromoMediaLayer media={content.media} decorative={content.decorative} videoRef={videoRef} />
 
-      {}
       {needsScrim && (
         <div
           aria-hidden="true"
@@ -331,8 +303,6 @@ function PromoBannerFull({ fill }: { fill: boolean }) {
         />
       )}
 
-      {
-}
       <div className={cn("relative mx-auto flex max-w-300 items-center px-4", bannerBox(fill))}>
         <div className="max-w-xl">
           <p className="text-xs font-bold tracking-[0.18em] text-white/80 uppercase">
@@ -373,7 +343,6 @@ function PromoBannerFull({ fill }: { fill: boolean }) {
         </div>
       </div>
 
-      {}
       {isVideo && (
         <button
           type="button"

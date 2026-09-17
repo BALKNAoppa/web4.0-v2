@@ -20,8 +20,6 @@ export default function Home() {
 
   return (
     <main id="main-content" className="min-h-screen">
-      {
-}
       <HeaderHeightVar />
 
       {isUnivision ? (
@@ -33,28 +31,17 @@ export default function Home() {
       ) : (
         <>
           <PromoHero />
-          {
-}
           <ChatHero heroRest />
           <RecommendedPlans content={unitelRecommendedPlans} />
 
-          {
-}
           <PopularServices />
 
-          {
-}
           <Promotions />
 
           <OtherServices />
 
-          {
-}
           <AppPromo content={unitelApp} />
 
-          {
-}
-          {}
         </>
       )}
 

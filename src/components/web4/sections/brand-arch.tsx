@@ -22,7 +22,6 @@ export function BrandArchitecture() {
         sub="Холбоосын хүчээр (No → Weak → Shared → Value) 4 төрөлд хуваагдана. Google-ийн жишээгээр."
       />
 
-      {}
       <div className="mx-auto mt-12 grid max-w-3xl gap-4 sm:grid-cols-2">
         {brandHouses.map((h, i) => (
           <Reveal key={h.id} delay={i * 120}>
@@ -34,7 +33,6 @@ export function BrandArchitecture() {
         ))}
       </div>
 
-      {}
       <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {brandTypes.map((t, i) => {
           const accent = SCALE[i % SCALE.length];

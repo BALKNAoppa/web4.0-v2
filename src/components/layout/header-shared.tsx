@@ -124,8 +124,6 @@ export function LanguagePill({ className }: { className?: string }) {
         </button>
       </PopoverTrigger>
 
-      {
-}
       <PopoverContent
         role="radiogroup"
         aria-label={t("Хэл")}
@@ -155,8 +153,6 @@ export function LanguagePill({ className }: { className?: string }) {
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              {
-}
               {LOCALE_LABEL[id].name}
             </button>
           );
@@ -195,8 +191,6 @@ export function ProfilePill({ className, onDone }: { className?: string; onDone?
       className={className}
     >
       <LogOut className="text-destructive size-5 shrink-0" aria-hidden="true" />
-      {
-}
       <span className="sr-only">Гарах — {user?.name}</span>
     </button>
   );
@@ -386,18 +380,12 @@ function MegaPromoColumn({ menuName, onNavigate }: { menuName?: string; onNaviga
     <div className="ml-auto w-76 shrink-0">
       <h3 className={cn(navType.groupLabel, "mb-4")}>{MENU_PROMOS_HEADING}</h3>
 
-      {
-}
       <div className="flex flex-col gap-5">
         {menuPromos(menuName).map((promo) => (
           <div key={promo.id} className="flex items-center gap-4">
             <PromoAvatar image={promo.image} />
-            {
-}
             <div className="flex min-w-0 flex-col items-start">
               <p className={cn(navType.secondaryLink, "text-foreground")}>{promo.title}</p>
-              {
-}
               <p className={cn(navType.body, "text-muted-foreground mt-1 line-clamp-3")}>
                 {promo.description}
               </p>
@@ -475,14 +463,9 @@ function BranchedMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: (
 
   return (
     <div className="mx-auto max-w-300 px-6 py-8">
-      {
-}
       <div className="flex items-stretch gap-10">
-        {}
         <nav aria-label={`${menu.name} — ангилал`} className="w-56 shrink-0">
-          {
 
-}
           <ul className="space-y-1">
             {menu.sections.map((section) => (
               <li key={section.id}>
@@ -497,9 +480,6 @@ function BranchedMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: (
           </ul>
         </nav>
 
-        {
-
-}
         <div
           role="group"
           aria-labelledby={active ? `mega-branch-${active.id}` : undefined}
@@ -525,8 +505,6 @@ function BranchedMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigate: (
                 ))}
               </div>
 
-              {
-}
               {active.status && <BranchStatusNote status={active.status} className="mt-6" />}
             </>
           ) : active?.status ? (
@@ -568,8 +546,6 @@ export function BrandMegaPanel({ menu, onNavigate }: { menu: MegaMenu; onNavigat
       <div className="flex items-start gap-16">
         <div>
           <h3 className={cn(navType.groupLabel, "mb-4")}>{menu.sectionsLabel ?? menu.name}</h3>
-          {
-}
           <ul className="space-y-1">
             {menu.sections.map((section) => (
               <li key={section.id}>

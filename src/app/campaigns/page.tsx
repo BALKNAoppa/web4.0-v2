@@ -27,7 +27,6 @@ export default function CampaignsPage() {
     <main id="main-content" className="bg-background min-h-screen">
       <Breadcrumb items={[{ label: "Урамшуулал" }]} />
 
-      {}
       <section className="container mx-auto px-4 pt-12 pb-8 text-center md:pt-20 md:pb-12">
         <h1 className="text-foreground text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl">
           {campaignsHero.title}
@@ -37,7 +36,6 @@ export default function CampaignsPage() {
         </p>
       </section>
 
-      {}
       <section
         aria-label="Урамшууллын ангилал"
         className="container mx-auto px-4 pb-12 md:pb-16"
@@ -69,7 +67,6 @@ export default function CampaignsPage() {
         </div>
       </section>
 
-      {}
       <section
         aria-labelledby="highlights-title"
         className="container mx-auto px-4 pb-16 md:pb-24"
@@ -102,7 +99,6 @@ export default function CampaignsPage() {
 function HighlightCard({ item }: { item: (typeof campaignHighlights)[number] }) {
   return (
     <article className="bg-card border-border flex flex-col overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-lg">
-      {}
       <div
         className="relative flex aspect-[4/3] items-center justify-center bg-gray-100"
         aria-hidden="true"
@@ -117,7 +113,6 @@ function HighlightCard({ item }: { item: (typeof campaignHighlights)[number] }) 
         )}
       </div>
 
-      {}
       <div className="flex flex-1 flex-col p-6">
         <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0FAA0A]">
           <Clock className="size-4" aria-hidden="true" />

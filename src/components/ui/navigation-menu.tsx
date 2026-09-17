@@ -121,8 +121,6 @@ function NavigationMenuViewport({
     "absolute top-full left-0 right-0 isolate z-50 flex justify-center"
   )}
 >
-      {
-}
       <NavigationMenuPrimitive.Viewport
         data-slot="navigation-menu-viewport"
         className={cn(

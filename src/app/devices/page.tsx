@@ -52,7 +52,6 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
     <main id="main-content" className="bg-background min-h-screen">
       <Breadcrumb items={breadcrumbItems} />
 
-      {}
       <section className="container mx-auto px-4 pt-12 pb-8 text-center md:pt-20 md:pb-12">
         <h1 className="text-foreground text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl">
           {devicesHero.title}
@@ -62,8 +61,6 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
         </p>
       </section>
 
-      {
-}
       <nav aria-label="Төхөөрөмжийн ангилал" className="container mx-auto px-4 pb-12 md:pb-16">
         <ul className="flex flex-wrap items-center justify-center gap-3">
           {deviceCategories.map((cat) => {
@@ -89,7 +86,6 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
         </ul>
       </nav>
 
-      {}
       <section
         aria-labelledby="devices-grid-title"
         className="container mx-auto px-4 pb-16 md:pb-24"
@@ -98,8 +94,6 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
           id="devices-grid-title"
           className="text-foreground mb-8 text-center text-3xl font-bold tracking-tight md:mb-12 md:text-4xl"
         >
-          {
-}
           {active.length
             ? active.map((id) => deviceCategoryLabel[id]).join(" · ")
             : "Бүх төхөөрөмж"}
@@ -126,10 +120,6 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
 function DeviceCard({ product }: { product: DeviceProduct }) {
   return (
     <article className="bg-card border-border flex flex-col overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-lg">
-      {
-}
-      {
-}
       <div className="bg-muted relative flex aspect-[4/3] items-center justify-center">
         <span
           aria-hidden="true"
@@ -145,8 +135,6 @@ function DeviceCard({ product }: { product: DeviceProduct }) {
       </div>
 
       <div className="flex flex-1 flex-col p-6">
-        {
-}
         <p className="text-muted-foreground text-[13px] font-normal">
           {deviceCategoryLabel[product.category]}
         </p>
@@ -155,13 +143,9 @@ function DeviceCard({ product }: { product: DeviceProduct }) {
         </h3>
         <p className="text-muted-foreground mt-2 text-sm">{product.spec}</p>
 
-        {
-}
         <div className="border-border mt-5 border-t pt-4">
           <p className="text-foreground text-2xl font-bold tracking-tight">
             000,000₮{" "}
-            {
-}
             <span className="text-muted-foreground ml-2 text-sm font-normal">
               эсвэл 00,000₮ / сар
             </span>

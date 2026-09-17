@@ -17,10 +17,8 @@ export function SupportCenter({ title }: { title?: string }) {
       className="bg-muted/30 py-12 lg:py-16"
     >
       <div className="mx-auto max-w-4xl space-y-6 px-4">
-        {}
         <div className="bg-card border-border rounded-2xl border p-6 shadow-sm sm:p-8">
           <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-            {}
             <div
               className="bg-primary text-primary-foreground flex size-16 shrink-0 items-center justify-center rounded-full shadow-md sm:size-20"
               aria-hidden="true"
@@ -28,7 +26,6 @@ export function SupportCenter({ title }: { title?: string }) {
               <Headphones className="size-7 sm:size-8" strokeWidth={1.8} />
             </div>
 
-            {}
             <div className="w-full flex-1">
               <h1
                 id="support-title"
@@ -69,7 +66,6 @@ export function SupportCenter({ title }: { title?: string }) {
           </div>
         </div>
 
-        {}
         <div className="bg-card border-border rounded-2xl border shadow-sm">
           <div className="border-border border-b px-6 py-5 sm:px-8">
             <h2 className="text-foreground text-lg font-semibold tracking-tight md:text-xl">

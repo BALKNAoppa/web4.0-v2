@@ -1,4 +1,4 @@
-import { BRAND, type Owner } from "@/lib/brand";
+import { BRAND, type BrandId, type Owner } from "@/lib/brand";
 import { mobilePlans, planTierHighlights } from "./mobile-plans";
 import { plans } from "./plans";
 import { wifiOptions, wifiSection, type WifiOption } from "./wifi-options";
@@ -1083,6 +1083,22 @@ export const featuredQuestions: AssistantQuestion[] = assistantQuestions.filter(
   (q) => q.featured && isVisibleInThisBuild(q.owner),
 );
 
+export const EXAMPLE_PREFIX = "Жишээ нь: ";
+
+const EXAMPLE_PROMPTS: Record<BrandId, string[]> = {
+  unitel: [
+    "Надад ямар багц тохирох вэ?",
+    "Дата минь сар болохгүй дуусаад байна. Яах вэ?",
+    "Гар утас лизингээр авмаар байна",
+  ],
+  univision: [
+    "Гэртээ шинээр интернэт холбуулмаар байна.",
+    "HBO Max ямар багцад багтдаг вэ?",
+    "Интэрнет хурдаа нэмэх боломжтой юу?",
+  ],
+};
+
+export const examplePrompts: string[] = EXAMPLE_PROMPTS[BRAND];
 export const TRENDING_TOPIC_PLACEHOLDER = "Их хайгдсан сэдэв {n}";
 
 export function trendingTopicLabel(rank: number): string {

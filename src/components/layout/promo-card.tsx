@@ -24,7 +24,6 @@ export function PromoCard({
       onClick={onNavigate}
       className="hover:bg-muted/50 group flex items-start gap-3 rounded-lg p-2 transition-colors"
     >
-      {}
       {promo.image ? (
         <div className="bg-muted relative size-14 shrink-0 overflow-hidden rounded-full">
           <Image

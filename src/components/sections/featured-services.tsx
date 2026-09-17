@@ -34,8 +34,6 @@ export function FeaturedServices() {
 function ServiceCard({ service }: { service: FeaturedService }) {
   return (
     <article className="border-border bg-card flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow duration-500 ease-out hover:shadow-lg">
-      {
-}
       <div className="border-border/60 bg-muted/50 relative flex aspect-[16/7] flex-col items-center justify-center gap-2 border-b">
         {service.image ? (
           <Image
@@ -59,9 +57,6 @@ function ServiceCard({ service }: { service: FeaturedService }) {
           </>
         )}
 
-        {
-
-}
         {service.badge && (
           <span className="bg-background/80 text-foreground absolute top-3 left-3 z-10 rounded-full px-3 py-1 text-xs font-semibold backdrop-blur">
             {service.badge}
@@ -70,15 +65,11 @@ function ServiceCard({ service }: { service: FeaturedService }) {
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        {
 
-}
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-foreground min-w-0 text-base font-bold tracking-tight">
             {service.title}
           </h3>
-          {
-}
           <Link
             href={service.href}
             aria-label={`${service.title} — ${service.ctaLabel}`}
@@ -88,7 +79,6 @@ function ServiceCard({ service }: { service: FeaturedService }) {
           </Link>
         </div>
 
-        {}
         <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">
           {service.description}
         </p>

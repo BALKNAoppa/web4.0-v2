@@ -213,7 +213,6 @@ export function TvodCatalog() {
         Кино хайх ба үзэх
       </h2>
 
-      {}
       <div className="bg-muted/60 border-border border-y py-8 lg:py-5">
         <div className="container mx-auto px-4">
           <div ref={wrapperRef} className="mx-auto max-w-2xl">
@@ -222,13 +221,11 @@ export function TvodCatalog() {
                 TVOD кино хайх
               </label>
               <div className="border-primary/30 bg-background hover:border-primary/50 focus-within:border-primary focus-within:ring-primary/25 flex h-16 items-center gap-2 rounded-full border-2 pr-2 pl-2 shadow-lg transition-all focus-within:ring-4">
-                {}
                 <div
                   role="group"
                   aria-label="Хайлтын төрөл"
                   className="bg-muted relative flex shrink-0 items-center rounded-full p-0.5"
                 >
-                  {}
                   <div
                     className="bg-background absolute top-0.5 size-10 rounded-full shadow-sm transition-all duration-300 ease-out"
                     style={{
@@ -301,7 +298,6 @@ export function TvodCatalog() {
                   </button>
                 )}
 
-                {}
                 <button
                   type="submit"
                   disabled={!query.trim() || aiLoading}
@@ -331,8 +327,7 @@ export function TvodCatalog() {
         </div>
       </div>
 
-      <div id="library" className="container mx-auto scroll-mt-24 px-4 py-12 lg:py-16">
-        {}
+      <div id="library" className="container mx-auto scroll-mt-24 px-4 py-12 lg:scroll-mt-40 lg:py-16">
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
           <TabsList className="h-12 w-full">
             <TabsTrigger value="library" className="flex-1 text-base font-semibold">
@@ -344,7 +339,6 @@ export function TvodCatalog() {
           </TabsList>
 
           <TabsContent value="library" className="pt-8">
-            {}
             {aiError && (
               <div className="border-destructive/40 bg-destructive/10 text-destructive mb-6 rounded-xl border p-4 text-sm">
                 AI хайлт амжилтгүй: {aiError}
@@ -388,8 +382,6 @@ export function TvodCatalog() {
               </div>
             )}
 
-            {
-}
             {aiResults.length === 0 &&
               (hasCommitted ? (
                 <>
@@ -583,7 +575,7 @@ function EmptyResults({
 function CategoryRow({ category }: { category: TvodCategory }) {
   if (category.movies.length === 0) return null;
   return (
-    <div id={`category-${category.id}`} className="scroll-mt-24">
+    <div id={`category-${category.id}`} className="scroll-mt-24 lg:scroll-mt-40">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-foreground text-xl font-bold tracking-tight md:text-2xl">
           {category.title}

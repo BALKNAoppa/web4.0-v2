@@ -14,8 +14,6 @@ export function Promotions() {
   return (
     <section aria-labelledby="promotions-title" className={cn(sectionBg.band, "w-full")}>
       <div className="mx-auto w-full max-w-[1200px] px-4 py-8 lg:py-12">
-        {
-}
         <div className="mx-auto max-w-3xl text-center">
           <h2 id="promotions-title" className={sectionType.title}>
             {promotionsSection.title}
@@ -24,7 +22,6 @@ export function Promotions() {
           <p className={sectionType.subtitle}>{promotionsSection.description}</p>
         </div>
 
-        {}
         <ul className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {cards.map((card) => (
             <li key={card.id}>
@@ -33,7 +30,6 @@ export function Promotions() {
           ))}
         </ul>
 
-        {}
         <div className="mt-10 flex justify-center">
           <Link
             href={promotionsSection.ctaHref}
@@ -62,8 +58,6 @@ function PromotionTile({ card }: { card: PromotionCard }) {
           : "bg-card ring-border hover:shadow-lg",
       )}
     >
-      {
-}
       {card.image && (
         <>
           <Image
@@ -80,8 +74,6 @@ function PromotionTile({ card }: { card: PromotionCard }) {
         </>
       )}
 
-      {
-}
       {(card.badge || card.price) && (
         <div className="relative flex items-start justify-between gap-3">
           {card.badge && (
@@ -127,7 +119,6 @@ function PromotionTile({ card }: { card: PromotionCard }) {
         </div>
       )}
 
-      {}
       <div className="relative mt-6 flex flex-1 flex-col justify-end">
         <h3
           className={cn(
@@ -147,7 +138,6 @@ function PromotionTile({ card }: { card: PromotionCard }) {
         </p>
       </div>
 
-      {}
       <div
         className={cn(
           "relative mt-6 flex items-center justify-between gap-3 border-t pt-4",

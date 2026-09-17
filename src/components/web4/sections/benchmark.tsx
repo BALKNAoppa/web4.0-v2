@@ -23,7 +23,6 @@ export function Benchmark() {
         sub="Дэлхийн тэргүүлэгч группүүд вэбээ хэрхэн бүтэцлэдэг вэ — судалгааны үр дүн."
       />
 
-      {}
       <div className="mt-16 grid gap-6 lg:grid-cols-2">
         {featured.map((b, i) => (
           <Reveal key={b.id} delay={i * 140} variant="scale">

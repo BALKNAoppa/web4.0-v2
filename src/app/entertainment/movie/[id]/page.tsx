@@ -62,7 +62,6 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
 
       <article className="bg-background py-8 lg:py-10">
         <div className="container mx-auto px-4">
-          {}
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <h1 className="text-foreground text-3xl font-bold tracking-tight md:text-4xl">
@@ -84,9 +83,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
             <RatingBlock rating={movie.rating} voteCount={detail?.voteCount} />
           </div>
 
-          {}
           <div className="mt-6 grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)] md:grid-cols-[225px_minmax(0,1fr)]">
-            {}
             <div className="bg-muted relative aspect-[2/3] overflow-hidden rounded-2xl shadow-sm">
               {movie.poster && (
                 <Image
@@ -100,7 +97,6 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
               )}
             </div>
 
-            {}
             <div className="bg-muted relative aspect-video overflow-hidden rounded-2xl shadow-sm sm:aspect-auto sm:h-full">
               {backdrop && (
                 <Image
@@ -113,7 +109,6 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
                 />
               )}
 
-              {}
               <div className="absolute bottom-4 left-4 flex flex-wrap items-center gap-2">
                 {detail?.trailerUrl && (
                   <TrailerDialog
@@ -127,7 +122,6 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
             </div>
           </div>
 
-          {}
           {movie.genres.length > 0 && (
             <ul className="mt-6 flex flex-wrap gap-2">
               {movie.genres.map((genre) => (
@@ -141,14 +135,12 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
             </ul>
           )}
 
-          {}
           {movie.description && (
             <p className="text-foreground mt-4 max-w-3xl text-sm leading-relaxed md:text-base">
               {movie.description}
             </p>
           )}
 
-          {}
           {detail && (
             <dl className="mt-8 max-w-4xl">
               <CrewRow label="Director" names={[detail.director]} />
@@ -157,7 +149,6 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
             </dl>
           )}
 
-          {}
           {similar.length > 0 && (
             <section aria-labelledby="more-like-this" className="mt-12">
               <div className="flex items-center justify-between gap-4">

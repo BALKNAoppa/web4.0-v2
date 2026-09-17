@@ -35,18 +35,11 @@ function MobileSitemap() {
   return (
     <div className="px-4 py-8 lg:hidden">
       <div className="bg-card border-border rounded-[28px] border px-4 py-10">
-        {}
         <LogoHomeLink className="mx-auto flex w-fit items-center" aria-label="Нүүр">
           <BrandLogo height={28} />
         </LogoHomeLink>
 
-        {
-}
-
-        {}
         <nav aria-label="Footer navigation" className="mt-6">
-          {
-}
           <Accordion type="multiple">
             {footerSitemap.map((column) => (
               <AccordionItem key={column.id} value={column.id} className="not-last:border-b-0">
@@ -58,8 +51,6 @@ function MobileSitemap() {
                 >
                   {column.title}
                 </AccordionTrigger>
-                {
-}
                 <AccordionContent className={cn("pb-0 [&_a]:no-underline", ACCORDION_FADE)}>
                   <ul>
                     {column.items.map((item) => (
@@ -73,8 +64,6 @@ function MobileSitemap() {
             ))}
           </Accordion>
 
-          {
-}
           <ul>
             {footerStripLinks.map((item) => (
               <li key={item.id}>
@@ -87,7 +76,6 @@ function MobileSitemap() {
           </ul>
         </nav>
 
-        {}
         <SocialRow className="mt-2 justify-center" />
       </div>
     </div>

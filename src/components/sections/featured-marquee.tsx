@@ -89,8 +89,6 @@ export function FeaturedMarquee() {
       className={cn(sectionBg.page, "overflow-hidden py-6 lg:py-7")}
     >
       <div className="container mx-auto px-4">
-        {
-}
         <div className="mb-8 text-center">
           <h2 id="featured-title" className={sectionType.title}>
             {featuredSection.title}
@@ -243,7 +241,6 @@ function CarouselCard({
       style={{ width: `${widthVW}vw` }}
       aria-current={isActive ? "true" : undefined}
     >
-      {}
       {item.image ? (
         <Image
           src={item.image}
@@ -266,7 +263,6 @@ function CarouselCard({
         </div>
       )}
 
-      {}
       {item.image && (
         <div
           className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"
@@ -274,8 +270,6 @@ function CarouselCard({
         />
       )}
 
-      {
-}
       {item.restricted && (
         <div
           className={cn(
@@ -313,7 +307,6 @@ function CarouselCard({
           <p className="mt-1.5 max-w-2xl text-sm opacity-90 md:mt-2 md:text-lg">
             {item.description}
           </p>
-          {}
           <span className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-black shadow-lg transition-transform hover:scale-105 md:text-base">
             {featuredSection.ctaLabel}
             <ArrowRight className="size-4" aria-hidden="true" />
@@ -321,7 +314,6 @@ function CarouselCard({
         </div>
       )}
 
-      {}
       {variant === "small" && (
         <div
           className={`absolute right-4 bottom-3 left-4 hidden md:block ${item.image ? "text-white" : ""}`}

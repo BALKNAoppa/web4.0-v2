@@ -96,10 +96,8 @@ export function Convergence({
 
   return (
     <section id="intent" className="relative min-h-[100svh] w-full overflow-hidden">
-      {}
       <div className="absolute inset-0 bg-[radial-gradient(1000px_700px_at_50%_32%,#10233f_0%,transparent_60%),linear-gradient(160deg,#0a1424,#05080f)]" />
 
-      {}
       <span
         className="pointer-events-none absolute top-[8%] left-[21%] -translate-x-1/2 text-sm font-extrabold tracking-[0.28em] text-white uppercase transition-opacity duration-500 md:text-2xl"
         style={{ opacity: phase !== "C" ? 1 : 0 }}
@@ -113,7 +111,6 @@ export function Convergence({
         Customers
       </span>
 
-      {}
       {companyGoals.map((g, i) => (
         <Bubble
           key={g.id}
@@ -139,7 +136,6 @@ export function Convergence({
         />
       ))}
 
-      {}
       <div
         className={cn(
           "absolute top-1/2 left-1/2 z-10 grid aspect-square w-[min(58vmin,480px)] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/20 text-center",
@@ -162,7 +158,6 @@ export function Convergence({
         </div>
       </div>
 
-      {}
       <div className="pointer-events-none absolute inset-x-0 top-[7%] z-20 mx-auto w-[min(92vw,820px)] px-6 text-center">
         <p className="text-xs font-bold tracking-[0.32em] text-[#7dfa5a] uppercase md:text-sm">
           {caption.eyebrow}
@@ -172,7 +167,6 @@ export function Convergence({
         </h2>
       </div>
 
-      {}
       {openGoal && (
         <div className="animate-in fade-in zoom-in-95 pointer-events-none absolute top-1/2 left-1/2 z-30 w-[min(92vw,620px)] -translate-x-1/2 -translate-y-1/2 px-6 text-center duration-300">
           <p className="bg-gradient-to-r from-[#7dfa5a] to-[#8becff] bg-clip-text text-xl font-extrabold text-transparent md:text-3xl">
@@ -192,7 +186,6 @@ export function Convergence({
         </div>
       )}
 
-      {}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-[14%] z-20 mx-auto w-[min(92vw,600px)] px-6 text-center transition-opacity duration-300"
         style={{ opacity: openGoal ? 0 : 1 }}
@@ -253,7 +246,6 @@ function Bubble({
         willChange: "transform, opacity, left, top",
       }}
     >
-      {}
       <span
         className="grid h-full w-full place-items-center rounded-full border border-white/20 p-[13%] text-center"
         style={{

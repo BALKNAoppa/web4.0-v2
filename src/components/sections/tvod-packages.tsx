@@ -78,7 +78,6 @@ function PackageCover({ name, cover }: { name: string; cover?: string }) {
           <span className="text-muted-foreground/40 text-3xl font-bold md:text-5xl">{name}</span>
         </div>
       )}
-      {}
       <div
         className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
         aria-hidden="true"

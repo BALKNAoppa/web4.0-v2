@@ -11,8 +11,6 @@ export function TrustBuild() {
         {trustBuildSection.srTitle}
       </h2>
 
-      {
-}
       <div className="mx-auto w-full max-w-[1200px] space-y-16 px-4 py-12 md:space-y-24 lg:py-20">
         {trustBlocks.map((block, i) => (
           <TrustRow key={block.id} block={block} flip={i % 2 === 1} />
@@ -25,7 +23,6 @@ export function TrustBuild() {
 function TrustRow({ block, flip }: { block: TrustBlock; flip: boolean }) {
   return (
     <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-16">
-      {}
       <div className={cn("order-2", flip ? "lg:order-2" : "lg:order-1")}>
         <h3 className="text-foreground text-2xl font-extrabold tracking-tight md:text-3xl lg:text-4xl">
           {block.title}
@@ -34,8 +31,6 @@ function TrustRow({ block, flip }: { block: TrustBlock; flip: boolean }) {
           {block.description}
         </p>
 
-        {
-}
         <Link
           href={block.href}
           className="border-border text-primary hover:bg-muted focus-visible:ring-ring focus-visible:ring-offset-background mt-6 inline-flex h-11 items-center justify-center rounded-full border px-6 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -44,7 +39,6 @@ function TrustRow({ block, flip }: { block: TrustBlock; flip: boolean }) {
         </Link>
       </div>
 
-      {}
       <div className={cn("order-1", flip ? "lg:order-1" : "lg:order-2")}>
         <VideoPlaceholder label={block.videoLabel} />
       </div>

@@ -159,13 +159,9 @@ function BottomTabBar() {
       ref={ref}
       data-bottom-tab-bar
       aria-label="Доод цэс"
-      className="glass-lens fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] backdrop-blur-2xl backdrop-saturate-150 transition-[opacity,translate] duration-300 ease-out data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
+      className="glass-lens glass-tint fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] transition-[opacity,translate] duration-300 ease-out data-[keyboard=open]:translate-y-full data-[keyboard=open]:opacity-0 lg:hidden"
     >
-      {
-}
-      {
 
-}
       <ul className="flex h-[var(--dock-h)] w-full items-center justify-between px-4 py-3">
         {TABS.map((tab) => (
           <li key={tab.name} className="min-w-0 flex-1">
@@ -202,23 +198,17 @@ function BottomTab({
         highlighted ? "text-primary" : "text-muted-foreground hover:text-foreground",
       )}
     >
-      {
 
-}
       <span className="flex size-6 shrink-0 items-center justify-center">
         <Icon className="size-6 shrink-0" />
       </span>
-      {
 
-}
       <span
         className={cn(
           highlighted ? navType.bottomTabActive : navType.bottomTab,
           "leading-none whitespace-nowrap",
         )}
       >
-        {
-}
         <TabLabel name={tab.name} isDomain={highlighted} />
       </span>
     </SmartLink>
@@ -238,14 +228,12 @@ export function MobileBrandHeader({ variant }: { variant: MobileVariant }) {
 
 function CapsuleRow({ burger }: { burger: React.ReactNode }) {
   return (
-    <div className="px-4 py-3">
-      <div className="glass-lens flex h-16 items-center rounded-full px-5">
+    <div className="h-22 px-4 pt-6 pb-0">
+      <div className="glass-lens glass-tint flex h-16 items-center rounded-full px-5">
         <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
           <BrandLogo height={24} preload />
         </LogoHomeLink>
 
-        {
-}
         <div className="ml-auto flex items-center">{burger}</div>
       </div>
     </div>
@@ -259,11 +247,7 @@ function HeaderRow({ burger }: { burger: React.ReactNode }) {
         <BrandLogo height={24} preload />
       </LogoHomeLink>
 
-      {
-}
       <div className="ml-auto flex items-center gap-1">
-        {
-}
         <ProfilePill className={PILL_ICON_BUTTON} />
         {burger}
       </div>
@@ -284,11 +268,7 @@ function BrandSubmenuRow() {
 
   return (
     <nav aria-label={`${activeName} дэд цэс`} className={sectionBg.band}>
-      {
-}
       <div className="no-scrollbar overflow-x-auto [mask-image:linear-gradient(to_right,transparent,black_12px,black_calc(100%-12px),transparent)]">
-        {
-}
         <ul className="flex w-max items-center gap-5 px-6 py-3">
           {items.map((item) => (
             <li key={item.id}>
@@ -422,18 +402,16 @@ function BurgerDrawerHeader({
 
   return (
     <>
-      {
-}
       <div
         aria-hidden
         onClick={close}
         className={cn(
-          "bg-foreground/10 absolute inset-x-0 top-full z-40 h-lvh backdrop-blur-sm transition-opacity duration-300 ease-out lg:hidden",
+          "bg-foreground/10 fixed inset-0 z-40 backdrop-blur-sm transition-opacity duration-300 ease-out lg:hidden",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
 
-      <div className="lg:hidden">
+      <div className="relative z-50 lg:hidden">
         <Layer1
           burger={
             <BurgerButton
@@ -454,21 +432,14 @@ function BurgerDrawerHeader({
           }
         />
 
-        {
-
-}
         {subRow}
 
-        {
-}
         <div
           className={cn(
             "absolute inset-x-0 top-full z-50 px-4 pb-4 transition-[opacity,translate] duration-300 ease-out motion-reduce:transition-none",
             open ? "opacity-100" : "pointer-events-none -translate-y-2 opacity-0",
           )}
         >
-          {
-}
           <div
             ref={panelRef}
             id={DRAWER_ID}
@@ -479,18 +450,13 @@ function BurgerDrawerHeader({
               style={{ height: paneH }}
               className="overflow-hidden transition-[height] duration-300 ease-out motion-reduce:transition-none"
             >
-              {
-}
               <div
                 className={cn(
                   "flex w-[200%] items-start transition-transform duration-300 ease-out motion-reduce:transition-none",
                   subName && "-translate-x-1/2",
                 )}
               >
-                {}
                 <div ref={rootPaneRef} inert={!!subName} className="w-1/2 p-4">
-                  {
-}
                   <nav aria-label="Ангилал">
                     <ul className="flex flex-col">
                       {appleNavCategories.map((cat) => (
@@ -503,8 +469,6 @@ function BurgerDrawerHeader({
                               className={DRAWER_PRIMARY_ROW}
                             >
                               <DrawerCatLabel name={cat.name} active={cat.name === activeName} />
-                              {
-}
                               <ArrowRight
                                 className="ml-auto size-4 shrink-0 opacity-60"
                                 aria-hidden="true"
@@ -527,8 +491,6 @@ function BurgerDrawerHeader({
                     </ul>
                   </nav>
 
-                  {
-}
                   {DIRECT_SEGMENTS.length > 0 && (
                     <div className="border-border mt-4 space-y-0.5 border-t pt-4">
                       {DIRECT_SEGMENTS.map((seg) => (
@@ -550,19 +512,13 @@ function BurgerDrawerHeader({
                     </div>
                   )}
 
-                  {
-
-}
                   <div className="mt-4 flex items-stretch gap-2">
-                    {
-}
                     <LanguagePill className={cn(DRAWER_TOOL_PILL, navType.mobileLink)} />
                     <ProfilePill className={DRAWER_TOOL_PILL_ACTIVE} onDone={dismiss} />
                     <ThemePill className={DRAWER_TOOL_PILL_ACTIVE} />
                   </div>
                 </div>
 
-                {}
                 <div ref={subPaneRef} inert={!subName} className="w-1/2 p-4">
                   {subMenu && (
                     <DrawerSubmenu
@@ -604,8 +560,6 @@ function DrawerSubmenu({
 
   return (
     <section aria-labelledby={headingId}>
-      {
-}
       <button
         type="button"
         data-drawer-back
@@ -623,13 +577,6 @@ function DrawerSubmenu({
         {menu.name}
       </h2>
 
-      {
-}
-
-      {
-}
-      {
-}
       <Accordion type="multiple" defaultValue={defaultOpen ? [defaultOpen] : []} className="mt-3">
         {menu.sections.map((branch) =>
           branch.groups?.length ? (
@@ -643,11 +590,7 @@ function DrawerSubmenu({
                 {branch.title.trim()}
               </AccordionTrigger>
 
-              {
-}
               <AccordionContent className="pb-0 [&_a]:no-underline">
-                {
-}
                 {branch.status && <BranchStatusNote status={branch.status} className="mb-1 pl-5" />}
 
                 {branch.groups.map((group) => (
@@ -691,8 +634,6 @@ function DrawerSubmenu({
         <DrawerGroup label={menu.extrasLabel ?? "Нэмэлт"}>
           {menu.extras.map((s) => (
             <li key={s.id}>
-              {
-}
               <DrawerLink
                 href={s.href}
                 onNavigate={onNavigate}
@@ -705,8 +646,6 @@ function DrawerSubmenu({
         </DrawerGroup>
       )}
 
-      {
-}
       <div className="border-border mt-4 border-t px-2 pt-4">
         <h3 className={cn(navType.groupLabel, "mb-3")}>{MENU_PROMOS_HEADING}</h3>
         <div className="flex flex-col gap-4">
@@ -715,7 +654,6 @@ function DrawerSubmenu({
               <MobilePromoAvatar image={promo.image} />
               <div className="flex min-w-0 flex-col items-start">
                 <p className={cn(navType.secondaryLink, "text-foreground")}>{promo.title}</p>
-                {}
                 <p className={cn(navType.body, "text-muted-foreground mt-1 line-clamp-3")}>
                   {promo.description}
                 </p>
@@ -787,8 +725,6 @@ function DrawerLink({
 function TabLabel({ name, isDomain }: { name: string; isDomain: boolean }) {
   return (
     <>
-      {
-}
       {name === "LookTV" ? (
         <SparklesText
           sparklesCount={8}

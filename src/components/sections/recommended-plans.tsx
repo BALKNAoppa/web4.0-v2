@@ -44,8 +44,6 @@ export function RecommendedPlans({ content }: { content: RecommendedPlansContent
       className={cn(sectionBg.band, "w-full pt-6 pb-14 md:pt-8 md:pb-20 lg:pt-10 lg:pb-24")}
     >
       <div className="mx-auto max-w-300 px-4">
-        {
-}
         <h2 id="plans-title" className={cn("text-center", sectionType.title)}>
           {content.heading.title}
         </h2>
@@ -54,14 +52,10 @@ export function RecommendedPlans({ content }: { content: RecommendedPlansContent
         {showTabs && content.tabs && <PlanTabs tabs={content.tabs} value={tab} onChange={setTab} />}
       </div>
 
-      {
-}
       <div className="mt-8 md:hidden">
         <PlanCarousel key={tab} cards={cards} loop={content.loop ?? false} />
       </div>
 
-      {
-}
       <div className="mx-auto hidden max-w-300 px-4 md:block">
         <ul
           className={cn(
@@ -77,8 +71,6 @@ export function RecommendedPlans({ content }: { content: RecommendedPlansContent
         </ul>
       </div>
 
-      {
-}
       {content.cta && (
         <div className="mt-10 flex justify-center px-4 md:mt-12">
           <Link
@@ -114,8 +106,6 @@ function PlanCarousel({ cards, loop }: { cards: PlanCardContent[]; loop: boolean
         opts={{ loop: canLoop, align: "center", containScroll: canLoop ? "trimSnaps" : false }}
         className="w-full [&_[data-slot=carousel-content]]:items-stretch"
       >
-        {
-}
         <CarouselContent className="-ml-4">
           {cards.map((card) => (
             <CarouselItem key={card.id} className="basis-[84%] pl-4">
@@ -187,22 +177,17 @@ function PlanSpecCard({ card }: { card: PlanCardContent }) {
         featured ? "shadow-lg" : "hover:shadow-md",
       )}
     >
-      {
-}
       <div className="mb-3 h-7">
         {featured && (
           <span
             className="inline-flex h-7 items-center rounded-full px-3 text-[11px] font-bold tracking-wide text-white uppercase"
             style={{ backgroundColor: ACCENT }}
           >
-            {
-}
             {RECOMMENDED_BADGE}
           </span>
         )}
       </div>
 
-      {}
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-foreground text-3xl leading-none font-extrabold tracking-tight">
           {card.title}
@@ -221,16 +206,12 @@ function PlanSpecCard({ card }: { card: PlanCardContent }) {
         )}
       </div>
 
-      {
-}
       <div className="mt-6 flex-1 space-y-5">
         {card.groups?.map((group) => (
           <PlanSpecGroup key={group.title} group={group} />
         ))}
       </div>
 
-      {
-}
       <div className="border-border mt-6 flex justify-center border-t pt-4">
         <Link
           href={card.href}
@@ -251,7 +232,6 @@ function PlanSpecGroup({ group }: { group: PlanGroup }) {
         <Icon className="size-5 shrink-0" style={{ color: ACCENT }} aria-hidden="true" />
         <h4 className="text-foreground text-sm font-bold">{group.title}</h4>
       </div>
-      {}
       <dl className="mt-1.5 space-y-1 pl-7">
         {group.features.map((feature) => (
           <div key={feature.label} className="flex items-baseline justify-between gap-3 text-sm">
@@ -277,9 +257,7 @@ function PlanPhotoCard({ card }: { card: PlanCardContent }) {
         featured ? "shadow-lg" : "hover:shadow-md",
       )}
     >
-      {
 
-}
       <div
         className={cn(
           "relative isolate aspect-square shrink-0 overflow-hidden rounded-2xl",
@@ -295,8 +273,6 @@ function PlanPhotoCard({ card }: { card: PlanCardContent }) {
               sizes="(max-width: 768px) 86vw, 33vw"
               className="-z-10 object-cover"
             />
-            {
-}
             <div
               aria-hidden="true"
               className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/25 to-black/10"
@@ -316,18 +292,11 @@ function PlanPhotoCard({ card }: { card: PlanCardContent }) {
 
         {featured && <RecommendedFlag onImage={hasImage} className="absolute top-3 right-3 z-10" />}
 
-        {}
         <div className="absolute inset-x-3 bottom-3 z-10">
           <PlanIdentity card={card} plan={plan} onImage={hasImage} />
         </div>
       </div>
 
-      {
-}
-      {
-}
-      {
-}
       <ul className="flex-1 space-y-3 px-2 pt-5">
         {(card.highlights ?? []).map((h) => (
           <li key={h} className="text-foreground flex items-start gap-2.5 text-sm">
@@ -336,8 +305,6 @@ function PlanPhotoCard({ card }: { card: PlanCardContent }) {
               className="mt-px flex size-5 shrink-0 items-center justify-center rounded-md"
               style={{ backgroundColor: `color-mix(in oklab, ${ACCENT} 18%, transparent)` }}
             >
-              {
-}
               <Sparkles className="size-3.5" style={{ color: ACCENT }} />
             </span>
             <span className="leading-snug">{h}</span>
@@ -345,13 +312,9 @@ function PlanPhotoCard({ card }: { card: PlanCardContent }) {
         ))}
       </ul>
 
-      {
-}
       <div className="border-border mt-5 flex items-center justify-between gap-3 border-t px-2 pt-4">
         {price ? (
           <div className="min-w-0">
-            {
-}
             {!card.priceNote && <p className="text-muted-foreground text-xs">Суурь хураамж:</p>}
             <p className="text-foreground text-xl font-extrabold tracking-tight">{price}</p>
             {card.priceNote && (
@@ -408,7 +371,6 @@ function PlanIdentity({
   return (
     <div className="flex items-end justify-between gap-2">
       <div className="flex min-w-0 items-stretch gap-2">
-        {}
         <span
           aria-hidden="true"
           className="w-1 shrink-0 rounded-full"

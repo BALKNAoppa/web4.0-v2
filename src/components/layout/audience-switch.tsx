@@ -64,7 +64,6 @@ function BrandCardsPanel({ seg }: { seg: AudienceSegment }) {
         <SegmentIcon icon={seg.icon} className="text-primary size-4" />
         <p className={navType.secondaryLink}>{seg.label}</p>
       </div>
-      {}
       <div
         className={cn(
           "grid gap-3",
@@ -147,7 +146,6 @@ function AudienceSwitch({
 
   return (
     <Popover open={!!activeSeg} onOpenChange={(o) => !o && closeNow()}>
-      {}
       <PopoverAnchor asChild>
         <nav
           aria-label="Үзэгчийн сегмент"
@@ -170,8 +168,6 @@ function AudienceSwitch({
                     seg.id === activeId && activeCls,
                   )}
                 >
-                  {
-}
                   <span>{seg.label}</span>
                   <ArrowUpRight className={SEG_AFFIX} aria-hidden="true" />
                 </a>
@@ -194,8 +190,6 @@ function AudienceSwitch({
                   seg.id === activeId && activeCls,
                 )}
               >
-                {
-}
                 <span>{seg.label}</span>
               </button>
             );
@@ -212,7 +206,6 @@ function AudienceSwitch({
         onMouseLeave={closeSoon}
         className="w-[min(92vw,540px)] overflow-hidden p-5"
       >
-        {}
         {activeSeg && (
           <div
             key={activeSeg.id}

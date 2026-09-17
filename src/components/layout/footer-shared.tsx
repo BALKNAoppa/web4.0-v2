@@ -27,9 +27,7 @@ export function LegalStrip() {
   return (
     <div className="lg:hidden">
       <div className="container mx-auto">
-        {
 
-}
         <div className="flex flex-col items-center pt-4 pb-10">
           <FooterCopyright className="text-center" />
         </div>
@@ -81,21 +79,13 @@ export function FooterNavLink({
 export function DesktopFooterCard() {
   return (
     <div className="container mx-auto hidden py-10 lg:block">
-      {
-}
       <div className="bg-card border-border rounded-2xl border p-10">
-        {
 
-}
         <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr] grid-rows-[auto_1fr] gap-x-8 gap-y-4">
-          {
-}
           <div className="row-span-2">
             <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
               <BrandLogo height={28} />
             </LogoHomeLink>
-            {
-}
             <p className="text-muted-foreground mt-5 max-w-xs text-xs leading-relaxed">
               {footerTagline}
             </p>
@@ -108,8 +98,6 @@ export function DesktopFooterCard() {
               className="row-span-2 grid grid-rows-subgrid"
             >
               <FooterHeading id={`footer-col-${column.id}`}>{column.title}</FooterHeading>
-              {
-}
               <ul className="space-y-2.5">
                 {column.items.map((item) => (
                   <li key={item.id}>
@@ -120,9 +108,6 @@ export function DesktopFooterCard() {
             </nav>
           ))}
 
-          {
-
-}
           <nav aria-label="Компанийн холбоос" className="row-span-2">
             <ul className="space-y-2.5 text-sm">
               {footerStripLinks.map((item) => (

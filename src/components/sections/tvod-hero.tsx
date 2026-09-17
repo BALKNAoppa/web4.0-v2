@@ -62,7 +62,6 @@ export function TvodHero() {
         />
       </Carousel>
 
-      {}
       <FeaturePicker
         features={tvodHeroFeatures}
         currentIndex={currentIndex}
@@ -108,7 +107,6 @@ function FeaturePicker({
                   : "border-white/15 opacity-60 hover:border-white/40 hover:opacity-100",
               )}
             >
-              {}
               <span
                 className={cn(
                   "absolute top-0 right-2 left-2 h-0.5 transition-colors",
@@ -132,7 +130,6 @@ function FeaturePicker({
 function HeroCard({ feature, priority }: { feature: TvodHeroFeature; priority: boolean }) {
   return (
     <div className="relative h-[75vh] min-h-[500px] w-full overflow-hidden bg-slate-900 md:h-[82vh] md:min-h-[640px] lg:min-h-[760px]">
-      {}
       {feature.backdrop ? (
         <Image
           src={feature.backdrop}
@@ -147,7 +144,6 @@ function HeroCard({ feature, priority }: { feature: TvodHeroFeature; priority: b
           className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-slate-900 to-black"
           aria-hidden="true"
         >
-          {}
           <div className="absolute inset-0 flex items-center justify-center opacity-10">
             <span className="text-[14rem] font-black tracking-tight text-white md:text-[20rem] lg:text-[26rem]">
               {feature.title.split(" ")[0]}
@@ -156,13 +152,11 @@ function HeroCard({ feature, priority }: { feature: TvodHeroFeature; priority: b
         </div>
       )}
 
-      {}
       <div
         className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/10"
         aria-hidden="true"
       />
 
-      {}
       <div className="container relative mx-auto flex h-full flex-col justify-end px-4 pb-20 md:pb-28 lg:pb-32">
         {feature.badge && (
           <span className="mb-4 inline-flex w-fit items-center rounded-md bg-white/15 px-3 py-1.5 text-xs font-semibold tracking-widest text-white uppercase backdrop-blur-sm md:text-sm">

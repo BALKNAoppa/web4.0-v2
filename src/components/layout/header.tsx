@@ -21,6 +21,7 @@ import {
 import { appleMegaMenus, appleNavCategories, type EcosystemLink } from "@/data/navigation";
 import { useHeaderVariant } from "@/lib/header-variant";
 import { navType } from "@/lib/nav-type";
+import { useHideOnScrollDown } from "@/lib/scroll-direction";
 import { cn } from "@/lib/utils";
 import { sectionBg } from "@/lib/section-bg";
 import { SparklesText } from "@/components/ui/sparkles-text";
@@ -45,10 +46,7 @@ const HEADER_TOOL_ICON = cn(HEADER_TOOL_BASE, "hover:bg-muted size-9");
 function HeaderTools() {
   return (
     <div className={HEADER_TOOL_GROUP}>
-      {}
       <LanguagePill className={HEADER_TOOL_TEXT} />
-      {
-}
       <AccountMenu className={HEADER_TOOL_ICON} />
       <ThemePill className={HEADER_TOOL_ICON} />
     </div>
@@ -63,8 +61,6 @@ export function Header() {
 
   return (
     <>
-      {
-}
       <LogoLeftHeader mobileVariant={variant} />
     </>
   );
@@ -137,8 +133,6 @@ function CategoryNav({
               onMouseEnter={() => onOpen(item.name)}
               onMouseLeave={onClose}
             >
-              {
-}
               <button
                 type="button"
                 data-mega-trigger={item.name}
@@ -225,9 +219,7 @@ function MegaLayer({
         shown ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
       )}
     >
-      {
 
-}
       <div
         key={panelBrand}
         className={cn(
@@ -246,10 +238,10 @@ function MegaLayer({
 function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }) {
   const { openMenu, panelBrand, shown, direction, openBrandMenu, closeBrandMenu, closeNow } =
     useBrandMegaMenu(NAV_ORDER);
+  const bandHidden = useHideOnScrollDown();
 
   return (
     <>
-      {}
       {panelBrand && appleMegaMenus[panelBrand] && (
         <div
           aria-hidden
@@ -261,13 +253,16 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
         />
       )}
 
-      {
-}
-      {
-}
-      <header className="bg-background relative top-0 z-50" role="banner">
-        {
-}
+      <header
+        className={cn(
+          "top-0 z-50",
+          mobileVariant === 1 ? "sticky bg-transparent" : "relative bg-background",
+          "lg:sticky lg:h-38 lg:bg-transparent lg:transition-transform lg:duration-300 lg:ease-out",
+          "lg:pointer-events-none lg:[&>*]:pointer-events-auto",
+          bandHidden ? "lg:-translate-y-8" : "lg:translate-y-0",
+        )}
+        role="banner"
+      >
         <div className={cn(sectionBg.band, "hidden lg:block")}>
           <div className="mx-auto flex h-8 max-w-300 items-center justify-end px-4">
             <AudienceSwitchTabs
@@ -280,17 +275,15 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
           </div>
         </div>
 
-        {
-}
-        <div className={cn(sectionBg.page, "hidden lg:block")}>
+        <div className="hidden lg:block">
           <div className="mx-auto max-w-300 px-4 py-3">
-            {
-}
-            <div className="glass-lens grid h-24 grid-cols-[1fr_auto_1fr] items-center gap-6 rounded-[100px] px-6">
-              {
-}
-              {
-}
+            <div
+              className={cn(
+                "glass-lens glass-tint grid grid-cols-[1fr_auto_1fr] items-center gap-6 rounded-[100px] px-6",
+                "transition-[height] duration-300 ease-out",
+                bandHidden ? "h-18" : "h-24",
+              )}
+            >
               <LogoHomeLink
                 className="inline-flex items-center justify-self-start"
                 aria-label="Нүүр"
@@ -298,11 +291,8 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
                 <BrandLogo height={28} preload />
               </LogoHomeLink>
 
-              {
-}
               <CategoryNav openMenu={openMenu} onOpen={openBrandMenu} onClose={closeBrandMenu} />
 
-              {}
               <div className="justify-self-end">
                 <HeaderTools />
               </div>
@@ -310,7 +300,6 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
           </div>
         </div>
 
-        {}
         <MobileBrandHeader variant={mobileVariant} />
 
         <MegaLayer

@@ -21,10 +21,7 @@ export function AppPromo({ content }: { content: AppPromoContent }) {
       className={cn(sectionBg.page, "relative w-full overflow-hidden")}
       style={sectionStyle}
     >
-      {}
       <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-10 px-4 py-10 lg:grid-cols-2 lg:gap-16 lg:py-14">
-        {
-}
         <div className="order-2 lg:order-1">
           <h2 id={titleId} className={sectionType.titleHero}>
             {content.titlePre}
@@ -36,14 +33,11 @@ export function AppPromo({ content }: { content: AppPromoContent }) {
             {content.description}
           </p>
 
-          {}
           <div className="mt-7 flex flex-wrap items-center gap-3 lg:hidden">
             <AppStoreBadge href={content.appStoreHref} />
             <GooglePlayBadge href={content.googlePlayHref} />
           </div>
 
-          {
-}
           <div className="mt-7 hidden items-center gap-5 lg:flex">
             <div className="border-border rounded-2xl border bg-white p-3 shadow-lg">
               <QRCodeSVG
@@ -61,8 +55,6 @@ export function AppPromo({ content }: { content: AppPromoContent }) {
           </div>
         </div>
 
-        {
-}
         <div className="order-1 flex justify-center lg:order-2 lg:justify-end">
           <div className="animate-float-card bg-card ring-border relative aspect-[3/2] w-full max-w-lg overflow-hidden rounded-3xl shadow-lg ring-1 sm:max-w-xl lg:max-w-2xl xl:max-w-3xl">
             <Image

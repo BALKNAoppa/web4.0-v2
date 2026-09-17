@@ -18,13 +18,10 @@ export function UnivisionPlansBanner() {
       aria-labelledby="univision-plans-title"
       className="bg-muted relative w-full overflow-hidden"
     >
-      {}
       <Reveal>
         <div className="relative mx-auto grid w-full max-w-300 items-center gap-10 px-4 py-10 lg:grid-cols-2 lg:gap-16 lg:py-14">
-          {}
           <div className="flex justify-center lg:justify-start">
             <div className="ring-border/60 relative flex aspect-square w-full max-w-md flex-col justify-center gap-3 overflow-hidden rounded-3xl bg-linear-to-br from-[#0FAA0A] via-[#0d9488] to-[#2563eb] p-5 shadow-xl ring-1 sm:p-7 lg:max-w-lg">
-              {}
               <div
                 aria-hidden
                 className="absolute -top-12 -left-12 size-52 rounded-full bg-white/20 blur-3xl"
@@ -33,7 +30,6 @@ export function UnivisionPlansBanner() {
                 aria-hidden
                 className="absolute -right-10 -bottom-16 size-56 rounded-full bg-black/15 blur-3xl"
               />
-              {}
               <div aria-hidden className="absolute inset-0 flex items-center justify-center">
                 <div className="size-88 rounded-full border border-white/12" />
               </div>
@@ -41,7 +37,6 @@ export function UnivisionPlansBanner() {
                 <div className="size-64 rounded-full border border-white/20" />
               </div>
 
-              {}
               {plans.map((plan) => (
                 <div
                   key={plan.id}
@@ -77,7 +72,6 @@ export function UnivisionPlansBanner() {
             </div>
           </div>
 
-          {}
           <div>
             <div
               className="flex items-center gap-2 text-xs font-bold tracking-[0.18em] uppercase"

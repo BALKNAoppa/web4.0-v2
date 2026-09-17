@@ -268,7 +268,6 @@ function PlanQuizPage() {
               className="bg-card border-border flex flex-col overflow-hidden rounded-2xl border shadow-sm"
               style={{ height: "min(72vh, 680px)" }}
             >
-              {}
               <div className="border-border bg-muted/40 flex items-center gap-3 border-b px-5 py-3">
                 <div className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-full">
                   <Bot className="size-5" aria-hidden="true" />
@@ -295,7 +294,6 @@ function PlanQuizPage() {
                 )}
               </div>
 
-              {}
               <div
                 ref={scrollRef}
                 className="chat-scroll flex-1 space-y-3 overflow-y-auto px-4 py-5 md:px-5"
@@ -322,7 +320,6 @@ function PlanQuizPage() {
                 })}
                 {typing && shouldShowStandaloneTyping(messages) && <TypingIndicator />}
 
-                {}
                 {!busy && currentQuestion && (
                   <div className="animate-chat-msg-in flex flex-wrap justify-end gap-2">
                     {currentQuestion.options.map((option, idx) => (
@@ -338,7 +335,6 @@ function PlanQuizPage() {
                   </div>
                 )}
 
-                {}
                 {!busy && isResult && !otherPlansShown && (
                   <div className="animate-chat-msg-in flex flex-wrap justify-end gap-2">
                     <button
@@ -352,7 +348,6 @@ function PlanQuizPage() {
                 )}
               </div>
 
-              {}
               <form
                 onSubmit={handleSubmit}
                 className="border-border bg-background flex items-center gap-2 border-t p-3 md:p-4"

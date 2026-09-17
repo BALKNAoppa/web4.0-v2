@@ -36,7 +36,6 @@ export default async function CategoryDetailPage({
 
       <section className="bg-background py-12 lg:py-16">
         <div className="container mx-auto px-4">
-          {}
           <Link
             href={`/entertainment/main#category-${id}`}
             className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex items-center gap-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -45,7 +44,6 @@ export default async function CategoryDetailPage({
             Кино сан руу буцах
           </Link>
 
-          {}
           <div className="mt-6 mb-10">
             <h1 className="text-foreground text-3xl font-bold tracking-tight md:text-5xl">
               {title}
@@ -55,7 +53,6 @@ export default async function CategoryDetailPage({
             </p>
           </div>
 
-          {}
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {movies.map((movie) => (
               <li key={movie.id}>
