@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+const DESKTOP = "(min-width: 1024px)";
 const SHOW_NEAR_TOP = 48;
 const FLIP_DISTANCE = 28;
 
@@ -9,6 +10,8 @@ export function useHideOnScrollDown(): boolean {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
+    const mq = window.matchMedia(DESKTOP);
+
     let lastY = window.scrollY;
     let moved = 0;
     let frame = 0;
@@ -49,8 +52,20 @@ export function useHideOnScrollDown(): boolean {
       frame = 0;
     };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return stop;
+    const sync = () => {
+      stop();
+      if (!mq.matches) return;
+      lastY = window.scrollY;
+      moved = 0;
+      window.addEventListener("scroll", onScroll, { passive: true });
+    };
+
+    sync();
+    mq.addEventListener("change", sync);
+    return () => {
+      mq.removeEventListener("change", sync);
+      stop();
+    };
   }, []);
 
   return hidden;

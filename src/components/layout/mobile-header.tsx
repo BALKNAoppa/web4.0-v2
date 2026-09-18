@@ -44,7 +44,6 @@ import {
 } from "@/data/navigation";
 import { BRAND } from "@/lib/brand";
 import { navType } from "@/lib/nav-type";
-import { useHideOnScrollDown } from "@/lib/scroll-direction";
 import { sectionBg } from "@/lib/section-bg";
 import { cn } from "@/lib/utils";
 import { SparklesText } from "@/components/ui/sparkles-text";
@@ -196,18 +195,8 @@ export function MobileBrandHeader({ variant }: { variant: MobileVariant }) {
 }
 
 function CapsuleRow({ burger }: { burger: React.ReactNode }) {
-  const compact = useHideOnScrollDown();
-
   return (
-    <div
-      className={cn(
-        "h-[calc(5.5rem+env(safe-area-inset-top,0px))] px-4 pb-0",
-        "transition-[padding-top] duration-300 ease-out",
-        compact
-          ? "pt-[calc(0.5rem+env(safe-area-inset-top,0px))]"
-          : "pt-[calc(1.5rem+env(safe-area-inset-top,0px))]",
-      )}
-    >
+    <div className="h-[calc(5.5rem+env(safe-area-inset-top,0px))] px-4 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-0">
       <div className="glass-lens glass-tint flex h-16 items-center rounded-full px-5">
         <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
           <BrandLogo height={24} preload />
@@ -319,6 +308,24 @@ function BurgerDrawerHeader({
   const [paneH, setPaneH] = useState<number>();
   const pathname = usePathname();
   const activeName = useActiveNavName(appleNavCategories);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const block = (e: Event) => {
+      const panel = panelRef.current;
+      if (panel && e.target instanceof Node && panel.contains(e.target)) return;
+      e.preventDefault();
+    };
+
+    document.addEventListener("wheel", block, { passive: false });
+    document.addEventListener("touchmove", block, { passive: false });
+
+    return () => {
+      document.removeEventListener("wheel", block);
+      document.removeEventListener("touchmove", block);
+    };
+  }, [open]);
 
   const close = () => {
     setOpen(false);
