@@ -196,7 +196,7 @@ export function MobileBrandHeader({ variant }: { variant: MobileVariant }) {
 
 function CapsuleRow({ burger }: { burger: React.ReactNode }) {
   return (
-    <div className="h-22 px-4 pt-6 pb-0">
+    <div className="h-[calc(5.5rem+env(safe-area-inset-top,0px))] px-4 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-0">
       <div className="glass-lens glass-tint flex h-16 items-center rounded-full px-5">
         <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
           <BrandLogo height={24} preload />
@@ -210,7 +210,7 @@ function CapsuleRow({ burger }: { burger: React.ReactNode }) {
 
 function HeaderRow({ burger }: { burger: React.ReactNode }) {
   return (
-    <div className="flex items-center px-6 pt-6 pb-3">
+    <div className="flex items-center px-6 pt-[calc(1.5rem+env(safe-area-inset-top,0px))] pb-3">
       <LogoHomeLink className="inline-flex items-center" aria-label="Нүүр">
         <BrandLogo height={24} preload />
       </LogoHomeLink>
