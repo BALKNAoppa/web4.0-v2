@@ -24,7 +24,7 @@ export default function CampaignsPage() {
   );
 
   return (
-    <main id="main-content" className="bg-background min-h-screen">
+    <main id="main-content" className="bg-background min-h-dvh">
       <Breadcrumb items={[{ label: "Урамшуулал" }]} />
 
       <section className="container mx-auto px-4 pt-12 pb-8 text-center md:pt-20 md:pb-12">

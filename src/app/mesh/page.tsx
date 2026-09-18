@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function MeshPage() {
   return (
-    <main id="main-content" className="min-h-screen">
+    <main id="main-content" className="min-h-dvh">
       <Breadcrumb items={[{ label: "Mesh Wi-Fi" }]} />
       <WifiPromo />
       <MeshSolutions />

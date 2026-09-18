@@ -3,7 +3,7 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 
 export default function UnivisionGoPage() {
   return (
-    <main id="main-content" className="min-h-screen">
+    <main id="main-content" className="min-h-dvh">
       <Breadcrumb items={[{ label: "Univision Go app" }]} />
 
       <section className="flex min-h-[60vh] items-center justify-center px-4 py-20">

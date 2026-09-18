@@ -245,7 +245,7 @@ function PlanQuizPage() {
   const showRestart = messages.length > 0 && (answers.length > 0 || messages.length > 3);
 
   return (
-    <main id="main-content" className="min-h-screen">
+    <main id="main-content" className="min-h-dvh">
       <Breadcrumb items={[{ label: "Бүтээгдэхүүн" }, { label: "Үндсэн багц" }]} />
 
       <section className="bg-muted/20 py-4 lg:py-8">

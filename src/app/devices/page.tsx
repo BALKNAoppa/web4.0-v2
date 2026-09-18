@@ -49,7 +49,7 @@ function DevicesLanding({ categoryParam }: { categoryParam: string | null }) {
       : [{ label: "Дэлгүүр" }];
 
   return (
-    <main id="main-content" className="bg-background min-h-screen">
+    <main id="main-content" className="bg-background min-h-dvh">
       <Breadcrumb items={breadcrumbItems} />
 
       <section className="container mx-auto px-4 pt-12 pb-8 text-center md:pt-20 md:pb-12">

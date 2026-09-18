@@ -412,7 +412,7 @@ function BurgerDrawerHeader({
             ref={panelRef}
             id={DRAWER_ID}
             inert={!open}
-            className="bg-card border-border max-h-[calc(100lvh-6.5rem)] overflow-y-auto rounded-[28px] border shadow-2xl"
+            className="bg-card border-border max-h-[calc(100dvh-6.5rem)] overflow-y-auto rounded-[28px] border shadow-2xl"
           >
             <div
               style={{ height: paneH }}

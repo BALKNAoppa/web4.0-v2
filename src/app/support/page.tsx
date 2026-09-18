@@ -18,7 +18,7 @@ export default async function SupportPage({
     : [{ label: "Тусламж" }];
 
   return (
-    <main id="main-content" className="bg-background min-h-screen">
+    <main id="main-content" className="bg-background min-h-dvh">
       <Breadcrumb items={breadcrumbItems} />
 
       {category && detail ? (

@@ -26,7 +26,7 @@ function ServiceRouter() {
 
 function UnknownService() {
   return (
-    <main id="main-content" className="min-h-screen">
+    <main id="main-content" className="min-h-dvh">
       <Breadcrumb items={[{ label: "Үйлчилгээ" }]} />
       <section className="py-16">
         <div className="container mx-auto max-w-3xl">

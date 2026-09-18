@@ -19,7 +19,7 @@ export default function Home() {
   const isUnivision = BRAND === "univision";
 
   return (
-    <main id="main-content" className="min-h-screen">
+    <main id="main-content" className="min-h-dvh">
       <HeaderHeightVar />
 
       {isUnivision ? (

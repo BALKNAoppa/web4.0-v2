@@ -19,7 +19,7 @@ export default async function AssistantPage({
   const initialQuestions = Array.isArray(raw) ? raw : raw ? [raw] : [];
 
   return (
-    <main id="main-content" className="min-h-screen">
+    <main id="main-content" className="min-h-dvh">
       <Breadcrumb items={[{ label: "Ухаалаг туслах" }]} />
       <ChatHero mode="page" initialQuestions={initialQuestions} />
       <Footer />

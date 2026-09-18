@@ -51,7 +51,7 @@ export default async function MovieDetailPage({ params }: { params: Promise<{ id
   const backdrop = detail?.backdrop ?? movie.poster;
 
   return (
-    <main id="main-content" className="min-h-screen">
+    <main id="main-content" className="min-h-dvh">
       <Breadcrumb
         items={[
           { label: "Энтертайнмент" },

@@ -25,7 +25,7 @@ export default async function CategoryDetailPage({
   }
 
   return (
-    <main id="main-content" className="min-h-screen">
+    <main id="main-content" className="min-h-dvh">
       <Breadcrumb
         items={[
           { label: "Энтертайнмент" },

@@ -19,7 +19,7 @@ export function ServiceSample({ service }: { service: ServiceEntry }) {
   const siblings = siblingServices(service);
 
   return (
-    <main id="main-content" className="min-h-screen">
+    <main id="main-content" className="min-h-dvh">
       <Breadcrumb
         items={[
           { label: service.category },
