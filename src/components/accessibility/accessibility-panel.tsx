@@ -143,8 +143,8 @@ export function AccessibilityPanel() {
       aria-label="Хүртээмжийн тохиргоо"
       aria-hidden={!open}
       className={cn(
-        "bg-popover text-popover-foreground fixed top-0 left-0 z-40 flex h-dvh w-full max-w-90 flex-col gap-0 overflow-y-auto border-r p-5 shadow-2xl transition-transform duration-300 ease-out",
-        open ? "translate-x-0" : "-translate-x-full",
+        "bg-popover text-popover-foreground fixed top-0 left-0 z-40 flex h-dvh w-full max-w-90 flex-col gap-0 overflow-y-auto border-r p-5 shadow-2xl transition-[transform,translate,scale,rotate,visibility] duration-300 ease-out",
+        open ? "visible translate-x-0" : "invisible -translate-x-full",
       )}
     >
       <div className="flex items-start justify-between gap-3">

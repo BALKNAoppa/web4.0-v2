@@ -542,7 +542,7 @@
 
 @media (max-width: 1023px) {
   body:has([data-bottom-tab-bar]) {
-    padding-bottom: calc(var(--dock-h) + 8px + env(safe-area-inset-bottom,0px));
+    padding-bottom: calc(var(--dock-h) + 8px);
   }
 }
 
@@ -550,7 +550,6 @@ html.a11y-high-contrast [data-bottom-tab-bar] {
   background-color: #000 !important;
   background-image: none !important;
   backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
   border-top: 2px solid #ffff00;
 }
@@ -780,7 +779,6 @@ html[style*="--a11y-content"] span {
 [data-glass] .glass-surface {
   background-color: color-mix(in oklab, var(--card) 42%, transparent);
   backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
   border-color: color-mix(in oklab, var(--foreground) 20%, transparent);
   box-shadow:
     inset 0 1px 0 color-mix(in oklab, white 30%, transparent),
@@ -822,7 +820,6 @@ html[style*="--a11y-content"] span {
   );
 
   backdrop-filter: blur(var(--glass-frost)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--glass-frost)) saturate(180%);
 
   box-shadow:
     inset 1px 1px 0 color-mix(in oklab, white var(--glass-rim), transparent),
@@ -927,7 +924,6 @@ html[style*="--a11y-content"] span {
     background-color: #fff;
     background-image: none;
     backdrop-filter: none;
-    -webkit-backdrop-filter: none;
   }
   .dark [data-bottom-tab-bar],
   .dark .glass-tint {
