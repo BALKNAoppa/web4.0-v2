@@ -4,7 +4,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AxeProvider } from "@/components/axe-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { Header } from "@/components/layout/header";
-import { ThemeColorMeta } from "@/components/layout/theme-color-meta";
 import { ChatWidget } from "@/components/chatbot/chat-widget";
 import { AccessibilityProvider } from "@/components/accessibility/accessibility-provider";
 import { AccessibilityPanel } from "@/components/accessibility/accessibility-panel";
@@ -49,10 +48,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   viewportFit: "cover",
-  themeColor: "#e2e8ec",
 };
-
-const THEME_COLOR_BOOTSTRAP = `(function(){try{var c=getComputedStyle(document.documentElement).backgroundColor;var p=/^rgba?\\(\\s*([\\d.]+)[\\s,]+([\\d.]+)[\\s,]+([\\d.]+)/.exec(c);if(!p)return;var h="#"+[p[1],p[2],p[3]].map(function(v){return ("0"+Math.round(Number(v)).toString(16)).slice(-2)}).join("");var m=document.querySelector('meta[name="theme-color"]:not([media])');if(!m){m=document.createElement("meta");m.setAttribute("name","theme-color");document.head.appendChild(m)}m.setAttribute("content",h)}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -70,14 +66,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <script
-            suppressHydrationWarning
-            dangerouslySetInnerHTML={{ __html: THEME_COLOR_BOOTSTRAP }}
-          />
           <AccessibilityProvider>
             <AxeProvider>
               <AuthProvider>
-                <ThemeColorMeta />
                 <SampleTranslator />
                 <AccessibilitySkipLinks />
                 <Header />

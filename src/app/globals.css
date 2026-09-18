@@ -251,7 +251,6 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
-    background-color: var(--background);
   }
 
   *:focus-visible {
@@ -945,4 +944,16 @@ html[lang^="zh"] body {
 }
 html[lang^="ja"] body {
   font-family: var(--font-noto-jp), var(--font-manrope), sans-serif;
+}
+
+[data-bottom-tab-bar]::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 140px;
+  background-color: inherit;
+  backdrop-filter: blur(var(--glass-frost)) saturate(180%);
+  pointer-events: none;
 }

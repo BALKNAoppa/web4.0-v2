@@ -155,7 +155,6 @@ export function Web4Scroll() {
 
   return (
     <div
-      data-theme-color
       className="fixed inset-0 overflow-hidden bg-[#05080f] text-white"
       onClick={onClick}
     >

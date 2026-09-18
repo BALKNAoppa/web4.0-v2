@@ -256,7 +256,7 @@ function LogoLeftHeader({ mobileVariant = 1 }: { mobileVariant?: MobileVariant }
       <header
         className={cn(
           "top-0 z-50",
-          mobileVariant === 1 ? "sticky bg-transparent" : "relative bg-background",
+          "relative bg-transparent",
           "lg:sticky lg:h-38 lg:bg-transparent lg:transition-transform lg:duration-300 lg:ease-out",
           "lg:pointer-events-none lg:[&>*]:pointer-events-auto",
           bandHidden ? "lg:-translate-y-8" : "lg:translate-y-0",
