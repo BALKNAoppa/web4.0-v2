@@ -110,41 +110,9 @@ function useKeyboardOpen(ref: React.RefObject<HTMLElement | null>) {
   }, [ref]);
 }
 
-const DOCK_CHROME_COLOR = { light: "#343535", dark: "#030407" };
-
-function useDockBrowserChrome() {
-  useEffect(() => {
-    const metas = Array.from(
-      document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]'),
-    );
-    if (metas.length === 0) return;
-
-    const original = metas.map((m) => m.content);
-    const mq = window.matchMedia("(max-width: 1023px)");
-
-    const apply = () => {
-      metas.forEach((m, i) => {
-        if (!mq.matches) {
-          m.content = original[i];
-          return;
-        }
-        m.content = m.media.includes("dark") ? DOCK_CHROME_COLOR.dark : DOCK_CHROME_COLOR.light;
-      });
-    };
-
-    apply();
-    mq.addEventListener("change", apply);
-    return () => {
-      mq.removeEventListener("change", apply);
-      metas.forEach((m, i) => (m.content = original[i]));
-    };
-  }, []);
-}
-
 function BottomTabBar() {
   const ref = useRef<HTMLElement>(null);
   useKeyboardOpen(ref);
-  useDockBrowserChrome();
   const pathname = usePathname() ?? "";
 
   const isInternal = (t: (typeof TABS)[number]) =>

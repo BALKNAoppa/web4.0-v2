@@ -154,7 +154,11 @@ export function Web4Scroll() {
   );
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-[#05080f] text-white" onClick={onClick}>
+    <div
+      data-theme-color
+      className="fixed inset-0 overflow-hidden bg-[#05080f] text-white"
+      onClick={onClick}
+    >
       <div
         aria-hidden
         className="absolute inset-0 -z-20 bg-[radial-gradient(1200px_800px_at_70%_-10%,#10233f_0%,transparent_55%),radial-gradient(1000px_700px_at_15%_110%,#0c2a24_0%,transparent_55%),linear-gradient(160deg,#0a1424,#05080f)]"
